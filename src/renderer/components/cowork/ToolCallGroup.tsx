@@ -16,6 +16,7 @@ import {
   formatToolInput,
   getLargeToolResultSummary,
   getRetainedMediaPollCount,
+  getToolActivityStatusText,
   getToolDisplayName,
   getToolInputSummary,
   getToolResultCollapsedDisplay,
@@ -32,6 +33,7 @@ import {
   type ParsedTodoItem,
   parseMediaStreamingInfo,
   parseTodoWriteItems,
+  shouldMaskCapabilityToolDetails,
   type TodoStatus,
   type ToolGroupItem,
   truncatePreview,
@@ -97,31 +99,42 @@ const ToolCallGroup: React.FC<{
   const shouldExpandByDefault = isMediaStatusPoll(group);
   const isSessionStreaming = useSelector(selectIsStreaming);
   const rawToolName = typeof toolUse.metadata?.toolName === 'string' ? toolUse.metadata.toolName : 'Tool';
-  const toolName = getToolDisplayName(rawToolName);
   const toolInput = toolUse.metadata?.toolInput;
+  const maskToolDetails = shouldMaskCapabilityToolDetails(rawToolName, toolInput);
+  const activityStatusText = getToolActivityStatusText(rawToolName, toolInput);
+  const isToolError = Boolean(toolResult?.metadata?.isError || toolResult?.metadata?.error);
+  const maskedToolStatusText = toolResult
+    ? isToolError
+      ? i18nService.t('coworkToolInternalErrorHidden')
+      : i18nService.t('coworkToolActivityDone')
+    : activityStatusText;
+  const toolName = maskToolDetails
+    ? i18nService.t('coworkToolCapabilityName')
+    : getToolDisplayName(rawToolName);
   const isCronTool = isCronToolName(rawToolName);
   const isTodoWriteTool = isTodoWriteToolName(rawToolName);
   const todoItems = isTodoWriteTool ? parseTodoWriteItems(toolInput) : null;
   const mapText = mapDisplayText ?? ((value: string) => value);
-  const toolInputDisplayRaw = formatToolInput(rawToolName, toolInput);
+  const toolInputDisplayRaw = maskToolDetails ? null : formatToolInput(rawToolName, toolInput);
   const toolInputDisplay = toolInputDisplayRaw ? mapText(toolInputDisplayRaw) : null;
-  const toolInputSummaryRaw = getToolInputSummary(rawToolName, toolInput) ?? toolInputDisplayRaw;
+  const toolInputSummaryRaw = maskToolDetails
+    ? maskedToolStatusText
+    : getToolInputSummary(rawToolName, toolInput) ?? toolInputDisplayRaw;
   const toolInputSummary = toolInputSummaryRaw ? mapText(toolInputSummaryRaw) : null;
   const [isExpanded, setIsExpanded] = useState(shouldExpandByDefault);
   const collapsedToolResult = useMemo(
-    () => toolResult ? getToolResultCollapsedDisplay(toolResult) : null,
-    [toolResult],
+    () => toolResult && !maskToolDetails ? getToolResultCollapsedDisplay(toolResult) : null,
+    [maskToolDetails, toolResult],
   );
   const toolResultDisplayRaw = useMemo(
-    () => toolResult && isExpanded ? getToolResultDisplay(toolResult) : '',
-    [isExpanded, toolResult],
+    () => toolResult && isExpanded && !maskToolDetails ? getToolResultDisplay(toolResult) : '',
+    [isExpanded, maskToolDetails, toolResult],
   );
   const toolResultDisplay = toolResultDisplayRaw ? mapText(toolResultDisplayRaw) : '';
   const hasExpandedToolResultText = hasText(toolResultDisplay);
   const hasToolResultText = isExpanded
     ? hasExpandedToolResultText
     : Boolean(collapsedToolResult?.hasText);
-  const isToolError = Boolean(toolResult?.metadata?.isError || toolResult?.metadata?.error);
   const showNoDetailError = isToolError && !hasToolResultText;
   const toolResultFallback = showNoDetailError ? i18nService.t('coworkToolNoErrorDetail') : '';
   const displayToolResult = hasExpandedToolResultText ? toolResultDisplay : toolResultFallback;
@@ -129,6 +142,11 @@ const ToolCallGroup: React.FC<{
     ? mapText(collapsedToolResult.text)
     : '';
   const toolResultSummary = (() => {
+    if (maskToolDetails && toolResult) {
+      return isToolError
+        ? i18nService.t('coworkToolInternalErrorHidden')
+        : i18nService.t('coworkToolActivityDone');
+    }
     if (!collapsedToolResult?.hasText) return null;
     if (isCronTool && hasText(collapsedToolResultPreview)) {
       return truncatePreview(collapsedToolResultPreview.replace(/\s+/g, ' '));
@@ -200,7 +218,7 @@ const ToolCallGroup: React.FC<{
               </code>
             )}
           </div>
-          {toolResult && !isTodoWriteTool && (hasToolResultText || showNoDetailError) && (
+          {toolResult && !isTodoWriteTool && (hasToolResultText || showNoDetailError || maskToolDetails) && (
             <div className={`text-xs mt-0.5 ${
               hasToolResultText
                 ? 'text-muted'
@@ -208,14 +226,16 @@ const ToolCallGroup: React.FC<{
                   ? 'text-red-500/80'
                   : 'text-muted'
             }`}>
-              {hasToolResultText
+              {maskToolDetails
+                ? toolResultSummary
+                : hasToolResultText
                 ? toolResultSummary
                 : toolResultFallback}
             </div>
           )}
           {!toolResult && isSessionStreaming && (
             <div className="text-xs text-muted mt-0.5">
-              {i18nService.t('coworkToolRunning')}
+              {activityStatusText}
             </div>
           )}
         </div>
@@ -280,7 +300,19 @@ const ToolCallGroup: React.FC<{
       })()}
       {isExpanded && (
         <div className="ml-4 mt-2">
-          {isBashTool ? (
+          {maskToolDetails ? (
+            <div className={`rounded-lg border px-3 py-2 text-xs leading-5 ${
+              isToolError
+                ? 'border-red-500/20 bg-red-500/5 text-red-500/80'
+                : 'border-border bg-surfaceInset text-muted'
+            }`}>
+              {toolResult
+                ? isToolError
+                  ? i18nService.t('coworkToolInternalErrorHidden')
+                  : i18nService.t('coworkToolInternalDetailHidden')
+                : activityStatusText}
+            </div>
+          ) : isBashTool ? (
             <div className="rounded-lg overflow-hidden border border-border">
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surfaceInset">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
@@ -308,7 +340,7 @@ const ToolCallGroup: React.FC<{
                 )}
                 {!toolResult && (
                   <div className="text-muted mt-1.5 italic">
-                    {i18nService.t('coworkToolRunning')}
+                    {activityStatusText}
                   </div>
                 )}
               </div>

@@ -74,6 +74,9 @@ const TOOL_USE_ERROR_TAG_PATTERN = /^<tool_use_error>([\s\S]*?)<\/tool_use_error
 const ANSI_ESCAPE_PATTERN = /\u001B\[[0-?]*[ -/]*[@-~]/g;
 export const MEDIA_TOKEN_DISPLAY_RE = /\n?MEDIA:\s*`?[^`\n]+?`?\s*$/gim;
 const SILENT_TOKEN_RE = /^[`*_~"'""''()[\]{}<>.,!?;:，。！？；：\s-]{0,8}NO_REPLY[`*_~"'""''()[\]{}<>.,!?;:，。！？；：\s-]{0,8}$/i;
+const INTERNAL_CAPABILITY_TOOL_NAME_RE = /(?:^|[_.:-])(?:mcp|skill|skills)(?:[_.:-]|$)/i;
+const INTERNAL_CAPABILITY_PATH_RE =
+  /(?:^|[\\/])(?:\.codex|\.agents)(?:[\\/][^"'`\s]*)?(?:[\\/](?:skills?|mcp|plugins|openclaw)(?:[\\/]|$)|[\\/][^"'`\s]*SKILL\.md\b)|(?:^|[\\/])SKILLs?[\\/]|(?:^|[\\/])SKILL\.md\b|(?:^|[\\/])node_modules[\\/](?:@modelcontextprotocol|[^"'`\s\\/]*mcp[^"'`\s\\/]*)(?:[\\/]|$)/i;
 export const TOOL_RESULT_COLLAPSED_FULL_DISPLAY_MAX_CHARS = 16 * 1024;
 export const TOOL_RESULT_COLLAPSED_PREVIEW_MAX_CHARS = 4 * 1024;
 export const STRUCTURED_TEXT_FORMAT_MAX_CHARS = 128 * 1024;
@@ -87,6 +90,10 @@ export type ToolResultCollapsedDisplay = {
 };
 
 // ── Pure utility functions ───────────────────────────────────────────────────
+
+const isRecord = (value: unknown): value is Record<string, unknown> => (
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+);
 
 export const formatUnknown = (value: unknown): string => {
   if (typeof value === 'string') {
@@ -174,6 +181,81 @@ export const isTodoWriteToolName = (toolName: string | undefined): boolean => {
 export const isCronToolName = (toolName: string | undefined): boolean => {
   if (!toolName) return false;
   return normalizeToolName(toolName) === 'cron';
+};
+
+export const isInternalCapabilityToolName = (toolName: string | undefined): boolean => {
+  if (!toolName) return false;
+  return INTERNAL_CAPABILITY_TOOL_NAME_RE.test(toolName);
+};
+
+export const containsInternalCapabilityPath = (value: unknown, depth = 0): boolean => {
+  if (depth > 5 || value == null) return false;
+  if (typeof value === 'string') {
+    return INTERNAL_CAPABILITY_PATH_RE.test(value.replace(/\\/g, '/'));
+  }
+  if (Array.isArray(value)) {
+    return value.some(item => containsInternalCapabilityPath(item, depth + 1));
+  }
+  if (typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>)
+      .some(item => containsInternalCapabilityPath(item, depth + 1));
+  }
+  return false;
+};
+
+export const shouldMaskCapabilityToolDetails = (
+  toolName: string | undefined,
+  toolInput?: Record<string, unknown>,
+): boolean => (
+  isInternalCapabilityToolName(toolName)
+  || containsInternalCapabilityPath(toolInput)
+);
+
+export const getToolActivityStatusText = (
+  toolName: string | undefined,
+  toolInput?: Record<string, unknown>,
+): string => {
+  if (shouldMaskCapabilityToolDetails(toolName, toolInput)) {
+    return i18nService.t('coworkToolActivityGenerating');
+  }
+
+  const normalizedToolName = normalizeToolName(toolName ?? '');
+  if (
+    normalizedToolName === 'write'
+    || normalizedToolName === 'writefile'
+    || normalizedToolName === 'edit'
+    || normalizedToolName === 'editfile'
+    || normalizedToolName === 'multiedit'
+    || normalizedToolName.includes('applypatch')
+  ) {
+    return i18nService.t('coworkToolActivityPolishingCode');
+  }
+
+  if (
+    normalizedToolName === 'read'
+    || normalizedToolName === 'readfile'
+    || normalizedToolName === 'grep'
+    || normalizedToolName === 'glob'
+    || normalizedToolName === 'webfetch'
+  ) {
+    return i18nService.t('coworkToolActivityGatheringContext');
+  }
+
+  if (isTodoWriteToolName(toolName)) {
+    return i18nService.t('coworkToolActivityPlanning');
+  }
+
+  if (
+    normalizedToolName.includes('test')
+    || normalizedToolName.includes('lint')
+    || normalizedToolName.includes('exec')
+    || normalizedToolName.includes('bash')
+    || normalizedToolName.includes('shell')
+  ) {
+    return i18nService.t('coworkToolActivityChecking');
+  }
+
+  return i18nService.t('coworkToolActivityGenerating');
 };
 
 export const getCronToolSummary = (input: Record<string, unknown>): string | null => {
@@ -408,7 +490,7 @@ export const getLargeToolResultSummary = (sizeLabel: string): string =>
   i18nService.t('coworkToolLargeOutput').replace('{size}', sizeLabel);
 
 const getGenericRunningStatusText = (): string => {
-  const text = i18nService.t('coworkToolRunning');
+  const text = i18nService.t('coworkToolActivityGenerating');
   return text.endsWith('...') || text.endsWith('…') ? text : `${text}...`;
 };
 
@@ -438,9 +520,12 @@ export const getStreamingActivityStatusText = (
     const toolName = typeof message.metadata?.toolName === 'string'
       ? message.metadata.toolName.trim()
       : '';
-    return toolName
-      ? `${i18nService.t('coworkToolRunning')} ${toolName}...`
-      : getGenericRunningStatusText();
+    return getToolActivityStatusText(
+      toolName,
+      isRecord(message.metadata?.toolInput)
+        ? message.metadata.toolInput as Record<string, unknown>
+        : undefined,
+    );
   }
 
   return getGenericRunningStatusText();
