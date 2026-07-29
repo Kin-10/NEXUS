@@ -45,6 +45,7 @@ import {
   getMessageLineCount,
   reportConversationBlockAction,
 } from './cowork/conversationAnalytics';
+import InlineSvgFlowchart, { shouldRenderInlineSvgFlowchart } from './InlineSvgFlowchart';
 import Tooltip, { TooltipAlign, TooltipPosition } from './ui/Tooltip';
 
 const CodeBlockIcon: React.FC<{
@@ -1379,9 +1380,11 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ node, className, children, ...pro
   const isDiffBlock = rawLang === 'diff' || rawLang?.startsWith('diff:') === true;
   const diffInnerLang =
     isDiffBlock && rawLang!.includes(':') ? rawLang!.split(':')[1] : null;
+  const isInlineSvgFlowchart = shouldRenderInlineSvgFlowchart(rawLang, trimmedCodeText);
 
   const shouldUseCodeMirror =
     !isInline &&
+    !isInlineSvgFlowchart &&
     trimmedCodeText.length <= CODE_BLOCK_CHAR_LIMIT &&
     trimmedCodeText.split('\n').length <= CODE_BLOCK_LINE_LIMIT;
 
@@ -1517,6 +1520,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ node, className, children, ...pro
         {children}
       </code>
     );
+  }
+
+  if (isInlineSvgFlowchart) {
+    return <InlineSvgFlowchart source={trimmedCodeText} />;
   }
 
   // -------------------------------------------------------------------------

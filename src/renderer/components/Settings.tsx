@@ -89,6 +89,42 @@ import ThemedSelect from './ui/ThemedSelect';
 
 type TabType = 'general' | 'appearance' | 'coworkAgentEngine' | 'model' | 'browserWebAccess' | 'coworkMemory' | 'coworkDreaming' | 'shortcuts' | 'im' | 'email' | 'plugins' | 'about';
 
+const SettingsNavigationGroup = {
+  Personal: 'personal',
+  Intelligence: 'intelligence',
+  Connections: 'connections',
+  System: 'system',
+} as const;
+
+type SettingsNavigationGroup = typeof SettingsNavigationGroup[keyof typeof SettingsNavigationGroup];
+
+const SETTINGS_NAVIGATION_GROUPS: Array<{
+  id: SettingsNavigationGroup;
+  labelKey: string;
+  tabs: readonly TabType[];
+}> = [
+  {
+    id: SettingsNavigationGroup.Personal,
+    labelKey: 'settingsNavigationPersonal',
+    tabs: ['general', 'appearance', 'shortcuts'],
+  },
+  {
+    id: SettingsNavigationGroup.Intelligence,
+    labelKey: 'settingsNavigationIntelligence',
+    tabs: ['coworkAgentEngine', 'model', 'coworkMemory', 'coworkDreaming'],
+  },
+  {
+    id: SettingsNavigationGroup.Connections,
+    labelKey: 'settingsNavigationConnections',
+    tabs: ['browserWebAccess', 'im', 'email', 'plugins'],
+  },
+  {
+    id: SettingsNavigationGroup.System,
+    labelKey: 'settingsNavigationSystem',
+    tabs: ['about'],
+  },
+];
+
 const waitForNextPaint = (): Promise<void> => new Promise(resolve => {
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => resolve());
@@ -1373,6 +1409,7 @@ const Settings: React.FC<SettingsProps> = ({
   } = useSkin();
   // 状态
   const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'general');
+  const [settingsSearch, setSettingsSearch] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [themeId, setThemeId] = useState<string>(themeService.getDefaultThemeId());
   const [uiFontSize, setUiFontSize] = useState<number>(FontPreferences.UiFontSizeDefault);
@@ -4425,6 +4462,15 @@ const Settings: React.FC<SettingsProps> = ({
     return sidebarTabs.find(t => t.key === activeTab)?.label ?? '';
   }, [activeTab, sidebarTabs]);
 
+  const normalizedSettingsSearch = settingsSearch.trim().toLocaleLowerCase();
+  const groupedSidebarTabs = SETTINGS_NAVIGATION_GROUPS.map((group) => ({
+    ...group,
+    tabs: sidebarTabs.filter((tab) => (
+      group.tabs.includes(tab.key)
+      && (!normalizedSettingsSearch || tab.label.toLocaleLowerCase().includes(normalizedSettingsSearch))
+    )),
+  })).filter((group) => group.tabs.length > 0);
+
   useEffect(() => {
     const handleSettingsTabShortcut = (event: KeyboardEvent) => {
       if (event.repeat || isShortcutInputActive() || isTextEditingActive()) return;
@@ -5793,45 +5839,75 @@ const Settings: React.FC<SettingsProps> = ({
     <Modal
       onClose={guardedClose}
       overlayClassName="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4"
-      className="w-[calc(100vw-1.5rem)] max-w-[900px] min-w-0 sm:w-[calc(100vw-2rem)]"
+      className="w-[calc(100vw-1.5rem)] max-w-[1080px] min-w-0 sm:w-[calc(100vw-2rem)]"
     >
       <SkinPresentationScope
         enabled
         data-skin-settings="true"
-        className="relative flex h-[80vh] max-h-[calc(100vh-2rem)] w-full min-w-0 rounded-2xl border-border border shadow-modal overflow-hidden modal-content"
+        className="relative flex h-[86vh] max-h-[calc(100vh-2rem)] w-full min-w-0 overflow-hidden rounded-lg border border-border shadow-modal modal-content"
         onClick={handleSettingsClick}
       >
         {/* Left sidebar */}
-        <div className="w-[220px] shrink-0 flex flex-col bg-surface-raised border-r border-border rounded-l-2xl overflow-y-auto">
-          <div className="px-5 pt-5 pb-3">
+        <div className="flex w-[244px] shrink-0 flex-col border-r border-border bg-surface-raised">
+          <div className="px-4 pb-3 pt-5">
             <h2 className="text-lg font-semibold text-foreground">{i18nService.t('settings')}</h2>
+            <label className="relative mt-4 block">
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+              <input
+                type="search"
+                value={settingsSearch}
+                onChange={(event) => setSettingsSearch(event.target.value)}
+                placeholder={i18nService.t('settingsSearchPlaceholder')}
+                aria-label={i18nService.t('settingsSearchPlaceholder')}
+                className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/15"
+              />
+            </label>
           </div>
-          <nav className="flex flex-col gap-0.5 px-3 pb-4">
-            {sidebarTabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => handleTabChange(tab.key)}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
-                  activeTab === tab.key
-                    ? 'bg-primary-muted text-primary'
-                    : 'text-secondary hover:text-foreground hover:bg-surface-raised'
-                }`}
-              >
-                <span className="shrink-0">{tab.icon}</span>
-                <span className="min-w-0 truncate">{tab.label}</span>
-              </button>
+          <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+            {groupedSidebarTabs.map((group) => (
+              <div key={group.id} className="mb-4 last:mb-0">
+                <div className="px-3 pb-1 text-xs font-medium text-muted">
+                  {i18nService.t(group.labelKey)}
+                </div>
+                <div className="space-y-0.5">
+                  {group.tabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => handleTabChange(tab.key)}
+                      aria-current={activeTab === tab.key ? 'page' : undefined}
+                      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors ${
+                        activeTab === tab.key
+                          ? 'bg-primary-muted text-primary'
+                          : 'text-secondary hover:bg-surface hover:text-foreground'
+                      }`}
+                    >
+                      <span className="shrink-0">{tab.icon}</span>
+                      <span className="min-w-0 truncate">{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
+            {groupedSidebarTabs.length === 0 && (
+              <div className="px-3 py-8 text-center text-sm text-muted">
+                {i18nService.t('settingsSearchNoResults')}
+              </div>
+            )}
           </nav>
         </div>
 
         {/* Right content */}
-        <div className="relative flex-1 flex flex-col min-w-0 overflow-hidden bg-background rounded-r-2xl">
+        <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
           {/* Content header */}
           <div className="flex justify-between items-center gap-3 px-6 pt-5 pb-3 shrink-0">
             <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">{activeTabLabel}</h3>
             <button
+              type="button"
               onClick={guardedClose}
               className="text-secondary hover:text-foreground p-1.5 hover:bg-surface-raised rounded-lg transition-colors"
+              aria-label={i18nService.t('close')}
+              title={i18nService.t('close')}
             >
               <XMarkIcon className="h-5 w-5" />
             </button>

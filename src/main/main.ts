@@ -77,6 +77,7 @@ import {
   CoworkSteerRejectReason,
   CoworkSteerStatus,
 } from '../shared/cowork/steer';
+import { appendCoworkSvgFlowchartSystemPrompt } from '../shared/cowork/svgFlowchartPrompt';
 import { stripNullChars } from '../shared/cowork/text';
 import {
   DataMigrationIpc,
@@ -3212,11 +3213,10 @@ const refreshImSessionWorkingDirectoriesForAgent = (agentId: string): number => 
 function mergeCoworkSystemPrompt(systemPrompt?: string): string | undefined {
   const scheduledTaskPrompt = buildScheduledTaskEnginePrompt();
   const normalizedSystemPrompt = systemPrompt?.trim() || '';
-  if (normalizedSystemPrompt && normalizedSystemPrompt.includes(scheduledTaskPrompt)) {
-    return normalizedSystemPrompt;
-  }
-  const sections = [scheduledTaskPrompt, normalizedSystemPrompt].filter(Boolean);
-  return sections.length > 0 ? sections.join('\n\n') : undefined;
+  const scheduledTaskSections = normalizedSystemPrompt.includes(scheduledTaskPrompt)
+    ? [normalizedSystemPrompt]
+    : [scheduledTaskPrompt, normalizedSystemPrompt].filter(Boolean);
+  return appendCoworkSvgFlowchartSystemPrompt(scheduledTaskSections.join('\n\n'));
 }
 
 type CoworkImageAttachmentMain = {

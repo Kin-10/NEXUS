@@ -19,6 +19,7 @@ import EngineFailureOverlay from './components/cowork/EngineFailureOverlay';
 import EngineStartupOverlay from './components/cowork/EngineStartupOverlay';
 import KitsView from './components/kits/KitsView';
 import { McpView } from './components/mcp';
+import NavRail, { AppMainView, NAV_RAIL_WIDTH } from './components/NavRail';
 import PrivacyDialog from './components/PrivacyDialog';
 import { ScheduledTasksView } from './components/scheduledTasks';
 import Settings, { type SettingsOpenOptions } from './components/Settings';
@@ -123,7 +124,7 @@ const logAppUpdateRendererLifecycle = (
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsOptions, setSettingsOptions] = useState<SettingsOpenOptions & { requestId: number }>({ requestId: 0 });
-  const [mainView, setMainView] = useState<'cowork' | 'skills' | 'scheduledTasks' | 'kits' | 'mcp'>('cowork');
+  const [mainView, setMainView] = useState<AppMainView>(AppMainView.Cowork);
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -140,7 +141,6 @@ const App: React.FC = () => {
     errorMessage: null,
   });
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [isUpdateCardExpanded, setIsUpdateCardExpanded] = useState(false);
   const [isUserInitiatedUpdateFlowActive, setIsUserInitiatedUpdateFlowActive] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState<boolean | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -388,23 +388,23 @@ const App: React.FC = () => {
   }, []);
 
   const handleShowSkills = useCallback(() => {
-    setMainView('skills');
+    setMainView(AppMainView.Skills);
   }, []);
 
   const handleShowCowork = useCallback(() => {
-    setMainView('cowork');
+    setMainView(AppMainView.Cowork);
   }, []);
 
   const handleShowScheduledTasks = useCallback(() => {
-    setMainView('scheduledTasks');
+    setMainView(AppMainView.ScheduledTasks);
   }, []);
 
   const handleShowMcp = useCallback(() => {
-    setMainView('mcp');
+    setMainView(AppMainView.Mcp);
   }, []);
 
   const handleShowKits = useCallback(() => {
-    setMainView('kits');
+    setMainView(AppMainView.Kits);
   }, []);
 
   const openHomeWithKit = useCallback((kitId: string, text?: string) => {
@@ -421,7 +421,7 @@ const App: React.FC = () => {
       dispatch(setDraftPrompt({ sessionId: '__home__', draft: text }));
     }
     dispatch(setDraftKitIds({ draftKey: '__home__', kitIds: [kitId] }));
-    setMainView('cowork');
+    setMainView(AppMainView.Cowork);
     window.setTimeout(() => {
       window.dispatchEvent(new CustomEvent(CoworkUiEvent.FocusInput, {
         // Without text, keep any existing home draft and just focus with the kit selected
@@ -457,16 +457,25 @@ const App: React.FC = () => {
     setIsSidebarCollapsed((prev) => !prev);
   }, [isSidebarCollapsed, mainView]);
 
+  const handleToggleAgentPanel = useCallback(() => {
+    if (mainView !== AppMainView.Cowork) {
+      setMainView(AppMainView.Cowork);
+      setIsSidebarCollapsed(false);
+      return;
+    }
+    handleToggleSidebar();
+  }, [handleToggleSidebar, mainView]);
+
   const handleNewChat = useCallback(() => {
     // Only clear when already on home (no session) — preserve __home__ draft when returning from a session
-    const shouldClearInput = mainView === 'cowork' && !currentSessionId;
+    const shouldClearInput = mainView === AppMainView.Cowork && !currentSessionId;
     coworkService.clearSession({ restoreAgentSkills: true });
     dispatch(clearSelection());
     dispatch(setDraftCollaborationMode({
       draftKey: '__home__',
       mode: CoworkCollaborationMode.Default,
     }));
-    setMainView('cowork');
+    setMainView(AppMainView.Cowork);
     window.setTimeout(() => {
       window.dispatchEvent(new CustomEvent(CoworkUiEvent.FocusInput, {
         detail: { clear: shouldClearInput, resetCollaborationMode: true },
@@ -482,7 +491,7 @@ const App: React.FC = () => {
       draftKey: '__home__',
       mode: CoworkCollaborationMode.Default,
     }));
-    setMainView('cowork');
+    setMainView(AppMainView.Cowork);
   }, [dispatch]);
 
   const showToast = useCallback((message: string) => {
@@ -592,10 +601,6 @@ const App: React.FC = () => {
       unsubscribe();
     };
   }, [showToast, stopUserInitiatedUpdateFlow]);
-
-  const handleShowLogin = useCallback(() => {
-    showToast(i18nService.t('featureInDevelopment'));
-  }, [showToast]);
 
   const runUpdateCheck = useCallback(async () => {
     try {
@@ -878,7 +883,7 @@ const App: React.FC = () => {
 
       if (matchesAction(ShortcutAction.FocusPrompt)) {
         event.preventDefault();
-        setMainView('cowork');
+        setMainView(AppMainView.Cowork);
         window.setTimeout(() => {
           window.dispatchEvent(new CustomEvent(CoworkUiEvent.FocusInput, {
             detail: { clear: false },
@@ -889,7 +894,7 @@ const App: React.FC = () => {
 
       if (matchesAction(ShortcutAction.StopCurrentTask)) {
         event.preventDefault();
-        if (mainView === 'cowork') {
+        if (mainView === AppMainView.Cowork) {
           window.dispatchEvent(new CustomEvent(CoworkUiEvent.ShortcutStopSession));
         } else if (currentSessionId) {
           void coworkService.stopSession(currentSessionId);
@@ -905,7 +910,7 @@ const App: React.FC = () => {
 
       if (matchesAction(ShortcutAction.ToggleArtifacts)) {
         event.preventDefault();
-        setMainView('cowork');
+        setMainView(AppMainView.Cowork);
         window.setTimeout(() => {
           window.dispatchEvent(new CustomEvent(CoworkUiEvent.ShortcutToggleArtifacts));
         }, 0);
@@ -914,7 +919,7 @@ const App: React.FC = () => {
 
       if (matchesAction(ShortcutAction.PreviousAgent)) {
         event.preventDefault();
-        setMainView('cowork');
+        setMainView(AppMainView.Cowork);
         setIsSidebarCollapsed(false);
         window.dispatchEvent(new CustomEvent(CoworkUiEvent.ShortcutSwitchAgent, {
           detail: { direction: CoworkShortcutDirection.Previous },
@@ -924,7 +929,7 @@ const App: React.FC = () => {
 
       if (matchesAction(ShortcutAction.NextAgent)) {
         event.preventDefault();
-        setMainView('cowork');
+        setMainView(AppMainView.Cowork);
         setIsSidebarCollapsed(false);
         window.dispatchEvent(new CustomEvent(CoworkUiEvent.ShortcutSwitchAgent, {
           detail: { direction: CoworkShortcutDirection.Next },
@@ -934,7 +939,7 @@ const App: React.FC = () => {
 
       if (matchesAction(ShortcutAction.ShowCurrentAgentTasks)) {
         event.preventDefault();
-        setMainView('cowork');
+        setMainView(AppMainView.Cowork);
         setIsSidebarCollapsed(false);
         window.dispatchEvent(new CustomEvent(CoworkUiEvent.ShortcutShowCurrentAgentTasks));
         return;
@@ -943,7 +948,7 @@ const App: React.FC = () => {
       const taskSlotIndex = AGENT_TASK_SLOT_SHORTCUT_ACTIONS.findIndex(action => matchesAction(action));
       if (taskSlotIndex >= 0) {
         event.preventDefault();
-        setMainView('cowork');
+        setMainView(AppMainView.Cowork);
         setIsSidebarCollapsed(false);
         window.dispatchEvent(new CustomEvent(CoworkUiEvent.ShortcutOpenAgentTaskSlot, {
           detail: { slot: taskSlotIndex + 1 },
@@ -1051,7 +1056,7 @@ const App: React.FC = () => {
       dispatch(clearDraftAttachments('__home__'));
       dispatch(clearDraftSelectedTextSnippets('__home__'));
       setShowSettings(false);
-      setMainView('cowork');
+      setMainView(AppMainView.Cowork);
       if (askAiFocusTimerRef.current !== null) {
         window.clearTimeout(askAiFocusTimerRef.current);
       }
@@ -1093,7 +1098,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const unsubscribe = window.electron.cowork.onOpenSessionFromNotification?.(({ sessionId }) => {
       setShowSettings(false);
-      setMainView('cowork');
+      setMainView(AppMainView.Cowork);
       void coworkService.loadSession(sessionId);
     });
     void window.electron.cowork.notifyOpenSessionFromNotificationReady?.();
@@ -1103,7 +1108,7 @@ const App: React.FC = () => {
   // Tell the main process which session is currently visible so desktop
   // notifications for that session can be suppressed and cleared.
   useEffect(() => {
-    const visibleSessionId = mainView === 'cowork' && !showSettings ? currentSessionId ?? null : null;
+    const visibleSessionId = mainView === AppMainView.Cowork && !showSettings ? currentSessionId ?? null : null;
     void window.electron.cowork.setActiveSession?.(visibleSessionId)?.catch?.((error: unknown) => {
       console.debug('[App] failed to report active session:', error);
     });
@@ -1190,6 +1195,10 @@ const App: React.FC = () => {
     || showUpdateModal
     || isPermissionModalOpen
     || isUpdateInteractionBlocked;
+  const isCoworkView = mainView === AppMainView.Cowork;
+  const isContextSidebarCollapsed = !isCoworkView || isSidebarCollapsed;
+  const appNavigationWidth = NAV_RAIL_WIDTH
+    + (isCoworkView && !isSidebarCollapsed ? sidebarWidth : 0);
   // Keep the badge visible while downloading so the collapsed-sidebar layouts
   // still surface progress; only a plain re-check hides nothing new.
   const shouldShowUpdateBadge = updateInfo && appUpdateState.status !== AppUpdateStatus.Checking;
@@ -1207,20 +1216,19 @@ const App: React.FC = () => {
       onUpdate={handleConfirmUpdate}
       onShowDetails={handleOpenUpdateModal}
       onCancelDownload={handleCancelDownload}
-      onExpandedChange={setIsUpdateCardExpanded}
     />
   ) : null;
   const canUseWindowsTopBarActions = isInitialized && !initError && !isUpdateInteractionBlocked;
-  const canUseWindowsCollapsedTopBarActions = canUseWindowsTopBarActions && isSidebarCollapsed;
-  const collapsedHeaderUpdateBadge = isSidebarCollapsed && !isWindows ? updateBadge : null;
+  const canUseWindowsCollapsedTopBarActions = canUseWindowsTopBarActions && isContextSidebarCollapsed;
+  const collapsedHeaderUpdateBadge = isCoworkView && isSidebarCollapsed && !isWindows ? updateBadge : null;
   const windowsStandaloneTitleBar = isWindows ? (
     <WindowsAppTitleBar
       isOverlayActive={isOverlayActive}
-      isSidebarCollapsed={isSidebarCollapsed}
-      sidebarWidth={sidebarWidth}
-      onToggleSidebar={canUseWindowsTopBarActions ? handleToggleSidebar : undefined}
+      isSidebarCollapsed={isContextSidebarCollapsed}
+      sidebarWidth={appNavigationWidth}
+      onToggleSidebar={canUseWindowsTopBarActions ? handleToggleAgentPanel : undefined}
       onNewChat={canUseWindowsCollapsedTopBarActions ? handleNewChat : undefined}
-      sidebarToggleLabel={isSidebarCollapsed ? i18nService.t('expand') : i18nService.t('collapse')}
+      sidebarToggleLabel={isContextSidebarCollapsed ? i18nService.t('expand') : i18nService.t('collapse')}
       newChatLabel={i18nService.t('newChat')}
       updateBadge={canUseWindowsCollapsedTopBarActions ? updateBadge : null}
     />
@@ -1285,7 +1293,7 @@ const App: React.FC = () => {
     <SkinProvider>
       <SkinPresentationScope
         enabled
-        className="h-screen overflow-hidden flex flex-col bg-surface-raised"
+        className="soft-app-shell h-screen overflow-hidden flex flex-col bg-surface-raised"
       >
       {toastMessage && (
         <Toast
@@ -1299,62 +1307,70 @@ const App: React.FC = () => {
         className="relative flex flex-1 min-h-0 overflow-hidden"
         aria-busy={isUpdateInteractionBlocked}
       >
-        <Sidebar
-          onShowLogin={handleShowLogin}
-          onShowSettings={handleShowSettings}
-          activeView={mainView}
-          onShowSkills={handleShowSkills}
-          onShowCowork={handleShowCowork}
-          onShowScheduledTasks={handleShowScheduledTasks}
-          onShowKits={handleShowKits}
-          onShowMcp={handleShowMcp}
-          onNewChat={handleNewChat}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={handleToggleSidebar}
-          onWidthChange={setSidebarWidth}
-          updateNotice={!isSidebarCollapsed && !isUpdateInteractionBlocked ? updateCard : null}
-          hideAdBanner={isUpdateCardExpanded}
-          hideLogin={enterpriseConfig?.ui?.login === 'hide'}
-        />
-        <div className={`flex-1 min-w-0 transition-[padding] duration-200 ease-out ${isSidebarCollapsed ? 'pl-1.5' : ''}`}>
+        <div className="left-glass-shell">
+          <NavRail
+            activeView={mainView}
+            onShowCowork={handleShowCowork}
+            onShowSkills={handleShowSkills}
+            onShowScheduledTasks={handleShowScheduledTasks}
+            onShowKits={handleShowKits}
+            onShowMcp={handleShowMcp}
+            onShowSettings={handleShowSettings}
+            isAgentPanelCollapsed={isContextSidebarCollapsed}
+            onToggleAgentPanel={handleToggleAgentPanel}
+            hideSkills={enterpriseConfig?.ui?.skills === 'hide'}
+            hideKits={enterpriseConfig?.ui?.kits === 'hide'}
+            hideScheduledTasks={enterpriseConfig?.ui?.scheduledTasks === 'hide'}
+            hideMcp={enterpriseConfig?.ui?.mcp === 'hide'}
+          />
+          {isCoworkView && (
+            <Sidebar
+              onShowCowork={handleShowCowork}
+              onNewChat={handleNewChat}
+              isCollapsed={isSidebarCollapsed}
+              onToggleCollapse={handleToggleSidebar}
+              initialWidth={sidebarWidth}
+              onWidthChange={setSidebarWidth}
+              updateNotice={!isSidebarCollapsed && !isUpdateInteractionBlocked ? updateCard : null}
+              hideLogin={enterpriseConfig?.ui?.login === 'hide'}
+            />
+          )}
+        </div>
+        <div className="min-w-0 flex-1 p-1.5 pl-0">
           <div
-            data-skin-cowork-frame={mainView === 'cowork' ? 'true' : undefined}
-            data-skin-management-frame={mainView !== 'cowork' ? 'true' : undefined}
-            className="relative h-full min-h-0 rounded-xl border border-border bg-background overflow-hidden"
+            data-skin-cowork-frame={isCoworkView ? 'true' : undefined}
+            data-skin-management-frame={!isCoworkView ? 'true' : undefined}
+            className="soft-main-panel relative h-full min-h-0 overflow-hidden"
           >
-            {mainView !== 'cowork' && (
+            {!isCoworkView && (
               <SkinBackdrop variant={SkinBackdropVariant.Management} />
             )}
             <EngineStartupOverlay />
-            {mainView === 'skills' ? (
+            {mainView === AppMainView.Skills ? (
               <SkillsView
-                isSidebarCollapsed={isSidebarCollapsed}
-                onToggleSidebar={handleToggleSidebar}
+                isSidebarCollapsed={false}
                 onNewChat={handleNewChat}
                 onCreateSkillByChat={handleCreateSkillByChat}
                 updateBadge={collapsedHeaderUpdateBadge}
                 readOnly={enterpriseConfig?.ui?.skills === 'readonly'}
               />
-            ) : mainView === 'scheduledTasks' ? (
+            ) : mainView === AppMainView.ScheduledTasks ? (
               <ScheduledTasksView
-                isSidebarCollapsed={isSidebarCollapsed}
-                onToggleSidebar={handleToggleSidebar}
+                isSidebarCollapsed={false}
                 onNewChat={handleNewChat}
                 updateBadge={collapsedHeaderUpdateBadge}
               />
-            ) : mainView === 'kits' ? (
+            ) : mainView === AppMainView.Kits ? (
               <KitsView
-                isSidebarCollapsed={isSidebarCollapsed}
-                onToggleSidebar={handleToggleSidebar}
+                isSidebarCollapsed={false}
                 onNewChat={handleNewChat}
                 updateBadge={collapsedHeaderUpdateBadge}
                 onTryAsking={handleKitTryAsking}
                 onUseKit={handleKitUse}
               />
-            ) : mainView === 'mcp' ? (
+            ) : mainView === AppMainView.Mcp ? (
               <McpView
-                isSidebarCollapsed={isSidebarCollapsed}
-                onToggleSidebar={handleToggleSidebar}
+                isSidebarCollapsed={false}
                 onNewChat={handleNewChat}
                 updateBadge={collapsedHeaderUpdateBadge}
               />

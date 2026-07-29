@@ -36,12 +36,9 @@ import type { MediaAttachmentRef } from '../../types/mediaGeneration';
 import { applyOptimisticGoalCommand } from '../../utils/goalCommand';
 import { toOpenClawModelRef } from '../../utils/openclawModelRef';
 import CreditsResetCampaignFloat from '../CreditsResetCampaignFloat';
-import ComposeIcon from '../icons/ComposeIcon';
-import SidebarToggleIcon from '../icons/SidebarToggleIcon';
 import { PromptPanel, QuickActionBar } from '../quick-actions';
 import type { SettingsOpenOptions } from '../Settings';
 import HomeSkinEmblem from '../skin/HomeSkinEmblem';
-import SkinAmbientEffects from '../skin/SkinAmbientEffects';
 import SkinBackdrop, { SkinBackdropVariant } from '../skin/SkinBackdrop';
 import { useAgentSelectedModel } from './agentModelSelection';
 import { CoworkUiEvent } from './constants';
@@ -91,8 +88,6 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   onRespondToPermission,
 }) => {
   const dispatch = useDispatch();
-  const isMac = window.electron.platform === 'darwin';
-  const isWindows = window.electron.platform === 'win32';
   const [isInitialized, setIsInitialized] = useState(false);
   const [openClawStatus, setOpenClawStatus] = useState<OpenClawEngineStatus | null>(null);
   const [isRestartingGateway, setIsRestartingGateway] = useState(false);
@@ -721,30 +716,9 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const isEngineReady = isOpenClawReadyForSession(openClawStatus);
 
   const homeHeader = (
-    <div className="draggable relative z-10 flex h-12 items-center justify-between px-4 shrink-0">
-      <div className="non-draggable h-8 flex items-center">
-        {isSidebarCollapsed && !isWindows && (
-          <div className={`flex items-center gap-1 mr-2 ${isMac ? 'pl-[68px]' : ''}`}>
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
-            >
-              <SidebarToggleIcon className="h-4 w-4" isCollapsed={true} />
-            </button>
-            <button
-              type="button"
-              onClick={onNewChat}
-              className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
-            >
-              <ComposeIcon className="h-4 w-4" />
-            </button>
-            {updateBadge}
-          </div>
-        )}
-      </div>
+    <div className="soft-page-header draggable relative z-10 flex h-12 shrink-0 items-center justify-end px-4">
       <div className="non-draggable flex items-center">
-        <div className="flex items-center gap-1.5 mr-2 px-2.5 py-1">
+        <div className="mr-1 flex items-center gap-1.5 px-2.5 py-1">
           <ShieldCheckIcon className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
           <span className="text-xs text-green-600 dark:text-green-400 whitespace-nowrap">
             {i18nService.t('lobsterGuardEnabled')}
@@ -806,7 +780,6 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           ? SkinBackdropVariant.Conversation
           : SkinBackdropVariant.Home}
       />
-      <SkinAmbientEffects visible={!shouldPresentConversation} />
 
       {currentSession ? (
         <div className="relative z-10 flex-1 flex flex-col h-full">
@@ -835,33 +808,29 @@ const CoworkView: React.FC<CoworkViewProps> = ({
 
           {/* Main content */}
           <div className="relative z-10 flex-1 overflow-y-auto min-h-0">
-            <div className="relative flex min-h-full w-full min-w-[320px] flex-col items-center px-4 py-8">
-              {/* Flexible spacers (2:3) keep the welcome block at the optical
-                  center on tall windows; min-h preserves breathing room before
-                  the page starts scrolling on short windows. */}
-              <div aria-hidden="true" className="w-full min-h-[56px] flex-[2_0_0px]" />
-              {/* Welcome Section - staggered entrance animation */}
-              <div data-skin-home-copy="true" className="w-full max-w-3xl text-center">
+            <div className="relative mx-auto flex min-h-full w-full min-w-[320px] max-w-[1040px] flex-col px-6 pb-10 pt-8 sm:px-8 lg:px-10">
+              <div data-skin-home-copy="true" className="flex w-full max-w-4xl items-center gap-3">
                 <HomeSkinEmblem
-                  className="mx-auto h-12 w-12 animate-fade-in-up"
+                  className="h-10 w-10 shrink-0 animate-fade-in-up"
                 />
-                <h2
-                  className="mt-4 text-2xl font-semibold leading-[var(--lobster-leading-2xl)] tracking-normal text-foreground animate-fade-in-up"
-                  style={{ animationDelay: '70ms', animationFillMode: 'both' }}
-                >
-                  {i18nService.t(resolveHomeGreetingKey())}
-                </h2>
-                <p
-                  className="mt-2 text-[length:var(--lobster-text-promptLarge)] font-normal leading-[var(--lobster-leading-promptLarge)] text-secondary animate-fade-in-up"
-                  style={{ animationDelay: '120ms', animationFillMode: 'both' }}
-                >
-                  {i18nService.t('coworkHomeTagline')}
-                </p>
+                <div className="min-w-0 text-left">
+                  <h2
+                    className="text-xl font-semibold leading-7 tracking-normal text-foreground animate-fade-in-up"
+                    style={{ animationDelay: '70ms', animationFillMode: 'both' }}
+                  >
+                    {i18nService.t(resolveHomeGreetingKey())}
+                  </h2>
+                  <p
+                    className="mt-0.5 truncate text-sm font-normal leading-5 text-secondary animate-fade-in-up"
+                    style={{ animationDelay: '120ms', animationFillMode: 'both' }}
+                  >
+                    {i18nService.t('coworkHomeTagline')}
+                  </p>
+                </div>
               </div>
 
-              {/* Prompt Input Area - Large version with folder selector */}
               <div
-                className="relative z-30 mt-9 w-full max-w-3xl animate-fade-in-up"
+                className="relative z-30 mt-6 w-full max-w-4xl animate-fade-in-up"
                 style={{ animationDelay: '180ms', animationFillMode: 'both' }}
               >
                 <CoworkPromptInput
@@ -885,9 +854,8 @@ const CoworkView: React.FC<CoworkViewProps> = ({
                 />
               </div>
 
-              {/* Quick Actions */}
               <div
-                className="relative z-0 mt-8 flex w-full max-w-3xl flex-col items-center animate-fade-in-up"
+                className="relative z-0 mt-5 flex w-full max-w-4xl flex-col items-start animate-fade-in-up"
                 style={{ animationDelay: '260ms', animationFillMode: 'both' }}
               >
                 <QuickActionBar
@@ -896,7 +864,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
                   onActionSelect={handleActionSelect}
                 />
                 {selectedAction && (
-                  <div className="mt-4 w-full">
+                  <div className="mt-3 w-full">
                     <PromptPanel
                       action={selectedAction}
                       onPromptSelect={handleQuickActionPromptSelect}
@@ -906,8 +874,6 @@ const CoworkView: React.FC<CoworkViewProps> = ({
                 )}
                 <CreditsResetCampaignFloat />
               </div>
-
-              <div aria-hidden="true" className="w-full min-h-[24px] flex-[3_0_0px]" />
             </div>
           </div>
         </>

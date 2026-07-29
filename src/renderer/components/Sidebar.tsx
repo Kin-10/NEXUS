@@ -23,35 +23,19 @@ import MyAgentSidebarTree from './agentSidebar/MyAgentSidebarTree';
 import Modal from './common/Modal';
 import { CoworkUiEvent } from './cowork/constants';
 import CoworkSearchModal from './cowork/CoworkSearchModal';
-import Cog6ToothIcon from './icons/Cog6ToothIcon';
-import ComposeIcon from './icons/ComposeIcon';
-import SidebarAutomationIcon from './icons/SidebarAutomationIcon';
-import SidebarKitsIcon from './icons/SidebarKitsIcon';
-import SidebarMcpIcon from './icons/SidebarMcpIcon';
-import SidebarSearchIcon from './icons/SidebarSearchIcon';
-import SidebarToggleIcon from './icons/SidebarToggleIcon';
-import SkillIcon from './icons/SkillIcon';
+import { NavCreateIcon, NavSearchIcon } from './icons/app/AppIcons';
 import TrashIcon from './icons/TrashIcon';
 import LoginButton from './LoginButton';
-import SidebarAdBanner from './SidebarAdBanner';
+import { AppMainView } from './NavRail';
 
 interface SidebarProps {
-  onShowSettings: () => void;
-  onShowLogin?: () => void;
-  activeView: 'cowork' | 'skills' | 'scheduledTasks' | 'kits' | 'mcp';
-  onShowSkills: () => void;
   onShowCowork: () => void;
-  onShowScheduledTasks: () => void;
-  onShowKits: () => void;
-  onShowMcp: () => void;
   onNewChat: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  initialWidth?: number;
   onWidthChange?: (width: number) => void;
   updateNotice?: React.ReactNode;
-  /** The expanded update card owns the sidebar bottom; temporarily hide the
-   * promo banner while preserving it for a smooth return after collapse. */
-  hideAdBanner?: boolean;
   hideLogin?: boolean;
 }
 
@@ -60,21 +44,10 @@ const MIN_SIDEBAR_WIDTH = 220;
 const MAX_SIDEBAR_WIDTH = 420;
 const SIDEBAR_COLLAPSE_TRANSITION_MS = 200;
 const normalizeAgentId = (agentId?: string | null) => agentId?.trim() || AgentId.Main;
-const SidebarNewFeatureBadge = {
-  KitsDismissedVersionKey: 'sidebar.kitsNewFeatureBadge.dismissedVersion',
-  // Bump this value in a release when the kits entry should show the badge again.
-  KitsVersion: '2026-06-05',
-} as const;
-const sidebarNavItemClassName =
-  'w-full inline-flex h-7 items-center gap-2 rounded-md px-1.5 text-left text-sm font-normal text-foreground transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.04]';
-const activeSidebarNavItemClassName =
-  `${sidebarNavItemClassName} bg-black/[0.06] font-medium hover:bg-black/[0.06] dark:bg-white/[0.07] dark:hover:bg-white/[0.07]`;
-const sidebarCreateIconClassName = 'h-4 w-4 shrink-0';
 
 type SidebarAnalyticsSource = 'home_sidebar' | 'home_agent_sidebar';
 
 interface SidebarAnalyticsOptions {
-  activeView?: SidebarProps['activeView'];
   agentType?: 'main' | 'custom';
   hasActiveSubagent?: boolean;
   isCollapsed?: boolean;
@@ -105,7 +78,6 @@ const reportSidebarAction = (
     action: LogReporterAction.SidebarAction,
     source: options.source ?? 'home_sidebar',
     actionType,
-    activeView: options.activeView,
     agentType: options.agentType,
     hasActiveSubagent: options.hasActiveSubagent,
     isCollapsed: options.isCollapsed,
@@ -128,19 +100,13 @@ const reportSidebarAction = (
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
-  onShowSettings,
-  activeView,
-  onShowSkills,
   onShowCowork,
-  onShowScheduledTasks,
-  onShowKits,
-  onShowMcp,
   onNewChat,
   isCollapsed,
   onToggleCollapse,
+  initialWidth = DEFAULT_SIDEBAR_WIDTH,
   onWidthChange,
   updateNotice,
-  hideAdBanner,
   hideLogin,
 }) => {
   const currentAgentId = useSelector((state: RootState) => state.agent.currentAgentId);
@@ -154,17 +120,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [deletedSessionIds, setDeletedSessionIds] = useState<string[]>([]);
   const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
+  const [sidebarWidth, setSidebarWidth] = useState(initialWidth);
   const [isResizing, setIsResizing] = useState(false);
   const [agentScrollEdges, setAgentScrollEdges] = useState({ top: false, bottom: false });
-  const [isSidebarBannerVisible, setIsSidebarBannerVisible] = useState(false);
-  const [showKitsNewBadge, setShowKitsNewBadge] = useState(false);
   const isResizingRef = useRef(false);
   const resizeStartXRef = useRef(0);
-  const resizeStartWidthRef = useRef(DEFAULT_SIDEBAR_WIDTH);
+  const resizeStartWidthRef = useRef(initialWidth);
   const agentScrollContainerRef = useRef<HTMLDivElement>(null);
-  const isWindows = window.electron.platform === 'win32';
-  const showHeaderRow = !isWindows;
   const batchSelectableKeySet = useMemo(
     () => new Set(batchSelectableItems.map((item) => item.key)),
     [batchSelectableItems],
@@ -195,41 +157,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       selectableCount: batchSelectableItems.length,
     };
   }, [batchSelectableItemByKey, batchSelectableItems.length, batchSelectableKeySet, selectedKeys]);
-
-  useEffect(() => {
-    let isCurrent = true;
-
-    const loadKitsNewBadgeState = async () => {
-      try {
-        const dismissedVersion = await window.electron.store.get(
-          SidebarNewFeatureBadge.KitsDismissedVersionKey,
-        );
-        if (!isCurrent) return;
-        setShowKitsNewBadge(dismissedVersion !== SidebarNewFeatureBadge.KitsVersion);
-      } catch (error) {
-        console.warn('[Sidebar] failed to load kits new feature badge state:', error);
-      }
-    };
-
-    void loadKitsNewBadgeState();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
-
-  const dismissKitsNewBadge = useCallback(() => {
-    if (!showKitsNewBadge) return;
-    setShowKitsNewBadge(false);
-    void window.electron.store
-      .set(
-        SidebarNewFeatureBadge.KitsDismissedVersionKey,
-        SidebarNewFeatureBadge.KitsVersion,
-      )
-      .catch((error) => {
-        console.warn('[Sidebar] failed to save kits new feature badge state:', error);
-      });
-  }, [showKitsNewBadge]);
 
   useEffect(() => {
     const handleSearch = () => {
@@ -508,7 +435,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       data-skin-sidebar="true"
-      className={`relative shrink-0 overflow-hidden bg-surface-raised ${
+      className={`soft-agent-panel relative shrink-0 overflow-hidden ${
         isResizing ? '' : 'sidebar-transition'
       }`}
       style={{ width: isCollapsed ? 0 : sidebarWidth }}
@@ -522,111 +449,41 @@ const Sidebar: React.FC<SidebarProps> = ({
           transitionDuration: `${SIDEBAR_COLLAPSE_TRANSITION_MS}ms`,
         }}
       >
-      <div className="pt-3 pb-3">
-        {showHeaderRow && (
-          <div className="draggable sidebar-header-drag h-8 flex items-center justify-end px-3">
-            {!isWindows && (
-              <button
-                type="button"
-                onClick={onToggleCollapse}
-                className="non-draggable h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
-                aria-label={isCollapsed ? i18nService.t('expand') : i18nService.t('collapse')}
-              >
-                <SidebarToggleIcon className="h-4 w-4" isCollapsed={isCollapsed} />
-              </button>
-            )}
-          </div>
-        )}
-        <div className="mt-[5px] space-y-0.5 px-3">
+      <div className="draggable px-3 pb-3 pt-3">
+        <div className="flex h-9 items-center justify-between gap-2 px-1">
+          <h2 className="min-w-0 truncate text-sm font-semibold text-foreground">
+            {i18nService.t('coworkTaskWorkspace')}
+          </h2>
           <button
             type="button"
             onClick={() => {
-              reportSidebarAction('new_task', { activeView, isCollapsed });
+              reportSidebarAction('new_task', { isCollapsed });
               onNewChat();
             }}
-            className={sidebarNavItemClassName}
+            className="non-draggable inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-surface hover:text-foreground"
+            aria-label={i18nService.t('newChat')}
+            title={i18nService.t('newChat')}
           >
-            <ComposeIcon className={sidebarCreateIconClassName} />
-            {i18nService.t('newChat')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              reportSidebarAction('open_search', { activeView, isCollapsed });
-              onShowCowork();
-              setIsSearchOpen(true);
-            }}
-            className={sidebarNavItemClassName}
-          >
-            <SidebarSearchIcon className="h-4 w-4 shrink-0" />
-            {i18nService.t('search')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              reportSidebarAction('open_scheduled_tasks', { activeView, isCollapsed });
-              setIsSearchOpen(false);
-              onShowScheduledTasks();
-            }}
-            className={activeView === 'scheduledTasks' ? activeSidebarNavItemClassName : sidebarNavItemClassName}
-            aria-current={activeView === 'scheduledTasks' ? 'page' : undefined}
-          >
-            <SidebarAutomationIcon className="h-4 w-4 shrink-0" />
-            {i18nService.t('scheduledTasks')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              reportSidebarAction('open_kits', { activeView, isCollapsed });
-              setIsSearchOpen(false);
-              dismissKitsNewBadge();
-              onShowKits();
-            }}
-            className={activeView === 'kits' ? activeSidebarNavItemClassName : sidebarNavItemClassName}
-            aria-current={activeView === 'kits' ? 'page' : undefined}
-          >
-            <SidebarKitsIcon className="h-4 w-4 shrink-0" />
-            <span className="min-w-0 truncate">{i18nService.t('kits')}</span>
-            {showKitsNewBadge && (
-              <span className="inline-flex h-4 shrink-0 items-center rounded-[4px] bg-[#ff4f6d] px-1.5 text-[10px] font-semibold leading-none text-white">
-                {i18nService.t('newFeatureBadge')}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              reportSidebarAction('open_skills', { activeView, isCollapsed });
-              setIsSearchOpen(false);
-              onShowSkills();
-            }}
-            className={activeView === 'skills' ? activeSidebarNavItemClassName : sidebarNavItemClassName}
-            aria-current={activeView === 'skills' ? 'page' : undefined}
-          >
-            <SkillIcon className="h-4 w-4 shrink-0" />
-            {i18nService.t('skills')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              reportSidebarAction('open_mcp', { activeView, isCollapsed });
-              setIsSearchOpen(false);
-              onShowMcp();
-            }}
-            className={activeView === 'mcp' ? activeSidebarNavItemClassName : sidebarNavItemClassName}
-            aria-current={activeView === 'mcp' ? 'page' : undefined}
-          >
-            <SidebarMcpIcon className="h-4 w-4 shrink-0" />
-            {i18nService.t('mcpServers')}
+            <NavCreateIcon className="h-4 w-4" />
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            reportSidebarAction('open_search', { isCollapsed });
+            onShowCowork();
+            setIsSearchOpen(true);
+          }}
+          className="soft-agent-search non-draggable mt-2"
+        >
+          <NavSearchIcon className="h-4 w-4 shrink-0" />
+          <span className="truncate">{i18nService.t('search')}</span>
+        </button>
       </div>
       <div className="relative min-h-0 flex-1">
         <div
           ref={agentScrollContainerRef}
-          className={`scrollbar-hidden h-full overflow-y-auto px-2.5 ${
-            isSidebarBannerVisible && !isBatchMode ? 'pb-[104px]' : 'pb-10'
-          }`}
+          className="soft-agent-scroll scrollbar-hidden mx-2.5 h-full overflow-y-auto px-1.5 pb-8 pt-1"
           onScroll={handleAgentScroll}
         >
           <MyAgentSidebarTree
@@ -641,7 +498,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 action: LogReporterAction.SidebarAction,
                 source: 'home_agent_sidebar',
                 actionType: 'select_task',
-                activeView,
+                activeView: AppMainView.Cowork,
                 ...params,
               });
             }}
@@ -656,20 +513,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             onBatchSelectableItemsChange={handleBatchSelectableItemsChange}
           />
         </div>
-        {!isBatchMode && (
-          <SidebarAdBanner
-            hidden={hideAdBanner}
-            onVisibleChange={setIsSidebarBannerVisible}
-          />
-        )}
         <div
-          className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-surface-raised to-transparent transition-opacity duration-150 ${
+          className={`soft-agent-scroll-fade pointer-events-none absolute inset-x-3 top-0 z-10 h-5 transition-opacity duration-150 ${
             agentScrollEdges.top ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-        <div
-          className={`pointer-events-none absolute inset-x-0 top-[68px] z-10 h-3 bg-gradient-to-b from-surface-raised to-transparent transition-opacity duration-150 ${
-            agentScrollEdges.top ? 'opacity-40' : 'opacity-0'
           }`}
         />
       </div>
@@ -687,7 +533,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         onSelectSession={handleSelectSession}
       />
       {!isBatchMode && updateNotice && (
-        <div className="non-draggable px-3 pt-1.5">{updateNotice}</div>
+        <div className="non-draggable px-3 pb-1.5 pt-2">{updateNotice}</div>
       )}
       {isBatchMode ? (
         <div className="border-t border-border/60 px-3 pb-3 pt-2">
@@ -733,24 +579,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
       ) : (
-        <div className="pb-2 pt-2">
-          <div className="flex items-center gap-1 pl-3 pr-2 pt-1">
-            {!hideLogin && (
-              <div className="flex-1 min-w-0">
-                <LoginButton contentLeftOffset={isCollapsed ? 0 : sidebarWidth} />
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => onShowSettings()}
-              className={`inline-flex h-7 items-center justify-start gap-1.5 rounded-md px-1.5 text-sm font-normal text-foreground transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.04] ${hideLogin ? 'w-full' : 'shrink-0'}`}
-              aria-label={i18nService.t('settings')}
-            >
-              <Cog6ToothIcon className="h-4 w-4 shrink-0" />
-              {i18nService.t('settings')}
-            </button>
+        !hideLogin ? (
+          <div className="border-t border-border/50 px-3 pb-2 pt-2">
+            <LoginButton contentLeftOffset={isCollapsed ? 0 : sidebarWidth} />
           </div>
-        </div>
+        ) : null
       )}
       {/* Batch Delete Confirmation Modal */}
       {showBatchDeleteConfirm && (
