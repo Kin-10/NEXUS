@@ -65,8 +65,62 @@ const OPENCLAW_GATEWAY_HEAP_OOM_PATTERNS = [
   /Ineffective mark-compacts near heap limit/i,
   /Allocation failed - process out of memory/i,
 ];
+const OPENCLAW_GATEWAY_LOG_LEVELS = [
+  'silly',
+  'trace',
+  'debug',
+  'info',
+  'warn',
+  'error',
+  'fatal',
+] as const;
+/** Default stays at info so local/test runs do not flood main logs with gateway debug. */
+const DEFAULT_OPENCLAW_GATEWAY_LOG_LEVEL = 'info';
+
+export type OpenClawGatewayLogLevel = typeof OPENCLAW_GATEWAY_LOG_LEVELS[number];
 
 export type { OpenClawEnginePhase } from '../../shared/openclawEngine/constants';
+
+/**
+ * Resolve gateway log level from OPENCLAW_LOG_LEVEL, defaulting to info.
+ * Set OPENCLAW_LOG_LEVEL=debug (and optionally keep --verbose) when diagnosing startup.
+ */
+export function resolveOpenClawGatewayLogLevel(
+  envValue: string | undefined = process.env.OPENCLAW_LOG_LEVEL,
+): OpenClawGatewayLogLevel {
+  const trimmed = envValue?.trim().toLowerCase();
+  if (trimmed && (OPENCLAW_GATEWAY_LOG_LEVELS as readonly string[]).includes(trimmed)) {
+    return trimmed as OpenClawGatewayLogLevel;
+  }
+  return DEFAULT_OPENCLAW_GATEWAY_LOG_LEVEL;
+}
+
+export function isOpenClawGatewayVerboseLogLevel(level: OpenClawGatewayLogLevel): boolean {
+  return level === 'silly' || level === 'trace' || level === 'debug';
+}
+
+/**
+ * When verbose logging is off, only mirror high-signal gateway lines into main logs.
+ * Full output still goes to openclaw/logs/gateway-*.log.
+ */
+export function shouldMirrorOpenClawGatewayStreamToMainLog(
+  level: OpenClawGatewayLogLevel,
+  stream: 'stdout' | 'stderr',
+  text: string,
+): boolean {
+  if (isOpenClawGatewayVerboseLogLevel(level)) {
+    return true;
+  }
+  if (isOpenClawGatewayHeapOutOfMemory(text) || isOpenClawConfigStartupFailure(text)) {
+    return true;
+  }
+  if (stream === 'stderr') {
+    return /\[(error|fatal)\]/i.test(text)
+      || /\bFATAL ERROR\b/.test(text)
+      || /Config invalid|invalid config/i.test(text);
+  }
+  return /\[(warn|error|fatal)\]/i.test(text);
+}
 
 export interface OpenClawEngineStatus {
   phase: OpenClawEnginePhase;
@@ -235,6 +289,7 @@ export class OpenClawEngineManager extends EventEmitter {
   private secretEnvVars: Record<string, string> = {};
   private gatewaySpawnedAt: number | null = null;
   private gatewayLogPrunedDateKey: string | null = null;
+  private gatewayLogLevel: OpenClawGatewayLogLevel = DEFAULT_OPENCLAW_GATEWAY_LOG_LEVEL;
 
   constructor() {
     super();
@@ -551,6 +606,12 @@ export class OpenClawEngineManager extends EventEmitter {
     const electronNodeRuntimePath = getElectronNodeRuntimePath();
     const cliShimDir = this.ensureBundledCliShims();
     const skillsRoot = getSkillsRoot().replace(/\\/g, '/');
+    this.gatewayLogLevel = resolveOpenClawGatewayLogLevel();
+    const gatewayVerbose = isOpenClawGatewayVerboseLogLevel(this.gatewayLogLevel);
+    console.log(
+      `[OpenClaw] gateway log level=${this.gatewayLogLevel}`
+      + ` (verbose=${gatewayVerbose}; set OPENCLAW_LOG_LEVEL=debug for full gateway console mirror)`,
+    );
 
     const env: NodeJS.ProcessEnv = {
       ...process.env,
@@ -576,8 +637,8 @@ export class OpenClawEngineManager extends EventEmitter {
       // unnecessary and its watchdog can flood stderr with re-advertise
       // warnings on Windows.  See openclaw/openclaw#33609, #63153.
       OPENCLAW_DISABLE_BONJOUR: '1',
-      // Enable debug-level logging so gateway emits phase-level detail during startup.
-      OPENCLAW_LOG_LEVEL: 'debug',
+      // Default info; override with OPENCLAW_LOG_LEVEL=debug when diagnosing.
+      OPENCLAW_LOG_LEVEL: this.gatewayLogLevel,
       // Enable V8 compile cache for both CJS and ESM modules.
       // This env var works for import() (ESM), unlike enableCompileCache() which is CJS-only.
       ...buildOpenClawCompileCacheEnv(compileCacheDir),
@@ -654,7 +715,16 @@ export class OpenClawEngineManager extends EventEmitter {
       env,
     });
 
-    const forkArgs = ['gateway', '--bind', 'loopback', '--port', String(port), '--token', token, '--verbose'];
+    const forkArgs = [
+      'gateway',
+      '--bind',
+      'loopback',
+      '--port',
+      String(port),
+      '--token',
+      token,
+      ...(gatewayVerbose ? ['--verbose'] as const : []),
+    ];
     const gatewayExecArgv = buildOpenClawGatewayExecArgv(process.env.NODE_OPTIONS);
     if (gatewayExecArgv.length > 0) {
       console.log(`[OpenClaw] gateway V8 old-space limit set to ${OPENCLAW_GATEWAY_MAX_OLD_SPACE_MB}MB`);
@@ -1627,7 +1697,9 @@ export class OpenClawEngineManager extends EventEmitter {
       appendLog(chunk, 'stdout');
       const text = typeof chunk === 'string' ? chunk : chunk.toString();
       logStartupMilestone(text);
-      console.log(`[OpenClaw stdout] ${OpenClawEngineManager.rewriteUtcTimestamps(text)}`);
+      if (shouldMirrorOpenClawGatewayStreamToMainLog(this.gatewayLogLevel, 'stdout', text)) {
+        console.log(`[OpenClaw stdout] ${OpenClawEngineManager.rewriteUtcTimestamps(text)}`);
+      }
     });
     child.stderr?.on('data', (chunk) => {
       appendLog(chunk, 'stderr');
@@ -1635,7 +1707,9 @@ export class OpenClawEngineManager extends EventEmitter {
       const recentOutput = (this.gatewayRecentOutput.get(child) ?? []).join('\n');
       this.recordGatewayFatalFailure(child, recentOutput);
       logStartupMilestone(text);
-      console.error(`[OpenClaw stderr] ${OpenClawEngineManager.rewriteUtcTimestamps(text)}`);
+      if (shouldMirrorOpenClawGatewayStreamToMainLog(this.gatewayLogLevel, 'stderr', text)) {
+        console.error(`[OpenClaw stderr] ${OpenClawEngineManager.rewriteUtcTimestamps(text)}`);
+      }
     });
   }
 

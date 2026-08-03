@@ -407,20 +407,35 @@ export const getToolResultLineCountSummary = (lineCount: number): string => {
 export const getLargeToolResultSummary = (sizeLabel: string): string =>
   i18nService.t('coworkToolLargeOutput').replace('{size}', sizeLabel);
 
-const getGenericRunningStatusText = (): string => {
-  const text = i18nService.t('coworkToolRunning');
-  return text.endsWith('...') || text.endsWith('…') ? text : `${text}...`;
+/** Elapsed-time thresholds (ms) for employee-style waiting copy stages. */
+export const COWORK_WORKING_STAGE_THRESHOLDS_MS = [0, 2_000, 5_000, 10_000, 20_000] as const;
+
+const COWORK_WORKING_STAGE_I18N_KEYS = [
+  'coworkWorkingStage0',
+  'coworkWorkingStage1',
+  'coworkWorkingStage2',
+  'coworkWorkingStage3',
+  'coworkWorkingStage4',
+] as const;
+
+export const getCoworkWorkingStageIndex = (elapsedMs: number): number => {
+  const safeElapsed = Number.isFinite(elapsedMs) ? Math.max(0, elapsedMs) : 0;
+  let stage = 0;
+  for (let index = 0; index < COWORK_WORKING_STAGE_THRESHOLDS_MS.length; index += 1) {
+    if (safeElapsed >= COWORK_WORKING_STAGE_THRESHOLDS_MS[index]) {
+      stage = index;
+    }
+  }
+  return Math.min(stage, COWORK_WORKING_STAGE_I18N_KEYS.length - 1);
 };
 
-export const getStreamingActivityStatusText = (
-  messages: CoworkMessage[],
-  isContextMaintenance = false,
-  isLongWaiting = false,
-): string => {
-  if (isContextMaintenance) {
-    return i18nService.t('coworkContextMaintenanceRunning');
-  }
+/** Employee-style waiting copy that progresses with elapsed wait time. */
+export const getCoworkWorkingStageText = (elapsedMs = 0): string => {
+  const key = COWORK_WORKING_STAGE_I18N_KEYS[getCoworkWorkingStageIndex(elapsedMs)];
+  return i18nService.t(key);
+};
 
+const getActiveToolName = (messages: CoworkMessage[]): string | null => {
   const toolResultIds = new Set<string>();
   for (const message of messages) {
     const id = message.metadata?.toolUseId;
@@ -439,14 +454,27 @@ export const getStreamingActivityStatusText = (
     const toolName = typeof message.metadata?.toolName === 'string'
       ? message.metadata.toolName.trim()
       : '';
-    return toolName
-      ? `${i18nService.t('coworkToolRunning')} ${toolName}...`
-      : getGenericRunningStatusText();
+    return toolName || null;
   }
 
-  return isLongWaiting
-    ? i18nService.t('coworkModelResponseWaitingLong')
-    : getGenericRunningStatusText();
+  return null;
+};
+
+export const getStreamingActivityStatusText = (
+  messages: CoworkMessage[],
+  isContextMaintenance = false,
+  elapsedMs = 0,
+): string => {
+  if (isContextMaintenance) {
+    return i18nService.t('coworkContextMaintenanceRunning');
+  }
+
+  const toolName = getActiveToolName(messages);
+  if (toolName) {
+    return i18nService.t('coworkWorkingTool').replace('{tool}', toolName);
+  }
+
+  return getCoworkWorkingStageText(elapsedMs);
 };
 
 export const getToolResultCollapsedDisplay = (message: CoworkMessage): ToolResultCollapsedDisplay => {

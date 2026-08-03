@@ -16,6 +16,9 @@ import {
   buildOpenClawGatewayExecArgv,
   isOpenClawConfigStartupFailure,
   isOpenClawGatewayHeapOutOfMemory,
+  isOpenClawGatewayVerboseLogLevel,
+  resolveOpenClawGatewayLogLevel,
+  shouldMirrorOpenClawGatewayStreamToMainLog,
 } from './openclawEngineManager';
 
 describe('buildOpenClawCompileCacheEnv', () => {
@@ -89,5 +92,67 @@ describe('isOpenClawGatewayHeapOutOfMemory', () => {
     expect(isOpenClawGatewayHeapOutOfMemory(
       'gateway websocket closed with code=1006',
     )).toBe(false);
+  });
+});
+
+describe('resolveOpenClawGatewayLogLevel', () => {
+  test('defaults to info when unset or invalid', () => {
+    expect(resolveOpenClawGatewayLogLevel(undefined)).toBe('info');
+    expect(resolveOpenClawGatewayLogLevel('')).toBe('info');
+    expect(resolveOpenClawGatewayLogLevel('nope')).toBe('info');
+  });
+
+  test('accepts explicit levels case-insensitively', () => {
+    expect(resolveOpenClawGatewayLogLevel('DEBUG')).toBe('debug');
+    expect(resolveOpenClawGatewayLogLevel(' warn ')).toBe('warn');
+  });
+});
+
+describe('isOpenClawGatewayVerboseLogLevel', () => {
+  test('treats debug and below as verbose', () => {
+    expect(isOpenClawGatewayVerboseLogLevel('debug')).toBe(true);
+    expect(isOpenClawGatewayVerboseLogLevel('info')).toBe(false);
+  });
+});
+
+describe('shouldMirrorOpenClawGatewayStreamToMainLog', () => {
+  test('mirrors everything when verbose', () => {
+    expect(shouldMirrorOpenClawGatewayStreamToMainLog(
+      'debug',
+      'stdout',
+      '[agent/embedded] embedded run start',
+    )).toBe(true);
+  });
+
+  test('drops routine stdout when quiet', () => {
+    expect(shouldMirrorOpenClawGatewayStreamToMainLog(
+      'info',
+      'stdout',
+      '[agent/embedded] embedded run start',
+    )).toBe(false);
+  });
+
+  test('keeps warn/error tagged stdout when quiet', () => {
+    expect(shouldMirrorOpenClawGatewayStreamToMainLog(
+      'info',
+      'stdout',
+      '[plugins] [warn] something odd',
+    )).toBe(true);
+  });
+
+  test('drops noisy stderr skill symlink warnings when quiet', () => {
+    expect(shouldMirrorOpenClawGatewayStreamToMainLog(
+      'info',
+      'stderr',
+      '[skills] failed to create plugin skill symlink "browser-automation": Error: EEXIST',
+    )).toBe(false);
+  });
+
+  test('keeps fatal stderr when quiet', () => {
+    expect(shouldMirrorOpenClawGatewayStreamToMainLog(
+      'info',
+      'stderr',
+      'FATAL ERROR: JavaScript heap out of memory',
+    )).toBe(true);
   });
 });

@@ -1117,39 +1117,49 @@ class ArtifactPanelErrorBoundary extends React.Component<
   }
 }
 
-const MODEL_RESPONSE_WAITING_HINT_DELAY_MS = 30_000;
+const MODEL_RESPONSE_WAITING_TICK_MS = 500;
 
 // Streaming activity bar shown between messages and input
 const StreamingActivityBar: React.FC<{ messages: CoworkMessage[]; isContextMaintenance?: boolean }> = ({
   messages,
   isContextMaintenance = false,
 }) => {
-  const [showLongWaitHint, setShowLongWaitHint] = useState(false);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const waitEpochKey = useMemo(() => {
+    const last = messages[messages.length - 1];
+    return `${isContextMaintenance ? 'ctx' : 'run'}:${last?.id ?? 'none'}:${last?.type ?? 'none'}`;
+  }, [isContextMaintenance, messages]);
 
   useEffect(() => {
-    setShowLongWaitHint(false);
-    if (isContextMaintenance) {
-      return undefined;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setShowLongWaitHint(true);
-    }, MODEL_RESPONSE_WAITING_HINT_DELAY_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [messages, isContextMaintenance]);
+    const startedAt = Date.now();
+    setElapsedMs(0);
+    const intervalId = window.setInterval(() => {
+      setElapsedMs(Date.now() - startedAt);
+    }, MODEL_RESPONSE_WAITING_TICK_MS);
+    return () => window.clearInterval(intervalId);
+  }, [waitEpochKey]);
 
   const statusText = getStreamingActivityStatusText(
     messages,
     isContextMaintenance,
-    showLongWaitHint,
+    elapsedMs,
   );
+  // First-token wait already shows employee copy beside the pulse in the
+  // assistant turn; keep the bottom bar visual-only until tools/content appear.
+  const showStatusText = isContextMaintenance
+    || messages.some((message) => (
+      message.type === 'tool_use'
+      || message.type === 'tool_result'
+      || message.type === 'assistant'
+    ));
 
   return (
     <div className={`shrink-0 animate-fade-in ${COWORK_DETAIL_GUTTER_CLASS}`}>
       <div className={COWORK_DETAIL_CONTENT_CLASS}>
-        <div className="streaming-bar" />
-        {statusText && (
-          <div className="py-1">
+        <div className="streaming-bar streaming-bar--pulse" />
+        {showStatusText && statusText && (
+          <div className="flex items-center gap-2 py-1">
+            <span className="cowork-waiting-pulse cowork-waiting-pulse--sm" aria-hidden="true" />
             <span className="text-xs text-secondary" aria-live="polite">
               {statusText}
             </span>

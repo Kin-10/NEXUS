@@ -35,6 +35,7 @@ import {
   COWORK_DETAIL_CONTENT_CLASS,
   COWORK_DETAIL_GUTTER_CLASS,
   getContextCompactionMessageLabel,
+  getCoworkWorkingStageText,
   getMediaCompletionDisplayText,
   getRetainedMediaPollCount,
   getToolResultDisplay,
@@ -129,15 +130,36 @@ const ContextCompactionDivider: React.FC<{ label: string; active?: boolean }> = 
   </div>
 );
 
-// ── TypingDots ───────────────────────────────────────────────────────────────
+// ── WaitingIndicator (continuous pulse + employee-style stage copy) ──────────
 
-const TypingDots: React.FC = () => (
-  <div className="flex items-center space-x-1.5 py-1">
-    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
-  </div>
-);
+const WaitingIndicator: React.FC = () => {
+  const [elapsedMs, setElapsedMs] = useState(0);
+
+  useEffect(() => {
+    const startedAt = Date.now();
+    setElapsedMs(0);
+    const intervalId = window.setInterval(() => {
+      setElapsedMs(Date.now() - startedAt);
+    }, 500);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const statusText = getCoworkWorkingStageText(elapsedMs);
+
+  return (
+    <div
+      className="flex items-center gap-2.5 py-1"
+      role="status"
+      aria-live="polite"
+      aria-label={statusText}
+    >
+      <span className="cowork-waiting-pulse" aria-hidden="true" />
+      <span className="text-sm text-secondary transition-opacity duration-300">
+        {statusText}
+      </span>
+    </div>
+  );
+};
 
 const getSystemMessageDisplayContent = (message: CoworkMessage, content: string): string => {
   const errorText = typeof message.metadata?.error === 'string' ? message.metadata.error : null;
@@ -563,7 +585,7 @@ const AssistantTurnBlock: React.FC<{
                 </div>
               );
             })}
-            {showTypingIndicator && <TypingDots />}
+            {showTypingIndicator && <WaitingIndicator />}
             {artifacts && artifacts.length > 0 && (
               <div className="space-y-2 pt-1">
                 <VideoArtifactPathList artifacts={videoPathArtifacts} />

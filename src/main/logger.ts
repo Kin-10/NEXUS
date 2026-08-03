@@ -13,12 +13,14 @@
  *   - Files older than 7 days are pruned on startup
  */
 
-import path from 'path';
-import fs from 'fs';
 import log from 'electron-log/main';
+import fs from 'fs';
+import path from 'path';
 
 const LOG_RETENTION_DAYS = 7;
 const LOG_MAX_SIZE = 80 * 1024 * 1024; // 80 MB
+const MAIN_LOG_LEVELS = ['error', 'warn', 'info', 'verbose', 'debug', 'silly'] as const;
+type MainLogLevel = typeof MAIN_LOG_LEVELS[number];
 
 /** Captured on first resolvePathFn call; used for pruning and export. */
 let _logDir: string | undefined;
@@ -32,6 +34,20 @@ function logDir(): string {
 }
 
 /**
+ * Default info keeps local/test runs from writing huge debug files.
+ * Override with LOBSTER_LOG_LEVEL=debug when diagnosing.
+ */
+function resolveMainLogLevel(
+  envValue: string | undefined = process.env.LOBSTER_LOG_LEVEL,
+): MainLogLevel {
+  const trimmed = envValue?.trim().toLowerCase();
+  if (trimmed && (MAIN_LOG_LEVELS as readonly string[]).includes(trimmed)) {
+    return trimmed as MainLogLevel;
+  }
+  return 'info';
+}
+
+/**
  * Initialize logging system.
  * Must be called early in main process, before any console output.
  */
@@ -42,13 +58,15 @@ export function initLogger(): void {
     return path.join(vars.libraryDefaultDir, `main-${todayStr()}.log`);
   };
 
+  const mainLogLevel = resolveMainLogLevel();
+
   // File transport config
-  log.transports.file.level = 'debug';
+  log.transports.file.level = mainLogLevel;
   log.transports.file.maxSize = LOG_MAX_SIZE;
   log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}';
 
-  // Console transport config
-  log.transports.console.level = 'debug';
+  // Console transport config (disabled below; console.* still prints via originals)
+  log.transports.console.level = mainLogLevel;
   log.transports.console.format = '{text}';
 
   // Intercept console.* methods so all existing console.log/error/warn
@@ -78,7 +96,10 @@ export function initLogger(): void {
     log.info(...args);
   };
   console.debug = (...args: any[]) => {
-    originalDebug.apply(console, args);
+    // Avoid flooding the terminal in quiet mode; file transport already filters.
+    if (mainLogLevel === 'debug' || mainLogLevel === 'silly' || mainLogLevel === 'verbose') {
+      originalDebug.apply(console, args);
+    }
     log.debug(...args);
   };
 
@@ -91,7 +112,7 @@ export function initLogger(): void {
 
   // Log startup marker
   log.info('='.repeat(60));
-  log.info(`LobsterAI started (${process.platform} ${process.arch})`);
+  log.info(`LobsterAI started (${process.platform} ${process.arch}), logLevel=${mainLogLevel}`);
   log.info('='.repeat(60));
 }
 

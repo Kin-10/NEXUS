@@ -3,6 +3,8 @@ import { expect, test } from 'vitest';
 import type { CoworkMessage } from '../../types/cowork';
 import {
   formatStructuredText,
+  getCoworkWorkingStageIndex,
+  getCoworkWorkingStageText,
   getStreamingActivityStatusText,
   getToolResultCollapsedDisplay,
   getToolResultDisplay,
@@ -62,7 +64,7 @@ test('collapsed tool result display summarizes large output without full formatt
   expect(collapsed.text).toContain('first line');
 });
 
-test('streaming activity status shows generic running before assistant content', () => {
+test('streaming activity status uses employee-style waiting stages', () => {
   const messages: CoworkMessage[] = [{
     id: 'user-1',
     type: 'user',
@@ -70,7 +72,9 @@ test('streaming activity status shows generic running before assistant content',
     timestamp: 1,
   }];
 
-  expect(getStreamingActivityStatusText(messages)).toBe('执行中...');
+  expect(getStreamingActivityStatusText(messages)).toBe('收到，我先理清你的需求…');
+  expect(getStreamingActivityStatusText(messages, false, 2_500)).toBe('正在翻资料、对齐上下文…');
+  expect(getStreamingActivityStatusText(messages, false, 12_000)).toBe('还在跟进细节，再稍等片刻…');
 });
 
 test('streaming activity status keeps unresolved tool progress visible', () => {
@@ -90,23 +94,11 @@ test('streaming activity status keeps unresolved tool progress visible', () => {
     },
   }];
 
-  expect(getStreamingActivityStatusText(messages)).toBe('执行中 exec_command...');
+  expect(getStreamingActivityStatusText(messages)).toBe('正在用 exec_command 帮你处理…');
 });
 
 test('streaming activity status shows context maintenance state', () => {
-  expect(getStreamingActivityStatusText([], true)).toBe('正在整理上下文...');
-});
-
-test('streaming activity status shows a patient waiting hint after prolonged model silence', () => {
-  const messages: CoworkMessage[] = [{
-    id: 'user-1',
-    type: 'user',
-    content: 'hello',
-    timestamp: 1,
-  }];
-
-  expect(getStreamingActivityStatusText(messages, false, true))
-    .toBe('模型仍在响应，请耐心等待…');
+  expect(getStreamingActivityStatusText([], true)).toBe('正在整理桌上的上下文…');
 });
 
 test('streaming activity status keeps unresolved tool progress during a prolonged wait', () => {
@@ -121,6 +113,16 @@ test('streaming activity status keeps unresolved tool progress during a prolonge
     },
   }];
 
-  expect(getStreamingActivityStatusText(messages, false, true))
-    .toBe('执行中 exec_command...');
+  expect(getStreamingActivityStatusText(messages, false, 30_000))
+    .toBe('正在用 exec_command 帮你处理…');
+});
+
+test('cowork working stage index advances with elapsed wait time', () => {
+  expect(getCoworkWorkingStageIndex(0)).toBe(0);
+  expect(getCoworkWorkingStageIndex(1_999)).toBe(0);
+  expect(getCoworkWorkingStageIndex(2_000)).toBe(1);
+  expect(getCoworkWorkingStageIndex(5_000)).toBe(2);
+  expect(getCoworkWorkingStageIndex(10_000)).toBe(3);
+  expect(getCoworkWorkingStageIndex(20_000)).toBe(4);
+  expect(getCoworkWorkingStageText(20_000)).toBe('事情比预想复杂一点，我继续盯着…');
 });
