@@ -1,4 +1,7 @@
-import { LightBulbIcon } from '@heroicons/react/24/outline';
+
+import {
+  Lightbulb,
+} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { coworkService } from '../../services/cowork';
@@ -228,7 +231,7 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
         <div className="mt-10 w-full rounded-xl border border-border-subtle bg-surface-raised/60 px-4 py-3">
           <div key={tipIndex} className={hasRotatedTipRef.current ? 'animate-fade-in-up' : ''}>
             <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-1">
-              <LightBulbIcon className="h-3.5 w-3.5" />
+              <Lightbulb className="h-3.5 w-3.5" />
               {i18nService.t('engineStartingTipLabel')}
             </div>
             <p className="text-sm text-secondary leading-relaxed min-h-[2.5rem]">

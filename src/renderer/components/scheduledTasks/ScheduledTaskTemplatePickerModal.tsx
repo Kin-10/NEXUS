@@ -1,4 +1,7 @@
-import { XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  X,
+} from '@phosphor-icons/react';
 import React from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -43,7 +46,7 @@ const ScheduledTaskTemplatePickerModal: React.FC<ScheduledTaskTemplatePickerModa
             {i18nService.t('scheduledTasksTemplateNew')}
           </button>
           <button type="button" onClick={onClose} className="p-2 rounded-lg hover:bg-surface-raised transition-colors">
-            <XMarkIcon className="h-5 w-5 text-secondary" />
+            <X className="h-5 w-5 text-secondary" />
           </button>
         </div>
       </div>

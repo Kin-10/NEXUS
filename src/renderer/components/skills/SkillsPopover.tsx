@@ -1,4 +1,7 @@
-import { CheckIcon } from '@heroicons/react/24/outline';
+
+import {
+  Check,
+} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -236,7 +239,7 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
                   )}
                 </div>
                 {isActive && (
-                  <CheckIcon className={asSubmenu ? 'mt-1 h-3.5 w-3.5 flex-shrink-0 text-primary' : 'mt-1 h-4 w-4 flex-shrink-0 text-primary'} />
+                  <Check className={asSubmenu ? 'mt-1 h-3.5 w-3.5 flex-shrink-0 text-primary' : 'mt-1 h-4 w-4 flex-shrink-0 text-primary'} />
                 )}
               </button>
             );

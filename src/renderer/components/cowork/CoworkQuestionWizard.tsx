@@ -1,4 +1,10 @@
-import { ChevronLeftIcon, ChevronRightIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  CaretLeft,
+  CaretRight,
+  Minus,
+  X,
+} from '@phosphor-icons/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -352,7 +358,7 @@ const CoworkQuestionWizard: React.FC<CoworkQuestionWizardProps> = ({
               aria-label={i18nService.t('coworkPermissionMinimize')}
               title={i18nService.t('coworkPermissionMinimize')}
             >
-              <MinusIcon className="h-4 w-4" />
+              <Minus className="h-4 w-4" />
             </button>
           )}
           <button
@@ -362,7 +368,7 @@ const CoworkQuestionWizard: React.FC<CoworkQuestionWizardProps> = ({
             aria-label={i18nService.t('coworkPermissionCancel')}
             title={i18nService.t('coworkPermissionCancel')}
           >
-            <XMarkIcon className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -502,7 +508,7 @@ const CoworkQuestionWizard: React.FC<CoworkQuestionWizardProps> = ({
                 onClick={handlePrevious}
                 className="inline-flex items-center gap-1 pl-3 pr-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-surface-raised transition-colors"
               >
-                <ChevronLeftIcon className="h-4 w-4" />
+                <CaretLeft className="h-4 w-4" />
                 {i18nService.t('coworkQuestionWizardPrevious')}
               </button>
             )}
@@ -523,7 +529,7 @@ const CoworkQuestionWizard: React.FC<CoworkQuestionWizardProps> = ({
                 className="inline-flex items-center gap-1 pl-4 pr-3 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-surface-raised transition-colors"
               >
                 {i18nService.t('coworkQuestionWizardNext')}
-                <ChevronRightIcon className="h-4 w-4" />
+                <CaretRight className="h-4 w-4" />
               </button>
             )}
           </div>

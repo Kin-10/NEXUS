@@ -1,4 +1,10 @@
-import { ArrowPathIcon, ChevronDownIcon, ExclamationTriangleIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowsClockwise,
+  CaretDown,
+  Warning,
+  Wrench,
+} from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 
 import { OpenClawEngineErrorCode, OpenClawGatewayRepairErrorCode } from '../../../shared/openclawEngine/constants';
@@ -121,9 +127,9 @@ const EngineFailureOverlay: React.FC<EngineFailureOverlayProps> = ({
             onClick={() => setIsDeferred(false)}
             className="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-foreground transition-colors hover:text-red-600 dark:hover:text-red-400"
           >
-            <ExclamationTriangleIcon className="h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
+            <Warning className="h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
             <span className="truncate">{i18nService.t('coworkOpenClawErrorShort')}</span>
-            <ChevronDownIcon className="h-3 w-3 shrink-0 text-secondary" />
+            <CaretDown className="h-3 w-3 shrink-0 text-secondary" />
           </button>
           <button
             type="button"
@@ -132,8 +138,8 @@ const EngineFailureOverlay: React.FC<EngineFailureOverlayProps> = ({
             className="inline-flex h-6 shrink-0 items-center justify-center gap-1 rounded-full bg-primary px-2.5 text-xs font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
           >
             {isRepairingGateway
-              ? <ArrowPathIcon className="h-3 w-3 animate-spin" />
-              : <WrenchScrewdriverIcon className="h-3 w-3" />}
+              ? <ArrowsClockwise className="h-3 w-3 animate-spin" />
+              : <Wrench className="h-3 w-3" />}
             {isRepairingGateway
               ? i18nService.t('openClawRepairRunning')
               : i18nService.t('coworkOpenClawQuickRepair')}
@@ -153,7 +159,7 @@ const EngineFailureOverlay: React.FC<EngineFailureOverlayProps> = ({
       >
         <div className="flex flex-col items-center text-center">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400">
-            <ExclamationTriangleIcon className="h-6 w-6" />
+            <Warning className="h-6 w-6" />
           </span>
           <h3 id="openclaw-gateway-failure-title" className="mt-3 text-base font-semibold text-foreground">
             {i18nService.t(isRuntimeMissing ? 'coworkOpenClawRuntimeMissingError' : 'coworkOpenClawError')}
@@ -180,7 +186,7 @@ const EngineFailureOverlay: React.FC<EngineFailureOverlayProps> = ({
             className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-sm font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
           >
             {isRestartingGateway && (
-              <ArrowPathIcon className="h-4 w-4 animate-spin" />
+              <ArrowsClockwise className="h-4 w-4 animate-spin" />
             )}
             {i18nService.t('coworkOpenClawRestartGateway')}
           </button>
@@ -191,8 +197,8 @@ const EngineFailureOverlay: React.FC<EngineFailureOverlayProps> = ({
             className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
           >
             {isRepairingGateway
-              ? <ArrowPathIcon className="h-4 w-4 animate-spin" />
-              : <WrenchScrewdriverIcon className="h-4 w-4" />}
+              ? <ArrowsClockwise className="h-4 w-4 animate-spin" />
+              : <Wrench className="h-4 w-4" />}
             {isRepairingGateway
               ? i18nService.t('openClawRepairRunning')
               : i18nService.t('coworkOpenClawQuickRepair')}

@@ -1,4 +1,11 @@
-import { ArrowPathIcon, ArrowUpCircleIcon, Cog6ToothIcon,PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowCircleUp,
+  ArrowsClockwise,
+  GearSix,
+  Plus,
+  Trash,
+} from '@phosphor-icons/react';
 import { useCallback, useEffect, useImperativeHandle, useRef,useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -429,7 +436,7 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
       {syncing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-background border border-border rounded-xl shadow-lg p-6 flex items-center gap-3">
-            <ArrowPathIcon className="h-5 w-5 animate-spin text-primary" />
+            <ArrowsClockwise className="h-5 w-5 animate-spin text-primary" />
             <span className="text-sm text-foreground">{i18nService.t('pluginsSyncing')}</span>
           </div>
         </div>
@@ -490,7 +497,7 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
             disabled={checking}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-surface-raised transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ArrowPathIcon className={`h-4 w-4 ${checking ? 'animate-spin' : ''}`} />
+            <ArrowsClockwise className={`h-4 w-4 ${checking ? 'animate-spin' : ''}`} />
             {checking ? i18nService.t('pluginsChecking') : i18nService.t('pluginsCheckUpdates')}
           </button>
           <button
@@ -498,7 +505,7 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
             onClick={() => { setShowInstallModal(true); setInstallLog(''); setInstallError(null); setDiscoverResult(null); }}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            <PlusIcon className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
             {i18nService.t('pluginsInstall')}
           </button>
         </div>
@@ -555,7 +562,7 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
                     className="p-1 rounded text-primary hover:text-primary hover:bg-primary/10 transition-colors"
                     title={i18nService.t('pluginsUpdate')}
                   >
-                    <ArrowUpCircleIcon className="h-4 w-4" />
+                    <ArrowCircleUp className="h-4 w-4" />
                   </button>
                 )}
                 {plugin.hasConfig && (
@@ -565,7 +572,7 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
                     className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-surface-raised transition-colors"
                     title={i18nService.t('pluginsConfigTitle')}
                   >
-                    <Cog6ToothIcon className="h-4 w-4" />
+                    <GearSix className="h-4 w-4" />
                   </button>
                 )}
                 {plugin.canUninstall && (
@@ -575,7 +582,7 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
                     className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     title={i18nService.t('pluginsUninstall')}
                   >
-                    <TrashIcon className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </button>
                 )}
                 <button
@@ -747,7 +754,7 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
                     disabled={syncing}
                     className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ArrowPathIcon className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+                    <ArrowsClockwise className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
                     {syncing ? i18nService.t('pluginsSyncing') : i18nService.t('pluginsSyncButton')}
                   </button>
 

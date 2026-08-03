@@ -1,4 +1,9 @@
-import { PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
+
+import {
+  Image as ImageIcon,
+  SpeakerHigh,
+  VideoCamera,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -164,10 +169,10 @@ const MiniPreview: React.FC<{ item: MediaLabel }> = ({ item }) => {
   }
 
   const Icon = item.mediaType === MediaMentionType.Video
-    ? VideoCameraIcon
+    ? VideoCamera
     : item.mediaType === MediaMentionType.Audio
-      ? SpeakerWaveIcon
-      : PhotoIcon;
+      ? SpeakerHigh
+      : ImageIcon;
 
   return (
     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#F1F2FA] text-[#777A92] dark:bg-white/10 dark:text-neutral-300">

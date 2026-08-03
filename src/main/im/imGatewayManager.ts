@@ -8,6 +8,7 @@ import Database from 'better-sqlite3';
 import { EventEmitter } from 'events';
 
 import { classifyErrorKey } from '../../common/coworkErrorClassify';
+import { PlatformRegistry } from '../../shared/platform';
 import type { CoworkStore } from '../coworkStore';
 import { t } from '../i18n';
 import type { CoworkRuntime } from '../libs/agentEngine/types';
@@ -901,6 +902,11 @@ export class IMGatewayManager extends EventEmitter {
 
   // ==================== Gateway Control ====================
   async startGateway(platform: Platform): Promise<void> {
+    if (!PlatformRegistry.isEnabled(platform)) {
+      console.warn(`[IMGatewayManager] Refusing to start retired IM platform: ${platform}`);
+      return;
+    }
+
     // Ensure chat handler is ready
     this.updateChatHandler();
 
@@ -1045,42 +1051,35 @@ export class IMGatewayManager extends EventEmitter {
     const openClawPlatformsToStart: Platform[] = [];
 
     const dingtalkInstances = config.dingtalk?.instances || [];
-    if (dingtalkInstances.some(i => i.enabled && i.clientId && i.clientSecret)) {
+    if (
+      PlatformRegistry.isEnabled('dingtalk')
+      && dingtalkInstances.some(i => i.enabled && i.clientId && i.clientSecret)
+    ) {
       openClawPlatformsToStart.push('dingtalk');
     }
     const feishuInstances = config.feishu?.instances || [];
-    if (feishuInstances.some(i => i.enabled && i.appId && i.appSecret)) {
+    if (
+      PlatformRegistry.isEnabled('feishu')
+      && feishuInstances.some(i => i.enabled && i.appId && i.appSecret)
+    ) {
       openClawPlatformsToStart.push('feishu');
     }
-    const telegramInstances = config.telegram?.instances || [];
-    if (telegramInstances.some(i => i.enabled && i.botToken)) {
-      openClawPlatformsToStart.push('telegram');
-    }
-    const discordInstances = config.discord?.instances || [];
-    if (discordInstances.some(i => i.enabled && i.botToken)) {
-      openClawPlatformsToStart.push('discord');
-    }
     const qqInstances = config.qq?.instances || [];
-    if (qqInstances.some(i => i.enabled && i.appId && i.appSecret)) {
+    if (
+      PlatformRegistry.isEnabled('qq')
+      && qqInstances.some(i => i.enabled && i.appId && i.appSecret)
+    ) {
       openClawPlatformsToStart.push('qq');
     }
     const wecomInstances = config.wecom?.instances || [];
-    if (wecomInstances.some(i => i.enabled && i.botId && i.secret)) {
+    if (
+      PlatformRegistry.isEnabled('wecom')
+      && wecomInstances.some(i => i.enabled && i.botId && i.secret)
+    ) {
       openClawPlatformsToStart.push('wecom');
     }
-    if (config.weixin?.enabled) {
+    if (PlatformRegistry.isEnabled('weixin') && config.weixin?.enabled) {
       openClawPlatformsToStart.push('weixin');
-    }
-    const popoInstances = config.popo?.instances || [];
-    if (popoInstances.some(i => i.enabled && i.appKey && i.appSecret && i.aesKey && (i.connectionMode === 'websocket' || i.token))) {
-      openClawPlatformsToStart.push('popo');
-    }
-    const nimInstances = config.nim?.instances || [];
-    if (nimInstances.some(i => i.enabled && ((i.nimToken && i.nimToken.trim()) || (i.appKey && i.account && i.token)))) {
-      openClawPlatformsToStart.push('nim');
-    }
-    if (config['netease-bee']?.enabled && config['netease-bee']?.clientId && config['netease-bee']?.secret) {
-      openClawPlatformsToStart.push('netease-bee');
     }
 
     if (openClawPlatformsToStart.length > 0) {

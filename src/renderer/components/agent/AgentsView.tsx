@@ -1,4 +1,7 @@
-import { PlusIcon } from '@heroicons/react/24/outline';
+
+import {
+  Plus,
+} from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -155,7 +158,7 @@ const AgentsView: React.FC<AgentsViewProps> = ({
                 className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-colors min-h-[140px] cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10">
-                  <PlusIcon className="h-5 w-5 text-primary" />
+                  <Plus className="h-5 w-5 text-primary" />
                 </div>
                 <span className="text-sm font-medium text-primary">
                   {i18nService.t('createNewAgent')}

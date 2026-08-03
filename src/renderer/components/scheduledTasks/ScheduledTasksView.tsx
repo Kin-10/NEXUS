@@ -1,4 +1,8 @@
-import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowLeft,
+  Plus,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -231,7 +235,7 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
               className="non-draggable p-2 rounded-lg hover:bg-surface-raised text-secondary transition-colors"
               aria-label={i18nService.t('back')}
             >
-              <ArrowLeftIcon className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" />
             </button>
           )}
           <h1 className="text-lg font-semibold text-foreground">
@@ -255,7 +259,7 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
                   disabled={taskListStatus !== ScheduledTaskDataStatus.Ready}
                   className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-[13px] font-medium leading-5 text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
                 >
-                  <PlusIcon className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                   {i18nService.t('scheduledTasksNewTask')}
                 </button>
               </div>

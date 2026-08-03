@@ -1,5 +1,7 @@
-import { InformationCircleIcon } from '@heroicons/react/20/solid';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  Info,
+  X,
+} from '@phosphor-icons/react';
 import React from 'react';
 
 interface ToastProps {
@@ -18,7 +20,7 @@ const Toast: React.FC<ToastProps> = ({ message, closeLabel, onClose }) => {
       >
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="shrink-0 rounded-full bg-primary-muted p-1.5">
-            <InformationCircleIcon className="h-4 w-4 text-primary" />
+            <Info className="h-4 w-4 text-primary" />
           </div>
           <div className="min-w-0 flex-1 text-sm font-medium leading-snug [overflow-wrap:anywhere]">
             {message}
@@ -29,7 +31,7 @@ const Toast: React.FC<ToastProps> = ({ message, closeLabel, onClose }) => {
               className="shrink-0 text-secondary hover:text-foreground rounded-full p-1 hover:bg-surface-raised transition-colors"
               aria-label={closeLabel}
             >
-              <XMarkIcon className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>

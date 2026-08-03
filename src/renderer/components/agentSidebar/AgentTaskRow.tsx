@@ -1,5 +1,4 @@
-import { ShareIcon } from '@heroicons/react/20/solid';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ShareNetwork, Warning } from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -389,7 +388,7 @@ const AgentTaskRow: React.FC<AgentTaskRowProps> = ({
             className={menuItemClassName}
             role="menuitem"
           >
-            <ShareIcon className={menuIconClassName} />
+            <ShareNetwork className={menuIconClassName} />
             {i18nService.t('coworkShareSession')}
           </button>
           <button
@@ -416,7 +415,7 @@ const AgentTaskRow: React.FC<AgentTaskRowProps> = ({
         >
           <div className="flex items-center gap-3 px-5 py-4">
             <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-500" />
+              <Warning className="h-5 w-5 text-red-600 dark:text-red-500" />
             </div>
             <h2 className="text-base font-semibold text-foreground">
               {i18nService.t('deleteTaskConfirmTitle')}

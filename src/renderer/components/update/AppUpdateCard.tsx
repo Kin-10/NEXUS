@@ -1,4 +1,11 @@
-import { ArrowPathIcon, ChevronDownIcon, ChevronUpIcon, ExclamationTriangleIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowsClockwise,
+  CaretDown,
+  CaretUp,
+  RocketLaunch,
+  Warning,
+} from '@phosphor-icons/react';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 import { type AppUpdateRuntimeState, AppUpdateStatus } from '../../../shared/appUpdate/constants';
@@ -164,7 +171,7 @@ const AppUpdateCard: React.FC<AppUpdateCardProps> = ({
         {!isDownloading && !isInstalling && (
           <span className="shrink-0 text-secondary">v{latestVersion}</span>
         )}
-        <ChevronUpIcon className="ml-auto h-3.5 w-3.5 shrink-0 text-secondary" aria-hidden="true" />
+        <CaretUp className="ml-auto h-3.5 w-3.5 shrink-0 text-secondary" aria-hidden="true" />
       </button>
     );
   }
@@ -179,7 +186,7 @@ const AppUpdateCard: React.FC<AppUpdateCardProps> = ({
     : isError
       ? 'bg-red-500/10 text-red-500'
       : 'bg-primary/12 text-primary';
-  const Icon = isReady || isInstalling ? ArrowPathIcon : isError ? ExclamationTriangleIcon : RocketLaunchIcon;
+  const Icon = isReady || isInstalling ? ArrowsClockwise : isError ? Warning : RocketLaunch;
 
   return (
     <section
@@ -203,7 +210,7 @@ const AppUpdateCard: React.FC<AppUpdateCardProps> = ({
           aria-label={i18nService.t('collapse')}
           title={i18nService.t('collapse')}
         >
-          <ChevronDownIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          <CaretDown className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       </div>
 

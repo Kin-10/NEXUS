@@ -22,6 +22,8 @@ interface PlatformDefInput {
   readonly channelAliases: readonly string[];
   readonly logo: string;
   readonly guideUrl: string;
+  /** When false, platform is hidden from UI and not synced/started. */
+  readonly enabled: boolean;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -30,7 +32,7 @@ interface PlatformDefInput {
 // ═══════════════════════════════════════════════════════
 
 const DEFINITIONS = [
-  // ── China ──
+  // ── Enabled product channels ──
   {
     id: 'weixin',
     label: 'WeChat',
@@ -40,6 +42,7 @@ const DEFINITIONS = [
     logo: 'weixin.png',
     guideUrl:
       'https://lobsterai.youdao.com/#/docs/lobsterai_im_bot_config_guide/%E5%BE%AE%E4%BF%A1-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+    enabled: true,
   },
   {
     id: 'dingtalk',
@@ -50,6 +53,7 @@ const DEFINITIONS = [
     logo: 'dingding.png',
     guideUrl:
       'https://lobsterai.youdao.com/#/docs/lobsterai_im_bot_config_guide/%E9%92%89%E9%92%89-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+    enabled: true,
   },
   {
     id: 'feishu',
@@ -60,6 +64,7 @@ const DEFINITIONS = [
     logo: 'feishu.png',
     guideUrl:
       'https://lobsterai.youdao.com/#/docs/lobsterai_im_bot_config_guide/%E9%A3%9E%E4%B9%A6-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+    enabled: true,
   },
   {
     id: 'wecom',
@@ -70,6 +75,7 @@ const DEFINITIONS = [
     logo: 'wecom.png',
     guideUrl:
       'https://lobsterai.youdao.com/#/docs/lobsterai_im_bot_config_guide/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+    enabled: true,
   },
   {
     id: 'qq',
@@ -79,7 +85,9 @@ const DEFINITIONS = [
     channelAliases: [],
     logo: 'qq_bot.jpeg',
     guideUrl: 'https://lobsterai.youdao.com/#/docs/lobsterai_im_bot_config_guide/qqqq-bot',
+    enabled: true,
   },
+  // ── Retired channels (kept for legacy data / channel id resolution) ──
   {
     id: 'nim',
     label: 'NIM',
@@ -88,6 +96,7 @@ const DEFINITIONS = [
     channelAliases: [],
     logo: 'nim.png',
     guideUrl: '',
+    enabled: false,
   },
   {
     id: 'netease-bee',
@@ -97,6 +106,7 @@ const DEFINITIONS = [
     channelAliases: [],
     logo: 'netease-bee.png',
     guideUrl: '',
+    enabled: false,
   },
   {
     id: 'popo',
@@ -106,8 +116,8 @@ const DEFINITIONS = [
     channelAliases: ['popo'],
     logo: 'popo.png',
     guideUrl: '',
+    enabled: false,
   },
-  // ── Global ──
   {
     id: 'telegram',
     label: 'Telegram',
@@ -117,6 +127,7 @@ const DEFINITIONS = [
     logo: 'telegram.svg',
     guideUrl:
       'https://lobsterai.youdao.com/#/en/docs/lobsterai_im_bot_config_guide/telegram-bot-configuration',
+    enabled: false,
   },
   {
     id: 'discord',
@@ -127,6 +138,7 @@ const DEFINITIONS = [
     logo: 'discord.svg',
     guideUrl:
       'https://lobsterai.youdao.com/#/en/docs/lobsterai_im_bot_config_guide/discord-bot-configuration',
+    enabled: false,
   },
   {
     id: 'email',
@@ -136,6 +148,7 @@ const DEFINITIONS = [
     channelAliases: ['clawemail', 'clawemail-email'],
     logo: 'email.svg',
     guideUrl: '',
+    enabled: false,
   },
 ] as const satisfies readonly PlatformDefInput[];
 
@@ -163,10 +176,12 @@ export interface PlatformDef {
   readonly channel: ChannelName;
   /** Additional channel aliases (e.g. wecom has both 'wecom' and 'wecom-openclaw-plugin') */
   readonly channelAliases: readonly ChannelName[];
-  /** Logo filename relative to /im-logos/ in public assets */
+  /** Logo filename under Vite `public/` root (e.g. weixin.png → public/weixin.png) */
   readonly logo: string;
   /** Setup guide URL (empty string if not yet available) */
   readonly guideUrl: string;
+  /** Product-facing platforms are enabled; retired ones stay for legacy resolution. */
+  readonly enabled: boolean;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -178,7 +193,9 @@ class PlatformRegistryImpl {
   private readonly platformIndex: ReadonlyMap<Platform, PlatformDef>;
   private readonly channelIndex: ReadonlyMap<string, PlatformDef>;
   private readonly _platforms: readonly Platform[];
+  private readonly _allPlatforms: readonly Platform[];
   private readonly _channelSet: ReadonlySet<string>;
+  private readonly _enabledChannelSet: ReadonlySet<string>;
 
   constructor(definitions: readonly PlatformDef[]) {
     this.defs = definitions;
@@ -186,37 +203,55 @@ class PlatformRegistryImpl {
     const pIdx = new Map<Platform, PlatformDef>();
     const cIdx = new Map<string, PlatformDef>();
     const platforms: Platform[] = [];
+    const allPlatforms: Platform[] = [];
     const channels = new Set<string>();
+    const enabledChannels = new Set<string>();
 
     for (const def of definitions) {
       pIdx.set(def.id, def);
-      platforms.push(def.id);
+      allPlatforms.push(def.id);
+      if (def.enabled) {
+        platforms.push(def.id);
+      }
 
       cIdx.set(def.channel, def);
       channels.add(def.channel);
+      if (def.enabled) {
+        enabledChannels.add(def.channel);
+      }
 
       for (const alias of def.channelAliases) {
         cIdx.set(alias, def);
         channels.add(alias);
+        if (def.enabled) {
+          enabledChannels.add(alias);
+        }
       }
     }
 
     this.platformIndex = pIdx;
     this.channelIndex = cIdx;
     this._platforms = platforms;
+    this._allPlatforms = allPlatforms;
     this._channelSet = channels;
+    this._enabledChannelSet = enabledChannels;
   }
 
   // ── Platform Lists ──
 
-  /** All platform ids. Array order = UI display order. */
+  /** Enabled platform ids. Array order = UI display order. */
   get platforms(): readonly Platform[] {
     return this._platforms;
   }
 
-  /** Platforms filtered by region, preserving definition order. */
+  /** All known platform ids, including retired ones. */
+  get allPlatforms(): readonly Platform[] {
+    return this._allPlatforms;
+  }
+
+  /** Enabled platforms filtered by region, preserving definition order. */
   platformsByRegion(region: 'china' | 'global'): readonly Platform[] {
-    return this.defs.filter(d => d.region === region).map(d => d.id);
+    return this.defs.filter(d => d.enabled && d.region === region).map(d => d.id);
   }
 
   // ── Single Platform Queries ──
@@ -226,7 +261,12 @@ class PlatformRegistryImpl {
     return this.platformIndex.get(platform)!;
   }
 
-  /** Logo filename relative to /im-logos/. */
+  /** Whether the platform is product-enabled (shown / synced / started). */
+  isEnabled(platform: Platform): boolean {
+    return this.platformIndex.get(platform)?.enabled === true;
+  }
+
+  /** Logo filename under Vite `public/` root. Prefer `getPlatformLogoSrc` in renderer. */
   logo(platform: Platform): string {
     return this.platformIndex.get(platform)!.logo;
   }
@@ -248,16 +288,23 @@ class PlatformRegistryImpl {
     return this.channelIndex.get(channel)?.id;
   }
 
-  /** Check if a string is a known IM channel. */
+  /** Check if a string is a known IM channel (includes retired channels). */
   isIMChannel(channel: string): boolean {
     return this._channelSet.has(channel);
+  }
+
+  /** Check if a string is an enabled product IM channel. */
+  isEnabledIMChannel(channel: string): boolean {
+    return this._enabledChannelSet.has(channel);
   }
 
   // ── UI Helpers ──
 
   /** Channel options for scheduled task delivery target dropdown. */
   channelOptions(): readonly { value: ChannelName; label: string }[] {
-    return this.defs.map(d => ({ value: d.channel, label: d.label }));
+    return this.defs
+      .filter(d => d.enabled)
+      .map(d => ({ value: d.channel, label: d.label }));
   }
 }
 

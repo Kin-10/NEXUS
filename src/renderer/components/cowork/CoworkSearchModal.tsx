@@ -1,4 +1,7 @@
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+
+import {
+  MagnifyingGlass,
+} from '@phosphor-icons/react';
 import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -290,7 +293,7 @@ const CoworkSearchModal: React.FC<CoworkSearchModalProps> = ({
         className="modal-content overflow-hidden rounded-[18px] border border-border bg-white shadow-modal dark:bg-surface"
       >
         <div className="flex items-center gap-3 border-b border-border px-4">
-          <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-secondary/70" />
+          <MagnifyingGlass className="h-5 w-5 shrink-0 text-secondary/70" />
           <input
             ref={searchInputRef}
             value={searchQuery}
@@ -322,7 +325,7 @@ const CoworkSearchModal: React.FC<CoworkSearchModalProps> = ({
           <div className="max-h-[min(420px,48vh)] overflow-y-auto">
             {displayedSessions.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-12 text-sm text-secondary">
-                {!isLoading && <MagnifyingGlassIcon className="h-6 w-6 text-secondary/40" />}
+                {!isLoading && <MagnifyingGlass className="h-6 w-6 text-secondary/40" />}
                 <span>{isLoading ? i18nService.t('loading') : i18nService.t('searchNoResults')}</span>
               </div>
             ) : (

@@ -1,7 +1,8 @@
+
 import {
-  ChatBubbleLeftIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/24/outline';
+  ChatCircle,
+  Question,
+} from '@phosphor-icons/react';
 import React from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -29,7 +30,7 @@ const SelectedTextActionToolbar: React.FC<SelectedTextActionToolbarProps> = ({
       onClick={onAddToChat}
       className="inline-flex min-w-0 items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised"
     >
-      <ChatBubbleLeftIcon className="h-3.5 w-3.5 shrink-0 text-secondary" />
+      <ChatCircle className="h-3.5 w-3.5 shrink-0 text-secondary" />
       <span className="truncate whitespace-nowrap">
         {i18nService.t('coworkSelectedTextAddToChat')}
       </span>
@@ -40,7 +41,7 @@ const SelectedTextActionToolbar: React.FC<SelectedTextActionToolbarProps> = ({
       onClick={onAskInSideChat}
       className="inline-flex min-w-0 items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised"
     >
-      <QuestionMarkCircleIcon className="h-3.5 w-3.5 shrink-0 text-secondary" />
+      <Question className="h-3.5 w-3.5 shrink-0 text-secondary" />
       <span className="truncate whitespace-nowrap">
         {i18nService.t('coworkSelectedTextAskInSideChat')}
       </span>

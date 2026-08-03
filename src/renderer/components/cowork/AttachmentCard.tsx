@@ -1,4 +1,7 @@
-import { FolderIcon } from '@heroicons/react/24/solid';
+
+import {
+  Folder,
+} from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -125,7 +128,7 @@ const FileCard: React.FC<AttachmentCardProps> = ({ attachment, onRemove, label }
       {/* File type icon */}
       <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-black/[0.04] dark:bg-white/[0.08]">
         {attachment.isDirectory ? (
-          <FolderIcon className="h-7 w-7 flex-shrink-0 text-amber-500" />
+          <Folder className="h-7 w-7 flex-shrink-0 text-amber-500" />
         ) : (
           <FileTypeIcon fileName={attachment.name} className="h-7 w-7 flex-shrink-0" />
         )}

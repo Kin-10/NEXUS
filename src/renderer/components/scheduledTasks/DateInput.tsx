@@ -1,4 +1,9 @@
-import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+
+import {
+  CalendarBlank,
+  CaretLeft,
+  CaretRight,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -184,7 +189,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, min, max, placeh
               : 'bg-surface text-secondary hover:border-primary/50'
         }`}
       >
-        <CalendarIcon className="h-3 w-3 shrink-0 opacity-60" />
+        <CalendarBlank className="h-3 w-3 shrink-0 opacity-60" />
         <span className={value ? '' : 'opacity-50'}>
           {displayText || placeholder || '----/--/--'}
         </span>
@@ -213,7 +218,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, min, max, placeh
                 onClick={goPrev}
                 className="p-1 rounded text-secondary hover:bg-surface-raised transition-colors"
               >
-                <ChevronLeftIcon className="h-3.5 w-3.5" />
+                <CaretLeft className="h-3.5 w-3.5" />
               </button>
               <span className="text-xs font-medium text-foreground">
                 {viewYear} / {pad(viewMonth)}
@@ -223,7 +228,7 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, min, max, placeh
                 onClick={goNext}
                 className="p-1 rounded text-secondary hover:bg-surface-raised transition-colors"
               >
-                <ChevronRightIcon className="h-3.5 w-3.5" />
+                <CaretRight className="h-3.5 w-3.5" />
               </button>
             </div>
 

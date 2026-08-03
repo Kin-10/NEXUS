@@ -1,4 +1,9 @@
-import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  Plus,
+  Trash,
+  X,
+} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 
 import {
@@ -58,7 +63,7 @@ const HostnameList: React.FC<{
         onClick={onAdd}
         className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg bg-surface-raised px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
       >
-        <PlusIcon className="h-4 w-4" />
+        <Plus className="h-4 w-4" />
         {i18nService.t('add')}
       </button>
     </div>
@@ -79,7 +84,7 @@ const HostnameList: React.FC<{
               className="rounded-md p-1 text-secondary transition-colors hover:bg-surface-raised hover:text-red-500"
               title={i18nService.t('delete')}
             >
-              <TrashIcon className="h-4 w-4" />
+              <Trash className="h-4 w-4" />
             </button>
           </div>
         ))
@@ -204,7 +209,7 @@ const BrowserWebAccessSettings: React.FC<BrowserWebAccessSettingsProps> = ({
               onClick={closeHostnameDialog}
               className="rounded-md p-1 text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
             >
-              <XMarkIcon className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 

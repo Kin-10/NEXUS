@@ -3,8 +3,14 @@
  * Configuration form for a single NIM bot instance in multi-instance mode
  */
 
-import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { ArrowPathIcon, CheckCircleIcon, SignalIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowsClockwise,
+  Broadcast,
+  CheckCircle,
+  Eye,
+  EyeSlash,
+  XCircle,
+} from '@phosphor-icons/react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useRef, useState } from 'react';
 
@@ -312,7 +318,7 @@ const NimInstanceSettings: React.FC<NimInstanceSettingsProps> = ({
               {qrStatus === 'error' && qrError && (
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex items-center justify-center gap-1.5 text-xs text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">
-                    <XCircleIcon className="h-4 w-4 flex-shrink-0" />
+                    <XCircle className="h-4 w-4 flex-shrink-0" />
                     {qrError}
                   </div>
                   <button
@@ -328,7 +334,7 @@ const NimInstanceSettings: React.FC<NimInstanceSettingsProps> = ({
           )}
           {qrStatus === 'loading' && (
             <div className="flex flex-col items-center gap-2 py-2">
-              <ArrowPathIcon className="h-7 w-7 text-primary animate-spin" />
+              <ArrowsClockwise className="h-7 w-7 text-primary animate-spin" />
               <span className="text-xs text-secondary">{i18nService.t('imNimQrGenerating')}</span>
             </div>
           )}
@@ -373,7 +379,7 @@ const NimInstanceSettings: React.FC<NimInstanceSettingsProps> = ({
           )}
           {qrStatus === 'success' && (
             <div className="flex items-center justify-center gap-1.5 text-xs text-green-600 dark:text-green-400 bg-green-500/10 px-3 py-2 rounded-lg">
-              <CheckCircleIcon className="h-4 w-4 flex-shrink-0" />
+              <CheckCircle className="h-4 w-4 flex-shrink-0" />
             {i18nService.t('imNimQrSuccess')}
           </div>
         )}
@@ -490,7 +496,7 @@ const NimInstanceSettings: React.FC<NimInstanceSettingsProps> = ({
                       className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                       title={i18nService.t('clear') || 'Clear'}
                     >
-                      <XCircleIconSolid className="h-4 w-4" />
+                      <XCircle className="h-4 w-4" />
                     </button>
                   )}
                   <button
@@ -499,7 +505,7 @@ const NimInstanceSettings: React.FC<NimInstanceSettingsProps> = ({
                     className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                     title={showSecrets.token ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
                   >
-                    {showSecrets.token ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                    {showSecrets.token ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
@@ -515,7 +521,7 @@ const NimInstanceSettings: React.FC<NimInstanceSettingsProps> = ({
             disabled={testingPlatform === 'nim'}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <SignalIcon className="h-4 w-4" />
+            <Broadcast className="h-4 w-4" />
             {testingPlatform === 'nim' ? i18nService.t('testing') : i18nService.t('imConnectivityTest')}
           </button>
         </div>
@@ -562,7 +568,7 @@ const NimInstanceSettings: React.FC<NimInstanceSettingsProps> = ({
               className="text-secondary hover:text-foreground transition-colors"
               aria-label={i18nService.t('close')}
             >
-              <XCircleIcon className="h-5 w-5" />
+              <XCircle className="h-5 w-5" />
             </button>
           </div>
 

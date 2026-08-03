@@ -1,4 +1,9 @@
-import { ExclamationTriangleIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  Minus,
+  Warning,
+  X,
+} from '@phosphor-icons/react';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { ASK_USER_QUESTION_TOOL_NAME } from '../../../shared/cowork/constants';
@@ -429,7 +434,7 @@ const CoworkPermissionModal: React.FC<CoworkPermissionModalProps> = ({
                 <path d="M18.2071 12.2929C18.5976 12.6834 18.5976 13.3166 18.2071 13.7071L13.2071 18.7071C13.0196 18.8946 12.7652 19 12.5 19C12.2348 19 11.9804 18.8946 11.7929 18.7071L9.79289 16.7071C9.40237 16.3166 9.40237 15.6834 9.79289 15.2929C10.1834 14.9024 10.8166 14.9024 11.2071 15.2929L12.5 16.5858L16.7929 12.2929C17.1834 11.9024 17.8166 11.9024 18.2071 12.2929Z" fill="currentColor"/>
               </svg>
             ) : (
-              <ExclamationTriangleIcon className={`h-6 w-6 ${isQuestionTool && !isConfirmMode ? 'text-blue-600 dark:text-blue-500' : 'text-yellow-600 dark:text-yellow-500'}`} />
+              <Warning className={`h-6 w-6 ${isQuestionTool && !isConfirmMode ? 'text-blue-600 dark:text-blue-500' : 'text-yellow-600 dark:text-yellow-500'}`} />
             )}
           </div>
           <div className="flex-1">
@@ -456,7 +461,7 @@ const CoworkPermissionModal: React.FC<CoworkPermissionModalProps> = ({
               aria-label={i18nService.t('coworkPermissionMinimize')}
               title={i18nService.t('coworkPermissionMinimize')}
             >
-              <MinusIcon className="h-5 w-5" />
+              <Minus className="h-5 w-5" />
             </button>
           )}
           <button
@@ -466,7 +471,7 @@ const CoworkPermissionModal: React.FC<CoworkPermissionModalProps> = ({
             aria-label={i18nService.t('coworkPermissionCancel')}
             title={i18nService.t('coworkPermissionCancel')}
           >
-            <XMarkIcon className="h-5 w-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -581,7 +586,7 @@ const CoworkPermissionModal: React.FC<CoworkPermissionModalProps> = ({
         {/* Warning for dangerous operations - 固定在滚动区域外，始终可见 */}
         {(!isQuestionTool || isConfirmMode) && dangerLevel === 'destructive' && (
           <div className="flex items-start gap-2 p-3 mx-6 my-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <Warning className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-red-700 dark:text-red-400">
                 {i18nService.t('coworkDestructiveOperation')}
@@ -594,7 +599,7 @@ const CoworkPermissionModal: React.FC<CoworkPermissionModalProps> = ({
         )}
         {(!isQuestionTool || isConfirmMode) && dangerLevel === 'caution' && (
           <div className="flex items-start gap-2 p-3 mx-6 my-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <Warning className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
                 {i18nService.t('coworkCautionOperation')}

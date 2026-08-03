@@ -1,4 +1,7 @@
-import { CheckIcon } from '@heroicons/react/24/outline';
+
+import {
+  Check,
+} from '@phosphor-icons/react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -122,7 +125,7 @@ const AgentSkillSelector: React.FC<AgentSkillSelectorProps> = ({ selectedSkillId
                         : 'border-border bg-surface group-hover:border-primary/50'
                     }`}
                   >
-                    {isSelected && <CheckIcon className="h-3.5 w-3.5 text-white" />}
+                    {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
                   </div>
                 </button>
               );

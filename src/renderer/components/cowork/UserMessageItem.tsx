@@ -1,4 +1,8 @@
-import { ChatBubbleLeftIcon, PhotoIcon } from '@heroicons/react/24/outline';
+
+import {
+  ChatCircle,
+  Image as ImageIcon,
+} from '@phosphor-icons/react';
 import type { CoworkBrowserAnnotationMessageBatch } from '@shared/cowork/browserAnnotations';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -269,7 +273,7 @@ const UserMessageItem: React.FC<{
                       className="inline-flex h-7 items-center gap-1.5 rounded-full border border-border bg-surface-raised px-2.5 text-xs text-foreground"
                       title={browserAnnotations.flatMap(batch => batch.annotations.map(item => item.comment)).join('\n')}
                     >
-                      <ChatBubbleLeftIcon className="h-3.5 w-3.5" />
+                      <ChatCircle className="h-3.5 w-3.5" />
                       {i18nService.t('browserAnnotationsCount').replace('{count}', String(browserAnnotationCount))}
                     </div>
                   </div>
@@ -314,7 +318,7 @@ const UserMessageItem: React.FC<{
                           })}
                         />
                         <div className="absolute bottom-1 left-1 right-1 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/50 text-white text-[10px] opacity-0 group-hover:opacity-100 transition-opacity truncate pointer-events-none">
-                          <PhotoIcon className="h-3 w-3 flex-shrink-0" />
+                          <ImageIcon className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">{img.name}</span>
                         </div>
                       </div>

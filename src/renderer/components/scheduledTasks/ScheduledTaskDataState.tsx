@@ -1,4 +1,8 @@
-import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowsClockwise,
+  Warning,
+} from '@phosphor-icons/react';
 import React from 'react';
 
 import {
@@ -23,7 +27,7 @@ const ScheduledTaskDataState: React.FC<ScheduledTaskDataStateProps> = ({
   if (status === ScheduledTaskDataStatus.Error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <ExclamationTriangleIcon className="mb-3 h-8 w-8 text-red-500" />
+        <Warning className="mb-3 h-8 w-8 text-red-500" />
         <p className="text-sm font-medium text-foreground">
           {i18nService.t('scheduledTasksLoadFailed')}
         </p>
@@ -33,7 +37,7 @@ const ScheduledTaskDataState: React.FC<ScheduledTaskDataStateProps> = ({
           onClick={onRetry}
           className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary transition-colors hover:text-primary-hover"
         >
-          <ArrowPathIcon className="h-4 w-4" />
+          <ArrowsClockwise className="h-4 w-4" />
           {i18nService.t('scheduledTasksRetry')}
         </button>
       </div>
@@ -47,7 +51,7 @@ const ScheduledTaskDataState: React.FC<ScheduledTaskDataStateProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <ArrowPathIcon className="mb-3 h-6 w-6 animate-spin text-primary" />
+      <ArrowsClockwise className="mb-3 h-6 w-6 animate-spin text-primary" />
       <p className="text-sm text-secondary">{label}</p>
     </div>
   );

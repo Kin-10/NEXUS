@@ -3,8 +3,15 @@
  * Configuration form for a single POPO bot instance in multi-instance mode
  */
 
-import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { ArrowPathIcon, CheckCircleIcon, SignalIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowsClockwise,
+  Broadcast,
+  CheckCircle,
+  Eye,
+  EyeSlash,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import { PlatformRegistry } from '@shared/platform';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect,useRef, useState } from 'react';
@@ -240,7 +247,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
             </p>
             {qrStatus === 'error' && qrError && (
               <div className="flex items-center justify-center gap-1.5 text-xs text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">
-                <XCircleIcon className="h-4 w-4 flex-shrink-0" />
+                <XCircle className="h-4 w-4 flex-shrink-0" />
                 {qrError}
               </div>
             )}
@@ -248,7 +255,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
         )}
         {qrStatus === 'loading' && (
           <div className="flex items-center justify-center gap-2 py-4">
-            <ArrowPathIcon className="h-5 w-5 animate-spin text-primary" />
+            <ArrowsClockwise className="h-5 w-5 animate-spin text-primary" />
             <span className="text-sm text-secondary">
               {i18nService.t('imPopoQrLoading')}
             </span>
@@ -273,7 +280,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
         )}
         {qrStatus === 'success' && (
           <div className="flex items-center justify-center gap-1.5 text-xs text-green-600 dark:text-green-400 bg-green-500/10 px-3 py-2 rounded-lg">
-            <CheckCircleIcon className="h-4 w-4 flex-shrink-0" />
+            <CheckCircle className="h-4 w-4 flex-shrink-0" />
             {i18nService.t('imPopoQrSuccess')}
           </div>
         )}
@@ -325,7 +332,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
                 className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                 title={i18nService.t('clear') || 'Clear'}
               >
-                <XCircleIconSolid className="h-4 w-4" />
+                <XCircle className="h-4 w-4" />
               </button>
             )}
             <button
@@ -333,7 +340,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
               onClick={() => setShowSecrets(prev => ({ ...prev, aesKey: !prev.aesKey }))}
               className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
             >
-              {showSecrets.aesKey ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+              {showSecrets.aesKey ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
             </button>
           </div>
         </div>
@@ -353,9 +360,9 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface border border-border-subtle hover:bg-surface-raised transition-colors disabled:opacity-50"
         >
           {testingPlatform === 'popo' ? (
-            <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
+            <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <SignalIcon className="h-3.5 w-3.5" />
+            <Broadcast className="h-3.5 w-3.5" />
           )}
           {i18nService.t('imConnectivityTest')}
         </button>
@@ -366,9 +373,9 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
                 check.level === 'pass' ? 'text-green-600 dark:text-green-400' :
                 check.level === 'fail' ? 'text-red-500' : 'text-secondary'
               }`}>
-                {check.level === 'pass' ? <CheckCircleIcon className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" /> :
-                 check.level === 'fail' ? <XCircleIcon className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" /> :
-                 <SignalIcon className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />}
+                {check.level === 'pass' ? <CheckCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" /> :
+                 check.level === 'fail' ? <XCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" /> :
+                 <Broadcast className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />}
                 <span>{check.message}</span>
               </div>
             ))}
@@ -419,7 +426,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
               {instance.appKey && (
                 <div className="absolute right-2 inset-y-0 flex items-center">
                   <button type="button" onClick={() => { onConfigChange({ appKey: '' }); void onSave({ appKey: '' }); }} className="p-0.5 rounded text-secondary hover:text-primary transition-colors" title={i18nService.t('clear') || 'Clear'}>
-                    <XCircleIconSolid className="h-4 w-4" />
+                    <XCircle className="h-4 w-4" />
                   </button>
                 </div>
               )}
@@ -441,11 +448,11 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
               <div className="absolute right-2 inset-y-0 flex items-center gap-1">
                 {instance.appSecret && (
                   <button type="button" onClick={() => { onConfigChange({ appSecret: '' }); void onSave({ appSecret: '' }); }} className="p-0.5 rounded text-secondary hover:text-primary transition-colors" title={i18nService.t('clear') || 'Clear'}>
-                    <XCircleIconSolid className="h-4 w-4" />
+                    <XCircle className="h-4 w-4" />
                   </button>
                 )}
                 <button type="button" onClick={() => setShowSecrets(prev => ({ ...prev, appSecret: !prev.appSecret }))} className="p-0.5 rounded text-secondary hover:text-primary transition-colors">
-                  {showSecrets.appSecret ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                  {showSecrets.appSecret ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -467,11 +474,11 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
                 <div className="absolute right-2 inset-y-0 flex items-center gap-1">
                   {instance.token && (
                     <button type="button" onClick={() => { onConfigChange({ token: '' }); void onSave({ token: '' }); }} className="p-0.5 rounded text-secondary hover:text-primary transition-colors" title={i18nService.t('clear') || 'Clear'}>
-                      <XCircleIconSolid className="h-4 w-4" />
+                      <XCircle className="h-4 w-4" />
                     </button>
                   )}
                   <button type="button" onClick={() => setShowSecrets(prev => ({ ...prev, token: !prev.token }))} className="p-0.5 rounded text-secondary hover:text-primary transition-colors">
-                    {showSecrets.token ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                    {showSecrets.token ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
@@ -493,11 +500,11 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
               <div className="absolute right-2 inset-y-0 flex items-center gap-1">
                 {instance.aesKey && (
                   <button type="button" onClick={() => { onConfigChange({ aesKey: '' }); void onSave({ aesKey: '' }); }} className="p-0.5 rounded text-secondary hover:text-primary transition-colors" title={i18nService.t('clear') || 'Clear'}>
-                    <XCircleIconSolid className="h-4 w-4" />
+                    <XCircle className="h-4 w-4" />
                   </button>
                 )}
                 <button type="button" onClick={() => setShowSecrets(prev => ({ ...prev, aesKeyAdv: !prev.aesKeyAdv }))} className="p-0.5 rounded text-secondary hover:text-primary transition-colors">
-                  {showSecrets.aesKeyAdv ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                  {showSecrets.aesKeyAdv ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -622,7 +629,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
                       }}
                       className="text-secondary hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     >
-                      <XMarkIcon className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
@@ -699,7 +706,7 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
                       }}
                       className="text-secondary hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     >
-                      <XMarkIcon className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}

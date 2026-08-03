@@ -1,4 +1,7 @@
-import { XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  X,
+} from '@phosphor-icons/react';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { getPortalInvitationUrl } from '../services/endpoints';
@@ -167,7 +170,7 @@ const SidebarAdBanner: React.FC<SidebarAdBannerProps> = ({ hidden = false, onVis
           onKeyDown={(event) => event.stopPropagation()}
           className="absolute right-2 top-2 z-20 flex h-4 w-4 items-center justify-center rounded-full bg-[#D9D9DB]/80 text-white transition-colors hover:bg-[#CFCFD2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
         >
-          <XMarkIcon className="h-3 w-3" />
+          <X className="h-3 w-3" />
         </button>
       </div>
     </div>

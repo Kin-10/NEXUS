@@ -69,7 +69,7 @@ LobsterAI 在 `SKILLs/skills.config.json` 中配置了 28 个内置技能，包�
 
 ### IM 远程控制
 
-通过微信、企业微信、钉钉、飞书/Lark、QQ、Telegram、Discord、网易云信 IM、网易小蜜蜂、POPO 和邮件触达桌面 Agent。多实例平台可以把不同账号或渠道绑定到不同 Agent。
+通过微信、企业微信、钉钉、飞书/Lark、QQ 触达桌面 Agent。多实例平台可以把不同账号或渠道绑定到不同 Agent。
 
 ### 丰富 Artifacts
 

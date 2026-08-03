@@ -1,4 +1,7 @@
-import { XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  X,
+} from '@phosphor-icons/react';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -70,7 +73,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ image, onClose })
           title={i18nService.t('close')}
           aria-label={i18nService.t('close')}
         >
-          <XMarkIcon className="h-5 w-5" />
+          <X className="h-5 w-5" />
         </button>
       </div>
 

@@ -1,4 +1,9 @@
-import { ArrowPathIcon, ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowsClockwise,
+  ShieldCheck,
+  Warning,
+} from '@phosphor-icons/react';
 import type { CoworkBrowserAnnotationMessageBatch } from '@shared/cowork/browserAnnotations';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -745,7 +750,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
       </div>
       <div className="non-draggable flex items-center">
         <div className="flex items-center gap-1.5 mr-2 px-2.5 py-1">
-          <ShieldCheckIcon className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+          <ShieldCheck className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
           <span className="text-xs text-green-600 dark:text-green-400 whitespace-nowrap">
             {i18nService.t('lobsterGuardEnabled')}
           </span>
@@ -762,7 +767,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
       <div className="pointer-events-auto w-full max-w-xl rounded-2xl border border-amber-200 bg-surface p-4 shadow-lg animate-fade-in-down dark:border-amber-900/60">
         <div className="flex items-start gap-3">
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
-            <ExclamationTriangleIcon className="h-5 w-5" />
+            <Warning className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-foreground">
@@ -790,7 +795,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
             className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
           >
             {isRestartingGateway && (
-              <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
+              <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
             )}
             {i18nService.t('coworkOpenClawRestartGateway')}
           </button>

@@ -1,11 +1,10 @@
+import { UploadSimple } from '@phosphor-icons/react';
 import React from 'react';
 
-const UploadIcon: React.FC<{ className?: string }> = ({ className }) => {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-    </svg>
-  );
-};
+import { type AppIconProps, defaultIconProps } from './iconStyle';
+
+const UploadIcon: React.FC<AppIconProps> = ({ className }) => (
+  <UploadSimple className={className} {...defaultIconProps} />
+);
 
 export default UploadIcon;

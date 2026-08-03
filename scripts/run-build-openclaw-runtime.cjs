@@ -10,29 +10,24 @@ function commandExists(command) {
   return result.status === 0;
 }
 
+function isWslBashExecutable(bashPath) {
+  const normalized = String(bashPath || '').replace(/\//g, '\\').toLowerCase();
+  // WSL ships launchers under System32 and the WindowsApps alias store.
+  // Those must never be used for OpenClaw runtime builds on Windows.
+  return normalized.includes('\\windowsapps\\')
+    || /\\system32\\bash\.exe$/u.test(normalized);
+}
+
 function resolveBashExecutable(rootDir) {
   if (process.platform !== 'win32') {
     return commandExists('bash') ? 'bash' : null;
   }
 
   // On Windows, we must use Git Bash (MSYS2), NOT WSL's bash.
-  // WSL bash (WindowsApps\bash.exe) runs in a separate Linux environment and
-  // cannot access Windows-installed node, npm, pnpm, etc.
+  // WSL bash runs in a separate Linux environment and builds through /mnt/<drive>
+  // (9P), which is far too slow for OpenClaw's tsdown / metadata steps.
 
-  // 1. Check all bash locations, prefer Git Bash over WSL bash.
-  try {
-    const result = spawnSync('where', ['bash'], {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    if (result.status === 0 && result.stdout) {
-      const paths = result.stdout.trim().split(/\r?\n/).map(p => p.trim()).filter(Boolean);
-      const gitBash = paths.find(p => !p.toLowerCase().includes('windowsapps'));
-      if (gitBash) return gitBash;
-    }
-  } catch {}
-
-  // 2. Derive bash path from git installation.
+  // 1. Derive bash path from git installation (most reliable on developer machines).
   try {
     const gitResult = spawnSync('where', ['git'], {
       encoding: 'utf-8',
@@ -46,21 +41,36 @@ function resolveBashExecutable(rootDir) {
         path.join(gitRoot, 'usr', 'bin', 'bash.exe'),
       ];
       for (const candidate of gitBashCandidates) {
-        if (fs.existsSync(candidate)) return candidate;
+        if (fs.existsSync(candidate) && !isWslBashExecutable(candidate)) {
+          return candidate;
+        }
       }
     }
   } catch {}
 
-  // 3. Bundled mingit bash.
+  // 2. Bundled mingit bash.
   const candidates = [
     path.join(rootDir, 'resources', 'mingit', 'bin', 'bash.exe'),
     path.join(rootDir, 'resources', 'mingit', 'usr', 'bin', 'bash.exe'),
   ];
   for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
+    if (fs.existsSync(candidate) && !isWslBashExecutable(candidate)) {
       return candidate;
     }
   }
+
+  // 3. Fall back to PATH bash entries, still excluding WSL launchers.
+  try {
+    const result = spawnSync('where', ['bash'], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    if (result.status === 0 && result.stdout) {
+      const paths = result.stdout.trim().split(/\r?\n/).map(p => p.trim()).filter(Boolean);
+      const gitBash = paths.find(p => !isWslBashExecutable(p));
+      if (gitBash) return gitBash;
+    }
+  } catch {}
 
   return null;
 }

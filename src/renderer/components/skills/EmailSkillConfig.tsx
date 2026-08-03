@@ -1,16 +1,17 @@
-import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
 import {
-  ArrowLeftIcon,
-  ArrowTopRightOnSquareIcon,
-  CheckCircleIcon,
-  ChevronRightIcon,
-  EnvelopeIcon,
-  PlusIcon,
-  SignalIcon,
-  SparklesIcon,
-  TrashIcon,
-  XCircleIcon,
-} from '@heroicons/react/24/outline';
+  ArrowLeft,
+  ArrowSquareOut,
+  Broadcast,
+  CaretRight,
+  CheckCircle,
+  Envelope,
+  Eye,
+  EyeSlash,
+  Plus,
+  Sparkle,
+  Trash,
+  XCircle,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -562,7 +563,7 @@ const EmailSkillConfig: React.FC = () => {
       {config.accounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-10 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <EnvelopeIcon className="h-6 w-6 text-primary" />
+            <Envelope className="h-6 w-6 text-primary" />
           </span>
           <p className="mt-3 text-sm text-foreground">{i18nService.t('emailNoAccounts')}</p>
           <button
@@ -570,7 +571,7 @@ const EmailSkillConfig: React.FC = () => {
             onClick={() => void handleAddAccount()}
             className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover active:scale-[0.98]"
           >
-            <PlusIcon className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
             {i18nService.t('emailAddAccount')}
           </button>
         </div>
@@ -594,7 +595,7 @@ const EmailSkillConfig: React.FC = () => {
               >
                 <div className="flex items-start gap-2.5">
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <EnvelopeIcon className="h-5 w-5 text-primary" />
+                    <Envelope className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium leading-5 text-foreground">
@@ -627,7 +628,7 @@ const EmailSkillConfig: React.FC = () => {
                       aria-label={i18nService.t('delete')}
                       title={i18nService.t('delete')}
                     >
-                      <TrashIcon className="h-3.5 w-3.5" />
+                      <Trash className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
@@ -641,7 +642,7 @@ const EmailSkillConfig: React.FC = () => {
             className="flex min-h-[86px] flex-col items-center justify-center rounded-lg border border-dashed border-border-subtle bg-surface text-secondary transition-colors hover:border-primary/50 hover:bg-surface-raised hover:text-primary"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised">
-              <PlusIcon className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
             </span>
             <span className="mt-2 text-sm font-medium">
               {i18nService.t('emailAddAccount')}
@@ -662,7 +663,7 @@ const EmailSkillConfig: React.FC = () => {
             className="-ml-1 inline-flex h-7 flex-shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-secondary transition-colors hover:bg-surface-raised hover:text-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/25"
             aria-label={i18nService.t('back')}
           >
-            <ArrowLeftIcon className="h-3.5 w-3.5 flex-shrink-0" />
+            <ArrowLeft className="h-3.5 w-3.5 flex-shrink-0" />
             <span>{i18nService.t('back')}</span>
           </button>
           <h3
@@ -688,7 +689,7 @@ const EmailSkillConfig: React.FC = () => {
             className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/10"
             title={i18nService.t('delete')}
           >
-            <TrashIcon className="h-4 w-4" />
+            <Trash className="h-4 w-4" />
             {i18nService.t('delete')}
           </button>
         </div>
@@ -758,7 +759,7 @@ const EmailSkillConfig: React.FC = () => {
                     }}
                     className="rounded p-0.5 text-secondary transition-colors hover:text-primary"
                   >
-                    <XCircleIconSolid className="h-4 w-4" />
+                    <XCircle className="h-4 w-4" />
                   </button>
                 )}
                 <button
@@ -766,7 +767,7 @@ const EmailSkillConfig: React.FC = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="rounded p-0.5 text-secondary transition-colors hover:text-primary"
                 >
-                  {showPassword ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                  {showPassword ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -786,7 +787,7 @@ const EmailSkillConfig: React.FC = () => {
                 className={`inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline ${providerHint ? 'mt-1' : ''}`}
               >
                 {i18nService.t('emailProviderGuideLink')}
-                <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+                <ArrowSquareOut className="h-3 w-3" />
               </button>
             )}
           </div>
@@ -798,7 +799,7 @@ const EmailSkillConfig: React.FC = () => {
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="inline-flex items-center gap-1 text-xs font-medium text-secondary transition-colors hover:text-primary"
           >
-            <ChevronRightIcon className={`h-3.5 w-3.5 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
+            <CaretRight className={`h-3.5 w-3.5 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
             {i18nService.t('emailAdvancedSettings')}
           </button>
 
@@ -930,12 +931,12 @@ const EmailSkillConfig: React.FC = () => {
               disabled={testingAccountId === account.id || !canTest}
               className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
             >
-              <SignalIcon className="mr-1.5 h-3.5 w-3.5" />
+              <Broadcast className="mr-1.5 h-3.5 w-3.5" />
               {testingAccountId === account.id ? i18nService.t('imConnectivityTesting') : i18nService.t('imConnectivityTest')}
             </button>
             {activeResult && (
               <div className={`flex items-center gap-1 text-xs ${connectivityPassed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {connectivityPassed ? <CheckCircleIcon className="h-4 w-4" /> : <XCircleIcon className="h-4 w-4" />}
+                {connectivityPassed ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                 <span>{connectivityPassed ? i18nService.t('connectionSuccess') : i18nService.t('connectionFailed')}</span>
                 <span className="text-[11px] text-secondary">{new Date(activeResult.testedAt).toLocaleString()}</span>
               </div>
@@ -950,7 +951,7 @@ const EmailSkillConfig: React.FC = () => {
                 onClick={() => handleAskAI(null)}
                 className="inline-flex items-center gap-1 rounded-lg border border-claude-accent/50 px-2.5 py-1 text-xs font-medium text-claude-accent transition-colors hover:bg-claude-accent/10 active:scale-[0.98]"
               >
-                <SparklesIcon className="h-3 w-3" />
+                <Sparkle className="h-3 w-3" />
                 {i18nService.t('emailConnectivityAskAI')}
               </button>
             </div>
@@ -966,7 +967,7 @@ const EmailSkillConfig: React.FC = () => {
                     <div key={check.code} className="rounded-lg border border-border-subtle bg-surface px-2.5 py-2">
                       <div className="flex items-center justify-between gap-2">
                         <div className={`flex items-center gap-1 text-xs font-medium ${checkPassed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                          {checkPassed ? <CheckCircleIcon className="h-3.5 w-3.5" /> : <XCircleIcon className="h-3.5 w-3.5" />}
+                          {checkPassed ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
                           <span>{checkLabel}</span>
                         </div>
                         <span className="text-[11px] text-secondary">{`${check.durationMs}ms`}</span>
@@ -982,7 +983,7 @@ const EmailSkillConfig: React.FC = () => {
                   onClick={() => handleAskAI(activeResult)}
                   className="inline-flex items-center gap-1 rounded-lg border border-claude-accent/50 px-2.5 py-1 text-xs font-medium text-claude-accent transition-colors hover:bg-claude-accent/10 active:scale-[0.98]"
                 >
-                  <SparklesIcon className="h-3 w-3" />
+                  <Sparkle className="h-3 w-3" />
                   {i18nService.t('emailConnectivityAskAI')}
                 </button>
               )}

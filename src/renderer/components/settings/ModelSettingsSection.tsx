@@ -1,5 +1,16 @@
-import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { ArrowTopRightOnSquareIcon, CheckCircleIcon, ExclamationCircleIcon, KeyIcon, MagnifyingGlassIcon, ShieldCheckIcon, SignalIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowSquareOut,
+  Broadcast,
+  CheckCircle,
+  Eye,
+  EyeSlash,
+  Key,
+  MagnifyingGlass,
+  ShieldCheck,
+  WarningCircle,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import React from 'react';
 
 import {
@@ -258,7 +269,7 @@ export const ModelEditorDialog: React.FC<ModelEditorDialogProps> = ({
             onClick={handleCancelModelEdit}
             className="p-1 text-secondary hover:text-foreground rounded-md hover:bg-surface-raised"
           >
-            <XMarkIcon className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -675,7 +686,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
       key={`auth-attention-${authAttention?.nonce ?? 0}`}
       className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-red-500 dark:text-red-400 animate-fade-in-down"
     >
-      <ExclamationCircleIcon className="h-3.5 w-3.5 shrink-0" />
+      <WarningCircle className="h-3.5 w-3.5 shrink-0" />
       {getProviderAuthRequirementHint(activeProvider, providers[activeProvider])}
     </p>
   ) : null;
@@ -713,7 +724,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                   </div>
                 </div>
                 <div className="relative">
-                  <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
+                  <MagnifyingGlass className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
                   <input
                     type="text"
                     value={providerFilter}
@@ -728,7 +739,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-claude-textSecondary dark:text-claude-darkTextSecondary hover:text-claude-accent transition-colors"
                       title={i18nService.t('clear') || 'Clear'}
                     >
-                      <XCircleIconSolid className="h-3.5 w-3.5" />
+                      <XCircle className="h-3.5 w-3.5" />
                     </button>
                   )}
                 </div>
@@ -857,7 +868,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                       title={i18nService.t('visitOfficialSite')}
                       aria-label={i18nService.t('visitOfficialSite')}
                     >
-                      <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                      <ArrowSquareOut className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -899,8 +910,8 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${!minimaxIsOAuthMode ? 'border-primary bg-primary/5' : 'border-border opacity-60 hover:opacity-80'}`}
                       >
                         <div className="flex items-start justify-between">
-                          <KeyIcon className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
-                          {!minimaxIsOAuthMode && <CheckCircleIcon className="h-4 w-4 text-primary shrink-0" />}
+                          <Key className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                          {!minimaxIsOAuthMode && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
                         </div>
                         <p className="text-xs font-semibold text-foreground mt-1.5">{i18nService.t('minimaxOAuthTabApiKey')}</p>
                         <p className="text-[11px] text-secondary mt-0.5 leading-relaxed">{i18nService.t('minimaxAuthApiKeyDesc')}</p>
@@ -918,8 +929,8 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${minimaxIsOAuthMode ? 'border-primary bg-primary/5' : 'border-border opacity-60 hover:opacity-80'}`}
                       >
                         <div className="flex items-start justify-between">
-                          <ShieldCheckIcon className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
-                          {minimaxIsOAuthMode && <CheckCircleIcon className="h-4 w-4 text-primary shrink-0" />}
+                          <ShieldCheck className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                          {minimaxIsOAuthMode && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
                         </div>
                         <p className="text-xs font-semibold text-foreground mt-1.5">{i18nService.t('minimaxOAuthTabOAuth')}</p>
                         <p className="text-[11px] text-secondary mt-0.5 leading-relaxed">{i18nService.t('minimaxAuthOAuthDesc')}</p>
@@ -961,7 +972,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                             className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                             title={i18nService.t('clear') || 'Clear'}
                           >
-                            <XCircleIconSolid className="h-4 w-4" />
+                            <XCircle className="h-4 w-4" />
                           </button>
                         )}
                         <button
@@ -970,7 +981,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                           className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                           title={showApiKey ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
                         >
-                          {showApiKey ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                          {showApiKey ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                         </button>
                       </div>
                       </div>
@@ -1152,8 +1163,8 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${!openaiIsOAuthMode ? 'border-primary bg-primary/5' : 'border-border opacity-60 hover:opacity-80'}`}
                       >
                         <div className="flex items-start justify-between">
-                          <KeyIcon className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
-                          {!openaiIsOAuthMode && <CheckCircleIcon className="h-4 w-4 text-primary shrink-0" />}
+                          <Key className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                          {!openaiIsOAuthMode && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
                         </div>
                         <p className="text-xs font-semibold text-foreground mt-1.5">{i18nService.t('openaiOAuthTabApiKey')}</p>
                         <p className="text-[11px] text-secondary mt-0.5 leading-relaxed">{i18nService.t('openaiAuthApiKeyDesc')}</p>
@@ -1170,8 +1181,8 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${openaiIsOAuthMode ? 'border-primary bg-primary/5' : 'border-border opacity-60 hover:opacity-80'}`}
                       >
                         <div className="flex items-start justify-between">
-                          <ShieldCheckIcon className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
-                          {openaiIsOAuthMode && <CheckCircleIcon className="h-4 w-4 text-primary shrink-0" />}
+                          <ShieldCheck className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                          {openaiIsOAuthMode && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
                         </div>
                         <p className="text-xs font-semibold text-foreground mt-1.5">{i18nService.t('openaiOAuthTabOAuth')}</p>
                         <p className="text-[11px] text-secondary mt-0.5 leading-relaxed">{i18nService.t('openaiAuthOAuthDesc')}</p>
@@ -1309,8 +1320,8 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${!xaiIsOAuthMode ? 'border-primary bg-primary/5' : 'border-border opacity-60 hover:opacity-80'}`}
                       >
                         <div className="flex items-start justify-between">
-                          <KeyIcon className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
-                          {!xaiIsOAuthMode && <CheckCircleIcon className="h-4 w-4 text-primary shrink-0" />}
+                          <Key className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                          {!xaiIsOAuthMode && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
                         </div>
                         <p className="text-xs font-semibold text-foreground mt-1.5">{i18nService.t('xaiOAuthTabApiKey')}</p>
                         <p className="text-[11px] text-secondary mt-0.5 leading-relaxed">{i18nService.t('xaiAuthApiKeyDesc')}</p>
@@ -1327,8 +1338,8 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         className={`flex-1 p-3 rounded-xl border-2 text-left transition-all ${xaiIsOAuthMode ? 'border-primary bg-primary/5' : 'border-border opacity-60 hover:opacity-80'}`}
                       >
                         <div className="flex items-start justify-between">
-                          <ShieldCheckIcon className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
-                          {xaiIsOAuthMode && <CheckCircleIcon className="h-4 w-4 text-primary shrink-0" />}
+                          <ShieldCheck className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                          {xaiIsOAuthMode && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
                         </div>
                         <p className="text-xs font-semibold text-foreground mt-1.5">{i18nService.t('xaiOAuthTabOAuth')}</p>
                         <p className="text-[11px] text-secondary mt-0.5 leading-relaxed">{i18nService.t('xaiAuthOAuthDesc')}</p>
@@ -1532,7 +1543,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                               className="p-0.5 rounded text-claude-textSecondary dark:text-claude-darkTextSecondary hover:text-claude-accent transition-colors"
                               title={i18nService.t('clear') || 'Clear'}
                             >
-                              <XCircleIconSolid className="h-4 w-4" />
+                              <XCircle className="h-4 w-4" />
                             </button>
                           )}
                           <button
@@ -1541,7 +1552,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                             className="p-0.5 rounded text-claude-textSecondary dark:text-claude-darkTextSecondary hover:text-claude-accent transition-colors"
                             title={showApiKey ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
                           >
-                            {showApiKey ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                            {showApiKey ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                           </button>
                         </div>
                       </div>
@@ -1583,7 +1594,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                               className="p-0.5 rounded text-claude-textSecondary dark:text-claude-darkTextSecondary hover:text-claude-accent transition-colors"
                               title={i18nService.t('clear') || 'Clear'}
                             >
-                              <XCircleIconSolid className="h-4 w-4" />
+                              <XCircle className="h-4 w-4" />
                             </button>
                           )}
                           <button
@@ -1592,7 +1603,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                             className="p-0.5 rounded text-claude-textSecondary dark:text-claude-darkTextSecondary hover:text-claude-accent transition-colors"
                             title={showApiKey ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
                           >
-                            {showApiKey ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                            {showApiKey ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                           </button>
                         </div>
                       </div>
@@ -1743,7 +1754,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         className="p-0.5 rounded text-claude-textSecondary dark:text-claude-darkTextSecondary hover:text-claude-accent transition-colors"
                         title={i18nService.t('clear') || 'Clear'}
                       >
-                        <XCircleIconSolid className="h-4 w-4" />
+                        <XCircle className="h-4 w-4" />
                       </button>
                     </div>
                   )}
@@ -2045,7 +2056,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                     : undefined}
                   className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl border dark:border-claude-darkBorder border-claude-border dark:text-claude-darkText text-claude-text dark:hover:bg-claude-darkSurfaceHover hover:bg-claude-surfaceHover disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                 >
-                  <SignalIcon className="h-3.5 w-3.5 mr-1.5" />
+                  <Broadcast className="h-3.5 w-3.5 mr-1.5" />
                   {isTesting ? i18nService.t('testing') : i18nService.t('testConnection')}
                 </button>
                 {!isTesting && testResult && testResult.provider === activeProvider && (
@@ -2060,8 +2071,8 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                     }`}
                   >
                     {testResult.success
-                      ? <CheckCircleIcon className="h-3.5 w-3.5" />
-                      : <XCircleIcon className="h-3.5 w-3.5" />}
+                      ? <CheckCircle className="h-3.5 w-3.5" />
+                      : <XCircle className="h-3.5 w-3.5" />}
                     {testResult.success ? i18nService.t('connectionSuccess') : i18nService.t('connectionFailed')}
                   </button>
                 )}
@@ -2178,7 +2189,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                   onClick={() => setIsTestResultModalOpen(false)}
                   className="p-1 text-secondary hover:text-foreground rounded-md hover:bg-surface-raised"
                 >
-                  <XMarkIcon className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
@@ -2187,9 +2198,9 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                 <span className="text-[11px]">•</span>
                 <span className={`inline-flex items-center gap-1 ${testResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {testResult.success ? (
-                    <CheckCircleIcon className="h-4 w-4" />
+                    <CheckCircle className="h-4 w-4" />
                   ) : (
-                    <XCircleIcon className="h-4 w-4" />
+                    <XCircle className="h-4 w-4" />
                   )}
                   {testResult.success ? i18nService.t('connectionSuccess') : i18nService.t('connectionFailed')}
                 </span>

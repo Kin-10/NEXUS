@@ -3,9 +3,22 @@
  * Configuration UI for DingTalk, Feishu and Telegram IM bots
  */
 
-import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { ArrowLeftIcon, CheckCircleIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, EllipsisVerticalIcon, ExclamationTriangleIcon, PlusIcon, SignalIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowLeft,
+  ArrowsClockwise,
+  Broadcast,
+  CaretDown,
+  CaretRight,
+  Check,
+  CheckCircle,
+  DotsThreeVertical,
+  Eye,
+  EyeSlash,
+  Plus,
+  Warning,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import type { Platform } from '@shared/platform';
 import { PlatformRegistry } from '@shared/platform';
 import WecomAIBotSDK from '@wecom/wecom-aibot-sdk';
@@ -20,6 +33,7 @@ import { RootState } from '../../store';
 import { clearError,setDingTalkConfig, setDingTalkInstanceConfig, setDiscordConfig, setDiscordInstanceConfig, setEmailInstanceConfig, setFeishuConfig, setFeishuInstanceConfig, setNeteaseBeeChanConfig, setNimConfig, setNimInstanceConfig, setPopoInstanceConfig, setQQConfig, setQQInstanceConfig, setTelegramInstanceConfig, setTelegramOpenClawConfig, setWecomConfig, setWecomInstanceConfig, setWeixinConfig } from '../../store/slices/imSlice';
 import type { EmailInstanceConfig, IMConnectivityCheck, IMConnectivityTestResult, IMGatewayConfig, WeixinOpenClawConfig } from '../../types/im';
 import { MAX_DINGTALK_INSTANCES, MAX_DISCORD_INSTANCES, MAX_EMAIL_INSTANCES, MAX_FEISHU_INSTANCES, MAX_NIM_INSTANCES, MAX_POPO_INSTANCES, MAX_QQ_INSTANCES, MAX_TELEGRAM_INSTANCES, MAX_WECOM_INSTANCES } from '../../types/im';
+import { getPlatformLogoSrc } from '../../utils/platformLogo';
 import { getVisibleIMPlatforms } from '../../utils/regionFilter';
 import Modal from '../common/Modal';
 import ComposeIcon from '../icons/ComposeIcon';
@@ -35,8 +49,6 @@ import QQInstanceSettings from './QQInstanceSettings';
 import type { UiHint } from './SchemaForm';
 import TelegramInstanceSettings from './TelegramInstanceSettings';
 import WecomInstanceSettings from './WecomInstanceSettings';
-
-
 
 // Reusable guide card component for platform setup instructions
 const PlatformGuide: React.FC<{
@@ -715,7 +727,6 @@ const IMSettings: React.FC = () => {
 
   const discordMultiConfig = config.discord;
 
-
   // Handle NetEase Bee config change
   const handleNeteaseBeeChanChange = (field: 'clientId' | 'secret', value: string) => {
     dispatch(setNeteaseBeeChanConfig({ [field]: value }));
@@ -803,7 +814,6 @@ const IMSettings: React.FC = () => {
       setWeixinQrError(String(err));
     }
   };
-
 
   const handleSaveConfig = async () => {
     if (!configLoaded) return;
@@ -1223,7 +1233,7 @@ const IMSettings: React.FC = () => {
     if (displayState === IMRuntimeDisplayState.Connecting || displayState === IMRuntimeDisplayState.Starting) {
       return (
         <div className="flex items-center gap-2 rounded-lg bg-sky-500/10 px-3 py-2 text-xs text-sky-700 dark:text-sky-300">
-          <ArrowPathIcon className="h-3.5 w-3.5 flex-shrink-0 animate-spin" />
+          <ArrowsClockwise className="h-3.5 w-3.5 flex-shrink-0 animate-spin" />
           <span>{i18nService.t('imChannelConnecting').replace('{platform}', i18nService.t(platform))}</span>
         </div>
       );
@@ -1527,7 +1537,7 @@ const IMSettings: React.FC = () => {
       disabled={isLoading || testingPlatform === platform}
       className="inline-flex items-center rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
     >
-      <SignalIcon className="h-3.5 w-3.5 mr-1.5" />
+      <Broadcast className="h-3.5 w-3.5 mr-1.5" />
       {testingPlatform === platform
         ? i18nService.t('imConnectivityTesting')
         : connectivityResults[platform]
@@ -1942,7 +1952,7 @@ const IMSettings: React.FC = () => {
                 <div className="flex items-start gap-2.5">
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 p-1">
                     <img
-                      src={PlatformRegistry.logo(platform)}
+                      src={getPlatformLogoSrc(platform)}
                       alt={i18nService.t(platform)}
                       className="h-6 w-6 rounded-md object-contain"
                     />
@@ -2010,7 +2020,7 @@ const IMSettings: React.FC = () => {
                       aria-label={i18nService.t('imInstanceActionMenu')}
                       title={i18nService.t('imInstanceActionMenu')}
                     >
-                      <EllipsisVerticalIcon className="h-3.5 w-3.5" />
+                      <DotsThreeVertical className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
@@ -2025,7 +2035,7 @@ const IMSettings: React.FC = () => {
               className="flex min-h-[82px] flex-col items-center justify-center rounded-lg border border-dashed border-border-subtle bg-surface text-secondary transition-colors hover:border-primary/50 hover:bg-surface-raised hover:text-primary"
             >
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised">
-                <PlusIcon className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
               </span>
               <span className="mt-2 text-sm font-medium">
                 {i18nService.t('imAddBot')}
@@ -2047,7 +2057,7 @@ const IMSettings: React.FC = () => {
       aria-label={i18nService.t('imBackToBotList').replace('{platform}', i18nService.t(platform))}
       title={i18nService.t('imBackToBotList').replace('{platform}', i18nService.t(platform))}
     >
-      <ArrowLeftIcon className="h-3.5 w-3.5 flex-shrink-0" />
+      <ArrowLeft className="h-3.5 w-3.5 flex-shrink-0" />
       <span>{i18nService.t('back')}</span>
     </button>
   );
@@ -2061,7 +2071,7 @@ const IMSettings: React.FC = () => {
       {/* Platform List - Left Side */}
       <div className="w-44 flex-shrink-0 space-y-1.5 overflow-y-auto border-r border-border pr-3">
         {platforms.map((platform) => {
-          const logo = PlatformRegistry.logo(platform);
+          const logo = getPlatformLogoSrc(platform);
           const isActive = activePlatform === platform;
           const isEnabled = isPlatformEnabled(platform);
           const statusDotClass = getPlatformStatusDotClass(platform);
@@ -2136,7 +2146,7 @@ const IMSettings: React.FC = () => {
               {(() => {
                 const displayState = getPlatformDisplayState(activePlatform);
                 return (displayState === IMRuntimeDisplayState.Connecting || displayState === IMRuntimeDisplayState.Starting) ? (
-                  <ArrowPathIcon className="h-3 w-3 animate-spin" />
+                  <ArrowsClockwise className="h-3 w-3 animate-spin" />
                 ) : null;
               })()}
               {getPlatformStatusLabel(activePlatform)}
@@ -2156,7 +2166,6 @@ const IMSettings: React.FC = () => {
             )}
           </div>
         )}
-
 
         {/* DingTalk Settings (multi-instance) */}
         {activePlatform === 'dingtalk' && !activeDingTalkInstanceId && renderMultiInstanceOverview('dingtalk')}
@@ -2460,8 +2469,8 @@ const IMSettings: React.FC = () => {
                       title={showSecrets[`email.${inst.instanceId}.apiKey`] ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
                     >
                       {showSecrets[`email.${inst.instanceId}.apiKey`]
-                        ? <EyeIcon className="h-4 w-4" />
-                        : <EyeSlashIcon className="h-4 w-4" />}
+                        ? <Eye className="h-4 w-4" />
+                        : <EyeSlash className="h-4 w-4" />}
                     </button>
                   </div>
                   <button
@@ -2625,7 +2634,7 @@ const IMSettings: React.FC = () => {
                   disabled={testingPlatform === 'email'}
                   className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl border border-border text-foreground hover:bg-surface-raised disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                 >
-                  <SignalIcon className="h-3.5 w-3.5 mr-1.5" />
+                  <Broadcast className="h-3.5 w-3.5 mr-1.5" />
                   {testingPlatform === 'email'
                     ? i18nService.t('imConnectivityTesting')
                     : connectivityResults['email' as keyof typeof connectivityResults]
@@ -2798,7 +2807,7 @@ const IMSettings: React.FC = () => {
                       className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                       title={i18nService.t('clear') || 'Clear'}
                     >
-                      <XCircleIconSolid className="h-4 w-4" />
+                      <XCircle className="h-4 w-4" />
                     </button>
                   </div>
                 )}
@@ -2827,7 +2836,7 @@ const IMSettings: React.FC = () => {
                       className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                       title={i18nService.t('clear') || 'Clear'}
                     >
-                      <XCircleIconSolid className="h-4 w-4" />
+                      <XCircle className="h-4 w-4" />
                     </button>
                   )}
                   <button
@@ -2836,7 +2845,7 @@ const IMSettings: React.FC = () => {
                     className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                     title={showSecrets['netease-bee.secret'] ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
                   >
-                    {showSecrets['netease-bee.secret'] ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                    {showSecrets['netease-bee.secret'] ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
@@ -2884,7 +2893,7 @@ const IMSettings: React.FC = () => {
                     </p>
                     {weixinQrStatus === 'error' && weixinQrError && (
                       <div className="flex items-center justify-center gap-1.5 text-xs text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">
-                        <XCircleIcon className="h-4 w-4 flex-shrink-0" />
+                        <XCircle className="h-4 w-4 flex-shrink-0" />
                         {weixinQrError}
                       </div>
                     )}
@@ -2892,7 +2901,7 @@ const IMSettings: React.FC = () => {
                 )}
                 {weixinQrStatus === 'loading' && (
                   <div className="flex items-center justify-center gap-2 py-4">
-                    <ArrowPathIcon className="h-5 w-5 animate-spin text-primary" />
+                    <ArrowsClockwise className="h-5 w-5 animate-spin text-primary" />
                     <span className="text-sm text-secondary">
                       {i18nService.t('imWeixinQrLoading')}
                     </span>
@@ -2912,7 +2921,7 @@ const IMSettings: React.FC = () => {
                 )}
                 {weixinQrStatus === 'success' && (
                   <div className="flex items-center justify-center gap-1.5 text-xs text-green-600 dark:text-green-400 bg-green-500/10 px-3 py-2 rounded-lg">
-                    <CheckCircleIcon className="h-4 w-4 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 flex-shrink-0" />
                     {i18nService.t('imWeixinQrSuccess')}
                   </div>
                 )}
@@ -2958,7 +2967,7 @@ const IMSettings: React.FC = () => {
                         <span className="ml-auto text-xs font-medium text-foreground">
                           {getDmPolicyLabel(weixinOpenClawConfig.dmPolicy)}
                         </span>
-                        <ChevronDownIcon className={`ml-2 h-3.5 w-3.5 flex-shrink-0 text-secondary transition-transform ${isWeixinDmPolicyMenuOpen ? 'rotate-180' : ''}`} />
+                        <CaretDown className={`ml-2 h-3.5 w-3.5 flex-shrink-0 text-secondary transition-transform ${isWeixinDmPolicyMenuOpen ? 'rotate-180' : ''}`} />
                       </button>
                       {isWeixinDmPolicyMenuOpen && (
                         <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-surface shadow-popover popover-enter">
@@ -2983,7 +2992,7 @@ const IMSettings: React.FC = () => {
                                   }`}
                                 >
                                   <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                                  {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
+                                  {selected && <Check className="h-3.5 w-3.5 flex-shrink-0" />}
                                 </button>
                               );
                             })}
@@ -2996,7 +3005,7 @@ const IMSettings: React.FC = () => {
                   <details className="group">
                     <summary className="flex min-h-[42px] cursor-pointer list-none items-center rounded-lg border border-border-subtle bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:border-border hover:bg-surface-raised [&::-webkit-details-marker]:hidden">
                       {i18nService.t('imAdvancedSettings')}
-                      <ChevronRightIcon className="ml-auto h-3.5 w-3.5 text-secondary transition-transform group-open:rotate-90" />
+                      <CaretRight className="ml-auto h-3.5 w-3.5 text-secondary transition-transform group-open:rotate-90" />
                     </summary>
                     <div className="mt-3 rounded-lg border border-border-subtle bg-surface p-3">
                       <label className="block text-xs font-medium text-secondary">
@@ -3053,7 +3062,7 @@ const IMSettings: React.FC = () => {
                                 className="text-secondary transition-colors hover:text-red-500 dark:hover:text-red-400"
                                 aria-label={i18nService.t('delete')}
                               >
-                                <XMarkIcon className="h-3 w-3" />
+                                <X className="h-3 w-3" />
                               </button>
                             </span>
                           ))}
@@ -3267,7 +3276,7 @@ const IMSettings: React.FC = () => {
                   onClick={() => setConnectivityModalPlatform(null)}
                   className="p-1 rounded-md hover:bg-surface-raised text-secondary"
                 >
-                  <XMarkIcon className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
@@ -3281,11 +3290,11 @@ const IMSettings: React.FC = () => {
                     <div className="flex items-center justify-between gap-2">
                       <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${verdictColorClass[connectivityResults[connectivityModalPlatform]!.verdict]}`}>
                         {connectivityResults[connectivityModalPlatform]!.verdict === 'pass' ? (
-                          <CheckCircleIcon className="h-3.5 w-3.5" />
+                          <CheckCircle className="h-3.5 w-3.5" />
                         ) : connectivityResults[connectivityModalPlatform]!.verdict === 'warn' ? (
-                          <ExclamationTriangleIcon className="h-3.5 w-3.5" />
+                          <Warning className="h-3.5 w-3.5" />
                         ) : (
-                          <XCircleIcon className="h-3.5 w-3.5" />
+                          <XCircle className="h-3.5 w-3.5" />
                         )}
                         {i18nService.t(`imConnectivityVerdict_${connectivityResults[connectivityModalPlatform]!.verdict}`)}
                       </div>

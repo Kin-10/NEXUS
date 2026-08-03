@@ -1,4 +1,7 @@
-import { CheckIcon } from '@heroicons/react/24/outline';
+
+import {
+  Check,
+} from '@phosphor-icons/react';
 import { canonicalizeMediaModelId, GPT_IMAGE_2_MODEL_ID, mediaModelDisplayName } from '@shared/mediaModelAliases';
 import { ProviderName } from '@shared/providers';
 import Lottie from 'lottie-react';
@@ -1101,7 +1104,7 @@ const MediaModelPicker: React.FC<MediaModelPickerProps> = ({ draftKey, disabled 
                   )}
                   <span className="flex-1" />
                   {isSelected && (
-                    <CheckIcon className="h-4 w-4 shrink-0 text-emerald-500" />
+                    <Check className="h-4 w-4 shrink-0 text-emerald-500" />
                   )}
                 </button>
               );

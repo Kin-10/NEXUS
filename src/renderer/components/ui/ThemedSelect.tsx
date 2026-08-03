@@ -1,4 +1,7 @@
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+
+import {
+  CaretDown,
+} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 
 interface ThemedSelectProps {
@@ -62,7 +65,7 @@ const ThemedSelect: React.FC<ThemedSelectProps> = ({
             aria-expanded={isOpen}
           >
             <span className="min-w-0 truncate text-left">{selectedOption?.label || value}</span>
-            <ChevronDownIcon className="w-4 h-4 ml-2 shrink-0" />
+            <CaretDown className="w-4 h-4 ml-2 shrink-0" />
           </button>
 
           {isOpen && (

@@ -1,4 +1,7 @@
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowRight,
+} from '@phosphor-icons/react';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -74,7 +77,7 @@ const PromptPanel: React.FC<PromptPanelProps> = ({ action, onPromptSelect, onClo
                 <span className={`text-sm font-medium ${isPromptSelected ? 'text-primary' : 'text-foreground'}`}>
                   {prompt.label}
                 </span>
-                <ArrowRightIcon
+                <ArrowRight
                   className={`
                     w-3.5 h-3.5 transition-all duration-200
                     ${

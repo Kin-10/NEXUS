@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { Warning } from '@phosphor-icons/react';
 import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -787,7 +787,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className="flex items-center gap-3 px-5 py-4">
             <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-500" />
+              <Warning className="h-5 w-5 text-red-600 dark:text-red-500" weight="regular" aria-hidden />
             </div>
             <h2 className="text-base font-semibold text-foreground">
               {i18nService.t('batchDeleteConfirmTitle')}

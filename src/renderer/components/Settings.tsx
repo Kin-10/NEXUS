@@ -1,4 +1,22 @@
-import { ArchiveBoxIcon, ArrowPathIcon, ArrowPathRoundedSquareIcon, ChatBubbleLeftIcon, CheckCircleIcon, CpuChipIcon, CubeIcon, EnvelopeIcon, ExclamationTriangleIcon, GlobeAltIcon, InformationCircleIcon, MagnifyingGlassIcon, SignalIcon, SunIcon, TrashIcon, WrenchScrewdriverIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  Archive,
+  ArrowsClockwise,
+  Broadcast,
+  ChatCircle,
+  CheckCircle,
+  Cpu,
+  Cube,
+  Envelope,
+  Globe,
+  Info,
+  MagnifyingGlass,
+  Sun,
+  Trash,
+  Warning,
+  Wrench,
+  X,
+} from '@phosphor-icons/react';
 import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -905,7 +923,6 @@ interface SettingsProps extends SettingsOpenOptions {
   } | null;
 }
 
-
 type ProviderConnectionTestResult = {
   success: boolean;
   message: string;
@@ -1487,7 +1504,6 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Add state for providers configuration
   const [providers, setProviders] = useState<ProvidersConfig>(() => getDefaultProviders());
-
 
   // authType defaults to undefined on first open, which should behave as OAuth mode
   const minimaxIsOAuthMode = providers.minimax.authType !== 'apikey';
@@ -2842,7 +2858,7 @@ const Settings: React.FC<SettingsProps> = ({
 
     if (phase === OpenClawEnginePhase.Error) {
       return {
-        Icon: ExclamationTriangleIcon,
+        Icon: Warning,
         iconClassName: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
         progressClassName: 'bg-red-500',
         spinIcon: false,
@@ -2855,7 +2871,7 @@ const Settings: React.FC<SettingsProps> = ({
 
     if (phase === OpenClawEnginePhase.Running || phase === OpenClawEnginePhase.Ready) {
       return {
-        Icon: CheckCircleIcon,
+        Icon: CheckCircle,
         iconClassName: 'bg-primary-muted text-primary',
         progressClassName: 'bg-primary',
         spinIcon: false,
@@ -2870,7 +2886,7 @@ const Settings: React.FC<SettingsProps> = ({
 
     if (phase === OpenClawEnginePhase.Installing || phase === OpenClawEnginePhase.Starting) {
       return {
-        Icon: ArrowPathIcon,
+        Icon: ArrowsClockwise,
         iconClassName: 'bg-primary-muted text-primary',
         progressClassName: 'bg-primary',
         spinIcon: true,
@@ -2884,7 +2900,7 @@ const Settings: React.FC<SettingsProps> = ({
     }
 
     return {
-      Icon: CpuChipIcon,
+      Icon: Cpu,
       iconClassName: 'bg-surface-raised text-secondary',
       progressClassName: 'bg-primary',
       spinIcon: false,
@@ -3463,7 +3479,6 @@ const Settings: React.FC<SettingsProps> = ({
       let apiKeyToUse = primaryProvider.apiKey;
       let baseUrlToUse = primaryProvider.baseUrl;
 
-
       apiService.setConfig({
         apiKey: apiKeyToUse,
         baseUrl: baseUrlToUse,
@@ -3998,7 +4013,6 @@ const Settings: React.FC<SettingsProps> = ({
 
     const hasValidAuth = providerConfig.apiKey;
 
-
     if (providerRequiresApiKey(testingProvider) && !hasValidAuth) {
       reportCustomModelConnectionTested(testingProvider, testingApiFormat, 'failed', {
         failureReason: 'missing_api_key',
@@ -4463,17 +4477,17 @@ const Settings: React.FC<SettingsProps> = ({
   const sidebarTabs: { key: TabType; label: string; icon: React.ReactNode }[] = (() => {
     const allTabs = [
       { key: 'general' as TabType,        label: i18nService.t('general'),        icon: <SettingsSlidersIcon className="h-5 w-5" /> },
-      { key: 'appearance' as TabType,     label: i18nService.t('appearance'),     icon: <SunIcon className="h-5 w-5" /> },
-      { key: 'coworkAgentEngine' as TabType, label: i18nService.t('coworkAgentEngine'), icon: <CpuChipIcon className="h-5 w-5" /> },
-      { key: 'model' as TabType,          label: i18nService.t('settingsCustomModel'), icon: <CubeIcon className="h-5 w-5" /> },
-      { key: 'im' as TabType,             label: i18nService.t('imBot'),          icon: <ChatBubbleLeftIcon className="h-5 w-5" /> },
-      { key: 'browserWebAccess' as TabType, label: i18nService.t('browserWebAccessTab'), icon: <GlobeAltIcon className="h-5 w-5" /> },
-      { key: 'email' as TabType,          label: i18nService.t('emailTab'),       icon: <EnvelopeIcon className="h-5 w-5" /> },
+      { key: 'appearance' as TabType,     label: i18nService.t('appearance'),     icon: <Sun className="h-5 w-5" /> },
+      { key: 'coworkAgentEngine' as TabType, label: i18nService.t('coworkAgentEngine'), icon: <Cpu className="h-5 w-5" /> },
+      { key: 'model' as TabType,          label: i18nService.t('settingsCustomModel'), icon: <Cube className="h-5 w-5" /> },
+      { key: 'im' as TabType,             label: i18nService.t('imBot'),          icon: <ChatCircle className="h-5 w-5" /> },
+      { key: 'browserWebAccess' as TabType, label: i18nService.t('browserWebAccessTab'), icon: <Globe className="h-5 w-5" /> },
+      { key: 'email' as TabType,          label: i18nService.t('emailTab'),       icon: <Envelope className="h-5 w-5" /> },
       { key: 'coworkMemory' as TabType,   label: i18nService.t('coworkMemoryTitle'), icon: <BrainIcon className="h-5 w-5" /> },
       { key: 'coworkDreaming' as TabType, label: i18nService.t('coworkMemoryTabDreaming'), icon: <DreamingTabIcon className="h-5 w-5" /> },
       { key: 'plugins' as TabType,        label: i18nService.t('pluginsTab'),     icon: <PlugIcon className="h-5 w-5" /> },
       { key: 'shortcuts' as TabType,      label: i18nService.t('shortcuts'),      icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5"><rect x="2" y="4" width="20" height="14" rx="2" /><line x1="6" y1="8" x2="8" y2="8" /><line x1="10" y1="8" x2="12" y2="8" /><line x1="14" y1="8" x2="16" y2="8" /><line x1="6" y1="12" x2="8" y2="12" /><line x1="10" y1="12" x2="14" y2="12" /><line x1="16" y1="12" x2="18" y2="12" /><line x1="8" y1="15.5" x2="16" y2="15.5" /></svg> },
-      { key: 'about' as TabType,          label: i18nService.t('about'),          icon: <InformationCircleIcon className="h-5 w-5" /> },
+      { key: 'about' as TabType,          label: i18nService.t('about'),          icon: <Info className="h-5 w-5" /> },
     ];
     // Filter out tabs hidden by enterprise config
     // Filter out tabs with 'hide' action in enterprise config
@@ -5048,7 +5062,7 @@ const Settings: React.FC<SettingsProps> = ({
                               className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-background hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/25"
                             >
                               {openClawGatewayCopied
-                                ? <CheckCircleIcon className="h-4 w-4 text-primary" />
+                                ? <CheckCircle className="h-4 w-4 text-primary" />
                                 : <MessageCopyIcon className="h-4 w-4" />}
                             </button>
                           </div>
@@ -5091,7 +5105,7 @@ const Settings: React.FC<SettingsProps> = ({
                             : 'bg-surface-raised text-secondary'
                         }`}
                       >
-                        <SignalIcon className="h-5 w-5" />
+                        <Broadcast className="h-5 w-5" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-3">
@@ -5123,7 +5137,7 @@ const Settings: React.FC<SettingsProps> = ({
                     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                          <WrenchScrewdriverIcon className="h-[18px] w-[18px]" />
+                          <Wrench className="h-[18px] w-[18px]" />
                         </span>
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-foreground">
@@ -5141,7 +5155,7 @@ const Settings: React.FC<SettingsProps> = ({
                         className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:self-auto"
                       >
                         {isRepairingOpenClaw && (
-                          <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
+                          <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
                         )}
                         {isRepairingOpenClaw
                           ? i18nService.t('openClawRepairRunning')
@@ -5177,7 +5191,7 @@ const Settings: React.FC<SettingsProps> = ({
                     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                          <ArchiveBoxIcon className="h-[18px] w-[18px]" />
+                          <Archive className="h-[18px] w-[18px]" />
                         </span>
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-foreground">
@@ -5195,7 +5209,7 @@ const Settings: React.FC<SettingsProps> = ({
                         className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:self-auto"
                       >
                         {isBackingUpOpenClawData && (
-                          <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
+                          <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
                         )}
                         {isBackingUpOpenClawData
                           ? i18nService.t('openClawDataBackupRunning')
@@ -5206,7 +5220,7 @@ const Settings: React.FC<SettingsProps> = ({
                     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                          <ArrowPathRoundedSquareIcon className="h-[18px] w-[18px]" />
+                          <ArrowsClockwise className="h-[18px] w-[18px]" />
                         </span>
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-foreground">
@@ -5224,7 +5238,7 @@ const Settings: React.FC<SettingsProps> = ({
                         className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:self-auto"
                       >
                         {isRestoringOpenClawData && (
-                          <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
+                          <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
                         )}
                         {isRestoringOpenClawData
                           ? i18nService.t('openClawDataMigrationRunning')
@@ -5422,7 +5436,7 @@ const Settings: React.FC<SettingsProps> = ({
                                             className="rounded-md p-1.5 text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-60 transition-colors"
                                             disabled={coworkMemoryListLoading}
                                           >
-                                            <TrashIcon className="h-4 w-4" />
+                                            <Trash className="h-4 w-4" />
                                           </button>
                                         </div>
                                       </div>
@@ -5459,7 +5473,7 @@ const Settings: React.FC<SettingsProps> = ({
                           aria-label={i18nService.t('close')}
                           className="p-2 rounded-lg hover:bg-surface-raised transition-colors"
                         >
-                          <XMarkIcon className="h-5 w-5 text-secondary" />
+                          <X className="h-5 w-5 text-secondary" />
                         </button>
                       </div>
                       <textarea
@@ -5599,7 +5613,7 @@ const Settings: React.FC<SettingsProps> = ({
         return (
           <div className="space-y-4">
             <div className="relative">
-              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
+              <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
               <input
                 value={shortcutSearchQuery}
                 onChange={(event) => setShortcutSearchQuery(event.target.value)}
@@ -5657,7 +5671,7 @@ const Settings: React.FC<SettingsProps> = ({
                               aria-label={i18nService.t('shortcutClear')}
                               className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
                             >
-                              <TrashIcon className="h-3.5 w-3.5" />
+                              <Trash className="h-3.5 w-3.5" />
                             </button>
                           ) : (
                             <span className="h-6 w-6 shrink-0" aria-hidden="true" />
@@ -5897,7 +5911,7 @@ const Settings: React.FC<SettingsProps> = ({
               onClick={guardedClose}
               className="text-secondary hover:text-foreground p-1.5 hover:bg-surface-raised rounded-lg transition-colors"
             >
-              <XMarkIcon className="h-5 w-5" />
+              <X className="h-5 w-5" />
             </button>
           </div>
 
@@ -6003,7 +6017,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <div className="px-5 pt-5 pb-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                      <WrenchScrewdriverIcon className="h-5 w-5" />
+                      <Wrench className="h-5 w-5" />
                     </span>
                     <h3 className="text-base font-semibold text-foreground">
                       {i18nService.t('openClawRepairConfirmTitle')}
@@ -6031,7 +6045,7 @@ const Settings: React.FC<SettingsProps> = ({
                     disabled={isRepairingOpenClaw}
                     className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-white bg-primary hover:bg-primary-hover rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                   >
-                    <WrenchScrewdriverIcon className="h-4 w-4" />
+                    <Wrench className="h-4 w-4" />
                     {isRepairingOpenClaw
                       ? i18nService.t('openClawRepairRunning')
                       : i18nService.t('openClawRepairConfirmAction')}
@@ -6055,7 +6069,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <div className="px-5 pt-5 pb-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                      <TrashIcon className="h-5 w-5" />
+                      <Trash className="h-5 w-5" />
                     </span>
                     <h3 className="text-base font-semibold text-foreground">
                       {i18nService.t('coworkTempCleanDialogTitle')}
@@ -6136,8 +6150,8 @@ const Settings: React.FC<SettingsProps> = ({
                       className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-white bg-primary hover:bg-primary-hover rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                     >
                       {isCleaningTempStorage
-                        ? <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                        : <TrashIcon className="h-4 w-4" />}
+                        ? <ArrowsClockwise className="h-4 w-4 animate-spin" />
+                        : <Trash className="h-4 w-4" />}
                       {isCleaningTempStorage
                         ? i18nService.t('coworkTempCleaning')
                         : i18nService.t('coworkTempCleanDialogConfirm')}
@@ -6162,7 +6176,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <div className="px-5 pt-5 pb-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                      <ArrowPathRoundedSquareIcon className="h-5 w-5" />
+                      <ArrowsClockwise className="h-5 w-5" />
                     </span>
                     <h3 className="text-base font-semibold text-foreground">
                       {i18nService.t('openClawDataMigrationConfirmTitle')}
@@ -6191,8 +6205,8 @@ const Settings: React.FC<SettingsProps> = ({
                     className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-white bg-primary hover:bg-primary-hover rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                   >
                     {isRestoringOpenClawData
-                      ? <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                      : <ArrowPathRoundedSquareIcon className="h-4 w-4" />}
+                      ? <ArrowsClockwise className="h-4 w-4 animate-spin" />
+                      : <ArrowsClockwise className="h-4 w-4" />}
                     {isRestoringOpenClawData
                       ? i18nService.t('openClawDataMigrationRunning')
                       : i18nService.t('openClawDataMigrationConfirmAction')}
@@ -6206,7 +6220,7 @@ const Settings: React.FC<SettingsProps> = ({
             <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4">
               <div className="w-full max-w-md rounded-2xl border border-border bg-surface px-5 py-5 text-center shadow-xl">
                 <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-primary-muted text-primary">
-                  <ArrowPathIcon className="h-5 w-5 animate-spin" />
+                  <ArrowsClockwise className="h-5 w-5 animate-spin" />
                 </div>
                 <h3 className="mt-4 text-base font-semibold text-foreground">
                   {i18nService.t(isBackingUpOpenClawData
@@ -6219,7 +6233,7 @@ const Settings: React.FC<SettingsProps> = ({
                     : 'openClawDataMigrationBlockingDesc')}
                 </p>
                 <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs leading-5 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                  <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                  <Warning className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>
                     {i18nService.t(isBackingUpOpenClawData
                       ? 'openClawDataBackupBlockingWarning'

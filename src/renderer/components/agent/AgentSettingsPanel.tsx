@@ -1,4 +1,7 @@
-import { XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  X,
+} from '@phosphor-icons/react';
 import { AgentLegacyIdentityCleanupStatus } from '@shared/agent';
 import type { Platform } from '@shared/platform';
 import { PlatformRegistry } from '@shared/platform';
@@ -18,6 +21,7 @@ import type { DingTalkInstanceConfig, DiscordInstanceConfig, FeishuInstanceConfi
 import type { Skill } from '../../types/skill';
 import { getAgentDisplayName, getAgentDisplayNameById, isDefaultAgentId } from '../../utils/agentDisplay';
 import { resolveOpenClawModelRef, toOpenClawModelRef } from '../../utils/openclawModelRef';
+import { getPlatformLogoSrc } from '../../utils/platformLogo';
 import { getVisibleIMPlatforms } from '../../utils/regionFilter';
 import Modal from '../common/Modal';
 import TrashIcon from '../icons/TrashIcon';
@@ -633,7 +637,7 @@ const AgentSettingsPanel: React.FC<AgentSettingsPanelProps> = ({ agentId, onClos
 
   const renderMultiInstancePlatform = (platform: MultiInstancePlatform) => {
     const enabledInstances = getEnabledInstances(platform);
-    const logo = PlatformRegistry.logo(platform);
+    const logo = getPlatformLogoSrc(platform);
     const bindings = imConfig?.settings?.platformAgentBindings || {};
 
     if (enabledInstances.length === 0) {
@@ -712,7 +716,7 @@ const AgentSettingsPanel: React.FC<AgentSettingsPanelProps> = ({ agentId, onClos
   };
 
   const renderSingleInstancePlatform = (platform: Platform) => {
-    const logo = PlatformRegistry.logo(platform);
+    const logo = getPlatformLogoSrc(platform);
     const configured = isPlatformConfigured(platform);
     const bindings = imConfig?.settings?.platformAgentBindings || {};
     const otherAgentId = bindings[platform];
@@ -800,7 +804,7 @@ const AgentSettingsPanel: React.FC<AgentSettingsPanelProps> = ({ agentId, onClos
             </div>
           </div>
           <button type="button" onClick={handleClose} className="mt-1 p-2 rounded-lg hover:bg-surface-raised transition-colors">
-            <XMarkIcon className="h-5 w-5 text-secondary" />
+            <X className="h-5 w-5 text-secondary" />
           </button>
         </div>
 

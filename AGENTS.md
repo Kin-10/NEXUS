@@ -464,9 +464,10 @@ Agents:
 IM:
 - IM config is stored in SQLite and synced into OpenClaw config where the
   channel is OpenClaw-backed.
-- Multi-instance platforms include DingTalk, Feishu/Lark, QQ, Telegram,
-  Discord, WeCom, NIM, POPO, and email.
-- Weixin and NetEase Bee have single-instance style config.
+- Enabled multi-instance platforms: DingTalk, Feishu/Lark, QQ, WeCom.
+- Weixin uses single-instance style config.
+- Retired IM platforms (Telegram, Discord, NIM, POPO, NetEase Bee, email)
+  remain in the platform registry for legacy resolution but are disabled.
 - IM session mappings preserve conversation/session/agent relationships.
 
 MCP:

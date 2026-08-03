@@ -1,4 +1,7 @@
-import { XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  X,
+} from '@phosphor-icons/react';
 import { DefaultAgentAvatarIcon } from '@shared/agent/avatar';
 import type { Platform } from '@shared/platform';
 import { PlatformRegistry } from '@shared/platform';
@@ -18,6 +21,7 @@ import type { DingTalkInstanceConfig, DiscordInstanceConfig, FeishuInstanceConfi
 import type { Skill } from '../../types/skill';
 import { getAgentDisplayName, getAgentDisplayNameById } from '../../utils/agentDisplay';
 import { toOpenClawModelRef } from '../../utils/openclawModelRef';
+import { getPlatformLogoSrc } from '../../utils/platformLogo';
 import { getVisibleIMPlatforms } from '../../utils/regionFilter';
 import Modal from '../common/Modal';
 import AgentAvatarIcon from './AgentAvatarIcon';
@@ -612,7 +616,7 @@ const AgentCreateModal: React.FC<AgentCreateModalProps> = ({
             {i18nService.t('agentUseTemplate')}
           </button>
           <button type="button" onClick={handleClose} className="p-2 rounded-lg hover:bg-surface-raised transition-colors">
-            <XMarkIcon className="h-5 w-5 text-secondary" />
+            <X className="h-5 w-5 text-secondary" />
           </button>
         </div>
       </div>
@@ -676,7 +680,7 @@ const AgentCreateModal: React.FC<AgentCreateModalProps> = ({
               {PlatformRegistry.platforms
                 .filter((platform) => (getVisibleIMPlatforms(i18nService.getLanguage()) as readonly string[]).includes(platform))
                 .map((platform) => {
-                  const logo = PlatformRegistry.logo(platform);
+                  const logo = getPlatformLogoSrc(platform);
 
                   if (isMultiInstancePlatform(platform)) {
                     const enabledInstances = getEnabledInstances(platform);
@@ -900,7 +904,7 @@ const AgentTemplatePickerContent: React.FC<{
             {i18nService.t('agentTemplateNew')}
           </button>
           <button type="button" onClick={onClose} className="p-2 rounded-lg hover:bg-surface-raised transition-colors">
-            <XMarkIcon className="h-5 w-5 text-secondary" />
+            <X className="h-5 w-5 text-secondary" />
           </button>
         </div>
       </div>

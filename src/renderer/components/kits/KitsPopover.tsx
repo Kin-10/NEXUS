@@ -1,4 +1,8 @@
-import { CheckIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+
+import {
+  Check,
+  GearSix,
+} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -241,7 +245,7 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
                   </p>
                 </div>
                 {isActive && (
-                  <CheckIcon className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-primary" />
+                  <Check className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-primary" />
                 )}
               </button>
             );
@@ -257,7 +261,7 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
             onClick={handleOpenMarketplace}
             className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
           >
-            <Cog6ToothIcon className="h-4 w-4" />
+            <GearSix className="h-4 w-4" />
             {i18nService.t('manageKits')}
           </button>
         </div>

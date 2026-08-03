@@ -1,9 +1,10 @@
+
 import {
-  ArrowDownTrayIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from '@heroicons/react/24/outline';
+  CaretDown,
+  CaretUp,
+  Check,
+  DownloadSimple,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -159,9 +160,9 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
             }}
           >
             {isDownloaded ? (
-              <CheckIcon className="h-4 w-4 text-success" />
+              <Check className="h-4 w-4 text-success" />
             ) : (
-              <ArrowDownTrayIcon className="h-4 w-4" />
+              <DownloadSimple className="h-4 w-4" />
             )}
           </MessageActionButton>
           <MessageCopyButton
@@ -181,9 +182,9 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
             expanded={isExpanded}
           >
             {isExpanded ? (
-              <ChevronUpIcon className="h-4 w-4" />
+              <CaretUp className="h-4 w-4" />
             ) : (
-              <ChevronDownIcon className="h-4 w-4" />
+              <CaretDown className="h-4 w-4" />
             )}
           </MessageActionButton>
         </div>

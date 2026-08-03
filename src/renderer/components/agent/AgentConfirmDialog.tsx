@@ -1,4 +1,7 @@
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+
+import {
+  Warning,
+} from '@phosphor-icons/react';
 import React from 'react';
 
 import Modal from '../common/Modal';
@@ -36,7 +39,7 @@ const AgentConfirmDialog: React.FC<AgentConfirmDialogProps> = ({
     >
       <div className="flex items-start gap-3 px-5 py-4">
         <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${variantIconClassName[variant]}`}>
-          <ExclamationTriangleIcon className="h-5 w-5" />
+          <Warning className="h-5 w-5" />
         </div>
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-foreground">

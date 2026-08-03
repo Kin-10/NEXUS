@@ -1,8 +1,9 @@
+
 import {
-  ArrowUpIcon,
-  StopIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  ArrowUp,
+  Stop,
+  X,
+} from '@phosphor-icons/react';
 import React, {
   useCallback,
   useEffect,
@@ -472,7 +473,7 @@ const CoworkBtwFloatingPanel: React.FC<CoworkBtwFloatingPanelProps> = ({
             title={i18nService.t('coworkBtwCloseWindow')}
             aria-label={i18nService.t('coworkBtwCloseWindow')}
           >
-            <XMarkIcon className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -537,8 +538,8 @@ const CoworkBtwFloatingPanel: React.FC<CoworkBtwFloatingPanelProps> = ({
                 aria-label={i18nService.t(pendingEntry ? 'coworkBtwStop' : 'coworkBtwSend')}
               >
                 {pendingEntry
-                  ? <StopIcon className="h-4 w-4 fill-current" />
-                  : <ArrowUpIcon className="h-4 w-4" />}
+                  ? <Stop className="h-4 w-4 fill-current" />
+                  : <ArrowUp className="h-4 w-4" />}
               </button>
             </div>
           </div>

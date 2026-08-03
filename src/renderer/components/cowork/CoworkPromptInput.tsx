@@ -1,13 +1,14 @@
 import {
-  ArrowTurnDownRightIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ExclamationTriangleIcon,
-  PauseCircleIcon,
-  PlayCircleIcon,
-} from '@heroicons/react/24/outline';
-import { ArrowUpIcon, FolderIcon } from '@heroicons/react/24/solid';
+  ArrowBendDownRight,
+  ArrowUp,
+  CaretDown,
+  CaretRight,
+  Check,
+  Folder,
+  PauseCircle,
+  PlayCircle,
+  Warning,
+} from '@phosphor-icons/react';
 import { AuthSubscriptionStatus } from '@shared/auth/constants';
 import {
   BrowserAnnotationScreenshotStatus,
@@ -268,7 +269,7 @@ const reportModelSelected = (
 };
 
 // CoworkAttachment is aliased from the Redux-persisted DraftAttachment type
-// so that attachment state survives view switches (cowork ↔ skills, etc.)
+// so that attachment state survives view switches (cowork �?skills, etc.)
 type CoworkAttachment = DraftAttachment;
 
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.tif', '.ico', '.avif']);
@@ -388,13 +389,13 @@ const AgentContextAvatar: React.FC<{ agent: AgentSelectorOption; className?: str
 };
 
 export interface CoworkPromptInputRef {
-  /** 设置输入框值 */
+  /** 设置输入框�?*/
   setValue: (value: string, inputSource?: 'template') => void;
-  /** 设置图片附件（用于重新编辑消息时还原图片） */
+  /** 设置图片附件（用于重新编辑消息时还原图片�?*/
   setImageAttachments: (images: CoworkImageAttachment[]) => void;
-  /** 设置选中的 assistant 文本片段（用于重新编辑消息时还原上下文） */
+  /** 设置选中�?assistant 文本片段（用于重新编辑消息时还原上下文） */
   setSelectedTextSnippets: (snippets: CoworkSelectedTextSnippet[]) => void;
-  /** 聚焦输入框 */
+  /** 聚焦输入�?*/
   focus: () => void;
 }
 
@@ -562,7 +563,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       setIsTemplateHeightLocked(inputSource === 'template' && newValue.trim().length > 0);
       // Height sync happens in the auto-resize effect after re-render.
       if (inputSource === 'template') {
-        // Anchor the filled template at its start so it reads top-down — the
+        // Anchor the filled template at its start so it reads top-down �?the
         // controlled value swap otherwise leaves the caret/scroll at the end.
         requestAnimationFrame(() => {
           const textarea = textareaRef.current;
@@ -1935,7 +1936,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
         isSendCombo = event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
         break;
       default:
-        // Unknown config value — fall back to bare Enter so the user can always send
+        // Unknown config value �?fall back to bare Enter so the user can always send
         isSendCombo = !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey;
         break;
     }
@@ -2279,7 +2280,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
           }
           continue;
         }
-        // Model doesn't support image input — add as file path and show hint
+        // Model doesn't support image input �?add as file path and show hint
         console.warn('[CoworkPromptInput] handleIncomingFiles: image skipped vision path because modelSupportsImage=false', {
           fileName: file.name,
           effectiveModelId: effectiveSelectedModel?.id ?? null,
@@ -2866,7 +2867,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
           >
             <SkillIcon className="h-5 w-5 shrink-0 text-secondary" />
             <span className="min-w-0 flex-1 truncate">{i18nService.t('useSkill')}</span>
-            <ChevronRightIcon className="h-4 w-4 shrink-0 text-secondary" />
+            <CaretRight className="h-4 w-4 shrink-0 text-secondary" />
           </button>
           <button
             type="button"
@@ -2997,7 +2998,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       aria-label={i18nService.t('sendMessage')}
       title={sendButtonTitle}
     >
-      <ArrowUpIcon className={largeSendIconSizeClass} />
+      <ArrowUp className={largeSendIconSizeClass} />
     </button>
   );
 
@@ -3125,7 +3126,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
         }`}
       >
         {isRejected
-          ? <ExclamationTriangleIcon className="h-4 w-4 shrink-0 text-warning" />
+          ? <Warning className="h-4 w-4 shrink-0 text-warning" />
           : <SteerQueueStatusIcon className="h-4 w-4 shrink-0" />}
         <span className={`shrink-0 font-medium ${isRejected ? 'text-warning' : 'text-foreground'}`}>
           {isRejected ? i18nService.t('coworkSteerRejected') : i18nService.t('coworkSteerQueued')}
@@ -3245,8 +3246,8 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                 aria-label={pauseLabel}
               >
                 {goal.status === CoworkGoalStatus.Active
-                  ? <PauseCircleIcon className="h-3.5 w-3.5" />
-                  : <PlayCircleIcon className="h-3.5 w-3.5" />}
+                  ? <PauseCircle className="h-3.5 w-3.5" />
+                  : <PlayCircle className="h-3.5 w-3.5" />}
               </button>
             )}
             <button
@@ -3297,7 +3298,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       aria-label={i18nService.t('coworkSteerExit')}
     >
       <span className={ACTIVE_CONTEXT_BADGE_ICON_WRAP_CLASS}>
-        <ArrowTurnDownRightIcon className={ACTIVE_CONTEXT_BADGE_ICON_CLASS} />
+        <ArrowBendDownRight className={ACTIVE_CONTEXT_BADGE_ICON_CLASS} />
       </span>
       <span className="max-w-[120px] truncate">{i18nService.t('coworkSteer')}</span>
       <XMarkIcon className={ACTIVE_CONTEXT_BADGE_REMOVE_ICON_CLASS} />
@@ -3430,7 +3431,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
           title={workingDirectory || i18nService.t('noFolderSelected')}
           aria-label={i18nService.t('coworkOpenFolder')}
         >
-          <FolderIcon className="h-4 w-4 shrink-0" />
+          <Folder className="h-4 w-4 shrink-0" />
           {!isReadOnlyContextCompact && (
             <span className="min-w-0 truncate">
               {truncatePath(workingDirectory, ContextLabelMaxLength.Folder)}
@@ -3560,7 +3561,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       {!isLarge && steerPreview}
       {imageVisionHint && (
         <div className="mb-2 flex items-start gap-1.5 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
-          <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+          <Warning className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
           <span>
             {i18nService.t('imageVisionHint')}
           </span>
@@ -3649,11 +3650,11 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                           }`
                       }`}
                     >
-                      <FolderIcon className="h-4 w-4 shrink-0" />
+                      <Folder className="h-4 w-4 shrink-0" />
                       <span className="min-w-0 truncate">
                         {truncatePath(workingDirectory, ContextLabelMaxLength.Folder)}
                       </span>
-                      <ChevronDownIcon className="h-3.5 w-3.5 shrink-0" />
+                      <CaretDown className="h-3.5 w-3.5 shrink-0" />
                     </button>
                     <FolderSelectorPopover
                       isOpen={showFolderMenu}
@@ -3687,7 +3688,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                   >
                     <AgentContextAvatar agent={currentAgentForDisplay} />
                     <span className="min-w-0 truncate">{homeContextAgentName}</span>
-                    <ChevronDownIcon className="h-3.5 w-3.5 shrink-0" />
+                    <CaretDown className="h-3.5 w-3.5 shrink-0" />
                   </button>
                   {showAgentMenu && (
                     <div
@@ -3707,7 +3708,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                           >
                             <AgentContextAvatar agent={agent} />
                             <span className="min-w-0 flex-1 truncate">{getAgentDisplayName(agent)}</span>
-                            {isSelectedAgent && <CheckIcon className="h-4 w-4 shrink-0 text-primary" />}
+                            {isSelectedAgent && <Check className="h-4 w-4 shrink-0 text-primary" />}
                           </button>
                         );
                       })}
@@ -3761,7 +3762,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                               : 'text-secondary hover:bg-surface-raised hover:text-foreground'
                           }`}
                         >
-                          <FolderIcon className="h-4 w-4 flex-shrink-0" />
+                          <Folder className="h-4 w-4 flex-shrink-0" />
                           <span className="max-w-[150px] truncate text-xs">
                             {truncatePath(workingDirectory)}
                           </span>
@@ -3868,7 +3869,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                   aria-label={i18nService.t('sendMessage')}
                   title={sendButtonTitle}
                 >
-                  <ArrowUpIcon className="h-[17px] w-[17px]" />
+                  <ArrowUp className="h-[17px] w-[17px]" />
                 </button>
               </div>
             )}

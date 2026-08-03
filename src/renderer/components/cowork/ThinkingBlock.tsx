@@ -1,4 +1,8 @@
-import { ChevronRightIcon, LightBulbIcon } from '@heroicons/react/24/outline';
+
+import {
+  CaretRight,
+  Lightbulb,
+} from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -45,14 +49,14 @@ const ThinkingBlock: React.FC<{
         onClick={handleToggleExpanded}
         className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-surface-raised/50 transition-colors"
       >
-        <LightBulbIcon className="h-3.5 w-3.5 text-secondary flex-shrink-0" />
+        <Lightbulb className="h-3.5 w-3.5 text-secondary flex-shrink-0" />
         <span className="text-xs font-medium text-secondary">
           {i18nService.t('reasoning')}
         </span>
         {isCurrentlyStreaming && (
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
         )}
-        <ChevronRightIcon
+        <CaretRight
           className={`h-3 w-3 text-secondary/60 flex-shrink-0 ml-auto transition-transform duration-200 ${
             isExpanded ? 'rotate-90' : ''
           }`}

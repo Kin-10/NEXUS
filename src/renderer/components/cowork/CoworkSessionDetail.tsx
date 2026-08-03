@@ -1,11 +1,11 @@
 import {
-  ArchiveBoxArrowDownIcon,
-  ArrowDownIcon,
-  DocumentArrowDownIcon,
-  ExclamationTriangleIcon,
-  PhotoIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/24/outline';
+  Archive,
+  ArrowDown,
+  FileArrowDown,
+  Image as ImageIcon,
+  Question,
+  Warning,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -4990,7 +4990,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 disabled={isExportingImage}
                 className="w-full flex items-center gap-3 px-5 py-3 text-left text-sm dark:text-claude-darkText text-claude-text hover:bg-claude-surfaceHover dark:hover:bg-claude-darkSurfaceHover transition-colors disabled:opacity-50"
               >
-                <PhotoIcon className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
+                <ImageIcon className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
                 <div>
                   <div className="font-medium">{i18nService.t('coworkExportImage')}</div>
                   <div className="text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">{i18nService.t('coworkExportImageDesc')}</div>
@@ -5002,7 +5002,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 disabled={isExportingText}
                 className="w-full flex items-center gap-3 px-5 py-3 text-left text-sm dark:text-claude-darkText text-claude-text hover:bg-claude-surfaceHover dark:hover:bg-claude-darkSurfaceHover transition-colors disabled:opacity-50"
               >
-                <DocumentArrowDownIcon className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
+                <FileArrowDown className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
                 <div>
                   <div className="font-medium">Markdown</div>
                   <div className="text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">{i18nService.t('coworkExportMarkdownDesc')}</div>
@@ -5014,7 +5014,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 disabled={isExportingText}
                 className="w-full flex items-center gap-3 px-5 py-3 text-left text-sm dark:text-claude-darkText text-claude-text hover:bg-claude-surfaceHover dark:hover:bg-claude-darkSurfaceHover transition-colors disabled:opacity-50"
               >
-                <DocumentArrowDownIcon className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
+                <FileArrowDown className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
                 <div>
                   <div className="font-medium">JSON</div>
                   <div className="text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">{i18nService.t('coworkExportJSONDesc')}</div>
@@ -5025,7 +5025,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 onClick={() => { setShowExportOptions(false); void handleExportDiagnostics(); }}
                 className="w-full flex items-center gap-3 px-5 py-3 text-left text-sm dark:text-claude-darkText text-claude-text hover:bg-claude-surfaceHover dark:hover:bg-claude-darkSurfaceHover transition-colors"
               >
-                <ArchiveBoxArrowDownIcon className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
+                <Archive className="h-5 w-5 dark:text-claude-darkTextSecondary text-claude-textSecondary" />
                 <div>
                   <div className="font-medium">{i18nService.t('coworkExportDiagnostics')}</div>
                   <div className="text-xs dark:text-claude-darkTextSecondary text-claude-textSecondary">{i18nService.t('coworkExportDiagnosticsDesc')}</div>
@@ -5237,7 +5237,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
             aria-label={i18nService.t('coworkScrollToBottom')}
             title={i18nService.t('coworkScrollToBottom')}
           >
-            <ArrowDownIcon className="h-4 w-4 stroke-[2.1]" />
+            <ArrowDown className="h-4 w-4" weight="regular" />
           </button>
         )}
       </div>
@@ -5284,9 +5284,9 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 title={minimizedPermissionPreview}
               >
                 {isMinimizedQuestionPermission ? (
-                  <QuestionMarkCircleIcon className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <Question className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                 ) : (
-                  <ExclamationTriangleIcon className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
+                  <Warning className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
                 )}
                 <span
                   className={`shrink-0 font-medium ${

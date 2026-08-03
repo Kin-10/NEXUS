@@ -1,9 +1,10 @@
-import { ArrowPathIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
 import {
-  ArrowDownTrayIcon,
-  CheckCircleIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  ArrowsClockwise,
+  CheckCircle,
+  DownloadSimple,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -867,7 +868,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
               }}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-secondary hover:text-primary transition-colors"
             >
-              <XCircleIconSolid className="h-4 w-4" />
+              <XCircle className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -941,7 +942,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                 onClick={handleManualOpenClawSync}
                 className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised transition-colors border-t border-border"
               >
-                <ArrowPathIcon className="h-4 w-4 text-secondary" />
+                <ArrowsClockwise className="h-4 w-4 text-secondary" />
                 <span>{i18nService.t('syncSkillsFromOpenClaw')}</span>
               </button>
               )}
@@ -1007,7 +1008,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                 disabled={upgradeState?.isActive === true}
                 className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ArrowPathIcon className="h-3 w-3" />
+                <ArrowsClockwise className="h-3 w-3" />
                 {i18nService.t('skillUpgradeAll').replace('{count}', String(updatableSkills.length))}
               </button>
             </div>
@@ -1172,7 +1173,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                         disabled={upgradeState?.isActive === true}
                         className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <ArrowPathIcon className="h-3.5 w-3.5" />
+                        <ArrowsClockwise className="h-3.5 w-3.5" />
                         {i18nService.t('skillUpgrade')}
                       </button>
                     );
@@ -1265,7 +1266,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                             disabled={upgradeState?.isActive === true}
                             className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <ArrowPathIcon className="h-3.5 w-3.5" />
+                            <ArrowsClockwise className="h-3.5 w-3.5" />
                             {i18nService.t('skillUpgrade')}
                           </button>
                         );
@@ -1273,7 +1274,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                       if (status === 'installed') {
                         return (
                           <span className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg text-green-600 dark:text-green-400 bg-green-500/10">
-                            <CheckCircleIcon className="h-3.5 w-3.5" />
+                            <CheckCircle className="h-3.5 w-3.5" />
                             {i18nService.t('skillAlreadyInstalled')}
                           </span>
                         );
@@ -1285,7 +1286,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                           disabled={installingSkillId !== null}
                           className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg bg-primary text-white hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <ArrowDownTrayIcon className="h-3.5 w-3.5" />
+                          <DownloadSimple className="h-3.5 w-3.5" />
                           {installingSkillId === skill.id ? i18nService.t('skillInstalling') : i18nService.t('skillInstall')}
                         </button>
                       ) : null;
@@ -1378,7 +1379,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                 }}
                 className="p-1.5 rounded-lg text-secondary hover:text-foreground hover:bg-surface-raised transition-colors flex-shrink-0"
               >
-                <XMarkIcon className="h-5 w-5" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
@@ -1433,7 +1434,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                     disabled={upgradeState?.isActive === true}
                     className="w-full py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                   >
-                    <ArrowPathIcon className="h-4 w-4" />
+                    <ArrowsClockwise className="h-4 w-4" />
                     {i18nService.t('skillUpgrade')} v{installedVer} → v{selectedMarketplaceSkill.version}
                   </button>
                 );
@@ -1441,7 +1442,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
               if (status === 'installed') {
                 return (
                   <div className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium">
-                    <CheckCircleIcon className="h-4 w-4" />
+                    <CheckCircle className="h-4 w-4" />
                     {i18nService.t('skillAlreadyInstalled')}
                   </div>
                 );
@@ -1453,7 +1454,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                   disabled={installingSkillId !== null}
                   className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                 >
-                  <ArrowDownTrayIcon className="h-4 w-4" />
+                  <DownloadSimple className="h-4 w-4" />
                   {installingSkillId === selectedMarketplaceSkill.id ? i18nService.t('skillInstalling') : i18nService.t('skillInstall')}
                 </button>
               ) : null;
@@ -1503,7 +1504,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                 }}
                 className="p-1.5 rounded-lg text-secondary hover:text-foreground hover:bg-surface-raised transition-colors flex-shrink-0"
               >
-                <XMarkIcon className="h-5 w-5" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
@@ -1659,7 +1660,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
                 }}
                 className="p-1.5 rounded-lg text-secondary hover:text-foreground hover:bg-surface-raised transition-colors"
               >
-                <XMarkIcon className="h-5 w-5" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
@@ -1776,7 +1777,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
       {isSyncingFromOpenClaw && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-background border border-border rounded-xl shadow-lg p-6 flex items-center gap-3">
-            <ArrowPathIcon className="h-5 w-5 animate-spin text-primary" />
+            <ArrowsClockwise className="h-5 w-5 animate-spin text-primary" />
             <span className="text-sm text-foreground">{i18nService.t('skillsSyncing')}</span>
           </div>
         </div>

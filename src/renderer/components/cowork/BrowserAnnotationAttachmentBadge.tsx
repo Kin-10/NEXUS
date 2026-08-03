@@ -1,4 +1,7 @@
-import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+
+import {
+  ChatCircle,
+} from '@phosphor-icons/react';
 import {
   BrowserAnnotationAnchorKind,
   BrowserAnnotationScreenshotStatus,
@@ -76,7 +79,7 @@ const BrowserAnnotationAttachmentBadge: React.FC<BrowserAnnotationAttachmentBadg
           className="inline-flex h-full items-center gap-1.5 rounded-l-full pl-3 pr-2"
           aria-expanded={open}
         >
-          <ChatBubbleLeftIcon className="h-3.5 w-3.5" />
+          <ChatCircle className="h-3.5 w-3.5" />
           <span>{i18nService.t('browserAnnotationsCount').replace('{count}', String(annotations.length))}</span>
         </button>
         {!readOnly && onClear ? (

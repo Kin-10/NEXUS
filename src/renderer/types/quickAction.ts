@@ -31,7 +31,7 @@ export interface LocalizedPrompt {
 export interface QuickAction {
   /** 唯一标识 */
   id: string;
-  /** 图标名称（Heroicons） */
+  /** 图标名称（Phosphor / 本地 icons） */
   icon: string;
   /** 主题色（hex） */
   color: string;
@@ -49,7 +49,7 @@ export interface LocalizedQuickAction {
   id: string;
   /** 显示标题 */
   label: string;
-  /** 图标名称（Heroicons） */
+  /** 图标名称（Phosphor / 本地 icons） */
   icon: string;
   /** 主题色（hex） */
   color: string;

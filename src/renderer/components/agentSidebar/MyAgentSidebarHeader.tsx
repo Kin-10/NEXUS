@@ -1,4 +1,4 @@
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { Plus } from '@phosphor-icons/react';
 import React from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -29,7 +29,7 @@ const MyAgentSidebarHeader: React.FC<MyAgentSidebarHeaderProps> = ({
           className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-foreground/60 transition-colors hover:text-foreground"
           aria-label={i18nService.t('createNewAgent')}
         >
-          <PlusIcon className="h-4 w-4" />
+          <Plus className="h-4 w-4" />
         </button>
       </Tooltip>
     </div>

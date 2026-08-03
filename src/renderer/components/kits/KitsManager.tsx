@@ -1,13 +1,14 @@
+
 import {
-  ArrowDownTrayIcon,
-  ArrowLeftIcon,
-  CheckIcon,
-  ChevronRightIcon,
-  ExclamationTriangleIcon,
-  PaperAirplaneIcon,
-  TrashIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  ArrowLeft,
+  CaretRight,
+  Check,
+  DownloadSimple,
+  PaperPlaneTilt,
+  Trash,
+  Warning,
+  X,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -495,7 +496,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
           }}
           className="non-draggable relative z-30 inline-flex items-center gap-1.5 text-sm text-secondary hover:text-foreground transition-colors"
         >
-          <ArrowLeftIcon className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
           {i18nService.t('kitBack')}
         </button>
 
@@ -517,7 +518,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                   {installed && (
                     <>
                       <span className="inline-flex items-center gap-0.5 rounded-md bg-green-500/10 px-1.5 py-0.5 font-medium text-green-600 dark:text-green-400">
-                        <CheckIcon className="h-2.5 w-2.5" />
+                        <Check className="h-2.5 w-2.5" />
                         {i18nService.t('kitInstalled')}
                       </span>
                       <span className="text-secondary/50">·</span>
@@ -545,7 +546,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                 </div>
                 {updateInfo && (
                   <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[12px] leading-5 text-amber-700 dark:text-amber-300">
-                    <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    <Warning className="mt-0.5 h-4 w-4 flex-shrink-0" />
                     <span>{formatKitReinstallRequiredDetail(updateInfo)}</span>
                   </div>
                 )}
@@ -559,7 +560,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                   onClick={() => handleRequestUninstall(selectedKit)}
                   className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-secondary transition-colors hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400 disabled:opacity-50"
                 >
-                  <TrashIcon className="h-3.5 w-3.5" />
+                  <Trash className="h-3.5 w-3.5" />
                   {operating && operationType === KitOperationType.Uninstall
                     ? i18nService.t('kitUninstalling')
                     : i18nService.t('kitUninstall')}
@@ -571,7 +572,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                     onClick={() => handleUseKit(selectedKit)}
                     className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
                   >
-                    <PaperAirplaneIcon className="h-3.5 w-3.5" />
+                    <PaperPlaneTilt className="h-3.5 w-3.5" />
                     {i18nService.t('kitUseNow')}
                   </button>
                 )}
@@ -583,7 +584,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                 onClick={() => handleInstall(selectedKit)}
                 className="inline-flex h-8 flex-shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
               >
-                <ArrowDownTrayIcon className="h-3.5 w-3.5" />
+                <DownloadSimple className="h-3.5 w-3.5" />
                 {operating && operationType === KitOperationType.Install
                   ? i18nService.t('kitInstalling')
                   : i18nService.t('kitInstall')}
@@ -607,7 +608,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                   className="group flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-left transition-colors hover:border-primary/50 hover:bg-surface-raised/50"
                 >
                   <span className="text-sm text-foreground">{resolveLocalizedText(prompt)}</span>
-                  <ChevronRightIcon className="h-3.5 w-3.5 flex-shrink-0 text-secondary transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+                  <CaretRight className="h-3.5 w-3.5 flex-shrink-0 text-secondary transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
                 </button>
               ))}
             </div>
@@ -722,7 +723,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-secondary transition-colors hover:text-primary"
               >
-                <XMarkIcon className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -850,7 +851,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                       {installed && activeTab === KitTab.Marketplace && (
                         <>
                           <span className="inline-flex items-center gap-0.5 rounded-md bg-green-500/10 px-1.5 py-0.5 font-medium text-green-600 dark:text-green-400">
-                            <CheckIcon className="h-2.5 w-2.5" />
+                            <Check className="h-2.5 w-2.5" />
                             {i18nService.t('kitInstalled')}
                           </span>
                           <span className="text-secondary/50">·</span>
@@ -895,7 +896,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                           operating ? 'opacity-100' : 'opacity-0 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100'
                         }`}
                       >
-                        <TrashIcon className="h-3.5 w-3.5" />
+                        <Trash className="h-3.5 w-3.5" />
                       </button>
                       {onUseKit && (
                         <button
@@ -904,7 +905,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                           onClick={(e) => { e.stopPropagation(); handleUseKit(kit); }}
                           className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-primary px-2.5 text-[11px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
                         >
-                          <PaperAirplaneIcon className="h-3 w-3" />
+                          <PaperPlaneTilt className="h-3 w-3" />
                           {i18nService.t('kitUse')}
                         </button>
                       )}
@@ -916,7 +917,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                       onClick={(e) => { e.stopPropagation(); handleInstall(kit); }}
                       className="absolute right-4 top-4 inline-flex h-7 items-center gap-1.5 rounded-lg bg-primary px-2.5 text-[11px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
                     >
-                      <ArrowDownTrayIcon className="h-3 w-3" />
+                      <DownloadSimple className="h-3 w-3" />
                       {operating && operationType === KitOperationType.Install
                         ? i18nService.t('kitInstalling')
                         : i18nService.t('kitInstall')}

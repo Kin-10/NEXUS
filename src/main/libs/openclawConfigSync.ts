@@ -16,6 +16,7 @@ import { COWORK_TEMP_DIR_NAME } from '../../shared/cowork/constants';
 import { CoworkErrorModelSource } from '../../shared/cowork/errorDetail';
 import { normalizeMcpServerUrlInput } from '../../shared/mcp/url';
 import { OpenClawTranscriptSafetyLimit } from '../../shared/openclawTranscript/constants';
+import { PlatformRegistry } from '../../shared/platform';
 import type {
   ModelRuntimeProfile as ModelRuntimeProfileType,
 } from '../../shared/providers';
@@ -2178,26 +2179,44 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     console.log(`${gwDiagTs()} existingPlugins keys:`, Object.keys(existingPlugins).sort().join(',') || '(empty)');
     console.log(`${gwDiagTs()} existingPluginEntries keys:`, Object.keys(existingPluginEntries).sort().join(',') || '(empty)');
 
-    const dingTalkInstances = this.getDingTalkInstances();
+    const dingTalkInstances = PlatformRegistry.isEnabled('dingtalk')
+      ? this.getDingTalkInstances()
+      : [];
     // DingTalk runs through OpenClaw plugin but still needs the gateway HTTP endpoint (chatCompletions)
     const hasDingTalkOpenClaw = dingTalkInstances.some(i => i.enabled && i.clientId);
 
-    const feishuInstances = this.getFeishuInstances();
+    const feishuInstances = PlatformRegistry.isEnabled('feishu')
+      ? this.getFeishuInstances()
+      : [];
 
-    const qqInstances = this.getQQInstances();
-    const discordInstances = this.getDiscordInstances();
+    const qqInstances = PlatformRegistry.isEnabled('qq') ? this.getQQInstances() : [];
+    const discordInstances = PlatformRegistry.isEnabled('discord')
+      ? this.getDiscordInstances()
+      : [];
 
-    const wecomInstances = this.getWecomInstances();
+    const wecomInstances = PlatformRegistry.isEnabled('wecom')
+      ? this.getWecomInstances()
+      : [];
 
-    const popoInstances = this.getPopoInstances();
+    const popoInstances = PlatformRegistry.isEnabled('popo')
+      ? this.getPopoInstances()
+      : [];
 
-    const emailConfig = this.getEmailOpenClawConfig?.();
+    const emailConfig = PlatformRegistry.isEnabled('email')
+      ? this.getEmailOpenClawConfig?.()
+      : undefined;
 
-    const nimInstances = this.getNimInstances();
+    const nimInstances = PlatformRegistry.isEnabled('nim')
+      ? this.getNimInstances()
+      : [];
 
-    const neteaseBeeChanConfig = this.getNeteaseBeeChanConfig();
+    const neteaseBeeChanConfig = PlatformRegistry.isEnabled('netease-bee')
+      ? this.getNeteaseBeeChanConfig()
+      : null;
 
-    const weixinConfig = this.getWeixinConfig();
+    const weixinConfig = PlatformRegistry.isEnabled('weixin')
+      ? this.getWeixinConfig()
+      : null;
 
     const hasAnyChannel = hasDingTalkOpenClaw;
 
@@ -2370,14 +2389,27 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
                 if (pluginMatches(plugin, 'openclaw-lark', 'feishu-openclaw-plugin'))
                   return feishuInstances.some(i => i.enabled && i.appId);
                 if (pluginMatches(plugin, 'openclaw-qqbot', 'qqbot')) return qqbotPluginEnabled;
-                if (pluginMatches(plugin, 'discord')) return discordPluginEnabled;
+                if (pluginMatches(plugin, 'discord')) {
+                  return PlatformRegistry.isEnabled('discord') && discordPluginEnabled;
+                }
                 if (pluginMatches(plugin, 'wecom-openclaw-plugin')) return wecomInstances.some(i => i.enabled && i.botId);
-                if (pluginMatches(plugin, 'moltbot-popo')) return popoInstances.some(i => i.enabled && i.appKey);
-                if (pluginMatches(plugin, 'openclaw-nim-channel', NIM_CHANNEL_PLUGIN_ID, 'nim'))
-                  return nimInstances.some(isEnabledNimRuntimeInstance);
-                if (pluginMatches(plugin, 'openclaw-netease-bee')) return !!(neteaseBeeChanConfig?.enabled && neteaseBeeChanConfig.clientId && neteaseBeeChanConfig.secret);
+                if (pluginMatches(plugin, 'moltbot-popo')) {
+                  return PlatformRegistry.isEnabled('popo')
+                    && popoInstances.some(i => i.enabled && i.appKey);
+                }
+                if (pluginMatches(plugin, 'openclaw-nim-channel', NIM_CHANNEL_PLUGIN_ID, 'nim')) {
+                  return PlatformRegistry.isEnabled('nim')
+                    && nimInstances.some(isEnabledNimRuntimeInstance);
+                }
+                if (pluginMatches(plugin, 'openclaw-netease-bee')) {
+                  return PlatformRegistry.isEnabled('netease-bee')
+                    && !!(neteaseBeeChanConfig?.enabled && neteaseBeeChanConfig.clientId && neteaseBeeChanConfig.secret);
+                }
                 if (pluginMatches(plugin, 'openclaw-weixin')) return true; // Always keep enabled for QR login discovery
-                if (pluginMatches(plugin, 'clawemail-email', EMAIL_PLUGIN_ID)) return !!emailConfig?.instances.some(i => i.enabled && i.email);
+                if (pluginMatches(plugin, 'clawemail-email', EMAIL_PLUGIN_ID)) {
+                  return PlatformRegistry.isEnabled('email')
+                    && !!emailConfig?.instances.some(i => i.enabled && i.email);
+                }
                 return true; // other plugins stay enabled
               })();
               return [plugin.pluginId, { enabled: pluginEnabled }];
@@ -2543,7 +2575,9 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     }
 
     // Sync Telegram OpenClaw channel config — multi-instance via accounts
-    const telegramInstances = this.getTelegramInstances();
+    const telegramInstances = PlatformRegistry.isEnabled('telegram')
+      ? this.getTelegramInstances()
+      : [];
     const enabledTelegramInstances = telegramInstances.filter(i => i.enabled && i.botToken);
     if (enabledTelegramInstances.length > 0) {
       const accounts: Record<string, unknown> = {};
@@ -3160,27 +3194,31 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     env.LOBSTER_MCP_BRIDGE_SECRET = this.getMcpBridgeSecret?.() || 'unconfigured';
 
     // Telegram — per-instance secrets (must match sync() indexing: enabled instances only)
-    const tgInstances = this.getTelegramInstances();
-    const enabledTelegram = tgInstances.filter(i => i.enabled && i.botToken);
-    for (let idx = 0; idx < enabledTelegram.length; idx++) {
-      const inst = enabledTelegram[idx];
-      if (idx === 0) {
-        env.LOBSTER_TG_BOT_TOKEN = inst.botToken;
-        if (inst.webhookSecret) env.LOBSTER_TG_WEBHOOK_SECRET = inst.webhookSecret;
-      } else {
-        env[`LOBSTER_TG_BOT_TOKEN_${idx}`] = inst.botToken;
-        if (inst.webhookSecret) env[`LOBSTER_TG_WEBHOOK_SECRET_${idx}`] = inst.webhookSecret;
+    if (PlatformRegistry.isEnabled('telegram')) {
+      const tgInstances = this.getTelegramInstances();
+      const enabledTelegram = tgInstances.filter(i => i.enabled && i.botToken);
+      for (let idx = 0; idx < enabledTelegram.length; idx++) {
+        const inst = enabledTelegram[idx];
+        if (idx === 0) {
+          env.LOBSTER_TG_BOT_TOKEN = inst.botToken;
+          if (inst.webhookSecret) env.LOBSTER_TG_WEBHOOK_SECRET = inst.webhookSecret;
+        } else {
+          env[`LOBSTER_TG_BOT_TOKEN_${idx}`] = inst.botToken;
+          if (inst.webhookSecret) env[`LOBSTER_TG_WEBHOOK_SECRET_${idx}`] = inst.webhookSecret;
+        }
       }
     }
 
     // Discord — per-instance secrets (must match sync() indexing: enabled instances only)
-    const dcInstances = this.getDiscordInstances();
-    const enabledDiscord = dcInstances.filter(i => i.enabled && i.botToken);
-    for (let idx = 0; idx < enabledDiscord.length; idx++) {
-      if (idx === 0) {
-        env.LOBSTER_DC_BOT_TOKEN = enabledDiscord[idx].botToken;
-      } else {
-        env[`LOBSTER_DC_BOT_TOKEN_${idx}`] = enabledDiscord[idx].botToken;
+    if (PlatformRegistry.isEnabled('discord')) {
+      const dcInstances = this.getDiscordInstances();
+      const enabledDiscord = dcInstances.filter(i => i.enabled && i.botToken);
+      for (let idx = 0; idx < enabledDiscord.length; idx++) {
+        if (idx === 0) {
+          env.LOBSTER_DC_BOT_TOKEN = enabledDiscord[idx].botToken;
+        } else {
+          env[`LOBSTER_DC_BOT_TOKEN_${idx}`] = enabledDiscord[idx].botToken;
+        }
       }
     }
 
@@ -3234,30 +3272,34 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     }
 
     // POPO — per-instance secrets (must match sync() indexing: enabled instances only)
-    const enabledPopo = this.getPopoInstances().filter(i => i.enabled && i.appSecret);
-    for (let idx = 0; idx < enabledPopo.length; idx++) {
-      if (idx === 0) {
-        env.LOBSTER_POPO_APP_SECRET = enabledPopo[idx].appSecret;
-        if (enabledPopo[idx].token) {
-          env.LOBSTER_POPO_TOKEN = enabledPopo[idx].token;
+    if (PlatformRegistry.isEnabled('popo')) {
+      const enabledPopo = this.getPopoInstances().filter(i => i.enabled && i.appSecret);
+      for (let idx = 0; idx < enabledPopo.length; idx++) {
+        if (idx === 0) {
+          env.LOBSTER_POPO_APP_SECRET = enabledPopo[idx].appSecret;
+          if (enabledPopo[idx].token) {
+            env.LOBSTER_POPO_TOKEN = enabledPopo[idx].token;
+          } else {
+            // Provide non-empty fallback so stale openclaw.json files that still
+            // contain ${LOBSTER_POPO_TOKEN} from a previous webhook config
+            // don't crash the gateway with MissingEnvVarError.
+            env.LOBSTER_POPO_TOKEN = 'unconfigured';
+          }
         } else {
-          // Provide non-empty fallback so stale openclaw.json files that still
-          // contain ${LOBSTER_POPO_TOKEN} from a previous webhook config
-          // don't crash the gateway with MissingEnvVarError.
-          env.LOBSTER_POPO_TOKEN = 'unconfigured';
-        }
-      } else {
-        env[`LOBSTER_POPO_APP_SECRET_${idx}`] = enabledPopo[idx].appSecret;
-        if (enabledPopo[idx].token) {
-          env[`LOBSTER_POPO_TOKEN_${idx}`] = enabledPopo[idx].token;
-        } else {
-          env[`LOBSTER_POPO_TOKEN_${idx}`] = 'unconfigured';
+          env[`LOBSTER_POPO_APP_SECRET_${idx}`] = enabledPopo[idx].appSecret;
+          if (enabledPopo[idx].token) {
+            env[`LOBSTER_POPO_TOKEN_${idx}`] = enabledPopo[idx].token;
+          } else {
+            env[`LOBSTER_POPO_TOKEN_${idx}`] = 'unconfigured';
+          }
         }
       }
     }
 
     // Email credentials
-    const emailConfig = this.getEmailOpenClawConfig?.();
+    const emailConfig = PlatformRegistry.isEnabled('email')
+      ? this.getEmailOpenClawConfig?.()
+      : undefined;
     if (emailConfig?.instances) {
       for (const inst of emailConfig.instances) {
         if (!inst.enabled || !inst.email) continue;
@@ -3275,12 +3317,14 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     }
 
     // NIM — indexes must match the enabled instances written to channels.nim.accounts.
-    const nimInstances = this.getNimInstances().filter(isEnabledNimRuntimeInstance);
-    for (let idx = 0; idx < nimInstances.length; idx++) {
-      const inst = nimInstances[idx];
-      if (inst.nimToken?.trim() || !inst.token) continue;
-      const key = idx === 0 ? 'LOBSTER_NIM_TOKEN' : `LOBSTER_NIM_TOKEN_${idx}`;
-      env[key] = inst.token;
+    if (PlatformRegistry.isEnabled('nim')) {
+      const nimInstances = this.getNimInstances().filter(isEnabledNimRuntimeInstance);
+      for (let idx = 0; idx < nimInstances.length; idx++) {
+        const inst = nimInstances[idx];
+        if (inst.nimToken?.trim() || !inst.token) continue;
+        const key = idx === 0 ? 'LOBSTER_NIM_TOKEN' : `LOBSTER_NIM_TOKEN_${idx}`;
+        env[key] = inst.token;
+      }
     }
 
     const D = gwDiagTs;
@@ -3702,6 +3746,9 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     };
 
     for (const [platform, { channel, getInstances }] of Object.entries(multiInstanceChannels)) {
+      if (!PlatformRegistry.isEnabled(platform as Parameters<typeof PlatformRegistry.isEnabled>[0])) {
+        continue;
+      }
       try {
         const instances = getInstances();
         for (const inst of instances) {
@@ -3745,6 +3792,9 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     ];
 
     for (const { getter, channel, platform } of singleInstanceChannels) {
+      if (!PlatformRegistry.isEnabled(platform as Parameters<typeof PlatformRegistry.isEnabled>[0])) {
+        continue;
+      }
       const agentId = platformBindings[platform];
       if (!agentId || agentId === 'main') continue;
 

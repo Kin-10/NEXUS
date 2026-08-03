@@ -1,5 +1,9 @@
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid';
-import { ChevronDownIcon, FolderIcon, ShareIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowSquareOut,
+  CaretDown,
+  Folder,
+  ShareNetwork,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch } from 'react-redux';
@@ -317,7 +321,7 @@ const OpenDropdown: React.FC<OpenDropdownProps> = ({
             onClick={handleRevealInFolder}
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-colors text-left"
           >
-            <FolderIcon className="w-4 h-4 text-secondary flex-shrink-0" />
+            <Folder className="w-4 h-4 text-secondary flex-shrink-0" />
             <span>{t('artifactOpenInFolder')}</span>
           </button>
         </>
@@ -475,7 +479,7 @@ const ArtifactPreviewCard: React.FC<ArtifactPreviewCardProps> = ({
           aria-label={t('artifactPreviewCardOpenWith')}
         >
           <span>{t('artifactPreviewCardOpenWith')}</span>
-          <ChevronDownIcon className="w-3.5 h-3.5" />
+          <CaretDown className="w-3.5 h-3.5" />
         </button>
         {canShare && (
           <button
@@ -484,7 +488,7 @@ const ArtifactPreviewCard: React.FC<ArtifactPreviewCardProps> = ({
             className="inline-flex h-9 min-w-[82px] flex-shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-transparent px-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
             aria-label={t('htmlShare')}
           >
-            <ShareIcon className="h-4 w-4" />
+            <ShareNetwork className="h-4 w-4" />
             <span>{t('htmlShare')}</span>
           </button>
         )}
@@ -543,7 +547,7 @@ const ArtifactPreviewCard: React.FC<ArtifactPreviewCardProps> = ({
           unwrapped
         />
         <div className="flex-shrink-0 flex items-center gap-1 text-primary text-sm font-medium leading-none">
-          <ArrowTopRightOnSquareIcon className="w-4 h-4 shrink-0" />
+          <ArrowSquareOut className="w-4 h-4 shrink-0" />
           <span>{t('artifactOpen')}</span>
         </div>
       </button>
@@ -554,7 +558,7 @@ const ArtifactPreviewCard: React.FC<ArtifactPreviewCardProps> = ({
           className="inline-flex h-9 min-w-[82px] flex-shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-transparent px-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
           aria-label={t('htmlShare')}
         >
-          <ShareIcon className="h-4 w-4" />
+          <ShareNetwork className="h-4 w-4" />
           <span>{t('htmlShare')}</span>
         </button>
       )}

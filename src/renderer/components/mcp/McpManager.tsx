@@ -1,5 +1,7 @@
-import { XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import {
+  CheckCircle,
+  XCircle,
+} from '@phosphor-icons/react';
 import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -819,7 +821,7 @@ const McpManager: React.FC = () => {
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-secondary hover:text-primary transition-colors"
               >
-                <XCircleIconSolid className="h-4 w-4" />
+                <XCircle className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -1130,7 +1132,7 @@ const McpManager: React.FC = () => {
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {installedRegistryIds.has(entry.id) ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg text-green-600 dark:text-green-400 bg-green-500/10">
-                          <CheckCircleIcon className="h-3.5 w-3.5" />
+                          <CheckCircle className="h-3.5 w-3.5" />
                           {isQichachaRegistryEntry(entry)
                             ? i18nService.t('mcpAuthorized')
                             : i18nService.t('mcpInstalled')}

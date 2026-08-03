@@ -2,6 +2,7 @@ import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
+import { PlatformRegistry } from '../../shared/platform';
 import type { IMStore } from '../im/imStore';
 import type { PopoInstanceConfig } from '../im/types';
 import type { SqliteStore } from '../sqliteStore';
@@ -735,6 +736,11 @@ function syncIMChannels(configPath: string, imStore: IMStore): void {
 
     let syncedCount = 0;
     for (const [channelKey, channelConfig] of Object.entries(channels)) {
+      const platform = PlatformRegistry.platformOfChannel(channelKey);
+      if (platform && !PlatformRegistry.isEnabled(platform)) {
+        console.log(`[Enterprise] skipping retired IM channel "${channelKey}"`);
+        continue;
+      }
       const setter = PLATFORM_SETTERS[channelKey];
       if (!setter) {
         console.warn(`[Enterprise] unknown channel key "${channelKey}", skipping`);

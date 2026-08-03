@@ -1,11 +1,11 @@
-import { XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
 import {
-  ClockIcon,
-  EllipsisVerticalIcon,
-  MagnifyingGlassIcon,
-  PlayIcon,
-  PlusIcon,
-} from '@heroicons/react/24/outline';
+  Clock,
+  DotsThreeVertical,
+  MagnifyingGlass,
+  Play,
+  Plus,
+  XCircle,
+} from '@phosphor-icons/react';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -251,7 +251,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRequestDelete }) => {
               }}
               className="rounded-md p-1 text-secondary/70 transition-colors hover:bg-surface-raised hover:text-foreground"
             >
-              <EllipsisVerticalIcon className="h-4 w-4" />
+              <DotsThreeVertical className="h-4 w-4" />
             </button>
             {showMenu && menuPosition && (
               createPortal(
@@ -271,7 +271,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRequestDelete }) => {
                     disabled={isRunning}
                     className={`${menuItemClassName} disabled:opacity-50`}
                   >
-                    <PlayIcon className={menuIconClassName} />
+                    <Play className={menuIconClassName} />
                     {i18nService.t('scheduledTasksRun')}
                   </button>
                   <button
@@ -317,7 +317,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRequestDelete }) => {
 
       <div className="mt-3 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5 text-xs text-secondary">
-          <ClockIcon className="h-3.5 w-3.5 shrink-0" />
+          <Clock className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">
             {formatScheduleLabel(task.schedule)}
             {nextRunLabel && <span className="text-secondary/60"> · {nextRunLabel}</span>}
@@ -379,7 +379,7 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({
                 {i18nService.t(template.descriptionKey)}
               </div>
               <div className="mt-1.5 flex items-center gap-1 text-xs text-secondary/70">
-                <ClockIcon className="h-3 w-3" />
+                <Clock className="h-3 w-3" />
                 {i18nService.t(template.scheduleLabelKey)}
               </div>
             </div>
@@ -393,7 +393,7 @@ const TemplateGallery: React.FC<TemplateGalleryProps> = ({
           className="group flex items-start gap-3 rounded-xl border border-dashed border-border p-3 text-left transition hover:border-primary/50 hover:bg-surface"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-raised text-secondary transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-            <PlusIcon className="h-[18px] w-[18px]" />
+            <Plus className="h-[18px] w-[18px]" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium text-foreground">
@@ -515,7 +515,7 @@ const TaskList: React.FC<TaskListProps> = ({
           {/* First-run funnel: a compact intro, then templates as the primary creation path. */}
           <div className="flex flex-col items-center pt-4 text-center">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <ClockIcon className="h-6 w-6 text-primary" />
+              <Clock className="h-6 w-6 text-primary" />
             </div>
             <p className="text-base font-semibold text-foreground">
               {i18nService.t('scheduledTasksEmptyState')}
@@ -540,7 +540,7 @@ const TaskList: React.FC<TaskListProps> = ({
         <div className="space-y-3">
           {tasks.length >= SEARCH_VISIBLE_MIN_TASKS && (
             <div className="relative">
-              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary/60" />
+              <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary/60" />
               <input
                 type="text"
                 value={searchText}
@@ -556,7 +556,7 @@ const TaskList: React.FC<TaskListProps> = ({
                   title={i18nService.t('scheduledTasksClearSearch')}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-secondary transition-colors hover:text-primary"
                 >
-                  <XCircleIconSolid className="h-4 w-4" />
+                  <XCircle className="h-4 w-4" />
                 </button>
               )}
             </div>

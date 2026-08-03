@@ -1,10 +1,11 @@
+
 import {
-  CheckCircleIcon,
-  ChevronRightIcon,
-  MinusCircleIcon,
-  XCircleIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  CaretRight,
+  CheckCircle,
+  MinusCircle,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -54,12 +55,12 @@ const RunStatusIcon: React.FC<{ status: TaskStatus }> = ({ status }) => {
     );
   }
   if (status === TaskStatus.Success) {
-    return <CheckCircleIcon className="h-4 w-4 shrink-0 text-green-500" />;
+    return <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />;
   }
   if (status === TaskStatus.Error) {
-    return <XCircleIcon className="h-4 w-4 shrink-0 text-red-500" />;
+    return <XCircle className="h-4 w-4 shrink-0 text-red-500" />;
   }
-  return <MinusCircleIcon className="h-4 w-4 shrink-0 text-yellow-500" />;
+  return <MinusCircle className="h-4 w-4 shrink-0 text-yellow-500" />;
 };
 
 function applyClientFilter(runs: ScheduledTaskRun[], filter: RunFilter): ScheduledTaskRun[] {
@@ -203,7 +204,7 @@ const TaskRunHistory: React.FC<TaskRunHistoryProps> = ({ task, runs }) => {
               className="ml-0.5 p-0.5 rounded text-secondary hover:text-foreground hover:bg-surface-raised transition-colors"
               title={i18nService.t('scheduledTasksFilterClear')}
             >
-              <XMarkIcon className="h-3 w-3" />
+              <X className="h-3 w-3" />
             </button>
           )}
         </div>
@@ -252,7 +253,7 @@ const TaskRunHistory: React.FC<TaskRunHistoryProps> = ({ task, runs }) => {
                       {formatDuration(run.durationMs)}
                     </span>
                   )}
-                  {canView && <ChevronRightIcon className="h-3.5 w-3.5 text-secondary/50" />}
+                  {canView && <CaretRight className="h-3.5 w-3.5 text-secondary/50" />}
                 </span>
               </button>
             );

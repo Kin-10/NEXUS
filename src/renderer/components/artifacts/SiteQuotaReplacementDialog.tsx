@@ -1,8 +1,9 @@
+
 import {
-  ArrowPathIcon,
-  ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline';
+  ArrowsClockwise,
+  MagnifyingGlass,
+  Warning,
+} from '@phosphor-icons/react';
 import { type SiteDeploymentQuota, SiteKind, type SiteQuotaCandidate } from '@shared/site/constants';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -57,7 +58,7 @@ const SiteQuotaReplacementDialog: React.FC<SiteQuotaReplacementDialogProps> = ({
         <div className="shrink-0 px-6 pb-4 pt-5">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
-              <ExclamationTriangleIcon className="h-5 w-5" aria-hidden="true" />
+              <Warning className="h-5 w-5" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
               <h2 id="site-quota-dialog-title" className="text-lg font-semibold text-foreground">
@@ -96,7 +97,7 @@ const SiteQuotaReplacementDialog: React.FC<SiteQuotaReplacementDialogProps> = ({
         <div className="min-h-0 flex-1 overflow-y-auto border-t border-border px-6 py-4">
           <div className="flex items-center gap-2">
             <label className="relative min-w-0 flex-1">
-              <MagnifyingGlassIcon
+              <MagnifyingGlass
                 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
                 aria-hidden="true"
               />
@@ -197,7 +198,7 @@ const SiteQuotaReplacementDialog: React.FC<SiteQuotaReplacementDialogProps> = ({
             disabled={busy || !selected}
             className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {busy && <ArrowPathIcon className="h-4 w-4 animate-spin" aria-hidden="true" />}
+            {busy && <ArrowsClockwise className="h-4 w-4 animate-spin" aria-hidden="true" />}
             {t('siteQuotaStopAndContinue')}
           </button>
         </div>
@@ -230,7 +231,7 @@ const SiteQuotaReplacementDialog: React.FC<SiteQuotaReplacementDialogProps> = ({
                 disabled={busy}
                 className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {busy && <ArrowPathIcon className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                {busy && <ArrowsClockwise className="h-4 w-4 animate-spin" aria-hidden="true" />}
                 {t('siteQuotaConfirmStop')}
               </button>
             </div>

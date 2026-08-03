@@ -1,19 +1,20 @@
+
 import {
-  ArrowLeftIcon,
-  ArrowPathIcon,
-  ArrowTopRightOnSquareIcon,
-  ArrowUpTrayIcon,
-  ChartBarIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ClipboardDocumentIcon,
-  GlobeAltIcon,
-  LockClosedIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-  TrashIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  ArrowLeft,
+  ArrowsClockwise,
+  ArrowSquareOut,
+  CaretLeft,
+  CaretRight,
+  ChartBar,
+  ClipboardText,
+  Globe,
+  Lock,
+  MagnifyingGlass,
+  Plus,
+  Trash,
+  UploadSimple,
+  X,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { HtmlShareAccessMode, HtmlShareStatus } from '../../../shared/htmlShare/constants';
@@ -110,7 +111,7 @@ const SiteStatusBadge: React.FC<{ status: SiteStatusValue }> = ({ status }) => (
     className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${statusTheme[status]}`}
   >
     {status === SiteStatus.Online && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
-    {status === SiteStatus.Deploying && <ArrowPathIcon className="h-3 w-3 animate-spin" />}
+    {status === SiteStatus.Deploying && <ArrowsClockwise className="h-3 w-3 animate-spin" />}
     {i18nService.t(`sitesStatus_${status}`)}
   </span>
 );
@@ -157,7 +158,7 @@ const EmptyState: React.FC<{
   return (
     <div className="mx-auto mt-12 max-w-3xl rounded-xl border border-border bg-surface p-7 text-center">
       <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        <GlobeAltIcon className="h-5 w-5" />
+        <Globe className="h-5 w-5" />
       </div>
       <h2 className="mt-3 text-sm font-semibold text-foreground">
         {i18nService.t('sitesEmptyTitle')}
@@ -540,7 +541,7 @@ const SitesView: React.FC<SitesViewProps> = ({
         />
         <div className="flex flex-1 items-center justify-center p-8">
           <div className="max-w-sm text-center">
-            <LockClosedIcon className="mx-auto h-10 w-10 text-secondary" />
+            <Lock className="mx-auto h-10 w-10 text-secondary" />
             <h1 className="mt-4 text-xl font-semibold text-foreground">
               {i18nService.t('sitesLoginTitle')}
             </h1>
@@ -586,7 +587,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             aria-label={i18nService.t('sitesBack')}
             title={i18nService.t('sitesBack')}
           >
-            <ArrowLeftIcon className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
           </button>
           <div
             className="flex min-w-0 max-w-[320px] items-center gap-2 px-1"
@@ -619,7 +620,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
             title={!canVisit ? i18nService.t('sitesVisitUnavailable') : undefined}
           >
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            <ArrowSquareOut className="h-4 w-4" />
             {i18nService.t('sitesVisit')}
           </button>
         </header>
@@ -661,7 +662,7 @@ const SitesView: React.FC<SitesViewProps> = ({
               </div>
               {analyticsLoading && !analytics ? (
                 <div className="flex h-56 items-center justify-center text-sm text-secondary">
-                  <ArrowPathIcon className="mr-2 h-4 w-4 animate-spin" />
+                  <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
                   {i18nService.t('loading')}
                 </div>
               ) : (
@@ -769,7 +770,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                     aria-label={i18nService.t('copy')}
                     title={i18nService.t('copy')}
                   >
-                    <ClipboardDocumentIcon className="h-4 w-4" />
+                    <ClipboardText className="h-4 w-4" />
                   </button>
                 </div>
               </section>
@@ -791,9 +792,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                     >
                       <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                         {mode === HtmlShareAccessMode.Public ? (
-                          <GlobeAltIcon className="h-4 w-4" />
+                          <Globe className="h-4 w-4" />
                         ) : (
-                          <LockClosedIcon className="h-4 w-4" />
+                          <Lock className="h-4 w-4" />
                         )}
                         {mode === HtmlShareAccessMode.Public
                           ? i18nService.t('sitesPublicAccess')
@@ -824,7 +825,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                       aria-label={i18nService.t('copy')}
                       title={i18nService.t('copy')}
                     >
-                      <ClipboardDocumentIcon className="h-4 w-4" />
+                      <ClipboardText className="h-4 w-4" />
                     </button>
                   </div>
                 )}
@@ -918,7 +919,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                   }}
                   className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-red-500/40 px-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  <TrashIcon className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                   {i18nService.t('sitesDeleteAction')}
                 </button>
               </section>
@@ -987,7 +988,7 @@ const SitesView: React.FC<SitesViewProps> = ({
           className="w-[460px] rounded-2xl border border-border bg-background p-6 shadow-2xl"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10 text-red-600">
-            <TrashIcon className="h-5 w-5" />
+            <Trash className="h-5 w-5" />
           </div>
           <h2 className="mt-4 text-base font-semibold text-foreground">
             {i18nService.t('sitesDeleteConfirmTitle')}
@@ -1037,7 +1038,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             >
               {actionLoading ? (
                 <>
-                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                  <ArrowsClockwise className="h-4 w-4 animate-spin" />
                   {i18nService.t('sitesDeleting')}
                 </>
               ) : (
@@ -1100,7 +1101,7 @@ const SitesView: React.FC<SitesViewProps> = ({
       onClick={() => onCreateSiteByChat(i18nService.t('sitesCreatePrompt'))}
       className={`inline-flex shrink-0 items-center rounded-lg bg-primary font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40 ${compact ? 'h-8 gap-1 px-2.5 text-xs' : 'h-9 gap-1.5 px-3.5 text-sm shadow-sm'}`}
     >
-      <PlusIcon className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+      <Plus className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
       {i18nService.t(compact ? 'sitesCreateShort' : 'sitesCreate')}
     </button>
   );
@@ -1124,7 +1125,7 @@ const SitesView: React.FC<SitesViewProps> = ({
         {!isUnfilteredEmpty && (
           <div className="mt-3 flex flex-nowrap items-center gap-2.5">
             <div className="relative min-w-[280px] flex-1">
-              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
+              <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
               <input
                 value={keywordInput}
                 onChange={event => setKeywordInput(event.target.value)}
@@ -1160,7 +1161,7 @@ const SitesView: React.FC<SitesViewProps> = ({
               onClick={() => void loadSites()}
               className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface text-secondary hover:bg-surface-raised hover:text-foreground"
             >
-              <ArrowPathIcon className={`h-4 w-4 ${listLoading ? 'animate-spin' : ''}`} />
+              <ArrowsClockwise className={`h-4 w-4 ${listLoading ? 'animate-spin' : ''}`} />
             </button>
             {createSiteButton(true)}
           </div>
@@ -1178,14 +1179,14 @@ const SitesView: React.FC<SitesViewProps> = ({
           )}
           {listLoading && listData.list.length === 0 ? (
             <div className="flex h-64 items-center justify-center text-sm text-secondary">
-              <ArrowPathIcon className="mr-2 h-4 w-4 animate-spin" />
+              <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
               {i18nService.t('loading')}
             </div>
           ) : isUnfilteredEmpty ? (
             <EmptyState onCreateSiteByChat={onCreateSiteByChat} readOnly={readOnly} />
           ) : listData.list.length === 0 ? (
             <div className="flex h-56 flex-col items-center justify-center text-sm text-secondary">
-              <MagnifyingGlassIcon className="mb-3 h-8 w-8" />
+              <MagnifyingGlass className="mb-3 h-8 w-8" />
               {i18nService.t('sitesNoResults')}
             </div>
           ) : (
@@ -1230,9 +1231,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                       </div>
                       <div className="flex w-[140px] shrink-0 items-center gap-2 px-3 text-xs text-foreground">
                         {site.accessMode === HtmlShareAccessMode.Code ? (
-                          <LockClosedIcon className="h-4 w-4 shrink-0 text-secondary" />
+                          <Lock className="h-4 w-4 shrink-0 text-secondary" />
                         ) : (
-                          <GlobeAltIcon className="h-4 w-4 shrink-0 text-secondary" />
+                          <Globe className="h-4 w-4 shrink-0 text-secondary" />
                         )}
                         <span className="truncate">
                           {site.accessMode === HtmlShareAccessMode.Code
@@ -1249,7 +1250,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                         aria-label={i18nService.t('sitesShare')}
                         title={i18nService.t('sitesShare')}
                       >
-                        <ArrowUpTrayIcon className="h-4 w-4" />
+                        <UploadSimple className="h-4 w-4" />
                         <span>{i18nService.t('sitesShare')}</span>
                       </button>
                       <button
@@ -1296,7 +1297,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             aria-label={i18nService.t('sitesPreviousPage')}
             title={i18nService.t('sitesPreviousPage')}
           >
-            <ChevronLeftIcon className="h-4 w-4" />
+            <CaretLeft className="h-4 w-4" />
           </button>
           <span className="text-xs text-secondary">
             {i18nService
@@ -1312,7 +1313,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             aria-label={i18nService.t('sitesNextPage')}
             title={i18nService.t('sitesNextPage')}
           >
-            <ChevronRightIcon className="h-4 w-4" />
+            <CaretRight className="h-4 w-4" />
           </button>
         </footer>
       )}
@@ -1341,7 +1342,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                 className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised hover:text-foreground disabled:opacity-40"
                 aria-label={i18nService.t('close')}
               >
-                <XMarkIcon className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -1365,7 +1366,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                 <h3 className="text-xs font-semibold text-foreground">
                   {i18nService.t('sitesWhoCanAccess')}
                 </h3>
-                {shareDialogLoading && <ArrowPathIcon className="h-4 w-4 animate-spin text-secondary" />}
+                {shareDialogLoading && <ArrowsClockwise className="h-4 w-4 animate-spin text-secondary" />}
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[HtmlShareAccessMode.Public, HtmlShareAccessMode.Code].map(mode => (
@@ -1386,9 +1387,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                   >
                     <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                       {mode === HtmlShareAccessMode.Public ? (
-                        <GlobeAltIcon className="h-4 w-4" />
+                        <Globe className="h-4 w-4" />
                       ) : (
-                        <LockClosedIcon className="h-4 w-4" />
+                        <Lock className="h-4 w-4" />
                       )}
                       {mode === HtmlShareAccessMode.Public
                         ? i18nService.t('sitesPublicAccess')
@@ -1427,7 +1428,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                     aria-label={i18nService.t('copy')}
                     title={i18nService.t('copy')}
                   >
-                    <ClipboardDocumentIcon className="h-4 w-4" />
+                    <ClipboardText className="h-4 w-4" />
                   </button>
                 </div>
               )}
@@ -1458,12 +1459,12 @@ const SitesView: React.FC<SitesViewProps> = ({
                 }
                 className="inline-flex h-9 min-w-[104px] items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {shareActionLoading && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
+                {shareActionLoading && <ArrowsClockwise className="h-4 w-4 animate-spin" />}
                 {!shareActionLoading &&
                   (shareHasAccessChange ? (
-                    <GlobeAltIcon className="h-4 w-4" />
+                    <Globe className="h-4 w-4" />
                   ) : (
-                    <ClipboardDocumentIcon className="h-4 w-4" />
+                    <ClipboardText className="h-4 w-4" />
                   ))}
                 {shareActionLoading
                   ? i18nService.t('saving')
@@ -1481,7 +1482,7 @@ const SitesView: React.FC<SitesViewProps> = ({
       </Modal>
       {detailLoading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
-          <ArrowPathIcon className="h-5 w-5 animate-spin text-secondary" />
+          <ArrowsClockwise className="h-5 w-5 animate-spin text-secondary" />
         </div>
       )}
       {siteActionMenu && (
@@ -1497,7 +1498,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             onClick={() => void openSiteDetail(siteActionMenu.site, 'analytics')}
             className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-raised"
           >
-            <ChartBarIcon className="h-4 w-4 text-secondary" />
+            <ChartBar className="h-4 w-4 text-secondary" />
             {i18nService.t('sitesViewAnalytics')}
           </button>
           <button

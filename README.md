@@ -69,7 +69,7 @@ Create recurring work either by conversation or through the scheduled task UI. U
 
 ### IM Remote Control
 
-Reach your desktop Agent from WeChat, WeCom, DingTalk, Feishu/Lark, QQ, Telegram, Discord, NetEase IM, NetEase Bee, POPO, and email. Multi-instance platforms can bind different accounts or channels to different Agents.
+Reach your desktop Agent from WeChat, WeCom, DingTalk, Feishu/Lark, and QQ. Multi-instance platforms can bind different accounts or channels to different Agents.
 
 ### Rich Artifacts
 

@@ -1,4 +1,7 @@
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowLeft,
+} from '@phosphor-icons/react';
 import { useCallback,useEffect, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -102,7 +105,7 @@ export default function PluginConfigPage({ pluginId, onBack, initialConfig, onCo
           onClick={onBack}
           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-raised transition-colors"
         >
-          <ArrowLeftIcon className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
           <h3 className="text-base font-semibold text-foreground">

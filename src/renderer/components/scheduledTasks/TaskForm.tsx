@@ -1,9 +1,10 @@
+
 import {
-  ArrowsPointingInIcon,
-  ArrowsPointingOutIcon,
-  BellSlashIcon,
-  CheckIcon,
-} from '@heroicons/react/24/outline';
+  ArrowsIn,
+  ArrowsOut,
+  BellSlash,
+  Check,
+} from '@phosphor-icons/react';
 import { PlatformRegistry } from '@shared/platform';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -21,6 +22,7 @@ import { scheduledTaskService } from '../../services/scheduledTask';
 import { RootState } from '../../store';
 import type { Model } from '../../store/slices/modelSlice';
 import { resolveOpenClawModelRef, toOpenClawModelRef } from '../../utils/openclawModelRef';
+import { getPlatformLogoSrc } from '../../utils/platformLogo';
 import Modal from '../common/Modal';
 import ModelSelector from '../ModelSelector';
 import {
@@ -1234,7 +1236,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const getChannelLogo = (channelValue: string): string | null => {
     const platform = PlatformRegistry.platformOfChannel(channelValue);
     if (platform) {
-      return PlatformRegistry.logo(platform);
+      return getPlatformLogoSrc(platform);
     }
     return null;
   };
@@ -1275,7 +1277,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             >
               <span className="flex items-center gap-2 truncate">
                 {form.notifyChannel === DEFAULT_FORM_STATE.notifyChannel ? (
-                  <BellSlashIcon className="w-5 h-5 shrink-0 text-secondary" />
+                  <BellSlash className="w-5 h-5 shrink-0 text-secondary" />
                 ) : selectedLogo ? (
                   <img src={selectedLogo} alt="" className="w-5 h-5 object-contain rounded" />
                 ) : null}
@@ -1324,12 +1326,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       setChannelDropdownOpen(false);
                     }}
                   >
-                    <BellSlashIcon className="w-5 h-5 shrink-0 text-secondary" />
+                    <BellSlash className="w-5 h-5 shrink-0 text-secondary" />
                     <span className="min-w-0 flex-1 truncate text-[13px] font-normal leading-5">
                       {i18nService.t('scheduledTasksFormNotifyChannelNone')}
                     </span>
                     {form.notifyChannel === DEFAULT_FORM_STATE.notifyChannel && (
-                      <CheckIcon className="h-4 w-4 shrink-0 text-emerald-500" />
+                      <Check className="h-4 w-4 shrink-0 text-emerald-500" />
                     )}
                   </button>
                   {channelOptions.map(channel => {
@@ -1369,7 +1371,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                           {displayName}
                         </span>
                         {isActive && (
-                          <CheckIcon className="h-4 w-4 shrink-0 text-emerald-500" />
+                          <Check className="h-4 w-4 shrink-0 text-emerald-500" />
                         )}
                       </button>
                     );
@@ -1451,7 +1453,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                               {formatConversationOptionLabel(conv)}
                             </span>
                             {isActive && (
-                              <CheckIcon className="h-4 w-4 shrink-0 text-emerald-500" />
+                              <Check className="h-4 w-4 shrink-0 text-emerald-500" />
                             )}
                           </button>
                         );
@@ -1578,7 +1580,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 aria-label={i18nService.t('scheduledTasksFormPayloadExpand')}
                 className="absolute right-2 top-2 rounded-md p-1.5 text-secondary/70 hover:bg-surface-raised hover:text-foreground transition-colors"
               >
-                <ArrowsPointingOutIcon className="h-4 w-4" />
+                <ArrowsOut className="h-4 w-4" />
               </button>
               {!isSystemEventTask && (
                 <div className="flex items-center gap-2 px-2 py-1 border-t border-border/40">
@@ -1708,7 +1710,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             aria-label={i18nService.t('scheduledTasksFormPayloadCollapse')}
             className="p-2 rounded-lg hover:bg-surface-raised transition-colors"
           >
-            <ArrowsPointingInIcon className="h-5 w-5 text-secondary" />
+            <ArrowsIn className="h-5 w-5 text-secondary" />
           </button>
         </div>
         <textarea

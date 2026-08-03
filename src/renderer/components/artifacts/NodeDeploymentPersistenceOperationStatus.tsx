@@ -1,4 +1,9 @@
-import { ArrowPathIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowsClockwise,
+  CheckCircle,
+  WarningCircle,
+} from '@phosphor-icons/react';
 import React, { useEffect, useState } from 'react';
 
 import { i18nService } from '@/services/i18n';
@@ -68,7 +73,7 @@ const NodeDeploymentPersistenceOperationStatus: React.FC<
             className="flex min-w-0 items-center gap-1.5 font-medium text-foreground"
             role="status"
           >
-            <ArrowPathIcon
+            <ArrowsClockwise
               className="h-3.5 w-3.5 shrink-0 text-primary motion-safe:animate-spin"
               aria-hidden="true"
             />
@@ -98,14 +103,14 @@ const NodeDeploymentPersistenceOperationStatus: React.FC<
         className="mt-2 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-2.5 py-2 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200"
         role="alert"
       >
-        <ExclamationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <WarningCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 break-words leading-5">{failureMessage}</span>
         <button
           type="button"
           onClick={onRetry}
           className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md border border-current/30 px-2 font-medium transition-colors hover:bg-red-100 dark:hover:bg-red-500/10"
         >
-          <ArrowPathIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          <ArrowsClockwise className="h-3.5 w-3.5" aria-hidden="true" />
           {t('nodeDeploymentPersistenceRetry')}
         </button>
       </div>
@@ -117,7 +122,7 @@ const NodeDeploymentPersistenceOperationStatus: React.FC<
       className="mt-2 flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-xs text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
       role="status"
     >
-      <CheckCircleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <CheckCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
       <span>
         {operation.empty
           ? t('nodeDeploymentPersistenceEmpty')

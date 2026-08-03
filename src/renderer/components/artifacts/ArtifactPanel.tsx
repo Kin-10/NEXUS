@@ -1,12 +1,13 @@
+
 import {
-  ArrowDownTrayIcon,
-  ArrowPathIcon,
-  ChevronDownIcon,
-  DocumentIcon as DataFileIcon,
-  FolderIcon as DataFolderIcon,
-  PlusIcon as AddIcon,
-  ShareIcon,
-} from '@heroicons/react/24/outline';
+  ArrowsClockwise,
+  CaretDown,
+  DownloadSimple,
+  File,
+  Folder,
+  Plus,
+  ShareNetwork,
+} from '@phosphor-icons/react';
 import { ArtifactBrowserPartition } from '@shared/artifactPreview/constants';
 import {
   BrowserAnnotationGuestChannel,
@@ -4433,7 +4434,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                   aria-label={t('htmlShare')}
                   title={t('htmlShare')}
                 >
-                  <ShareIcon className="h-4 w-4" />
+                  <ShareNetwork className="h-4 w-4" />
                 </button>
               )}
               {showArtifactActionsMenu && (
@@ -4955,7 +4956,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                     aria-live="polite"
                   >
                     <div className="flex items-center gap-2 rounded-xl bg-surface px-4 py-4 text-sm font-medium text-foreground">
-                      <ArrowPathIcon
+                      <ArrowsClockwise
                         className="h-4 w-4 text-primary motion-safe:animate-spin"
                         aria-hidden="true"
                       />
@@ -5106,7 +5107,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                         aria-expanded={isNodeDeploymentAdvancedOpen}
                       >
                         <span>{t('nodeDeploymentAdvancedSettings')}</span>
-                        <ChevronDownIcon
+                        <CaretDown
                           className={`h-4 w-4 shrink-0 text-muted transition-[color,transform] group-hover:text-secondary motion-reduce:transition-none ${
                             isNodeDeploymentAdvancedOpen ? 'rotate-180' : ''
                           }`}
@@ -5131,12 +5132,12 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                                       className="inline-flex h-7 items-center justify-center gap-1.5 rounded-md border border-border bg-background px-2 text-xs text-secondary transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                       {isNodeDeploymentPersistenceDownloadRunning ? (
-                                        <ArrowPathIcon
+                                        <ArrowsClockwise
                                           className="h-3.5 w-3.5 motion-safe:animate-spin"
                                           aria-hidden="true"
                                         />
                                       ) : (
-                                        <ArrowDownTrayIcon
+                                        <DownloadSimple
                                           className="h-3.5 w-3.5"
                                           aria-hidden="true"
                                         />
@@ -5161,9 +5162,9 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                                       aria-expanded={isNodeDeploymentPersistenceAddMenuOpen}
                                       className="inline-flex h-7 items-center gap-1 rounded-md px-1.5 text-xs text-secondary transition-colors hover:bg-background hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                      <AddIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                                       {t('nodeDeploymentPersistenceAddData')}
-                                      <ChevronDownIcon
+                                      <CaretDown
                                         className={`h-3.5 w-3.5 transition-transform motion-reduce:transition-none ${
                                           isNodeDeploymentPersistenceAddMenuOpen ? 'rotate-180' : ''
                                         }`}
@@ -5183,7 +5184,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                                           )}
                                           className="flex h-8 w-full items-center gap-2 rounded px-2 text-left text-xs text-secondary transition-colors hover:bg-surface hover:text-foreground"
                                         >
-                                          <DataFolderIcon className="h-4 w-4" aria-hidden="true" />
+                                          <Folder className="h-4 w-4" aria-hidden="true" />
                                           {t('nodeDeploymentPersistenceAddDirectory')}
                                         </button>
                                         <button
@@ -5194,7 +5195,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                                           )}
                                           className="flex h-8 w-full items-center gap-2 rounded px-2 text-left text-xs text-secondary transition-colors hover:bg-surface hover:text-foreground"
                                         >
-                                          <DataFileIcon className="h-4 w-4" aria-hidden="true" />
+                                          <File className="h-4 w-4" aria-hidden="true" />
                                           {t('nodeDeploymentPersistenceAddFile')}
                                         </button>
                                       </div>
@@ -5214,12 +5215,12 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                                       className="flex min-h-8 items-center gap-2 border-t border-border/70 py-1.5 first:border-t-0"
                                     >
                                       {binding.kind === ShareDeploymentPersistenceBindingKind.Directory ? (
-                                        <DataFolderIcon
+                                        <Folder
                                           className="h-4 w-4 shrink-0 text-muted"
                                           aria-hidden="true"
                                         />
                                       ) : (
-                                        <DataFileIcon
+                                        <File
                                           className="h-4 w-4 shrink-0 text-muted"
                                           aria-hidden="true"
                                         />
@@ -5379,7 +5380,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                     }`}
                   >
                     {showNodeDeploymentSubmitSpinner && (
-                      <ArrowPathIcon
+                      <ArrowsClockwise
                         className="h-4 w-4 motion-safe:animate-spin"
                         aria-hidden="true"
                       />
@@ -5395,7 +5396,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                       className="inline-flex h-10 min-w-[132px] items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isNodeDeploymentAccessUpdating && (
-                        <ArrowPathIcon
+                        <ArrowsClockwise
                           className="h-4 w-4 motion-safe:animate-spin"
                           aria-hidden="true"
                         />
@@ -7186,7 +7187,7 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
                   aria-hidden="true"
                 />
               ) : publishAction.kind === ArtifactToolbarPublishActionKind.Share ? (
-                <ShareIcon className="h-4 w-4" />
+                <ShareNetwork className="h-4 w-4" />
               ) : (
                 <ServiceDeploymentIcon className="h-[18px] w-[18px] translate-y-[1.5px]" />
               )}

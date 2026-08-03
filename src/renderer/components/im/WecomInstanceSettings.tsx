@@ -3,8 +3,14 @@
  * Configuration form for a single WeCom bot instance in multi-instance mode
  */
 
-import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { CheckCircleIcon, SignalIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  Broadcast,
+  CheckCircle,
+  Eye,
+  EyeSlash,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import { PlatformRegistry } from '@shared/platform';
 import React, { useState } from 'react';
 
@@ -128,13 +134,13 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
         </p>
         {quickSetupStatus === 'success' && (
           <div className="flex items-center justify-center gap-1.5 text-xs text-green-600 dark:text-green-400 bg-green-500/10 px-3 py-2 rounded-lg">
-            <CheckCircleIcon className="h-4 w-4 flex-shrink-0" />
+            <CheckCircle className="h-4 w-4 flex-shrink-0" />
             {i18nService.t('imWecomQuickSetupSuccess')}
           </div>
         )}
         {quickSetupStatus === 'error' && (
           <div className="flex items-center justify-center gap-1.5 text-xs text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">
-            <XCircleIcon className="h-4 w-4 flex-shrink-0" />
+            <XCircle className="h-4 w-4 flex-shrink-0" />
             {i18nService.t('imWecomQuickSetupError')}: {quickSetupError}
           </div>
         )}
@@ -196,7 +202,7 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
                 className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                 title={i18nService.t('clear') || 'Clear'}
               >
-                <XCircleIconSolid className="h-4 w-4" />
+                <XCircle className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -225,7 +231,7 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
                 className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                 title={i18nService.t('clear') || 'Clear'}
               >
-                <XCircleIconSolid className="h-4 w-4" />
+                <XCircle className="h-4 w-4" />
               </button>
             )}
             <button
@@ -234,7 +240,7 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
               className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
               title={showSecrets['secret'] ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
             >
-              {showSecrets['secret'] ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+              {showSecrets['secret'] ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
             </button>
           </div>
         </div>
@@ -331,7 +337,7 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
                       }}
                       className="text-secondary hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     >
-                      <XMarkIcon className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
@@ -418,7 +424,7 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
                         }}
                         className="text-secondary hover:text-red-500 dark:hover:text-red-400 transition-colors"
                       >
-                        <XMarkIcon className="w-3 h-3" />
+                        <X className="w-3 h-3" />
                       </button>
                     </span>
                   ))}
@@ -459,7 +465,7 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
           disabled={testingPlatform === 'wecom'}
           className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl border border-border text-foreground hover:bg-surface-raised disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
         >
-          <SignalIcon className="h-3.5 w-3.5 mr-1.5" />
+          <Broadcast className="h-3.5 w-3.5 mr-1.5" />
           {testingPlatform === 'wecom'
             ? i18nService.t('imConnectivityTesting')
             : connectivityResults['wecom' as keyof typeof connectivityResults]

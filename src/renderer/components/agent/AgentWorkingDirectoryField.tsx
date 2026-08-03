@@ -1,4 +1,8 @@
-import { FolderIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  Folder,
+  X,
+} from '@phosphor-icons/react';
 import React, { useRef, useState } from 'react';
 
 import { i18nService } from '../../services/i18n';
@@ -42,7 +46,7 @@ const AgentWorkingDirectoryField: React.FC<AgentWorkingDirectoryFieldProps> = ({
             onClick={() => setShowFolderMenu((open) => !open)}
             className="inline-flex h-full min-w-0 flex-1 items-center gap-2 rounded-lg pl-2.5 pr-2"
           >
-            <FolderIcon className="h-4 w-4 flex-shrink-0" />
+            <Folder className="h-4 w-4 flex-shrink-0" />
             <span className={`truncate ${hasValue ? 'text-foreground' : 'text-secondary'}`}>
               {truncatePath(value, 40)}
             </span>
@@ -55,7 +59,7 @@ const AgentWorkingDirectoryField: React.FC<AgentWorkingDirectoryFieldProps> = ({
               onClick={() => onChange('')}
               className="h-full w-7 flex-shrink-0 inline-flex items-center justify-center rounded-lg text-secondary hover:text-foreground transition-colors"
             >
-              <XMarkIcon className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
@@ -83,7 +87,7 @@ const AgentWorkingDirectoryField: React.FC<AgentWorkingDirectoryFieldProps> = ({
           onClick={() => setShowFolderMenu((open) => !open)}
           className="min-w-0 flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-transparent text-foreground text-sm hover:bg-surface-raised transition-colors"
         >
-          <FolderIcon className="h-4 w-4 flex-shrink-0 text-secondary" />
+          <Folder className="h-4 w-4 flex-shrink-0 text-secondary" />
           <span className={`flex-1 truncate text-left ${value.trim() ? '' : 'text-secondary'}`}>
             {truncatePath(value)}
           </span>
@@ -95,7 +99,7 @@ const AgentWorkingDirectoryField: React.FC<AgentWorkingDirectoryFieldProps> = ({
             onClick={() => onChange('')}
             className="h-10 w-10 flex-shrink-0 inline-flex items-center justify-center rounded-lg border border-border text-secondary hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <XMarkIcon className="h-3.5 w-3.5 text-secondary" />
+            <X className="h-3.5 w-3.5 text-secondary" />
           </button>
         )}
       </div>

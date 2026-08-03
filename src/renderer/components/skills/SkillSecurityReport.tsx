@@ -1,11 +1,12 @@
+import {
+  CaretDown,
+  CaretRight,
+  ShieldCheck,
+  X,
+} from '@phosphor-icons/react';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  ShieldCheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+
 import { i18nService } from '../../services/i18n';
 import Modal from '../common/Modal';
 
@@ -95,7 +96,7 @@ const SkillSecurityReport: React.FC<SkillSecurityReportProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <ShieldCheckIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <ShieldCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
             <h3 className="text-base font-semibold text-foreground">
               {i18nService.t('securityScanTitle')}
             </h3>
@@ -105,7 +106,7 @@ const SkillSecurityReport: React.FC<SkillSecurityReportProps> = ({
             onClick={() => onAction('cancel')}
             className="p-1 rounded-lg hover:bg-surface-raised transition-colors"
           >
-            <XMarkIcon className="h-4 w-4 text-secondary" />
+            <X className="h-4 w-4 text-secondary" />
           </button>
         </div>
 
@@ -133,9 +134,9 @@ const SkillSecurityReport: React.FC<SkillSecurityReportProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       {isExpanded ? (
-                        <ChevronDownIcon className="h-3.5 w-3.5 text-secondary" />
+                        <CaretDown className="h-3.5 w-3.5 text-secondary" />
                       ) : (
-                        <ChevronRightIcon className="h-3.5 w-3.5 text-secondary" />
+                        <CaretRight className="h-3.5 w-3.5 text-secondary" />
                       )}
                       <span className={`w-2 h-2 rounded-full ${SEVERITY_DOTS[maxSeverity] || SEVERITY_DOTS.warning}`} />
                       <span className="text-sm font-medium text-foreground">

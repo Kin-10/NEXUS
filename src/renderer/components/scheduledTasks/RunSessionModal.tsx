@@ -1,4 +1,8 @@
-import { ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  ArrowsClockwise,
+  X,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -285,7 +289,7 @@ const RunSessionModal: React.FC<RunSessionModalProps> = ({
             onClick={onClose}
             className="shrink-0 p-1 rounded-lg text-secondary hover:bg-surface-raised transition-colors"
           >
-            <XMarkIcon className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -313,7 +317,7 @@ const RunSessionModal: React.FC<RunSessionModalProps> = ({
                 onClick={handleManualRetry}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-primary hover:bg-surface-raised transition-colors"
               >
-                <ArrowPathIcon className="w-3.5 h-3.5" />
+                <ArrowsClockwise className="w-3.5 h-3.5" />
                 {i18nService.t('scheduledTasksSessionRetry')}
               </button>
             </div>

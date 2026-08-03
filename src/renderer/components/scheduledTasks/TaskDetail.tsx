@@ -1,4 +1,7 @@
-import { PlayIcon } from '@heroicons/react/24/outline';
+
+import {
+  Play,
+} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -229,7 +232,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ task, onRequestDelete }) => {
             title={runActionLabel}
             aria-label={runActionLabel}
           >
-            <PlayIcon className="h-4 w-4" />
+            <Play className="h-4 w-4" />
           </button>
           <TaskToggle
             enabled={task.enabled}

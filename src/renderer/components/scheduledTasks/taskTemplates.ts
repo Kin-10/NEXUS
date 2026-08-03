@@ -1,11 +1,12 @@
+
 import {
-  BellAlertIcon,
-  BriefcaseIcon,
-  CalendarDaysIcon,
-  ChartBarIcon,
-  CodeBracketSquareIcon,
-  NewspaperIcon,
-} from '@heroicons/react/24/outline';
+  BellRinging,
+  Briefcase,
+  CalendarDots,
+  ChartBar,
+  CodeBlock,
+  Newspaper,
+} from '@phosphor-icons/react';
 import type React from 'react';
 
 import type { PlanType } from './utils';
@@ -36,12 +37,12 @@ export const templateIconComponents: Record<
   ScheduledTaskTemplateIcon,
   React.ElementType<{ className?: string }>
 > = {
-  [ScheduledTaskTemplateIcon.Newspaper]: NewspaperIcon,
-  [ScheduledTaskTemplateIcon.Briefcase]: BriefcaseIcon,
-  [ScheduledTaskTemplateIcon.Calendar]: CalendarDaysIcon,
-  [ScheduledTaskTemplateIcon.Report]: ChartBarIcon,
-  [ScheduledTaskTemplateIcon.Code]: CodeBracketSquareIcon,
-  [ScheduledTaskTemplateIcon.Reminder]: BellAlertIcon,
+  [ScheduledTaskTemplateIcon.Newspaper]: Newspaper,
+  [ScheduledTaskTemplateIcon.Briefcase]: Briefcase,
+  [ScheduledTaskTemplateIcon.Calendar]: CalendarDots,
+  [ScheduledTaskTemplateIcon.Report]: ChartBar,
+  [ScheduledTaskTemplateIcon.Code]: CodeBlock,
+  [ScheduledTaskTemplateIcon.Reminder]: BellRinging,
 };
 
 export const ScheduledTaskTemplatePlanType = {

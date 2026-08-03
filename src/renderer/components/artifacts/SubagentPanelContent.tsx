@@ -1,4 +1,7 @@
-import { ArrowLeftIcon } from '@heroicons/react/20/solid';
+
+import {
+  ArrowLeft,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -176,7 +179,7 @@ const SubagentDetailContent: React.FC<{
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-surface hover:text-foreground"
           aria-label={i18nService.t('back')}
         >
-          <ArrowLeftIcon className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
         </button>
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
           {getSubagentDisplayInitial(subagent, agents)}

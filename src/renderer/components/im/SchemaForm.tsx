@@ -4,8 +4,12 @@
  * Fields are discovered from the schema — hints are optional supplementary info.
  */
 
-import { ChevronRightIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import {
+  CaretRight,
+  Eye,
+  EyeSlash,
+  XCircle,
+} from '@phosphor-icons/react';
 import React from 'react';
 
 /** A single uiHint entry from the gateway */
@@ -256,7 +260,7 @@ export const SchemaForm: React.FC<SchemaFormProps> = ({
                   className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                   title="Clear"
                 >
-                  <XCircleIconSolid className="h-4 w-4" />
+                  <XCircle className="h-4 w-4" />
                 </button>
               )}
               <button
@@ -264,7 +268,7 @@ export const SchemaForm: React.FC<SchemaFormProps> = ({
                 onClick={() => onToggleSecret?.(path)}
                 className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
               >
-                {shown ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+                {shown ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -300,7 +304,7 @@ export const SchemaForm: React.FC<SchemaFormProps> = ({
                   className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                   title="Clear"
                 >
-                  <XCircleIconSolid className="h-4 w-4" />
+                  <XCircle className="h-4 w-4" />
                 </button>
               </div>
             )}
@@ -367,7 +371,7 @@ export const SchemaForm: React.FC<SchemaFormProps> = ({
     return (
       <details key={group.key} className="group">
         <summary className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-secondary select-none py-1">
-          <ChevronRightIcon className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
+          <CaretRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
           {hint.label}
         </summary>
         <div className="mt-2 space-y-3 pl-2 border-l-2 border-border-subtle">

@@ -1,11 +1,12 @@
+
 import {
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ClockIcon,
-  LockClosedIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  CaretDown,
+  CaretRight,
+  Check,
+  Clock,
+  Lock,
+  X,
+} from '@phosphor-icons/react';
 import { ModelRuntimeProfile, ProviderName } from '@shared/providers';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -149,7 +150,7 @@ export const ModelAccessPromptModal: React.FC<ModelAccessPromptModalProps> = ({
           className="-mr-1 -mt-1 rounded-lg p-1 text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
           aria-label={i18nService.t('close')}
         >
-          <XMarkIcon className="h-5 w-5" />
+          <X className="h-5 w-5" />
         </button>
       </div>
       <button
@@ -582,15 +583,15 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
         )}
         {agenticBlocked && (
           <span className="flex shrink-0 items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-700 dark:text-amber-300">
-            <ClockIcon className="h-3 w-3" />
+            <Clock className="h-3 w-3" />
             {i18nService.t('modelSelectorAgenticVerifyingBadge')}
           </span>
         )}
         {restricted && !agenticBlocked && (
-          <LockClosedIcon className="h-3.5 w-3.5 shrink-0 text-secondary" />
+          <Lock className="h-3.5 w-3.5 shrink-0 text-secondary" />
         )}
         {selected && !blocked && (
-          <CheckIcon className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />
+          <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />
         )}
       </button>
     );
@@ -676,7 +677,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
         <span className="min-w-0 truncate text-[12px] font-medium leading-4 text-foreground">
           {selectedModel.name}
         </span>
-        {inOtherGroup && <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 text-secondary" />}
+        {inOtherGroup && <CaretRight className="ml-auto h-3 w-3 shrink-0 text-secondary" />}
       </button>
     );
   };
@@ -717,7 +718,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
             }`}
           >
             <span className={`truncate text-[13px] leading-5 ${!selectedModel ? 'font-medium' : 'font-normal'}`}>{defaultLabel}</span>
-            {!selectedModel && <CheckIcon className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />}
+            {!selectedModel && <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />}
           </button>
         )}
         {accessibleModels.map(renderModelItem)}
@@ -746,12 +747,12 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
         )}
         <span className={`${triggerTextClassName} min-w-0 truncate`}>{selectedModel?.name ?? defaultLabel ?? ''}</span>
         {isModelAgenticBlocked(selectedModel) && (
-          <ClockIcon
+          <Clock
             className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300"
             aria-label={i18nService.t('serverModelAgenticNotReady')}
           />
         )}
-        <ChevronDownIcon className={`${triggerIconClassName} shrink-0 dark:text-claude-darkTextSecondary text-claude-textSecondary`} />
+        <CaretDown className={`${triggerIconClassName} shrink-0 dark:text-claude-darkTextSecondary text-claude-textSecondary`} />
       </button>
 
       {portal && dropdown ? createPortal(dropdown, document.body) : dropdown}

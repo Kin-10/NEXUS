@@ -3,8 +3,13 @@
  * Configuration form for a single QQ bot instance in multi-instance mode
  */
 
-import { EyeIcon, EyeSlashIcon, XCircleIcon as XCircleIconSolid } from '@heroicons/react/20/solid';
-import { SignalIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  Broadcast,
+  Eye,
+  EyeSlash,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import { PlatformRegistry } from '@shared/platform';
 import React, { useState } from 'react';
 
@@ -214,7 +219,7 @@ const QQInstanceSettings: React.FC<QQInstanceSettingsProps> = ({
                 className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                 title={i18nService.t('clear') || 'Clear'}
               >
-                <XCircleIconSolid className="h-4 w-4" />
+                <XCircle className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -243,7 +248,7 @@ const QQInstanceSettings: React.FC<QQInstanceSettingsProps> = ({
                 className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                 title={i18nService.t('clear') || 'Clear'}
               >
-                <XCircleIconSolid className="h-4 w-4" />
+                <XCircle className="h-4 w-4" />
               </button>
             )}
             <button
@@ -252,7 +257,7 @@ const QQInstanceSettings: React.FC<QQInstanceSettingsProps> = ({
               className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
               title={showSecrets['appSecret'] ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
             >
-              {showSecrets['appSecret'] ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
+              {showSecrets['appSecret'] ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
             </button>
           </div>
         </div>
@@ -350,7 +355,7 @@ const QQInstanceSettings: React.FC<QQInstanceSettingsProps> = ({
                       }}
                       className="text-secondary hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     >
-                      <XMarkIcon className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
@@ -400,7 +405,7 @@ const QQInstanceSettings: React.FC<QQInstanceSettingsProps> = ({
                       }}
                       className="text-secondary hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     >
-                      <XMarkIcon className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
@@ -474,7 +479,7 @@ const QQInstanceSettings: React.FC<QQInstanceSettingsProps> = ({
           disabled={testingPlatform === 'qq'}
           className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl border border-border text-foreground hover:bg-surface-raised disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
         >
-          <SignalIcon className="h-3.5 w-3.5 mr-1.5" />
+          <Broadcast className="h-3.5 w-3.5 mr-1.5" />
           {testingPlatform === 'qq'
             ? i18nService.t('imConnectivityTesting')
             : connectivityResults['qq' as keyof typeof connectivityResults]

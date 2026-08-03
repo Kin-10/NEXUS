@@ -1,4 +1,9 @@
-import { ChevronDownIcon, ChevronUpIcon, FolderIcon } from '@heroicons/react/24/outline';
+
+import {
+  CaretDown,
+  CaretUp,
+  Folder,
+} from '@phosphor-icons/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { classifyErrorKey } from '../../../common/coworkErrorClassify';
@@ -193,8 +198,8 @@ const SystemErrorTechnicalDetail: React.FC<{ detail: CoworkErrorDetail }> = ({ d
         aria-expanded={expanded}
       >
         {expanded
-          ? <ChevronUpIcon className="h-3 w-3 flex-shrink-0" />
-          : <ChevronDownIcon className="h-3 w-3 flex-shrink-0" />
+          ? <CaretUp className="h-3 w-3 flex-shrink-0" />
+          : <CaretDown className="h-3 w-3 flex-shrink-0" />
         }
         <span>{i18nService.t('coworkErrorTechnicalDetails')}</span>
       </button>
@@ -234,7 +239,7 @@ const VideoArtifactPathList: React.FC<{ artifacts: Artifact[] }> = ({ artifacts 
             className="flex items-center gap-1 text-primary hover:underline flex-shrink-0"
             onClick={() => void revealLocalPathWithToast(artifact.filePath!)}
           >
-            <FolderIcon className="h-3.5 w-3.5" />
+            <Folder className="h-3.5 w-3.5" />
             <span>{i18nService.t('showInFolder')}</span>
           </button>
         </div>
@@ -585,7 +590,7 @@ const AssistantTurnBlock: React.FC<{
                           className="inline-flex items-center justify-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-secondary hover:bg-black/[0.04] hover:text-foreground dark:hover:bg-white/[0.035] transition-colors"
                         >
                           <span>{i18nService.t('artifactPreviewCardShowMore').replace('{count}', String(hiddenArtifactCardCount))}</span>
-                          <ChevronDownIcon className="h-4 w-4" />
+                          <CaretDown className="h-4 w-4" />
                         </button>
                       ) : (
                         <button
@@ -594,7 +599,7 @@ const AssistantTurnBlock: React.FC<{
                           className="inline-flex items-center justify-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-secondary hover:bg-black/[0.04] hover:text-foreground dark:hover:bg-white/[0.035] transition-colors"
                         >
                           <span>{i18nService.t('artifactPreviewCardShowLess')}</span>
-                          <ChevronUpIcon className="h-4 w-4" />
+                          <CaretUp className="h-4 w-4" />
                         </button>
                       )}
                     </div>

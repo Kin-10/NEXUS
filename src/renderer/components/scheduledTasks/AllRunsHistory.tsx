@@ -1,4 +1,8 @@
-import { ClockIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+import {
+  Clock,
+  X,
+} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -213,7 +217,7 @@ const AllRunsHistory: React.FC = () => {
                 className="ml-1 p-0.5 rounded text-secondary hover:text-foreground hover:bg-surface-raised transition-colors"
                 title={i18nService.t('scheduledTasksFilterClear')}
               >
-                <XMarkIcon className="h-3.5 w-3.5" />
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
@@ -222,7 +226,7 @@ const AllRunsHistory: React.FC = () => {
         {/* Empty state */}
         {isEmpty && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-border-subtle bg-surface px-6 py-16">
-            <ClockIcon className="h-12 w-12 text-secondary/40 mb-4" />
+            <Clock className="h-12 w-12 text-secondary/40 mb-4" />
             <p className="text-sm font-medium text-secondary">
               {hasActiveFilter
                 ? i18nService.t('scheduledTasksFilterNoResults')

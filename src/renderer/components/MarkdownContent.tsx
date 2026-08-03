@@ -1,7 +1,10 @@
 import 'katex/dist/katex.min.css';
 import 'katex/contrib/mhchem';
 
-import { DocumentIcon, FolderIcon } from '@heroicons/react/24/outline';
+import {
+  File,
+  Folder,
+} from '@phosphor-icons/react';
 import React, { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 // @ts-ignore
@@ -590,9 +593,9 @@ const createMarkdownComponents = (
           >
             <span className="min-w-0 break-words [overflow-wrap:anywhere]">{children}</span>
             {isDirectoryLink ? (
-              <FolderIcon className="h-3.5 w-3.5 inline" />
+              <Folder className="h-3.5 w-3.5 inline" />
             ) : (
-              <DocumentIcon className="h-3.5 w-3.5 inline" />
+              <File className="h-3.5 w-3.5 inline" />
             )}
           </a>
           {shouldShowRevealInFolderAction && (
@@ -603,7 +606,7 @@ const createMarkdownComponents = (
               title={i18nService.t('showInFolder')}
               aria-label={i18nService.t('showInFolder')}
             >
-              <FolderIcon className="h-3.5 w-3.5" />
+              <Folder className="h-3.5 w-3.5" />
             </button>
           )}
         </span>
