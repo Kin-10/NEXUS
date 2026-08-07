@@ -1,10 +1,10 @@
-import { SquaresFour } from '@phosphor-icons/react';
+import { Application } from '@icon-park/react';
 import React from 'react';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const SidebarKitsIcon: React.FC<AppIconProps> = ({ className }) => (
-  <SquaresFour className={className} {...defaultIconProps} />
+  <Application className={className} {...iconParkOutlineProps} />
 );
 
 export default SidebarKitsIcon;

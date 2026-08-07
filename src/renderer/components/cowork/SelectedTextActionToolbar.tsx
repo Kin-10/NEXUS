@@ -1,9 +1,10 @@
 
+import React from 'react';
+
 import {
   ChatCircle,
   Question,
-} from '@phosphor-icons/react';
-import React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 

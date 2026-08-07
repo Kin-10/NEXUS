@@ -1,13 +1,14 @@
 
+import { PlatformRegistry } from '@shared/platform';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+
 import {
   ArrowsIn,
   ArrowsOut,
   BellSlash,
   Check,
-} from '@phosphor-icons/react';
-import { PlatformRegistry } from '@shared/platform';
-import React, { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { DeliveryMode, PayloadKind, ScheduleKind, SessionTarget, WakeMode } from '../../../scheduledTask/constants';
 import type {

@@ -1,5 +1,6 @@
-import { PushPin, PushPinSlash } from '@phosphor-icons/react';
 import React from 'react';
+
+import { PushPin, PushPinSlash } from '@/components/icons/iconParkCompat';
 
 import { filledIconProps } from './iconStyle';
 

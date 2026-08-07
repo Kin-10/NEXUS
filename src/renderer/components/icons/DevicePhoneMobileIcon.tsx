@@ -1,5 +1,6 @@
-import { DeviceMobile } from '@phosphor-icons/react';
 import React from 'react';
+
+import { DeviceMobile } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

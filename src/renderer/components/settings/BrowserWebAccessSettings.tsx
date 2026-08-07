@@ -1,10 +1,11 @@
 
+import React, { useEffect, useRef, useState } from 'react';
+
 import {
   Plus,
   Trash,
   X,
-} from '@phosphor-icons/react';
-import React, { useEffect, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import {
   BrowserNetworkMode,

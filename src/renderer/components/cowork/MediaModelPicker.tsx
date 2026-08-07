@@ -1,13 +1,14 @@
 
-import {
-  Check,
-} from '@phosphor-icons/react';
 import { canonicalizeMediaModelId, GPT_IMAGE_2_MODEL_ID, mediaModelDisplayName } from '@shared/mediaModelAliases';
 import { ProviderName } from '@shared/providers';
 import Lottie from 'lottie-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  Check,
+} from '@/components/icons/iconParkCompat';
 
 import { getProviderIcon, ProviderIconId } from '../../providers/uiRegistry';
 import { authService } from '../../services/auth';

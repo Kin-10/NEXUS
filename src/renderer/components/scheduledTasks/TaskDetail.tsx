@@ -1,9 +1,10 @@
 
-import {
-  Play,
-} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  Play,
+} from '@/components/icons/iconParkCompat';
 
 import { DeliveryMode, TaskStatus } from '../../../scheduledTask/constants';
 import type {

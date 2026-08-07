@@ -1,4 +1,4 @@
-import type { IconProps, IconWeight } from '@phosphor-icons/react';
+import type { IconProps, IconWeight } from '@/components/icons/iconParkCompat';
 
 /** Shared Phosphor styling for LobsterAI chrome icons. */
 export const IconWeightRegular: IconWeight = 'regular';
@@ -15,6 +15,14 @@ export const filledIconProps: Pick<IconProps, 'weight' | 'aria-hidden'> = {
   weight: IconWeightFill,
   'aria-hidden': true,
 };
+
+/** Default for IconPark outline chrome icons: currentColor-driven and class-sized. */
+export const iconParkOutlineProps = {
+  size: '100%',
+  strokeWidth: 4,
+  fill: 'currentColor',
+  'aria-hidden': true,
+} as const;
 
 export type AppIconProps = {
   className?: string;

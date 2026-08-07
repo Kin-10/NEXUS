@@ -1,11 +1,12 @@
 
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+
 import {
   Image as ImageIcon,
   SpeakerHigh,
   VideoCamera,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+} from '@/components/icons/iconParkCompat';
 
 import {
   filterMediaLabels,

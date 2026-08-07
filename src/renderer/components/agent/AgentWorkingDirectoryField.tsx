@@ -1,9 +1,10 @@
 
+import React, { useRef, useState } from 'react';
+
 import {
   Folder,
   X,
-} from '@phosphor-icons/react';
-import React, { useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import { getCompactFolderName } from '../../utils/path';

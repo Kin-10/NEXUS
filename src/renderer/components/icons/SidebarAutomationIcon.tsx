@@ -1,10 +1,10 @@
-import { ClockCountdown } from '@phosphor-icons/react';
+import { Schedule } from '@icon-park/react';
 import React from 'react';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const SidebarAutomationIcon: React.FC<AppIconProps> = ({ className }) => (
-  <ClockCountdown className={className} {...defaultIconProps} />
+  <Schedule className={className} {...iconParkOutlineProps} />
 );
 
 export default SidebarAutomationIcon;

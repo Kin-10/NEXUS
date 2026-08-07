@@ -1,5 +1,6 @@
-import { Brain } from '@phosphor-icons/react';
 import React from 'react';
+
+import { Brain } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

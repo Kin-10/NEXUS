@@ -1,9 +1,10 @@
 
-import {
-  Check,
-} from '@phosphor-icons/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import {
+  Check,
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import { skillService } from '../../services/skill';

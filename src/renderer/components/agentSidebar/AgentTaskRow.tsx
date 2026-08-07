@@ -1,5 +1,6 @@
-import { ShareNetwork, Warning } from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import { ShareNetwork, Warning } from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import Modal from '../common/Modal';

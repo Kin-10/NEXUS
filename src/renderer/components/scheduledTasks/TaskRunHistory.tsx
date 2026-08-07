@@ -1,13 +1,14 @@
 
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+
 import {
   CaretRight,
   CheckCircle,
   MinusCircle,
   X,
   XCircle,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { TaskStatus } from '../../../scheduledTask/constants';
 import type { RunFilter, ScheduledTask, ScheduledTaskRun } from '../../../scheduledTask/types';

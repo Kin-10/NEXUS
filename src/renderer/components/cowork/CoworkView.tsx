@@ -1,11 +1,12 @@
+import type { CoworkBrowserAnnotationMessageBatch } from '@shared/cowork/browserAnnotations';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   ArrowsClockwise,
   ShieldCheck,
   Warning,
-} from '@phosphor-icons/react';
-import type { CoworkBrowserAnnotationMessageBatch } from '@shared/cowork/browserAnnotations';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { buildGoalSettingMessageMetadata } from '../../../common/goalCommandDisplay';
 import { buildSessionTitleFromInput } from '../../../common/sessionTitle';

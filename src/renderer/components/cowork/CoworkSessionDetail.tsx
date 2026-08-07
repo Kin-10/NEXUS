@@ -1,3 +1,7 @@
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   Archive,
   ArrowDown,
@@ -5,10 +9,7 @@ import {
   Image as ImageIcon,
   Question,
   Warning,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { stripGoalCommandPrefixForDisplay } from '../../../common/sessionTitle';
 import {

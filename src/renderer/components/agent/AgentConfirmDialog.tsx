@@ -1,8 +1,9 @@
 
+import React from 'react';
+
 import {
   Warning,
-} from '@phosphor-icons/react';
-import React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import Modal from '../common/Modal';
 import { AgentConfirmDialogVariant } from './constants';

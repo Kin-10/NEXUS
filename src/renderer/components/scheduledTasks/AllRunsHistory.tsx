@@ -1,10 +1,11 @@
 
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+
 import {
   Clock,
   X,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { ScheduledTaskDataStatus, TaskStatus } from '../../../scheduledTask/constants';
 import type { RunFilter, ScheduledTaskRunWithName } from '../../../scheduledTask/types';

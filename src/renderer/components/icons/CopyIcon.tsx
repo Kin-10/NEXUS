@@ -1,5 +1,6 @@
-import { Copy } from '@phosphor-icons/react';
 import React from 'react';
+
+import { Copy } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

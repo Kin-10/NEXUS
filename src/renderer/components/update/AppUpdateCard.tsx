@@ -1,12 +1,13 @@
 
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+
 import {
   ArrowsClockwise,
   CaretDown,
   CaretUp,
   RocketLaunch,
   Warning,
-} from '@phosphor-icons/react';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { type AppUpdateRuntimeState, AppUpdateStatus } from '../../../shared/appUpdate/constants';
 import { i18nService } from '../../services/i18n';

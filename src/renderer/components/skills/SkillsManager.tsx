@@ -1,13 +1,14 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   ArrowsClockwise,
   CheckCircle,
   DownloadSimple,
   X,
   XCircle,
-} from '@phosphor-icons/react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import type { SkillSecurityReport as SkillSecurityReportData } from '../../../main/libs/skillSecurity/skillSecurityTypes';
 import { ENABLE_OPENCLAW_SKILL_SYNC } from '../../../shared/featureFlags';

@@ -1,13 +1,13 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useDispatch } from 'react-redux';
+
 import {
   ArrowSquareOut,
   CaretDown,
   Folder,
   ShareNetwork,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useDispatch } from 'react-redux';
-
+} from '@/components/icons/iconParkCompat';
 import { i18nService } from '@/services/i18n';
 import { openArtifactPreviewTab } from '@/store/slices/artifactSlice';
 import { type Artifact, ArtifactTypeValue } from '@/types/artifact';

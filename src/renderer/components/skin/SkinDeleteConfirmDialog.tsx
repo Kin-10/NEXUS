@@ -1,8 +1,9 @@
 
+import React, { useId } from 'react';
+
 import {
   Warning,
-} from '@phosphor-icons/react';
-import React, { useId } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import Modal from '../common/Modal';

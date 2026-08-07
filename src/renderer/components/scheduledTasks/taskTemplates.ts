@@ -1,4 +1,6 @@
 
+import type React from 'react';
+
 import {
   BellRinging,
   Briefcase,
@@ -6,8 +8,7 @@ import {
   ChartBar,
   CodeBlock,
   Newspaper,
-} from '@phosphor-icons/react';
-import type React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import type { PlanType } from './utils';
 

@@ -3,15 +3,16 @@
  * Configuration form for a single QQ bot instance in multi-instance mode
  */
 
+import { PlatformRegistry } from '@shared/platform';
+import React, { useState } from 'react';
+
 import {
   Broadcast,
   Eye,
   EyeSlash,
   X,
   XCircle,
-} from '@phosphor-icons/react';
-import { PlatformRegistry } from '@shared/platform';
-import React, { useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import type { IMConnectivityTestResult,QQInstanceConfig, QQInstanceStatus, QQOpenClawConfig } from '../../types/im';

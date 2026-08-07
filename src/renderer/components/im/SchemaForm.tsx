@@ -4,13 +4,14 @@
  * Fields are discovered from the schema — hints are optional supplementary info.
  */
 
+import React from 'react';
+
 import {
   CaretRight,
   Eye,
   EyeSlash,
   XCircle,
-} from '@phosphor-icons/react';
-import React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 /** A single uiHint entry from the gateway */
 export interface UiHint {

@@ -1,10 +1,11 @@
 
-import {
-  Check,
-} from '@phosphor-icons/react';
 import Lottie from 'lottie-react';
 import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import {
+  Check,
+} from '@/components/icons/iconParkCompat';
 
 import mediaGeneratingAnimation from '../../assets/lottie/media-generating.json';
 import { i18nService } from '../../services/i18n';

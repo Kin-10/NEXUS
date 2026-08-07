@@ -1,13 +1,12 @@
 
-import {
-  ChatsCircle,
-} from '@phosphor-icons/react';
+import { Message } from '@icon-park/react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { i18nService } from '../../services/i18n';
 import { selectUnreadSessionIds } from '../../store/selectors/coworkSelectors';
 import type { CoworkSessionSummary } from '../../types/cowork';
+import { iconParkOutlineProps } from '../icons/iconStyle';
 import CoworkSessionItem from './CoworkSessionItem';
 
 interface CoworkSessionListProps {
@@ -80,7 +79,10 @@ const CoworkSessionList: React.FC<CoworkSessionListProps> = ({
     }
     return (
       <div className="flex flex-col items-center justify-center py-10 px-4">
-        <ChatsCircle className="h-10 w-10 dark:text-claude-darkTextSecondary/40 text-claude-textSecondary/40 mb-3" />
+        <Message
+          className="mb-3 h-10 w-10 text-claude-textSecondary/40 dark:text-claude-darkTextSecondary/40"
+          {...iconParkOutlineProps}
+        />
         <p className="text-sm font-medium dark:text-claude-darkTextSecondary text-claude-textSecondary mb-1">
           {i18nService.t('coworkNoSessions')}
         </p>

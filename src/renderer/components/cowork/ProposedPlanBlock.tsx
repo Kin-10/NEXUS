@@ -1,11 +1,12 @@
 
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
 import {
   CaretDown,
   CaretUp,
   Check,
   DownloadSimple,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import { showToast } from '../../utils/localFileActions';

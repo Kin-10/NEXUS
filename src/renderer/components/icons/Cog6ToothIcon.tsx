@@ -1,10 +1,10 @@
-import { GearSix } from '@phosphor-icons/react';
+import { SettingConfig } from '@icon-park/react';
 import React from 'react';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const Cog6ToothIcon: React.FC<AppIconProps> = ({ className }) => (
-  <GearSix className={className} {...defaultIconProps} />
+  <SettingConfig className={className} {...iconParkOutlineProps} />
 );
 
 export default Cog6ToothIcon;

@@ -1,8 +1,9 @@
 
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+
 import {
   X,
-} from '@phosphor-icons/react';
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { getPortalInvitationUrl } from '../services/endpoints';
 import { i18nService } from '../services/i18n';

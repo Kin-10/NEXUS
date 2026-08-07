@@ -1,17 +1,14 @@
-import { SidebarSimple } from '@phosphor-icons/react';
+import { MenuFold, MenuUnfold } from '@icon-park/react';
 import React from 'react';
 
-import { defaultIconProps } from './iconStyle';
+import { iconParkOutlineProps } from './iconStyle';
 
 const SidebarToggleIcon: React.FC<{ className?: string; isCollapsed: boolean }> = ({
   className,
   isCollapsed,
-}) => (
-  <SidebarSimple
-    className={className}
-    {...defaultIconProps}
-    style={isCollapsed ? { transform: 'scaleX(-1)' } : undefined}
-  />
-);
+}) => {
+  const Icon = isCollapsed ? MenuUnfold : MenuFold;
+  return <Icon className={className} {...iconParkOutlineProps} />;
+};
 
 export default SidebarToggleIcon;

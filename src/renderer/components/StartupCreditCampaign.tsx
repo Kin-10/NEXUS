@@ -1,4 +1,3 @@
-import { X as XMarkIcon } from '@phosphor-icons/react';
 import {
   ActivityLifecycleState,
   ActivityPlacement,
@@ -16,6 +15,8 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useSelector } from 'react-redux';
+
+import { X as XMarkIcon } from '@/components/icons/iconParkCompat';
 
 import startupCreditActionArtworkUrl from '../assets/startup-credit-action.png';
 import startupCreditPosterArtworkUrl from '../assets/startup-credit-poster.png';

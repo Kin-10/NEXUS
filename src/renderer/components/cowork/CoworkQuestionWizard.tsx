@@ -1,11 +1,12 @@
 
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+
 import {
   CaretLeft,
   CaretRight,
   Minus,
   X,
-} from '@phosphor-icons/react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import type { CoworkPermissionRequest, CoworkPermissionResult } from '../../types/cowork';

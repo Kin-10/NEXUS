@@ -1,8 +1,9 @@
 
+import React, { useEffect, useRef, useState } from 'react';
+
 import {
   CaretDown,
-} from '@phosphor-icons/react';
-import React, { useEffect, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 interface ThemedSelectProps {
   id: string;

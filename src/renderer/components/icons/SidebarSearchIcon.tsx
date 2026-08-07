@@ -1,10 +1,10 @@
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { Search } from '@icon-park/react';
 import React from 'react';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const SidebarSearchIcon: React.FC<AppIconProps> = ({ className }) => (
-  <MagnifyingGlass className={className} {...defaultIconProps} />
+  <Search className={className} {...iconParkOutlineProps} />
 );
 
 export default SidebarSearchIcon;

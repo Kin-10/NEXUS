@@ -1,10 +1,11 @@
 
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+
 import {
   CaretDown,
   CaretUp,
   Folder,
-} from '@phosphor-icons/react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { classifyErrorKey } from '../../../common/coworkErrorClassify';
 import { ContextCompactionStatus } from '../../../common/coworkSystemMessages';

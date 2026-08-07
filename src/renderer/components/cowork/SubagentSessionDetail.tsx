@@ -1,9 +1,10 @@
 
-import {
-  ArrowLeft,
-} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import {
+  ArrowLeft,
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import type { RootState } from '../../store';

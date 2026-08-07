@@ -1,9 +1,4 @@
 
-import {
-  ArrowUp,
-  Stop,
-  X,
-} from '@phosphor-icons/react';
 import React, {
   useCallback,
   useEffect,
@@ -13,6 +8,12 @@ import React, {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+
+import {
+  ArrowUp,
+  Stop,
+  X,
+} from '@/components/icons/iconParkCompat';
 
 import {
   type CoworkBtwEntry,

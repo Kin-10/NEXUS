@@ -1,11 +1,12 @@
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+
 import {
   CaretDown,
   CaretRight,
   ShieldCheck,
   X,
-} from '@phosphor-icons/react';
-import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import Modal from '../common/Modal';

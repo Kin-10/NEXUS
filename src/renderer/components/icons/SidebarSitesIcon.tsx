@@ -1,10 +1,10 @@
-import { GlobeHemisphereWest } from '@phosphor-icons/react';
+import { Globe } from '@icon-park/react';
 import React from 'react';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const SidebarSitesIcon: React.FC<AppIconProps> = ({ className = 'h-4 w-4' }) => (
-  <GlobeHemisphereWest className={className} {...defaultIconProps} />
+  <Globe className={className} {...iconParkOutlineProps} />
 );
 
 export default SidebarSitesIcon;

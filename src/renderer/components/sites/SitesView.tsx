@@ -1,4 +1,6 @@
 
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import {
   ArrowLeft,
   ArrowsClockwise,
@@ -14,8 +16,7 @@ import {
   Trash,
   UploadSimple,
   X,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { HtmlShareAccessMode, HtmlShareStatus } from '../../../shared/htmlShare/constants';
 import {

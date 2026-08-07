@@ -1,9 +1,10 @@
+import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   CheckCircle,
   XCircle,
-} from '@phosphor-icons/react';
-import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { mcpCategories,mcpRegistry } from '../../data/mcpRegistry';
 import { i18nService } from '../../services/i18n';

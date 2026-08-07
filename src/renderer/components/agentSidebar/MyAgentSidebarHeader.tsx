@@ -1,5 +1,6 @@
-import { Plus } from '@phosphor-icons/react';
 import React from 'react';
+
+import { Plus } from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import Tooltip, { TooltipAlign, TooltipPosition } from '../ui/Tooltip';

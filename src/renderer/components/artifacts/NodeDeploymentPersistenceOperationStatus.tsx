@@ -1,11 +1,11 @@
 
+import React, { useEffect, useState } from 'react';
+
 import {
   ArrowsClockwise,
   CheckCircle,
   WarningCircle,
-} from '@phosphor-icons/react';
-import React, { useEffect, useState } from 'react';
-
+} from '@/components/icons/iconParkCompat';
 import { i18nService } from '@/services/i18n';
 
 const t = (key: string) => i18nService.t(key);

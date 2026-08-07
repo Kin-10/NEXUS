@@ -1,10 +1,11 @@
-import {
-  CheckCircle as CheckCircleIcon,
-  X as XMarkIcon,
-} from '@phosphor-icons/react';
 import type { DailyCheckInDescriptor } from '@shared/activity/constants';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+
+import {
+  CheckCircle as CheckCircleIcon,
+  X as XMarkIcon,
+} from '@/components/icons/iconParkCompat';
 
 import dailyCheckInGiftUrl from '../assets/daily-check-in-gift.png';
 import { authService } from '../services/auth';

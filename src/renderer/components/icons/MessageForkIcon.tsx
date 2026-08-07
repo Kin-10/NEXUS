@@ -1,5 +1,6 @@
-import { GitFork } from '@phosphor-icons/react';
 import React from 'react';
+
+import { GitFork } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

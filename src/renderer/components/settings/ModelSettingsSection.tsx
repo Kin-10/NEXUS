@@ -1,3 +1,5 @@
+import React from 'react';
+
 import {
   ArrowSquareOut,
   Broadcast,
@@ -10,8 +12,7 @@ import {
   WarningCircle,
   X,
   XCircle,
-} from '@phosphor-icons/react';
-import React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import {
   normalizeModelIdForComparison,

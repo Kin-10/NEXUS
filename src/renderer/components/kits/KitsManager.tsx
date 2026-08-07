@@ -1,4 +1,7 @@
 
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+
 import {
   ArrowLeft,
   CaretRight,
@@ -8,9 +11,7 @@ import {
   Trash,
   Warning,
   X,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import { kitService } from '../../services/kit';

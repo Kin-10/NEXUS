@@ -1,11 +1,12 @@
 
-import {
-  ArrowLeft,
-  Plus,
-} from '@phosphor-icons/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  ArrowLeft,
+  Plus,
+} from '@/components/icons/iconParkCompat';
 
 import { ScheduledTaskDataStatus } from '../../../scheduledTask/constants';
 import { i18nService } from '../../services/i18n';

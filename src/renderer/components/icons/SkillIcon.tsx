@@ -1,10 +1,10 @@
-import { PuzzlePiece } from '@phosphor-icons/react';
+import { Puzzle } from '@icon-park/react';
 import React from 'react';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const SkillIcon: React.FC<AppIconProps> = ({ className }) => (
-  <PuzzlePiece className={className} {...defaultIconProps} />
+  <Puzzle className={className} {...iconParkOutlineProps} />
 );
 
 export default SkillIcon;

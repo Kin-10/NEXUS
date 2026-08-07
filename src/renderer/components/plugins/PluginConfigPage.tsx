@@ -1,8 +1,9 @@
 
+import { useCallback,useEffect, useState } from 'react';
+
 import {
   ArrowLeft,
-} from '@phosphor-icons/react';
-import { useCallback,useEffect, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import { SchemaForm } from '../im/SchemaForm';

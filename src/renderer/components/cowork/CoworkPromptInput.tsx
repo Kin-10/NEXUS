@@ -1,14 +1,3 @@
-import {
-  ArrowBendDownRight,
-  ArrowUp,
-  CaretDown,
-  CaretRight,
-  Check,
-  Folder,
-  PauseCircle,
-  PlayCircle,
-  Warning,
-} from '@phosphor-icons/react';
 import { AuthSubscriptionStatus } from '@shared/auth/constants';
 import {
   BrowserAnnotationScreenshotStatus,
@@ -20,6 +9,18 @@ import { ProviderName } from '@shared/providers';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  ArrowBendDownRight,
+  ArrowUp,
+  CaretDown,
+  CaretRight,
+  Check,
+  Folder,
+  PauseCircle,
+  PlayCircle,
+  Warning,
+} from '@/components/icons/iconParkCompat';
 
 import {
   CoworkBtwCommandValidationError,
@@ -269,7 +270,7 @@ const reportModelSelected = (
 };
 
 // CoworkAttachment is aliased from the Redux-persisted DraftAttachment type
-// so that attachment state survives view switches (cowork �?skills, etc.)
+// so that attachment state survives view switches (cowork �?skills, etc.)
 type CoworkAttachment = DraftAttachment;
 
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.tif', '.ico', '.avif']);
@@ -389,13 +390,13 @@ const AgentContextAvatar: React.FC<{ agent: AgentSelectorOption; className?: str
 };
 
 export interface CoworkPromptInputRef {
-  /** 设置输入框�?*/
+  /** 设置输入框�?*/
   setValue: (value: string, inputSource?: 'template') => void;
-  /** 设置图片附件（用于重新编辑消息时还原图片�?*/
+  /** 设置图片附件（用于重新编辑消息时还原图片�?*/
   setImageAttachments: (images: CoworkImageAttachment[]) => void;
-  /** 设置选中�?assistant 文本片段（用于重新编辑消息时还原上下文） */
+  /** 设置选中�?assistant 文本片段（用于重新编辑消息时还原上下文） */
   setSelectedTextSnippets: (snippets: CoworkSelectedTextSnippet[]) => void;
-  /** 聚焦输入�?*/
+  /** 聚焦输入�?*/
   focus: () => void;
 }
 
@@ -563,7 +564,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       setIsTemplateHeightLocked(inputSource === 'template' && newValue.trim().length > 0);
       // Height sync happens in the auto-resize effect after re-render.
       if (inputSource === 'template') {
-        // Anchor the filled template at its start so it reads top-down �?the
+        // Anchor the filled template at its start so it reads top-down �?the
         // controlled value swap otherwise leaves the caret/scroll at the end.
         requestAnimationFrame(() => {
           const textarea = textareaRef.current;
@@ -1936,7 +1937,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
         isSendCombo = event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
         break;
       default:
-        // Unknown config value �?fall back to bare Enter so the user can always send
+        // Unknown config value �?fall back to bare Enter so the user can always send
         isSendCombo = !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey;
         break;
     }
@@ -2280,7 +2281,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
           }
           continue;
         }
-        // Model doesn't support image input �?add as file path and show hint
+        // Model doesn't support image input �?add as file path and show hint
         console.warn('[CoworkPromptInput] handleIncomingFiles: image skipped vision path because modelSupportsImage=false', {
           fileName: file.name,
           effectiveModelId: effectiveSelectedModel?.id ?? null,

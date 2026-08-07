@@ -1,5 +1,6 @@
-import { Clock } from '@phosphor-icons/react';
 import React from 'react';
+
+import { Clock } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

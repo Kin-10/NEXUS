@@ -1,5 +1,6 @@
-import { CircleNotch } from '@phosphor-icons/react';
 import React from 'react';
+
+import { CircleNotch } from '@/components/icons/iconParkCompat';
 
 import { defaultIconProps } from './iconStyle';
 

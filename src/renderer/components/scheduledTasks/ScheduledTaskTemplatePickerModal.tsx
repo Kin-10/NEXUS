@@ -1,8 +1,9 @@
 
+import React from 'react';
+
 import {
   X,
-} from '@phosphor-icons/react';
-import React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import Modal from '../common/Modal';

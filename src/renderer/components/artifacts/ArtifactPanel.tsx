@@ -1,13 +1,4 @@
 
-import {
-  ArrowsClockwise,
-  CaretDown,
-  DownloadSimple,
-  File,
-  Folder,
-  Plus,
-  ShareNetwork,
-} from '@phosphor-icons/react';
 import { ArtifactBrowserPartition } from '@shared/artifactPreview/constants';
 import {
   BrowserAnnotationGuestChannel,
@@ -57,6 +48,15 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
+import {
+  ArrowsClockwise,
+  CaretDown,
+  DownloadSimple,
+  File,
+  Folder,
+  Plus,
+  ShareNetwork,
+} from '@/components/icons/iconParkCompat';
 import { authService } from '@/services/auth';
 import { copyTextToClipboard } from '@/services/clipboard';
 import { getPortalPricingUrl, PortalPricingKeyfrom } from '@/services/endpoints';

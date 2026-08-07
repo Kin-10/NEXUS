@@ -1,8 +1,9 @@
 
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import {
   Warning,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { stripGoalCommandPrefixForDisplay } from '../../../common/sessionTitle';
 import { type CoworkGoal, CoworkGoalStatus } from '../../../shared/cowork/goal';

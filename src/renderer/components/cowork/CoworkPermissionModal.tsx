@@ -1,10 +1,11 @@
 
+import React, { useEffect, useMemo, useState } from 'react';
+
 import {
   Minus,
   Warning,
   X,
-} from '@phosphor-icons/react';
-import React, { useEffect, useMemo, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { ASK_USER_QUESTION_TOOL_NAME } from '../../../shared/cowork/constants';
 import { i18nService } from '../../services/i18n';

@@ -1,14 +1,15 @@
 
 import {
-  ChatCircle,
-} from '@phosphor-icons/react';
-import {
   BrowserAnnotationAnchorKind,
   BrowserAnnotationScreenshotStatus,
   type CoworkBrowserAnnotationBatch,
   getBrowserAnnotationElementChanges,
 } from '@shared/cowork/browserAnnotations';
 import React, { useEffect, useMemo, useState } from 'react';
+
+import {
+  ChatCircle,
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import XMarkIcon from '../icons/XMarkIcon';

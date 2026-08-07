@@ -1,8 +1,9 @@
 
+import React, { useEffect, useRef, useState } from 'react';
+
 import {
   Lightbulb,
-} from '@phosphor-icons/react';
-import React, { useEffect, useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { coworkService } from '../../services/cowork';
 import { i18nService } from '../../services/i18n';

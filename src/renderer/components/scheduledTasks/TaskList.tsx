@@ -1,3 +1,7 @@
+import React from 'react';
+import { createPortal } from 'react-dom';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   Clock,
   DotsThreeVertical,
@@ -5,10 +9,7 @@ import {
   Play,
   Plus,
   XCircle,
-} from '@phosphor-icons/react';
-import React from 'react';
-import { createPortal } from 'react-dom';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { ScheduledTaskDataStatus } from '../../../scheduledTask/constants';
 import type { ScheduledTask } from '../../../scheduledTask/types';

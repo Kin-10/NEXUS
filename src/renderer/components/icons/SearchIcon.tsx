@@ -1,5 +1,6 @@
-import { MagnifyingGlass } from '@phosphor-icons/react';
 import React from 'react';
+
+import { MagnifyingGlass } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

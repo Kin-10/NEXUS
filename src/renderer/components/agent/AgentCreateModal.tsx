@@ -1,13 +1,14 @@
 
-import {
-  X,
-} from '@phosphor-icons/react';
 import { DefaultAgentAvatarIcon } from '@shared/agent/avatar';
 import type { Platform } from '@shared/platform';
 import { PlatformRegistry } from '@shared/platform';
 import { ProviderName } from '@shared/providers';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import {
+  X,
+} from '@/components/icons/iconParkCompat';
 
 import { agentService } from '../../services/agent';
 import { coworkService } from '../../services/cowork';

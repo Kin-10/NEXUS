@@ -1,11 +1,12 @@
 
+import React, { useEffect, useState } from 'react';
+
 import {
   ArrowsClockwise,
   CaretDown,
   Warning,
   Wrench,
-} from '@phosphor-icons/react';
-import React, { useEffect, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { OpenClawEngineErrorCode, OpenClawGatewayRepairErrorCode } from '../../../shared/openclawEngine/constants';
 import { coworkService } from '../../services/cowork';

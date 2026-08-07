@@ -1,5 +1,6 @@
-import { Rocket } from '@phosphor-icons/react';
 import React from 'react';
+
+import { Rocket } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

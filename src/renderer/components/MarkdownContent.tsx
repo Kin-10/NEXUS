@@ -1,10 +1,6 @@
 import 'katex/dist/katex.min.css';
 import 'katex/contrib/mhchem';
 
-import {
-  File,
-  Folder,
-} from '@phosphor-icons/react';
 import React, { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 // @ts-ignore
@@ -13,6 +9,11 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 // @ts-ignore
 import remarkMath from 'remark-math';
+
+import {
+  File,
+  Folder,
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../services/i18n';
 import { type ShellActionResult, showShellFailureToast, showToast } from '../utils/localFileActions';

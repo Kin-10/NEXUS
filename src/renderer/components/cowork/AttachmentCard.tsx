@@ -1,8 +1,9 @@
 
+import React, { useEffect, useState } from 'react';
+
 import {
   Folder,
-} from '@phosphor-icons/react';
-import React, { useEffect, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import type { DraftAttachment } from '../../store/slices/coworkSlice';

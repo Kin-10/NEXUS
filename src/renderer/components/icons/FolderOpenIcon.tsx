@@ -1,5 +1,6 @@
-import { FolderOpen } from '@phosphor-icons/react';
 import React from 'react';
+
+import { FolderOpen } from '@/components/icons/iconParkCompat';
 
 import { type AppIconProps, defaultIconProps } from './iconStyle';
 

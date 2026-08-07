@@ -3,6 +3,13 @@
  * Configuration UI for DingTalk, Feishu and Telegram IM bots
  */
 
+import type { Platform } from '@shared/platform';
+import { PlatformRegistry } from '@shared/platform';
+import WecomAIBotSDK from '@wecom/wecom-aibot-sdk';
+import { QRCodeSVG } from 'qrcode.react';
+import React, { useEffect, useMemo, useRef,useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   ArrowLeft,
   ArrowsClockwise,
@@ -18,13 +25,7 @@ import {
   Warning,
   X,
   XCircle,
-} from '@phosphor-icons/react';
-import type { Platform } from '@shared/platform';
-import { PlatformRegistry } from '@shared/platform';
-import WecomAIBotSDK from '@wecom/wecom-aibot-sdk';
-import { QRCodeSVG } from 'qrcode.react';
-import React, { useEffect, useMemo, useRef,useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import { imService } from '../../services/im';

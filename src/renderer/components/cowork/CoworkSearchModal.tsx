@@ -1,10 +1,11 @@
 
-import {
-  MagnifyingGlass,
-} from '@phosphor-icons/react';
 import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
+import {
+  MagnifyingGlass,
+} from '@/components/icons/iconParkCompat';
 
 import { coworkService } from '../../services/cowork';
 import { i18nService } from '../../services/i18n';

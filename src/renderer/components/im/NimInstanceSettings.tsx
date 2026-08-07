@@ -3,6 +3,9 @@
  * Configuration form for a single NIM bot instance in multi-instance mode
  */
 
+import { QRCodeSVG } from 'qrcode.react';
+import React, { useRef, useState } from 'react';
+
 import {
   ArrowsClockwise,
   Broadcast,
@@ -10,9 +13,7 @@ import {
   Eye,
   EyeSlash,
   XCircle,
-} from '@phosphor-icons/react';
-import { QRCodeSVG } from 'qrcode.react';
-import React, { useRef, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import { NimQrLoginErrorCode, NimQrLoginStatus, pollQrLogin, startQrLogin } from '../../services/nimQrLogin';

@@ -1,8 +1,9 @@
+import React from 'react';
+
 import {
   Info,
   X,
-} from '@phosphor-icons/react';
-import React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 interface ToastProps {
   message: string;

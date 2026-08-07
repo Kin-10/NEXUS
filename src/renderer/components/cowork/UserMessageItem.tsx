@@ -1,10 +1,11 @@
 
+import type { CoworkBrowserAnnotationMessageBatch } from '@shared/cowork/browserAnnotations';
+import React, { useCallback, useMemo, useState } from 'react';
+
 import {
   ChatCircle,
   Image as ImageIcon,
-} from '@phosphor-icons/react';
-import type { CoworkBrowserAnnotationMessageBatch } from '@shared/cowork/browserAnnotations';
-import React, { useCallback, useMemo, useState } from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import { hasGoalSettingMessageMetadata } from '../../../common/goalCommandDisplay';
 import type { CoworkImageAttachmentPreview } from '../../../shared/cowork/imageAttachments';

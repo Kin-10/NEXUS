@@ -1,11 +1,12 @@
 
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+
 import {
   CalendarBlank,
   CaretLeft,
   CaretRight,
-} from '@phosphor-icons/react';
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 

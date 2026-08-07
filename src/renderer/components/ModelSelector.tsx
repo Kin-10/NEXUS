@@ -1,4 +1,9 @@
 
+import { ModelRuntimeProfile, ProviderName } from '@shared/providers';
+import React from 'react';
+import { createPortal } from 'react-dom';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   CaretDown,
   CaretRight,
@@ -6,11 +11,7 @@ import {
   Clock,
   Lock,
   X,
-} from '@phosphor-icons/react';
-import { ModelRuntimeProfile, ProviderName } from '@shared/providers';
-import React from 'react';
-import { createPortal } from 'react-dom';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { getProviderIcon, ProviderIconId } from '../providers/uiRegistry';
 import { authService } from '../services/auth';

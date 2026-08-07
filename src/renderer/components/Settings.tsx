@@ -1,4 +1,7 @@
 
+import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
   Archive,
   ArrowsClockwise,
@@ -16,9 +19,7 @@ import {
   Warning,
   Wrench,
   X,
-} from '@phosphor-icons/react';
-import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+} from '@/components/icons/iconParkCompat';
 
 import { AppSettingsAutoLaunchErrorCode } from '../../shared/appSettings/constants';
 import { type AppUpdateInfo,type AppUpdateRuntimeState,AppUpdateSource,AppUpdateStatus } from '../../shared/appUpdate/constants';

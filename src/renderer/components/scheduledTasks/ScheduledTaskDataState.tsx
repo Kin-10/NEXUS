@@ -1,9 +1,10 @@
 
+import React from 'react';
+
 import {
   ArrowsClockwise,
   Warning,
-} from '@phosphor-icons/react';
-import React from 'react';
+} from '@/components/icons/iconParkCompat';
 
 import {
   ScheduledTaskDataStatus,

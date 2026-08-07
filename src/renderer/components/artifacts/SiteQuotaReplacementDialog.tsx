@@ -1,13 +1,13 @@
 
-import {
-  ArrowsClockwise,
-  MagnifyingGlass,
-  Warning,
-} from '@phosphor-icons/react';
 import { type SiteDeploymentQuota, SiteKind, type SiteQuotaCandidate } from '@shared/site/constants';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import {
+  ArrowsClockwise,
+  MagnifyingGlass,
+  Warning,
+} from '@/components/icons/iconParkCompat';
 import { i18nService } from '@/services/i18n';
 
 const t = (key: string) => i18nService.t(key);

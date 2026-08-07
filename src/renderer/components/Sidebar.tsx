@@ -1,4 +1,4 @@
-import { ChatsCircle, Warning } from '@phosphor-icons/react';
+import { Caution, Message } from '@icon-park/react';
 import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -25,6 +25,7 @@ import { CoworkUiEvent } from './cowork/constants';
 import CoworkSearchModal from './cowork/CoworkSearchModal';
 import Cog6ToothIcon from './icons/Cog6ToothIcon';
 import ComposeIcon from './icons/ComposeIcon';
+import { iconParkOutlineProps } from './icons/iconStyle';
 import SidebarAutomationIcon from './icons/SidebarAutomationIcon';
 import SidebarKitsIcon from './icons/SidebarKitsIcon';
 import SidebarMcpIcon from './icons/SidebarMcpIcon';
@@ -564,7 +565,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex flex-col items-center gap-1">
               {renderRailButton(
                 i18nService.t('cowork'),
-                <ChatsCircle className="h-[18px] w-[18px]" weight="regular" />,
+                <Message className="h-[18px] w-[18px]" {...iconParkOutlineProps} />,
                 () => {
                   reportSidebarAction('open_cowork', { activeView, isCollapsed });
                   setIsSearchOpen(false);
@@ -802,7 +803,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className="flex items-center gap-3 px-5 py-4">
             <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
-              <Warning className="h-5 w-5 text-red-600 dark:text-red-500" weight="regular" aria-hidden />
+              <Caution className="h-5 w-5 text-red-600 dark:text-red-500" {...iconParkOutlineProps} />
             </div>
             <h2 className="text-base font-semibold text-foreground">
               {i18nService.t('batchDeleteConfirmTitle')}
