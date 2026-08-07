@@ -686,14 +686,10 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
   // List view
   return (
     <div className="space-y-4">
-      <p className="text-sm text-secondary">
-        {i18nService.t('kitDescription')}
-      </p>
-
       {/* Sticky toolbar: Search + tabs */}
       <div
         data-skin-management-toolbar="true"
-        className="sticky top-0 z-10 space-y-4 bg-background pb-4"
+        className="sticky top-0 z-10 space-y-4 bg-background/95 pb-4 backdrop-blur-sm"
       >
         {actionError && (
           <ErrorMessage message={actionError} onClose={() => setActionError('')} />

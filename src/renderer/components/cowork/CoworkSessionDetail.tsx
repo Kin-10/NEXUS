@@ -94,6 +94,7 @@ import type {
   CoworkMessageMetadata,
   CoworkPermissionRequest,
   CoworkPermissionResult,
+  CoworkSessionStatus,
   SubagentSessionSummary,
 } from '../../types/cowork';
 import {
@@ -308,6 +309,45 @@ const getRailLineWidth = (
   }
 
   return index === activeIndex ? RAIL_LINE_ACTIVE_WIDTH : RAIL_LINE_DEFAULT_WIDTH;
+};
+
+const getSessionStatusLabelKey = (
+  status: CoworkSessionStatus | undefined,
+  busy: boolean,
+): string => {
+  if (busy || status === CoworkSessionStatusValue.Running) {
+    return 'coworkStatusRunning';
+  }
+  if (status === CoworkSessionStatusValue.Completed) {
+    return 'coworkStatusCompleted';
+  }
+  if (status === CoworkSessionStatusValue.Error) {
+    return 'coworkStatusError';
+  }
+  return 'coworkStatusIdle';
+};
+
+const getSessionStatusToneClassName = (
+  status: CoworkSessionStatus | undefined,
+  busy: boolean,
+): string => {
+  if (busy || status === CoworkSessionStatusValue.Running) {
+    return 'border-primary/20 bg-primary/10 text-primary';
+  }
+  if (status === CoworkSessionStatusValue.Completed) {
+    return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
+  }
+  if (status === CoworkSessionStatusValue.Error) {
+    return 'border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300';
+  }
+  return 'border-border bg-surface text-secondary';
+};
+
+const getPathDisplayName = (pathValue: string | undefined): string => {
+  const normalized = pathValue?.trim();
+  if (!normalized) return '';
+  const segments = normalized.split(/[\\/]+/).filter(Boolean);
+  return segments.length > 0 ? segments[segments.length - 1] : normalized;
 };
 
 interface LatestProposedPlan {
@@ -4593,6 +4633,17 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   )
     ? latestProposedPlan.messageId
     : null;
+  const sessionTitle = getSessionTitleForDisplay(currentSession.title)
+    || i18nService.t('coworkNewSession');
+  const sessionStatusLabel = i18nService.t(
+    getSessionStatusLabelKey(currentSession.status, isSessionBusy),
+  );
+  const sessionStatusClassName = getSessionStatusToneClassName(
+    currentSession.status,
+    isSessionBusy,
+  );
+  const sessionDirectory = currentSession.cwd?.trim() ?? '';
+  const sessionDirectoryDisplay = getPathDisplayName(sessionDirectory) || sessionDirectory;
 
   const renderConversationTurns = () => {
     let railCounter = 0;
@@ -4708,38 +4759,57 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
 
   return (
     <ArtifactFileShareProvider sessionId={currentSession.id}>
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="relative flex h-full flex-1 flex-col overflow-hidden bg-background">
       {/* Header — spans full width */}
       <div
         data-skin-session-titlebar="true"
-        className={`draggable flex h-12 items-center justify-between border-b border-border bg-background shrink-0 ${
+        className={`draggable flex h-14 shrink-0 items-center justify-between border-b border-border/70 bg-surface/85 backdrop-blur-sm ${
           isArtifactPanelExpanded ? 'pl-0 pr-4' : 'px-4'
         }`}
       >
         {/* Left side: Toggle buttons (when collapsed) + Title */}
-        <div className="flex h-full flex-1 items-center gap-2 min-w-0">
+        <div className="flex h-full min-w-0 flex-1 items-center gap-3">
           {isSidebarCollapsed && !isWindows && (
             <div className={`non-draggable flex items-center gap-1 ${isMac ? 'pl-[68px]' : ''}`}>
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised"
               >
                 <SidebarToggleIcon className="h-4 w-4" isCollapsed={true} />
               </button>
               <button
                 type="button"
                 onClick={onNewChat}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised"
               >
                 <ComposeIcon className="h-4 w-4" />
               </button>
               {updateBadge}
             </div>
           )}
-          <h1 className="text-sm leading-5 font-medium text-foreground truncate max-w-[360px]">
-            {getSessionTitleForDisplay(currentSession.title) || i18nService.t('coworkNewSession')}
-          </h1>
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <h1 className="min-w-0 max-w-[420px] truncate text-sm font-semibold leading-5 text-foreground">
+                {sessionTitle}
+              </h1>
+              <span
+                className={`inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[11px] font-medium leading-none ${sessionStatusClassName}`}
+              >
+                {sessionStatusLabel}
+              </span>
+            </div>
+            {sessionDirectory && (
+              <div
+                className="non-draggable flex min-w-0 items-center gap-1.5 text-[11px] leading-4 text-muted"
+                title={`${i18nService.t('coworkWorkingDirectory')}: ${sessionDirectory}`}
+              >
+                <span className="shrink-0">{i18nService.t('coworkWorkingDirectory')}</span>
+                <span className="text-border" aria-hidden="true">/</span>
+                <span className="min-w-0 truncate">{sessionDirectoryDisplay}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right side: Artifact toggle */}
@@ -4748,7 +4818,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
             isArtifactPanelVisible
               ? isArtifactPanelExpanded
                 ? '-mr-4 pr-4'
-                : '-mr-4 border-l border-border pr-4'
+                : '-mr-4 border-l border-border/70 pr-4'
               : ''
           }`}
           style={artifactHeaderWidth !== undefined ? { width: artifactHeaderWidth } : undefined}
@@ -4910,7 +4980,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                   ) : (
                     <div
                       data-skin-artifact-add-tab="true"
-                      className="z-20 flex h-full shrink-0 items-center bg-background pl-1 pr-1"
+                      className="z-20 flex h-full shrink-0 items-center bg-surface/85 pl-1 pr-1"
                     >
                       <button
                         ref={artifactAddButtonRef}
@@ -4931,7 +5001,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 {shouldPinArtifactAddTab && (
                   <div
                     data-skin-artifact-add-tab="true"
-                    className="absolute inset-y-0 right-0 z-20 flex items-center bg-background pl-1 pr-1"
+                    className="absolute inset-y-0 right-0 z-20 flex items-center bg-surface/85 pl-1 pr-1"
                   >
                     <button
                       ref={artifactAddButtonRef}
@@ -5103,19 +5173,19 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       )}
 
       {/* Content row: chat + artifact panel */}
-      <div ref={contentRowRef} className="relative flex-1 flex overflow-hidden">
+      <div ref={contentRowRef} className="relative flex min-h-0 flex-1 overflow-hidden bg-background">
       <div
         ref={detailRootRef}
-        className="relative flex-1 flex flex-col h-full min-w-0"
+        className="relative flex h-full min-w-0 flex-1 flex-col bg-background"
         style={{ minWidth: isArtifactPanelExpanded ? 0 : COWORK_DETAIL_MIN_WIDTH }}
       >
-      <div className="relative z-10 flex-1 min-h-0">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         <div
           ref={scrollContainerRef}
           onScroll={handleMessagesScroll}
           onWheel={handleMessagesWheel}
           onMouseUp={handleAssistantTextSelection}
-          className="relative h-full min-h-0 overflow-y-auto pt-3"
+          className="relative h-full min-h-0 overflow-y-auto pt-5"
           style={{ scrollbarGutter: 'stable both-edges' }}
         >
           {selectedTextAction && (
@@ -5313,8 +5383,8 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       {/* Input Area */}
       <div
         ref={promptInputAreaRef}
-        className={`relative shrink-0 ${COWORK_DETAIL_GUTTER_CLASS} ${
-          isArtifactPanelExpanded ? 'z-50 bg-background pb-2 pt-1' : 'pb-4 pt-0'
+        className={`relative shrink-0 border-t border-border/60 bg-background/95 ${COWORK_DETAIL_GUTTER_CLASS} ${
+          isArtifactPanelExpanded ? 'z-50 pb-2 pt-1' : 'pb-4 pt-3'
         } ${isArtifactPanelExpanded && isExpandedPromptInputHidden ? 'hidden' : ''}`}
       >
         {isArtifactPanelExpanded && !isExpandedPromptInputHidden && (
@@ -5600,7 +5670,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
         className={`${
           artifactPanelIsOverlay
             ? 'absolute inset-x-0 top-0 z-40 overflow-hidden bg-background'
-            : 'h-full shrink-0 overflow-hidden'
+            : 'h-full shrink-0 overflow-hidden border-l border-border/70 bg-surface'
         } ${
           isArtifactPanelTransitioning
             ? 'transition-[width,opacity] duration-200 ease-out motion-reduce:transition-none'

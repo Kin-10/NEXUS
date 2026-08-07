@@ -1,4 +1,4 @@
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { X as XMarkIcon } from '@phosphor-icons/react';
 import {
   ActivityLifecycleState,
   ActivityPlacement,

@@ -12,8 +12,7 @@ import { i18nService } from '../../services/i18n';
 import { scheduledTaskService } from '../../services/scheduledTask';
 import { RootState } from '../../store';
 import { selectTask, setViewMode } from '../../store/slices/scheduledTaskSlice';
-import ComposeIcon from '../icons/ComposeIcon';
-import SidebarToggleIcon from '../icons/SidebarToggleIcon';
+import ManagementPageShell from '../management/ManagementPageShell';
 import AllRunsHistory from './AllRunsHistory';
 import { getTaskAnalyticsParams, reportScheduledTaskAction } from './analytics';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -48,8 +47,6 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
   updateBadge,
 }) => {
   const dispatch = useDispatch();
-  const isMac = window.electron.platform === 'darwin';
-  const isWindows = window.electron.platform === 'win32';
   const viewMode = useSelector((state: RootState) => state.scheduledTask.viewMode);
   const selectedTaskId = useSelector((state: RootState) => state.scheduledTask.selectedTaskId);
   const tasks = useSelector((state: RootState) => state.scheduledTask.tasks);
@@ -203,67 +200,46 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
   const showTabs = viewMode === 'list' && !selectedTaskId;
 
   return (
-    <div
-      data-skin-management-page="true"
-      className="relative z-10 flex flex-col bg-background h-full"
+    <ManagementPageShell
+      title={i18nService.t('scheduledTasksTitle')}
+      subtitle={showTabs ? i18nService.t('scheduledTasksPageSubtitle') : undefined}
+      isSidebarCollapsed={isSidebarCollapsed}
+      onToggleSidebar={onToggleSidebar}
+      onNewChat={onNewChat}
+      updateBadge={updateBadge}
+      contentClassName="flex min-h-0 flex-1 flex-col"
+      actions={
+        showTabs ? (
+          <button
+            type="button"
+            onClick={handleCreateNew}
+            disabled={taskListStatus !== ScheduledTaskDataStatus.Ready}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-[13px] font-medium leading-5 text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
+          >
+            <Plus className="h-4 w-4" />
+            {i18nService.t('scheduledTasksNewTask')}
+          </button>
+        ) : null
+      }
+      leadingContent={
+        viewMode !== 'list' ? (
+          <button
+            type="button"
+            onClick={handleBackToList}
+            className="non-draggable inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
+            aria-label={i18nService.t('back')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+        ) : null
+      }
     >
-      {/* Header */}
-      <div className="draggable flex h-12 items-center justify-between px-4 border-b border-border shrink-0">
-        <div className="flex items-center space-x-3 h-8">
-          {isSidebarCollapsed && !isWindows && (
-            <div className={`non-draggable flex items-center gap-1 ${isMac ? 'pl-[68px]' : ''}`}>
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
-              >
-                <SidebarToggleIcon className="h-4 w-4" isCollapsed={true} />
-              </button>
-              <button
-                type="button"
-                onClick={onNewChat}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
-              >
-                <ComposeIcon className="h-4 w-4" />
-              </button>
-              {updateBadge}
-            </div>
-          )}
-          {viewMode !== 'list' && (
-            <button
-              onClick={handleBackToList}
-              className="non-draggable p-2 rounded-lg hover:bg-surface-raised text-secondary transition-colors"
-              aria-label={i18nService.t('back')}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          )}
-          <h1 className="text-lg font-semibold text-foreground">
-            {i18nService.t('scheduledTasksTitle')}
-          </h1>
-        </div>
-      </div>
-
       {/* Page header: description + New Task action + tabs */}
       {showTabs && (
         <div className="shrink-0">
-          <div className={`${pageGutterClass} pt-5`}>
+          <div className={`${pageGutterClass} pt-4`}>
             <div className={pageContentClass}>
-              <div className="flex items-center justify-between gap-4">
-                <p className="min-w-0 truncate text-sm text-secondary">
-                  {i18nService.t('scheduledTasksPageSubtitle')}
-                </p>
-                <button
-                  type="button"
-                  onClick={handleCreateNew}
-                  disabled={taskListStatus !== ScheduledTaskDataStatus.Ready}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-[13px] font-medium leading-5 text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
-                >
-                  <Plus className="h-4 w-4" />
-                  {i18nService.t('scheduledTasksNewTask')}
-                </button>
-              </div>
-              <div className="mt-4 flex items-center border-b border-border">
+              <div className="flex items-center border-b border-border">
                 {(['tasks', 'history'] as const).map(tab => (
                   <button
                     key={tab}
@@ -403,7 +379,7 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
           </div>,
           document.body,
         )}
-    </div>
+    </ManagementPageShell>
   );
 };
 

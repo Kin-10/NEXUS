@@ -822,12 +822,6 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
 
   return (
     <div className="space-y-4">
-      <div>
-        <p className="text-sm text-secondary">
-          {i18nService.t('skillsDescription')}
-        </p>
-      </div>
-
       {skillActionError && !isRemoteImportOpen && (
         <ErrorMessage
           message={skillActionError}
@@ -838,7 +832,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat 
       {/* Sticky toolbar: Description + Search + Tabs + Tag pills */}
       <div
         data-skin-management-toolbar="true"
-        className="sticky top-0 z-10 space-y-4 bg-background pb-4"
+        className="sticky top-0 z-10 space-y-4 bg-background/95 pb-4 backdrop-blur-sm"
       >
         {/* Search + Add button */}
         <div className="flex items-center gap-3">

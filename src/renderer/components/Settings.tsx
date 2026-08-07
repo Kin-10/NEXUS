@@ -5904,16 +5904,16 @@ const Settings: React.FC<SettingsProps> = ({
     <Modal
       onClose={guardedClose}
       overlayClassName="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4"
-      className="w-[calc(100vw-1.5rem)] max-w-[900px] min-w-0 sm:w-[calc(100vw-2rem)]"
+      className="w-[calc(100vw-1.5rem)] max-w-[980px] min-w-0 sm:w-[calc(100vw-2rem)]"
     >
       <SkinPresentationScope
         enabled
         data-skin-settings="true"
-        className="relative flex h-[80vh] max-h-[calc(100vh-2rem)] w-full min-w-0 rounded-2xl border-border border shadow-modal overflow-hidden modal-content"
+        className="relative flex h-[86vh] max-h-[calc(100vh-1.5rem)] w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-background shadow-modal modal-content sm:max-h-[calc(100vh-2rem)]"
         onClick={handleSettingsClick}
       >
         {/* Left sidebar */}
-        <div className="w-[220px] shrink-0 flex flex-col bg-surface-raised border-r border-border rounded-l-2xl overflow-y-auto">
+        <div className="w-[232px] shrink-0 flex flex-col bg-surface/95 border-r border-border/70 rounded-l-2xl overflow-y-auto">
           <div className="px-5 pt-5 pb-3">
             <h2 className="text-lg font-semibold text-foreground">{i18nService.t('settings')}</h2>
           </div>
@@ -5938,10 +5938,12 @@ const Settings: React.FC<SettingsProps> = ({
         {/* Right content */}
         <div className="relative flex-1 flex flex-col min-w-0 overflow-hidden bg-background rounded-r-2xl">
           {/* Content header */}
-          <div className="flex justify-between items-center gap-3 px-6 pt-5 pb-3 shrink-0">
+          <div className="flex justify-between items-center gap-3 border-b border-border/70 bg-background/95 px-6 py-4 shrink-0 backdrop-blur-sm">
             <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">{activeTabLabel}</h3>
             <button
+              type="button"
               onClick={guardedClose}
+              aria-label={i18nService.t('close')}
               className="text-secondary hover:text-foreground p-1.5 hover:bg-surface-raised rounded-lg transition-colors"
             >
               <X className="h-5 w-5" />
@@ -5970,7 +5972,7 @@ const Settings: React.FC<SettingsProps> = ({
             {/* Tab content */}
             <div
               ref={contentRef}
-              className="px-6 py-4 flex-1 overflow-y-auto"
+              className="px-6 py-5 flex-1 overflow-y-auto"
               style={{ scrollbarGutter: 'stable' }}
             >
               {renderTabContent()}
@@ -5984,7 +5986,7 @@ const Settings: React.FC<SettingsProps> = ({
                   footerFadeVisible ? 'opacity-100' : 'opacity-0'
                 }`}
               />
-              <div className="flex justify-end space-x-4 px-6 pb-5 pt-3 bg-background">
+              <div className="flex justify-end space-x-4 border-t border-border/60 bg-background/95 px-6 pb-5 pt-3 backdrop-blur-sm">
                 <button
                   type="button"
                   onClick={guardedClose}

@@ -36,7 +36,7 @@ import { i18nService } from '../../services/i18n';
 import Modal from '../common/Modal';
 import Cog6ToothIcon from '../icons/Cog6ToothIcon';
 import EllipsisHorizontalIcon from '../icons/EllipsisHorizontalIcon';
-import SidebarToggleIcon from '../icons/SidebarToggleIcon';
+import { ManagementPageTitleBar } from '../management/ManagementPageShell';
 import SiteAnalyticsChart from './SiteAnalyticsChart';
 import SiteDefaultIcon from './SiteDefaultIcon';
 
@@ -120,30 +120,18 @@ const SitesTopBar: React.FC<{
   isSidebarCollapsed: boolean;
   onToggleSidebar: () => void;
   updateBadge?: React.ReactNode;
-}> = ({ isSidebarCollapsed, onToggleSidebar, updateBadge }) => {
-  const isMac = window.electron.platform === 'darwin';
-  const isWindows = window.electron.platform === 'win32';
-
-  return (
-    <div className="draggable flex h-12 shrink-0 items-center border-b border-border px-4">
-      <div className="flex h-8 items-center gap-3">
-        {isSidebarCollapsed && !isWindows && (
-          <div className={`non-draggable flex items-center gap-1 ${isMac ? 'pl-[68px]' : ''}`}>
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised"
-            >
-              <SidebarToggleIcon className="h-4 w-4" isCollapsed />
-            </button>
-            {updateBadge}
-          </div>
-        )}
-        <h1 className="text-lg font-semibold text-foreground">{i18nService.t('sitesTitle')}</h1>
-      </div>
-    </div>
-  );
-};
+  subtitle?: React.ReactNode;
+  actions?: React.ReactNode;
+}> = ({ isSidebarCollapsed, onToggleSidebar, updateBadge, subtitle, actions }) => (
+  <ManagementPageTitleBar
+    title={i18nService.t('sitesTitle')}
+    subtitle={subtitle}
+    isSidebarCollapsed={isSidebarCollapsed}
+    onToggleSidebar={onToggleSidebar}
+    updateBadge={updateBadge}
+    actions={actions}
+  />
+);
 
 const EmptyState: React.FC<{
   onCreateSiteByChat: (prompt: string) => void;
@@ -538,6 +526,7 @@ const SitesView: React.FC<SitesViewProps> = ({
           isSidebarCollapsed={isSidebarCollapsed}
           onToggleSidebar={onToggleSidebar}
           updateBadge={updateBadge}
+          subtitle={i18nService.t('sitesSubtitle')}
         />
         <div className="flex flex-1 items-center justify-center p-8">
           <div className="max-w-sm text-center">
@@ -1115,15 +1104,13 @@ const SitesView: React.FC<SitesViewProps> = ({
           isSidebarCollapsed={isSidebarCollapsed}
           onToggleSidebar={onToggleSidebar}
           updateBadge={updateBadge}
+          subtitle={i18nService.t('sitesSubtitle')}
+          actions={isUnfilteredEmpty ? createSiteButton(false) : undefined}
         />
       </div>
-      <header className="mx-auto w-full min-w-[720px] max-w-[840px] shrink-0 px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-sm text-secondary">{i18nService.t('sitesSubtitle')}</p>
-          {isUnfilteredEmpty && createSiteButton(true)}
-        </div>
-        {!isUnfilteredEmpty && (
-          <div className="mt-3 flex flex-nowrap items-center gap-2.5">
+      {!isUnfilteredEmpty && (
+        <header className="mx-auto w-full min-w-[720px] max-w-[840px] shrink-0 px-6 py-4">
+          <div className="flex flex-nowrap items-center gap-2.5">
             <div className="relative min-w-[280px] flex-1">
               <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
               <input
@@ -1165,8 +1152,8 @@ const SitesView: React.FC<SitesViewProps> = ({
             </button>
             {createSiteButton(true)}
           </div>
-        )}
-      </header>
+        </header>
+      )}
       <main className="min-h-0 w-full min-w-[720px] flex-1 overflow-y-auto [scrollbar-gutter:stable]">
         <div className="mx-auto w-full max-w-[840px] px-6 pb-6">
           {listError && (

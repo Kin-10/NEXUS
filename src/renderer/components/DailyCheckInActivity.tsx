@@ -1,7 +1,7 @@
 import {
-  CheckCircleIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  CheckCircle as CheckCircleIcon,
+  X as XMarkIcon,
+} from '@phosphor-icons/react';
 import type { DailyCheckInDescriptor } from '@shared/activity/constants';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
