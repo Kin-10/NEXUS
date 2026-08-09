@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import {
   ArrowsClockwise,
-  ShieldCheck,
+  DeviceMobile,
+  ListChecks,
   Warning,
 } from '@/components/icons/iconParkCompat';
 
@@ -12,7 +13,6 @@ import { buildGoalSettingMessageMetadata } from '../../../common/goalCommandDisp
 import { buildSessionTitleFromInput } from '../../../common/sessionTitle';
 import { buildCoworkImageAttachmentPreviews } from '../../../shared/cowork/imageAttachments';
 import type { CoworkSelectedTextSnippet } from '../../../shared/cowork/selectedText';
-import startupCreditEntryGiftUrl from '../../assets/startup-credit-entry-gift.svg';
 import { agentService } from '../../services/agent';
 import { coworkService } from '../../services/cowork';
 import { buildCoworkCapabilitySelection } from '../../services/coworkCapabilitySelection';
@@ -36,40 +36,25 @@ import {
   type CoworkPermissionRequest,
   type CoworkPermissionResult,
   type CoworkSession,
+  CoworkSessionStatusValue,
   type OpenClawEngineStatus,
 } from '../../types/cowork';
 import type { MediaAttachmentRef } from '../../types/mediaGeneration';
+import { getAgentDisplayName } from '../../utils/agentDisplay';
 import { applyOptimisticGoalCommand } from '../../utils/goalCommand';
 import { toOpenClawModelRef } from '../../utils/openclawModelRef';
-import CreditsResetCampaignFloat from '../CreditsResetCampaignFloat';
 import ComposeIcon from '../icons/ComposeIcon';
 import SidebarToggleIcon from '../icons/SidebarToggleIcon';
 import { ModelAccessPromptKind, ModelAccessPromptModal } from '../ModelSelector';
 import { PromptPanel, QuickActionBar } from '../quick-actions';
 import type { SettingsOpenOptions } from '../Settings';
-import HomeSkinEmblem from '../skin/HomeSkinEmblem';
-import SkinAmbientEffects from '../skin/SkinAmbientEffects';
 import SkinBackdrop, { SkinBackdropVariant } from '../skin/SkinBackdrop';
-import {
-  openStartupCreditCampaign,
-  useStartupCreditCampaignEntry,
-} from '../startupCreditCampaignBridge';
 import { useAgentSelectedModel } from './agentModelSelection';
 import { CoworkUiEvent } from './constants';
 import CoworkPromptInput, { type CoworkPromptInputRef } from './CoworkPromptInput';
 import CoworkSessionDetail from './CoworkSessionDetail';
 import { reportPromptTemplateAction } from './promptAnalytics';
 import { buildCoworkContinuationSystemPrompt, buildCoworkSystemPrompt } from './skillSystemPrompt';
-
-// Time-aware hero greeting: the brand mark stays as the logo, so the heading
-// can greet the user instead of repeating the product name on every visit.
-const resolveHomeGreetingKey = (date: Date = new Date()): string => {
-  const hour = date.getHours();
-  if (hour >= 5 && hour < 12) return 'coworkGreetingMorning';
-  if (hour >= 12 && hour < 18) return 'coworkGreetingAfternoon';
-  if (hour >= 18 && hour < 23) return 'coworkGreetingEvening';
-  return 'coworkGreetingLateNight';
-};
 
 const logCoworkViewModel = (message: string): void => {
   console.debug(`[CoworkView] ${message}`);
@@ -142,10 +127,23 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const quickActions = useSelector((state: RootState) => state.quickAction.actions);
   const selectedActionId = useSelector((state: RootState) => state.quickAction.selectedActionId);
   const currentAgentId = useSelector((state: RootState) => state.agent.currentAgentId);
-  const startupCreditEntry = useStartupCreditCampaignEntry();
   const agents = useSelector((state: RootState) => state.agent.agents);
   const currentAgent = agents.find((agent) => agent.id === currentAgentId);
-  const shouldPresentConversation = Boolean(currentSession || sessionNavigationTargetId);
+  const currentAgentDisplayName = currentAgent
+    ? getAgentDisplayName(currentAgent)
+    : i18nService.t('coworkWelcome');
+  const homeHeroTitle = i18nService
+    .t('coworkHomeHeroTitle')
+    .replace('{name}', currentAgentDisplayName);
+  const hasRenderableConversation = Boolean(
+    currentSession
+      && (
+        currentSession.messages.length > 0
+        || isStreaming
+        || currentSession.status === CoworkSessionStatusValue.Running
+      ),
+  );
+  const shouldPresentConversation = Boolean(hasRenderableConversation || sessionNavigationTargetId);
   const currentAgentWorkingDirectory = currentAgent?.workingDirectory?.trim() || config.workingDirectory || '';
   const currentAgentSelectedModel = useAgentSelectedModel(currentAgentId, currentAgent?.model ?? '');
   const homeDraftCollaborationMode = useSelector((state: RootState) => (
@@ -714,8 +712,8 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const isEngineReady = isOpenClawReadyForSession(openClawStatus);
 
   const homeHeader = (
-    <div className="draggable relative z-10 flex h-12 items-center justify-between px-4 shrink-0">
-      <div className="non-draggable h-8 flex items-center">
+    <div className="draggable relative z-20 flex h-12 shrink-0 items-center justify-between bg-white px-5">
+      <div className="non-draggable flex h-9 items-center">
         {isSidebarCollapsed && !isWindows && (
           <div className={`flex items-center gap-1 mr-2 ${isMac ? 'pl-[68px]' : ''}`}>
             <button
@@ -736,30 +734,28 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           </div>
         )}
       </div>
-      <div className="non-draggable flex items-center">
-        <div className="flex items-center gap-1.5 mr-2 px-2.5 py-1">
-          <ShieldCheck className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-          <span className="text-xs text-green-600 dark:text-green-400 whitespace-nowrap">
-            {i18nService.t('lobsterGuardEnabled')}
-          </span>
-        </div>
-        {startupCreditEntry.available && (
-          <button
-            type="button"
-            onClick={() => openStartupCreditCampaign()}
-            className="mr-2 inline-flex h-8 max-w-[240px] items-center gap-1.5 rounded-full border border-border bg-surface/90 px-3 text-xs font-medium text-foreground shadow-subtle transition-colors hover:bg-surface-raised"
-          >
-            <img
-              src={startupCreditEntryGiftUrl}
-              alt=""
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0"
-            />
-            <span className="truncate">
-              {startupCreditEntry.label || i18nService.t('startupCreditMenuEntry')}
-            </span>
-          </button>
-        )}
+      <div className="non-draggable flex items-center gap-3">
+        <div
+          className="h-7 w-7 rounded-full bg-[#dbe4ef]"
+          title={isLoggedIn ? currentAgentDisplayName : undefined}
+          aria-hidden="true"
+        />
+        <button
+          type="button"
+          onClick={() => onRequestAppSettings?.({ initialTab: 'model' })}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e7e7e7] bg-white px-3 text-[13px] font-medium text-[#171717] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#fafafa]"
+        >
+          <ListChecks className="h-4 w-4" />
+          <span>{i18nService.t('coworkHomeAgentManagement')}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onRequestAppSettings?.({ initialTab: 'im' })}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e7e7e7] bg-white px-3 text-[13px] font-medium text-[#171717] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#fafafa]"
+        >
+          <DeviceMobile className="h-4 w-4" />
+          <span>{i18nService.t('coworkHomeMobileRemote')}</span>
+        </button>
       </div>
     </div>
   );
@@ -816,9 +812,8 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           ? SkinBackdropVariant.Conversation
           : SkinBackdropVariant.Home}
       />
-      <SkinAmbientEffects visible={!shouldPresentConversation} />
 
-      {currentSession ? (
+      {hasRenderableConversation ? (
         <div className="relative z-10 flex-1 flex flex-col h-full">
           {engineStatusBanner}
           <CoworkSessionDetail
@@ -844,69 +839,68 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           {homeHeader}
 
           {/* Main content */}
-          <div className="relative z-10 flex-1 overflow-y-auto min-h-0">
-            <div className="relative flex min-h-full w-full min-w-[320px] flex-col items-center px-4 py-8">
-              {/* Flexible spacers (2:3) keep the welcome block at the optical
-                  center on tall windows; min-h preserves breathing room before
-                  the page starts scrolling on short windows. */}
-              <div aria-hidden="true" className="w-full min-h-[56px] flex-[2_0_0px]" />
-              {/* Welcome Section - staggered entrance animation */}
-              <div data-skin-home-copy="true" className="w-full max-w-3xl text-center">
-                <HomeSkinEmblem
-                  className="mx-auto h-12 w-12 animate-fade-in-up"
-                />
+          <div className="relative z-10 min-h-0 flex-1 overflow-hidden bg-white">
+            <div
+              className="absolute left-1/2 top-[47%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+              style={{ width: 'min(520px, calc(100% - 48px))' }}
+            >
+              <div data-skin-home-copy="true" className="w-full text-center">
                 <h2
-                  className="mt-4 text-2xl font-semibold leading-[var(--lobster-leading-2xl)] tracking-normal text-foreground animate-fade-in-up"
+                  className="text-[28px] font-semibold leading-[1.18] tracking-normal text-[#111111] animate-fade-in-up"
                   style={{ animationDelay: '70ms', animationFillMode: 'both' }}
                 >
-                  {i18nService.t(resolveHomeGreetingKey())}
+                  {homeHeroTitle}
                 </h2>
                 <p
-                  className="mt-2 text-[length:var(--lobster-text-promptLarge)] font-normal leading-[var(--lobster-leading-promptLarge)] text-secondary animate-fade-in-up"
+                  className="mt-3 text-[16px] font-normal leading-6 text-[#8c8c8c] animate-fade-in-up"
                   style={{ animationDelay: '120ms', animationFillMode: 'both' }}
                 >
-                  {i18nService.t('coworkHomeTagline')}
+                  {i18nService.t('coworkHomeHeroSubtitle')}
                 </p>
               </div>
 
-              {/* Prompt Input Area - Large version with folder selector */}
-              <div
-                className="relative z-30 mt-9 w-full max-w-3xl animate-fade-in-up"
-                style={{ animationDelay: '180ms', animationFillMode: 'both' }}
-              >
-                <CoworkPromptInput
-                  ref={promptInputRef}
-                  onSubmit={handleStartSession}
-                  onStop={handleStopSession}
-                  isStreaming={isStreaming}
-                  disabled={!isEngineReady}
-                  placeholder={i18nService.t('coworkPlaceholder')}
-                  size="large"
-                  workingDirectory={currentAgentWorkingDirectory}
-                  onWorkingDirectoryChange={async (dir: string) => {
-                    await agentService.updateAgent(currentAgentId, { workingDirectory: dir });
-                  }}
-                  showFolderSelector={true}
-                  showModelSelector={true}
-                  showAgentSelector={true}
-                  onManageSkills={() => onShowSkills?.()}
-                  onManageKits={() => onShowKits?.()}
-                  onGoalCommand={handleStartGoalSession}
-                />
-              </div>
+                <div
+                  className="relative z-20 mt-8 w-full animate-fade-in-up"
+                  style={{ animationDelay: '170ms', animationFillMode: 'both' }}
+                >
+                  <QuickActionBar
+                    actions={quickActions}
+                    selectedActionId={selectedActionId}
+                    onActionSelect={handleActionSelect}
+                  />
+                </div>
 
-              {/* Quick Actions */}
-              <div
-                className="relative z-0 mt-8 flex w-full max-w-3xl flex-col items-center animate-fade-in-up"
-                style={{ animationDelay: '260ms', animationFillMode: 'both' }}
-              >
-                <QuickActionBar
-                  actions={quickActions}
-                  selectedActionId={selectedActionId}
-                  onActionSelect={handleActionSelect}
-                />
+                <div
+                  className="relative z-30 mt-4 w-full animate-fade-in-up"
+                  style={{ animationDelay: '220ms', animationFillMode: 'both' }}
+                >
+                  <CoworkPromptInput
+                    ref={promptInputRef}
+                    onSubmit={handleStartSession}
+                    onStop={handleStopSession}
+                    isStreaming={isStreaming}
+                    disabled={!isEngineReady}
+                    placeholder={i18nService.t('coworkPlaceholder')}
+                    size="large"
+                    heroLayout
+                    workingDirectory={currentAgentWorkingDirectory}
+                    onWorkingDirectoryChange={async (dir: string) => {
+                      await agentService.updateAgent(currentAgentId, { workingDirectory: dir });
+                    }}
+                    showFolderSelector={true}
+                    showModelSelector={true}
+                    showAgentSelector={false}
+                    onManageSkills={() => onShowSkills?.()}
+                    onManageKits={() => onShowKits?.()}
+                    onGoalCommand={handleStartGoalSession}
+                  />
+                </div>
+
                 {selectedAction && (
-                  <div className="mt-4 w-full">
+                  <div
+                    className="relative z-20 mt-4 w-full animate-fade-in-up"
+                    style={{ animationDelay: '260ms', animationFillMode: 'both' }}
+                  >
                     <PromptPanel
                       action={selectedAction}
                       onPromptSelect={handleQuickActionPromptSelect}
@@ -914,10 +908,10 @@ const CoworkView: React.FC<CoworkViewProps> = ({
                     />
                   </div>
                 )}
-                <CreditsResetCampaignFloat />
-              </div>
+            </div>
 
-              <div aria-hidden="true" className="w-full min-h-[24px] flex-[3_0_0px]" />
+            <div className="pointer-events-none absolute bottom-4 left-0 right-0 text-center text-[14px] text-[#aaaaaa]">
+              {i18nService.t('aiGeneratedDisclaimer')}
             </div>
           </div>
         </>

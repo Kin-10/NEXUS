@@ -1,4 +1,3 @@
-import { Caution, Message } from '@icon-park/react';
 import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -24,7 +23,7 @@ import Modal from './common/Modal';
 import { CoworkUiEvent } from './cowork/constants';
 import CoworkSearchModal from './cowork/CoworkSearchModal';
 import Cog6ToothIcon from './icons/Cog6ToothIcon';
-import ComposeIcon from './icons/ComposeIcon';
+import { Caution, ListChecks, Message } from './icons/iconParkCompat';
 import { iconParkOutlineProps } from './icons/iconStyle';
 import SidebarAutomationIcon from './icons/SidebarAutomationIcon';
 import SidebarKitsIcon from './icons/SidebarKitsIcon';
@@ -59,10 +58,10 @@ interface SidebarProps {
   hideSites?: boolean;
 }
 
-const SIDEBAR_RAIL_WIDTH = 76;
-const DEFAULT_CONTEXT_PANEL_WIDTH = 260;
-const MIN_CONTEXT_PANEL_WIDTH = 220;
-const MAX_CONTEXT_PANEL_WIDTH = 420;
+const SIDEBAR_RAIL_WIDTH = 56;
+const DEFAULT_CONTEXT_PANEL_WIDTH = 184;
+const MIN_CONTEXT_PANEL_WIDTH = 172;
+const MAX_CONTEXT_PANEL_WIDTH = 260;
 const SIDEBAR_COLLAPSE_TRANSITION_MS = 200;
 const normalizeAgentId = (agentId?: string | null) => agentId?.trim() || AgentId.Main;
 const SidebarNewFeatureBadge = {
@@ -71,11 +70,11 @@ const SidebarNewFeatureBadge = {
   KitsVersion: '2026-06-05',
 } as const;
 const railButtonClassName =
-  'non-draggable relative inline-flex h-14 w-[66px] flex-col items-center justify-center gap-1 rounded-lg px-1 text-secondary transition-colors hover:bg-black/[0.04] hover:text-foreground dark:hover:bg-white/[0.06]';
+  'non-draggable relative inline-flex h-[56px] w-[50px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[#171717] transition-colors hover:bg-[#f1f1f1]';
 const activeRailButtonClassName =
-  `${railButtonClassName} bg-black/[0.07] text-foreground shadow-sm hover:bg-black/[0.07] dark:bg-white/[0.08] dark:hover:bg-white/[0.08]`;
-const railIconClassName = 'h-4 w-4 shrink-0';
-const railLabelClassName = 'line-clamp-2 w-full text-center text-[10px] font-medium leading-[11px]';
+  `${railButtonClassName} bg-[#eeeeee] text-[#111111] shadow-none hover:bg-[#eeeeee]`;
+const railIconClassName = 'h-5 w-5 shrink-0';
+const railLabelClassName = 'line-clamp-2 w-full text-center text-[11px] font-semibold leading-[13px]';
 
 type SidebarAnalyticsSource = 'home_sidebar' | 'home_agent_sidebar';
 
@@ -171,8 +170,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const resizeStartXRef = useRef(0);
   const resizeStartWidthRef = useRef(DEFAULT_CONTEXT_PANEL_WIDTH);
   const agentScrollContainerRef = useRef<HTMLDivElement>(null);
-  const isWindows = window.electron.platform === 'win32';
-  const showHeaderRow = !isWindows;
   const sidebarShellWidth = SIDEBAR_RAIL_WIDTH + (isCollapsed ? 0 : sidebarWidth);
   const batchSelectableKeySet = useMemo(
     () => new Set(batchSelectableItems.map((item) => item.key)),
@@ -260,6 +257,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     setSelectedKeys(new Set());
     setShowBatchDeleteConfirm(false);
   }, [isCollapsed]);
+
+  useEffect(() => {
+    setSidebarWidth((previous) => {
+      if (previous > MAX_CONTEXT_PANEL_WIDTH) return DEFAULT_CONTEXT_PANEL_WIDTH;
+      if (previous < MIN_CONTEXT_PANEL_WIDTH) return MIN_CONTEXT_PANEL_WIDTH;
+      return previous;
+    });
+  }, []);
 
   useEffect(() => {
     onWidthChange?.(sidebarShellWidth);
@@ -540,32 +545,32 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       data-skin-sidebar="true"
-      className={`relative shrink-0 overflow-hidden border-r border-border/60 bg-surface-raised ${
+      className={`relative shrink-0 overflow-hidden border-r border-[#eeeeee] bg-white ${
         isResizing ? '' : 'sidebar-transition'
       }`}
       style={{ width: sidebarShellWidth }}
     >
       <div className="flex h-full min-h-0">
         <div
-          className="flex h-full shrink-0 flex-col items-center border-r border-border/60 bg-surface-raised py-2"
+          className="flex h-full shrink-0 flex-col items-center bg-[#f6f6f6]"
           style={{ width: SIDEBAR_RAIL_WIDTH }}
         >
-          {showHeaderRow ? (
-            <div className="draggable sidebar-header-drag flex min-h-[60px] items-center justify-center">
+          <div className="draggable sidebar-header-drag flex h-[76px] shrink-0 flex-col items-center justify-center gap-1">
+            <img
+              src="logo.png"
+              alt="LobsterAI"
+              draggable={false}
+              className="h-8 w-8 rounded-xl object-contain"
+            />
+            <span className="max-w-[52px] truncate text-center text-[9px] font-semibold leading-3 text-[#111111]">
+              LobsterAI
+            </span>
+          </div>
+          <div className="non-draggable flex min-h-0 flex-1 flex-col items-center gap-2 py-2">
+            <div className="flex flex-col items-center gap-1.5">
               {renderRailButton(
-                isCollapsed ? i18nService.t('expand') : i18nService.t('collapse'),
-                <SidebarToggleIcon className="h-4 w-4 shrink-0" isCollapsed={isCollapsed} />,
-                onToggleCollapse,
-              )}
-            </div>
-          ) : (
-            <div className="h-2" />
-          )}
-          <div className="non-draggable flex min-h-0 flex-1 flex-col items-center gap-2 py-1">
-            <div className="flex flex-col items-center gap-1">
-              {renderRailButton(
-                i18nService.t('cowork'),
-                <Message className="h-[18px] w-[18px]" {...iconParkOutlineProps} />,
+                i18nService.t('sidebarNavConversation'),
+                <Message className={railIconClassName} {...iconParkOutlineProps} />,
                 () => {
                   reportSidebarAction('open_cowork', { activeView, isCollapsed });
                   setIsSearchOpen(false);
@@ -574,37 +579,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 { active: activeView === 'cowork' },
               )}
               {renderRailButton(
-                i18nService.t('newChat'),
-                <ComposeIcon className={railIconClassName} />,
+                i18nService.t('sidebarNavSkillsPlugins'),
+                <SkillIcon className={railIconClassName} />,
                 () => {
-                  reportSidebarAction('new_task', { activeView, isCollapsed });
-                  onNewChat();
-                },
-              )}
-              {renderRailButton(
-                i18nService.t('search'),
-                <SidebarSearchIcon className={railIconClassName} />,
-                () => {
-                  reportSidebarAction('open_search', { activeView, isCollapsed });
-                  onShowCowork();
-                  setIsSearchOpen(true);
-                },
-              )}
-            </div>
-            <div className="h-px w-6 shrink-0 bg-border/70" />
-            <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto">
-              {renderRailButton(
-                i18nService.t('scheduledTasks'),
-                <SidebarAutomationIcon className={railIconClassName} />,
-                () => {
-                  reportSidebarAction('open_scheduled_tasks', { activeView, isCollapsed });
+                  reportSidebarAction('open_skills', { activeView, isCollapsed });
                   setIsSearchOpen(false);
-                  onShowScheduledTasks();
+                  onShowSkills();
                 },
-                { active: activeView === 'scheduledTasks' },
+                { active: activeView === 'skills' },
               )}
               {renderRailButton(
-                i18nService.t('kits'),
+                i18nService.t('sidebarNavExperts'),
                 <SidebarKitsIcon className={railIconClassName} />,
                 () => {
                   reportSidebarAction('open_kits', { activeView, isCollapsed });
@@ -615,43 +600,54 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {
                   active: activeView === 'kits',
                   badge: showKitsNewBadge ? (
-                    <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#ff4f6d]" />
+                    <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#ff4f6d]" />
                   ) : null,
                 },
               )}
               {renderRailButton(
-                i18nService.t('skills'),
-                <SkillIcon className={railIconClassName} />,
-                () => {
-                  reportSidebarAction('open_skills', { activeView, isCollapsed });
-                  setIsSearchOpen(false);
-                  onShowSkills();
-                },
-                { active: activeView === 'skills' },
-              )}
-              {renderRailButton(
-                i18nService.t('mcpServers'),
+                i18nService.t('sidebarNavAutomation'),
                 <SidebarMcpIcon className={railIconClassName} />,
                 () => {
                   reportSidebarAction('open_mcp', { activeView, isCollapsed });
                   setIsSearchOpen(false);
                   onShowMcp();
                 },
-                { active: activeView === 'mcp' },
-              )}
-              {!hideSites && renderRailButton(
-                i18nService.t('sitesTitle'),
-                <SidebarSitesIcon className={railIconClassName} />,
-                () => {
-                  reportSidebarAction('open_sites', { activeView, isCollapsed });
-                  setIsSearchOpen(false);
-                  onShowSites();
+                {
+                  active: activeView === 'mcp',
+                  badge: (
+                    <span className="absolute right-0 top-1.5 rounded-full bg-[#ff6a4d] px-1 py-0.5 text-[8px] font-semibold leading-[10px] text-white">
+                      RPA
+                    </span>
+                  ),
                 },
-                { active: activeView === 'sites' },
+              )}
+              {renderRailButton(
+                i18nService.t('sidebarNavScheduled'),
+                <SidebarAutomationIcon className={railIconClassName} />,
+                () => {
+                  reportSidebarAction('open_scheduled_tasks', { activeView, isCollapsed });
+                  setIsSearchOpen(false);
+                  onShowScheduledTasks();
+                },
+                { active: activeView === 'scheduledTasks' },
               )}
             </div>
+            {!hideSites && (
+              <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col items-center gap-1.5 overflow-y-auto pt-1">
+                {renderRailButton(
+                  i18nService.t('sitesTitle'),
+                  <SidebarSitesIcon className={railIconClassName} />,
+                  () => {
+                    reportSidebarAction('open_sites', { activeView, isCollapsed });
+                    setIsSearchOpen(false);
+                    onShowSites();
+                  },
+                  { active: activeView === 'sites' },
+                )}
+              </div>
+            )}
           </div>
-          <div className="non-draggable flex shrink-0 flex-col items-center gap-1 pb-1">
+          <div className="non-draggable flex shrink-0 flex-col items-center gap-1.5 pb-2">
             {renderRailButton(
               i18nService.t('settings'),
               <Cog6ToothIcon className={railIconClassName} />,
@@ -660,7 +656,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
         <div
-          className={`relative flex h-full min-h-0 flex-col overflow-hidden bg-surface-raised transition-[width,opacity] ease-out ${
+          className={`relative flex h-full min-h-0 flex-col overflow-hidden border-r border-[#eeeeee] bg-white transition-[width,opacity] ease-out ${
             isCollapsed ? 'pointer-events-none opacity-0' : 'opacity-100'
           }`}
           style={{
@@ -668,10 +664,46 @@ const Sidebar: React.FC<SidebarProps> = ({
             transitionDuration: `${SIDEBAR_COLLAPSE_TRANSITION_MS}ms`,
           }}
         >
+          <div className="draggable flex h-[48px] shrink-0 items-center justify-end gap-2 px-3">
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#4d4d4d] transition-colors hover:bg-[#f3f3f3]"
+              aria-label={isCollapsed ? i18nService.t('expand') : i18nService.t('collapse')}
+              title={isCollapsed ? i18nService.t('expand') : i18nService.t('collapse')}
+            >
+              <SidebarToggleIcon className="h-[18px] w-[18px]" isCollapsed={isCollapsed} />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                reportSidebarAction('open_search', { activeView, isCollapsed });
+                onShowCowork();
+                setIsSearchOpen(true);
+              }}
+              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#4d4d4d] transition-colors hover:bg-[#f3f3f3]"
+              aria-label={i18nService.t('search')}
+              title={i18nService.t('search')}
+            >
+              <SidebarSearchIcon className="h-[18px] w-[18px]" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                reportSidebarAction('new_task', { activeView, isCollapsed });
+                onNewChat();
+              }}
+              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#4d4d4d] transition-colors hover:bg-[#f3f3f3]"
+              aria-label={i18nService.t('newChat')}
+              title={i18nService.t('newChat')}
+            >
+              <ListChecks className="h-[18px] w-[18px]" {...iconParkOutlineProps} />
+            </button>
+          </div>
           <div className="relative min-h-0 flex-1">
             <div
               ref={agentScrollContainerRef}
-              className={`scrollbar-hidden h-full overflow-y-auto px-2.5 pt-2 ${
+              className={`scrollbar-hidden h-full overflow-y-auto px-2.5 ${
                 isSidebarBannerVisible && !isBatchMode ? 'pb-[128px]' : 'pb-10'
               }`}
               onScroll={handleAgentScroll}
@@ -710,12 +742,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             )}
             <div
-              className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-surface-raised to-transparent transition-opacity duration-150 ${
+              className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-white to-transparent transition-opacity duration-150 ${
                 agentScrollEdges.top ? 'opacity-100' : 'opacity-0'
               }`}
             />
             <div
-              className={`pointer-events-none absolute inset-x-0 top-[68px] z-10 h-3 bg-gradient-to-b from-surface-raised to-transparent transition-opacity duration-150 ${
+              className={`pointer-events-none absolute inset-x-0 top-[60px] z-10 h-3 bg-gradient-to-b from-white to-transparent transition-opacity duration-150 ${
                 agentScrollEdges.top ? 'opacity-40' : 'opacity-0'
               }`}
             />

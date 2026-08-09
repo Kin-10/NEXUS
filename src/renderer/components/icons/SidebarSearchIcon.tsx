@@ -1,6 +1,6 @@
-import { Search } from '@icon-park/react';
 import React from 'react';
 
+import { Search } from './iconParkCompat';
 import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const SidebarSearchIcon: React.FC<AppIconProps> = ({ className }) => (

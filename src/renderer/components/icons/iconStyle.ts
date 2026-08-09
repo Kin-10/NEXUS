@@ -1,6 +1,6 @@
 import type { IconProps, IconWeight } from '@/components/icons/iconParkCompat';
 
-/** Shared Phosphor styling for LobsterAI chrome icons. */
+/** Shared Lucide styling for LobsterAI chrome icons. */
 export const IconWeightRegular: IconWeight = 'regular';
 export const IconWeightFill: IconWeight = 'fill';
 
@@ -16,11 +16,10 @@ export const filledIconProps: Pick<IconProps, 'weight' | 'aria-hidden'> = {
   'aria-hidden': true,
 };
 
-/** Default for IconPark outline chrome icons: currentColor-driven and class-sized. */
+/** Default for Lucide outline chrome icons: currentColor-driven and class-sized. */
 export const iconParkOutlineProps = {
   size: '100%',
-  strokeWidth: 4,
-  fill: 'currentColor',
+  strokeWidth: 2,
   'aria-hidden': true,
 } as const;
 

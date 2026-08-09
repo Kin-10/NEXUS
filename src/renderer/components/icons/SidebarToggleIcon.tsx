@@ -1,6 +1,6 @@
-import { MenuFold, MenuUnfold } from '@icon-park/react';
 import React from 'react';
 
+import { MenuFold, MenuUnfold } from './iconParkCompat';
 import { iconParkOutlineProps } from './iconStyle';
 
 const SidebarToggleIcon: React.FC<{ className?: string; isCollapsed: boolean }> = ({

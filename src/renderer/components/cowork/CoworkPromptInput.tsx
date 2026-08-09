@@ -420,6 +420,7 @@ interface CoworkPromptInputProps {
   showFolderSelector?: boolean;
   showModelSelector?: boolean;
   showAgentSelector?: boolean;
+  heroLayout?: boolean;
   showReadOnlyContext?: boolean;
   readOnlyContextTrailingText?: string;
   contextAgentId?: string;
@@ -456,6 +457,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       showFolderSelector = false,
       showModelSelector = false,
       showAgentSelector = false,
+      heroLayout = false,
       showReadOnlyContext = false,
       readOnlyContextTrailingText,
       contextAgentId,
@@ -629,6 +631,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
 
   const isCompact = size === 'compact';
   const isLarge = size === 'large' || isCompact;
+  const useHomeHeroLayout = isLarge && heroLayout;
   const useHomeContextLayout = isLarge && showAgentSelector;
   const useCompactSendButton = isLarge && (useHomeContextLayout || showReadOnlyContext || isCompact);
   const hasActiveContext = hasActiveSkills || hasActiveKits || isPlanMode || goalInputActive || steerInputActive;
@@ -636,11 +639,13 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
   const minHeight = isCompact
     ? hasAttachments ? 30 : hasActiveContext ? 30 : 28
     : isLarge
-      ? useHomeContextLayout
+      ? useHomeHeroLayout
+        ? hasAttachments ? 76 : hasActiveContext ? 84 : 108
+        : useHomeContextLayout
         ? hasAttachments ? 34 : hasActiveContext ? 36 : 52
         : hasAttachments ? 38 : hasActiveContext ? 44 : 60
       : 24;
-  const maxHeight = isCompact ? 96 : 200;
+  const maxHeight = isCompact ? 96 : useHomeHeroLayout ? 180 : 200;
 
   const effectiveSelectedModel = resolveEffectiveModel({
     sessionId,
@@ -2012,7 +2017,9 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
   const containerClass = isCompact
     ? 'relative rounded-2xl border border-border bg-surface shadow-subtle'
     : isLarge
-    ? useHomeContextLayout
+    ? useHomeHeroLayout
+      ? 'relative rounded-[14px] border border-[#ededed] bg-white shadow-[0_12px_28px_rgba(0,0,0,0.10)]'
+      : useHomeContextLayout
       ? 'relative rounded-2xl'
       : `relative rounded-2xl border border-border bg-surface ${showReadOnlyContext ? '' : 'shadow-card'}`
     : 'relative flex items-end gap-2 p-3 rounded-xl border border-border bg-surface';
@@ -2021,7 +2028,9 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     ? `w-full resize-none bg-transparent px-4 pb-1.5 text-sm leading-[var(--lobster-leading-sm)] text-foreground placeholder:dark:text-foregroundSecondary/60 placeholder:text-secondary/60 focus:outline-none min-h-[${minHeight}px] max-h-[${maxHeight}px] ${hasActiveContext ? 'pt-1.5' : 'pt-2'}`
     : isLarge
     ? `w-full resize-none bg-transparent px-4 pb-2 text-foreground placeholder:dark:text-foregroundSecondary/60 placeholder:text-secondary/60 focus:outline-none min-h-[${minHeight}px] max-h-[${maxHeight}px] ${
-      useHomeContextLayout
+      useHomeHeroLayout
+        ? `${hasActiveContext ? 'pt-3' : 'pt-4'} px-4 text-[14px] leading-6 placeholder:text-[#8f8f8f]`
+        : useHomeContextLayout
         ? `${hasActiveContext ? 'pt-2' : 'pt-3'} text-sm leading-[var(--lobster-leading-prompt)]`
         : `${hasActiveContext ? 'pt-2' : 'pt-2.5'} text-[length:var(--lobster-text-promptLarge)] leading-[var(--lobster-leading-promptLarge)]`
     }`
@@ -2712,6 +2721,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
   const useLargeToolbarCompactLayout = isLargeToolbarCompact && !useHomeContextLayout;
   const largeToolbarGapClass = useLargeToolbarCompactLayout ? 'gap-1.5' : 'gap-3';
   const largeToolbarControlGapClass = useLargeToolbarCompactLayout ? 'gap-1' : 'gap-2';
+  const largeToolbarPaddingClass = useHomeHeroLayout ? 'px-4 pb-3 pt-1' : `px-4 ${isCompact ? 'pb-1.5 pt-0.5' : 'pb-2 pt-1.5'}`;
   const largeModelTriggerMaxWidthClassName = useLargeToolbarCompactLayout ? 'max-w-[150px]' : undefined;
 
   // Sync when config is updated elsewhere (e.g. Settings panel)
@@ -2965,8 +2975,8 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       <MediaModelPicker draftKey={draftKey} disabled={disabled || voiceInputLocksEditing} />
     </div>
   );
-  const largeSendButtonSizeClass = useCompactSendButton ? 'h-7 w-7' : 'h-8 w-8';
-  const largeSendIconSizeClass = useCompactSendButton ? 'h-4 w-4' : 'h-[18px] w-[18px]';
+  const largeSendButtonSizeClass = useCompactSendButton ? 'h-7 w-7' : useHomeHeroLayout ? 'h-9 w-9' : 'h-8 w-8';
+  const largeSendIconSizeClass = useCompactSendButton ? 'h-4 w-4' : useHomeHeroLayout ? 'h-4 w-4' : 'h-[18px] w-[18px]';
   const largeVoiceInputButton = !remoteManaged ? renderVoiceInputButton(
     `flex ${largeSendButtonSizeClass} shrink-0 items-center justify-center rounded-full`,
     largeSendIconSizeClass,
@@ -2993,8 +3003,12 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       disabled={!canUseSubmitButton}
       className={`flex ${largeSendButtonSizeClass} shrink-0 items-center justify-center rounded-full transition-all ${
         canUseSubmitButton
-          ? 'bg-neutral-950 text-white shadow-subtle hover:bg-neutral-800 active:scale-95 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200'
-          : 'cursor-not-allowed bg-neutral-300 text-white dark:bg-neutral-700 dark:text-neutral-500'
+          ? useHomeHeroLayout
+            ? 'bg-[#ff9fa3] text-white shadow-[0_8px_18px_rgba(255,139,148,0.32)] hover:bg-[#ff9096] active:scale-95'
+            : 'bg-neutral-950 text-white shadow-subtle hover:bg-neutral-800 active:scale-95 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200'
+          : useHomeHeroLayout
+            ? 'cursor-not-allowed bg-[#ffb8bd] text-white opacity-80'
+            : 'cursor-not-allowed bg-neutral-300 text-white dark:bg-neutral-700 dark:text-neutral-500'
       }`}
       aria-label={i18nService.t('sendMessage')}
       title={sendButtonTitle}
@@ -3740,7 +3754,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                   onDismiss={() => setMentionPickerOpen(false)}
                 />
               )}
-              <div ref={largeToolbarRef} className={`relative flex items-center justify-between ${largeToolbarGapClass} px-4 ${isCompact ? 'pb-1.5 pt-0.5' : 'pb-2 pt-1.5'}`}>
+              <div ref={largeToolbarRef} className={`relative flex items-center justify-between ${largeToolbarGapClass} ${largeToolbarPaddingClass}`}>
                 {voiceRecordingUiState.showFooterRecordingStatus && (
                   <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 justify-center">
                     <VoiceInputRecordingStatus

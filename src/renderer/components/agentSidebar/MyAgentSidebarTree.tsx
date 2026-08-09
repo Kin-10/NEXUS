@@ -498,10 +498,10 @@ const MyAgentSidebarTree: React.FC<MyAgentSidebarTreeProps> = ({
   }, [agentNodes, batchAgentId, onBatchSelectableItemsChange]);
 
   return (
-    <div className="pb-3" role="tree" aria-label={i18nService.t('myAgents')}>
+    <div className="space-y-1 pb-3" role="tree" aria-label={i18nService.t('myAgents')}>
       {hasPinnedAgents && (
-        <div className="space-y-0.5">
-          <div className="sticky top-0 z-30 -ml-[6px] flex h-10 w-[calc(100%+12px)] items-center bg-surface-raised pl-3 pr-1">
+        <div className="space-y-2">
+          <div className="sticky top-0 z-30 flex h-9 items-center bg-white px-1">
             <h2 className="min-w-0 truncate text-sm font-normal text-secondary">
               {i18nService.t('myAgentSidebarPinned')}
             </h2>
@@ -509,13 +509,6 @@ const MyAgentSidebarTree: React.FC<MyAgentSidebarTreeProps> = ({
           {renderSortableAgentGroup(pinnedAgentNodes)}
         </div>
       )}
-
-      <MyAgentSidebarHeader
-        onCreateAgent={() => {
-          setCreateAgentSource('home_agent_sidebar');
-          setIsCreateOpen(true);
-        }}
-      />
 
       {agentNodes.length === 0 ? (
         <div className="px-3 py-6 text-center">
@@ -534,10 +527,17 @@ const MyAgentSidebarTree: React.FC<MyAgentSidebarTreeProps> = ({
           </button>
         </div>
       ) : projectAgentNodes.length > 0 ? (
-        <div className="space-y-0.5 px-0">
+        <div className="space-y-2 px-0">
           {renderSortableAgentGroup(projectAgentNodes)}
         </div>
       ) : null}
+
+      <MyAgentSidebarHeader
+        onCreateAgent={() => {
+          setCreateAgentSource('home_agent_sidebar');
+          setIsCreateOpen(true);
+        }}
+      />
 
       <AgentCreateModal
         isOpen={isCreateOpen}

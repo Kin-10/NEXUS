@@ -13,10 +13,7 @@ const MyAgentSidebarHeader: React.FC<MyAgentSidebarHeaderProps> = ({
   onCreateAgent,
 }) => {
   return (
-    <div className="group sticky top-0 z-30 -ml-[6px] flex h-10 w-[calc(100%+12px)] items-center justify-between bg-surface-raised pl-3 pr-1">
-      <h2 className="min-w-0 truncate text-sm font-normal text-secondary">
-        {i18nService.t('myAgents')}
-      </h2>
+    <div className="group sticky top-0 z-30 bg-white pb-2 pt-2">
       <Tooltip
         content={i18nService.t('createNewAgent')}
         position={TooltipPosition.Bottom}
@@ -27,10 +24,11 @@ const MyAgentSidebarHeader: React.FC<MyAgentSidebarHeaderProps> = ({
         <button
           type="button"
           onClick={onCreateAgent}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-foreground/60 transition-colors hover:text-foreground"
+          className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg border border-[#e7e7e7] bg-white text-[12px] font-medium text-[#555555] shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-colors hover:border-[#d7d7d7] hover:bg-[#fafafa] hover:text-[#111111]"
           aria-label={i18nService.t('createNewAgent')}
         >
           <Plus className="h-4 w-4" />
+          <span>{i18nService.t('createNewAgent')}</span>
         </button>
       </Tooltip>
     </div>

@@ -41,18 +41,19 @@ const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions, selectedAction
             type="button"
             aria-pressed={isSelected}
             onClick={() => onActionSelect(action.id)}
-            className={`group flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[length:var(--lobster-text-sidebarCompact)] font-normal leading-5 transition-all duration-200 ease-out active:translate-y-0 active:scale-[0.97] ${
+            className={`group flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px] font-medium leading-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-200 ease-out active:translate-y-0 active:scale-[0.97] ${
               isSelected
-                ? 'border-[color-mix(in_srgb,var(--lobster-primary)_50%,transparent)] bg-primary-muted text-primary'
-                : 'border-border-subtle bg-surface text-secondary hover:-translate-y-px hover:border-primary/30 hover:bg-surface-raised hover:text-foreground hover:shadow-subtle'
+                ? 'border-[color-mix(in_srgb,var(--lobster-primary)_45%,transparent)] bg-primary-muted text-primary'
+                : 'border-[#e5e5e5] bg-white text-[#555555] hover:-translate-y-px hover:border-[#d4d4d4] hover:bg-[#fbfbfb] hover:text-[#111111]'
             }`}
           >
             {IconComponent && (
-              <IconComponent
-                className={`h-3.5 w-3.5 transition-colors duration-200 ${
-                  isSelected ? 'text-primary' : 'text-secondary group-hover:text-primary'
-                }`}
-              />
+              <span
+                className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
+                style={{ color: isSelected ? undefined : action.color }}
+              >
+                <IconComponent className="h-4 w-4 transition-colors duration-200" />
+              </span>
             )}
             <span>{action.label}</span>
           </button>

@@ -1,11 +1,11 @@
 
-import { Message } from '@icon-park/react';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { i18nService } from '../../services/i18n';
 import { selectUnreadSessionIds } from '../../store/selectors/coworkSelectors';
 import type { CoworkSessionSummary } from '../../types/cowork';
+import { Message } from '../icons/iconParkCompat';
 import { iconParkOutlineProps } from '../icons/iconStyle';
 import CoworkSessionItem from './CoworkSessionItem';
 

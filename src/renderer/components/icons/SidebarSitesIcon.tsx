@@ -1,6 +1,6 @@
-import { Globe } from '@icon-park/react';
 import React from 'react';
 
+import { Globe } from './iconParkCompat';
 import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const SidebarSitesIcon: React.FC<AppIconProps> = ({ className = 'h-4 w-4' }) => (

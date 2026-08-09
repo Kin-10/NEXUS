@@ -1,5 +1,4 @@
 
-import { Message } from '@icon-park/react';
 import React, { useCallback, useEffect, useMemo,useRef, useState } from 'react';
 import { useDispatch,useSelector } from 'react-redux';
 
@@ -18,6 +17,7 @@ import CoworkPermissionModal from './components/cowork/CoworkPermissionModal';
 import CoworkQuestionWizard from './components/cowork/CoworkQuestionWizard';
 import EngineFailureOverlay from './components/cowork/EngineFailureOverlay';
 import EngineStartupOverlay from './components/cowork/EngineStartupOverlay';
+import { Message } from './components/icons/iconParkCompat';
 import { iconParkOutlineProps } from './components/icons/iconStyle';
 import KitsView from './components/kits/KitsView';
 import { McpView } from './components/mcp';
@@ -1399,7 +1399,11 @@ const App: React.FC = () => {
           <div
             data-skin-cowork-frame={mainView === 'cowork' ? 'true' : undefined}
             data-skin-management-frame={mainView !== 'cowork' ? 'true' : undefined}
-            className="relative h-full min-h-0 rounded-xl border border-border bg-background overflow-hidden"
+            className={`relative h-full min-h-0 overflow-hidden ${
+              mainView === 'cowork'
+                ? 'bg-white'
+                : 'rounded-xl border border-border bg-background'
+            }`}
           >
             {mainView !== 'cowork' && (
               <SkinBackdrop variant={SkinBackdropVariant.Management} />

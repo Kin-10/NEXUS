@@ -65,15 +65,15 @@ const AGENT_TASKS_TRANSITION_MS = 200;
 
 const AgentAvatar: React.FC<{ agent: AgentSidebarAgentNode }> = ({ agent }) => {
   if (shouldUseDefaultAgentIcon(agent)) {
-    return <DefaultAgentIcon className="h-4 w-4" />;
+    return <DefaultAgentIcon className="h-6 w-6" />;
   }
 
   return (
     <AgentAvatarIcon
       value={agent.icon}
-      className="h-4 w-4"
-      iconClassName="h-4 w-4"
-      legacyClassName="text-[14px]"
+      className="h-6 w-6"
+      iconClassName="h-6 w-6"
+      legacyClassName="text-[16px]"
       fallbackText={getAgentDisplayName(agent).trim().slice(0, 1).toUpperCase() || 'A'}
     />
   );
@@ -136,9 +136,9 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
   const disabledMenuItemClassName =
     'flex w-full cursor-not-allowed items-center gap-2 whitespace-nowrap px-2.5 py-1.5 text-left text-[13px] text-secondary/40';
   const rowActionButtonClassName =
-    'inline-flex h-5 w-5 items-center justify-center rounded text-foreground opacity-[0.3] transition-opacity hover:opacity-[0.46]';
+    'inline-flex h-6 w-6 items-center justify-center rounded-lg text-foreground opacity-[0.34] transition-opacity hover:bg-white/70 hover:opacity-70';
   const rowEditActionButtonClassName =
-    'inline-flex h-5 w-5 items-center justify-center rounded text-foreground opacity-[0.3] transition-opacity hover:opacity-[0.46]';
+    'inline-flex h-6 w-6 items-center justify-center rounded-lg text-foreground opacity-[0.34] transition-opacity hover:bg-white/70 hover:opacity-70';
   const menuIconClassName = 'h-3.5 w-3.5';
 
   const calculateMenuPosition = useCallback(() => {
@@ -283,26 +283,31 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
   };
 
   return (
-    <div className="space-y-0.5">
-      <div className={`group sticky top-10 ${isMenuOpen ? 'z-50' : 'z-20'} -ml-[6px] h-7 w-[calc(100%+12px)] bg-surface-raised`}>
+    <div className="space-y-1.5">
+      <div className={`group ${isMenuOpen ? 'z-50' : 'z-20'} relative h-[48px] rounded-xl bg-[#f1f1f1]`}>
         <button
           type="button"
           onClick={handleAgentClick}
-          className="flex h-full w-full items-center gap-2 rounded-md py-0 pl-3.5 pr-12 text-left text-sm font-normal text-foreground transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
+          className="flex h-full w-full items-center gap-2 rounded-xl py-0 pl-3 pr-3 text-left text-[13px] font-semibold text-[#111111] transition-colors hover:bg-[#ececec]"
           role="treeitem"
           aria-level={1}
           aria-expanded={agent.isExpanded}
         >
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center leading-none text-foreground">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/80 leading-none text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             <AgentAvatar agent={agent} />
           </span>
           <span className="min-w-0 flex-1 truncate">
             {agentName}
           </span>
+          {isMainAgent && (
+            <span className="ml-auto shrink-0 rounded-lg bg-white/80 px-2 py-1 text-[11px] font-medium text-[#8a8a8a]">
+              {i18nService.t('folderIconDefault')}
+            </span>
+          )}
         </button>
 
         <div
-          className={`absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5 transition-opacity ${
+          className={`absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 transition-opacity ${
             isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
           }`}
         >
@@ -328,7 +333,7 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
             className={rowActionButtonClassName}
             aria-label={i18nService.t('coworkSessionActions')}
           >
-            <EllipsisHorizontalIcon className="h-3.5 w-3.5" />
+              <EllipsisHorizontalIcon className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
@@ -336,7 +341,7 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
             className={rowEditActionButtonClassName}
             aria-label={i18nService.t('myAgentSidebarNewTask')}
           >
-            <ComposeIcon className="h-3.5 w-3.5" />
+              <ComposeIcon className="h-3.5 w-3.5" />
           </button>
         </div>
 
