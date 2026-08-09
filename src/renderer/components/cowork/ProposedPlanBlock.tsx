@@ -26,6 +26,7 @@ interface ProposedPlanBlockProps {
   showConfirmationActions?: boolean;
   onConfirmExecution?: () => void;
   onAdjustPlan?: () => void;
+  forceExpanded?: boolean;
 }
 
 const ACTION_FEEDBACK_DURATION_MS = 1500;
@@ -43,6 +44,7 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
   showConfirmationActions = false,
   onConfirmExecution,
   onAdjustPlan,
+  forceExpanded = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isDownloaded, setIsDownloaded] = useState(false);
@@ -139,8 +141,9 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
     onAdjustPlan?.();
   }, [content, onAdjustPlan]);
 
+  const contentExpanded = isExpanded || forceExpanded;
   const toggleLabel = i18nService.t(
-    isExpanded ? 'coworkProposedPlanCollapse' : 'coworkProposedPlanExpand',
+    contentExpanded ? 'coworkProposedPlanCollapse' : 'coworkProposedPlanExpand',
   );
 
   return (
@@ -148,7 +151,10 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
       className="overflow-hidden rounded-lg border border-primary/20 bg-primary/5"
       aria-label={i18nService.t('coworkProposedPlanTitle')}
     >
-      <header className="flex min-h-12 items-center justify-between gap-3 border-b border-primary/10 px-4 py-2">
+      <header
+        className="flex min-h-12 items-center justify-between gap-3 border-b border-primary/10 px-4 py-2"
+        data-cowork-search-exclude="true"
+      >
         <div className="min-w-0 text-sm font-medium text-primary">
           {i18nService.t('coworkProposedPlanTitle')}
         </div>
@@ -179,10 +185,10 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
           />
           <MessageActionButton
             label={toggleLabel}
-            onClick={handleToggleExpanded}
-            expanded={isExpanded}
+            onClick={forceExpanded ? event => event.stopPropagation() : handleToggleExpanded}
+            expanded={contentExpanded}
           >
-            {isExpanded ? (
+            {contentExpanded ? (
               <CaretUp className="h-4 w-4" />
             ) : (
               <CaretDown className="h-4 w-4" />
@@ -190,19 +196,23 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
           </MessageActionButton>
         </div>
       </header>
-      {isExpanded && (
+      {contentExpanded && (
         <div className="px-4 py-3 sm:px-5 sm:py-4">
           <MarkdownContent
             content={content}
             className="prose dark:prose-invert max-w-none"
             resolveLocalFilePath={resolveLocalFilePath}
             showRevealInFolderAction
+            forceExpanded={forceExpanded}
             onImageClick={onImageClick}
           />
         </div>
       )}
       {showConfirmationActions && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary/10 px-4 py-3 sm:px-5">
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 border-t border-primary/10 px-4 py-3 sm:px-5"
+          data-cowork-search-exclude="true"
+        >
           <div className="text-sm font-medium text-secondary">
             {i18nService.t('coworkPlanConfirmationReady')}
           </div>
