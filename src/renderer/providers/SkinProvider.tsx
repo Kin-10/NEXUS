@@ -225,8 +225,20 @@ export const SkinProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     });
   }, [refresh]);
 
+  const syncedSkinIdRef = useRef<string | null | undefined>(undefined);
+
   useEffect(() => {
     if (isLoading) return;
+
+    // refresh() toggles isLoading around every appearance mutation. Only
+    // re-sync when the active skin identity actually changes; otherwise a
+    // day/night toggle can be overwritten by restoreDefaultTheme().
+    const nextSkinId = activeSkin?.id ?? null;
+    if (syncedSkinIdRef.current === nextSkinId) {
+      return;
+    }
+    syncedSkinIdRef.current = nextSkinId;
+
     void enqueueAppearanceMutation(
       () => synchronizeSkinTheme(activeSkin),
     ).catch((error) => {

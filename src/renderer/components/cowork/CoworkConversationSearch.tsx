@@ -1,9 +1,10 @@
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
 import React, { useEffect, useRef } from 'react';
+
+import {
+  ArrowDown,
+  ArrowUp,
+  X,
+} from '@/components/icons/iconParkCompat';
 
 import { i18nService } from '../../services/i18n';
 import SidebarSearchIcon from '../icons/SidebarSearchIcon';
@@ -112,7 +113,7 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
           aria-label={i18nService.t('coworkConversationSearchClose')}
           title={i18nService.t('coworkConversationSearchClose')}
         >
-          <XMarkIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       </div>
       {shouldShowResultRow && (
@@ -127,7 +128,7 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
                 aria-label={i18nService.t('coworkConversationSearchPrevious')}
                 title={i18nService.t('coworkConversationSearchPrevious')}
               >
-                <ArrowUpIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -137,7 +138,7 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
                 aria-label={i18nService.t('coworkConversationSearchNext')}
                 title={i18nService.t('coworkConversationSearchNext')}
               >
-                <ArrowDownIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           )}

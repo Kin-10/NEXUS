@@ -65,6 +65,7 @@ import {
   MessageSquare as LMessageSquare,
   Mic as LMicrophone,
   Minus as LMinus,
+  Moon as LMoon,
   Newspaper as LNewspaper,
   NotebookPen as LNotebookPen,
   PanelLeftClose as LPanelLeftClose,
@@ -208,6 +209,7 @@ export const Copy = createIcon(LCopy);
 export const Cpu = createIcon(LCpu);
 export const Cube = createIcon(LBox);
 export const DeviceMobile = createIcon(LSmartphone);
+export const Moon = createIcon(LMoon);
 export const DotsThree = createIcon(LEllipsis);
 export const DotsThreeVertical = createIcon(LEllipsisVertical);
 export const DownloadSimple = createIcon(LDownload);

@@ -385,7 +385,15 @@ const App: React.FC = () => {
     });
   }, [isInitialized, defaultSelectedModel?.id, defaultSelectedModel?.providerKey]);
 
+  const handleToggleAppearance = useCallback(() => {
+    window.dispatchEvent(new CustomEvent(CoworkUiEvent.ToggleAppearance));
+  }, []);
+
   const handleShowSettings = useCallback((options?: SettingsOpenOptions) => {
+    if (options?.initialTab === 'appearance') {
+      handleToggleAppearance();
+      return;
+    }
     setSettingsOptions((current) => ({
       initialTab: options?.initialTab,
       notice: options?.notice,
@@ -394,7 +402,7 @@ const App: React.FC = () => {
       requestId: current.requestId + 1,
     }));
     setShowSettings(true);
-  }, []);
+  }, [handleToggleAppearance]);
 
   const handleShowSkills = useCallback(() => {
     setMainView('skills');
@@ -1428,7 +1436,7 @@ const App: React.FC = () => {
             data-skin-management-frame={mainView !== 'cowork' ? 'true' : undefined}
             className={`relative h-full min-h-0 overflow-hidden ${
               mainView === 'cowork'
-                ? 'bg-white'
+                ? 'bg-background'
                 : 'rounded-xl border border-border bg-background'
             }`}
           >

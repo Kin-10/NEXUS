@@ -1,4 +1,5 @@
 
+import { AgentId } from '@shared/agent';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -10,17 +11,26 @@ import { agentService } from '../../services/agent';
 import { i18nService } from '../../services/i18n';
 import type { RootState } from '../../store';
 import type { PresetAgent } from '../../types/agent';
+import { getAgentDisplayName, isDefaultAgentId } from '../../utils/agentDisplay';
 import ComposeIcon from '../icons/ComposeIcon';
 import SidebarToggleIcon from '../icons/SidebarToggleIcon';
 import AgentAvatarIcon from './AgentAvatarIcon';
 import AgentCreateModal from './AgentCreateModal';
 import AgentSettingsPanel from './AgentSettingsPanel';
 
+export const AgentsViewVariant = {
+  Page: 'page',
+  Panel: 'panel',
+} as const;
+export type AgentsViewVariant = typeof AgentsViewVariant[keyof typeof AgentsViewVariant];
+
 interface AgentsViewProps {
   isSidebarCollapsed?: boolean;
   onToggleSidebar?: () => void;
   onNewChat?: () => void;
   updateBadge?: React.ReactNode;
+  /** Page = full management view chrome; Panel = embeddable body for modals. */
+  variant?: AgentsViewVariant;
 }
 
 const AgentsView: React.FC<AgentsViewProps> = ({
@@ -28,9 +38,11 @@ const AgentsView: React.FC<AgentsViewProps> = ({
   onToggleSidebar,
   onNewChat,
   updateBadge,
+  variant = AgentsViewVariant.Page,
 }) => {
   const isMac = window.electron.platform === 'darwin';
   const isWindows = window.electron.platform === 'win32';
+  const isPanel = variant === AgentsViewVariant.Panel;
   const agents = useSelector((state: RootState) => state.agent.agents);
   const currentAgentId = useSelector((state: RootState) => state.agent.currentAgentId);
   const [presets, setPresets] = useState<PresetAgent[]>([]);
@@ -48,9 +60,10 @@ const AgentsView: React.FC<AgentsViewProps> = ({
     agentService.getPresets().then(setPresets);
   }, [agents]);
 
-  const enabledAgents = agents.filter((a) => a.enabled && a.id !== 'main');
-  const presetAgents = enabledAgents.filter((a) => a.source === 'preset');
-  const customAgents = enabledAgents.filter((a) => a.source === 'custom');
+  const enabledAgents = agents.filter((a) => a.enabled);
+  const mainAgent = enabledAgents.find((a) => isDefaultAgentId(a.id));
+  const presetAgents = enabledAgents.filter((a) => a.source === 'preset' && !isDefaultAgentId(a.id));
+  const customAgents = enabledAgents.filter((a) => a.source === 'custom' && !isDefaultAgentId(a.id));
   const uninstalledPresets = presets.filter((p) => !p.installed);
 
   const handleAddPreset = async (presetId: string) => {
@@ -62,87 +75,39 @@ const AgentsView: React.FC<AgentsViewProps> = ({
     }
   };
 
-  return (
-    <div className="flex-1 flex flex-col bg-background h-full">
-      {/* Header */}
-      <div className="draggable flex h-12 items-center justify-between px-4 border-b border-border shrink-0">
-        <div className="flex items-center space-x-3 h-8">
-          {isSidebarCollapsed && !isWindows && (
-            <div className={`non-draggable flex items-center gap-1 ${isMac ? 'pl-[68px]' : ''}`}>
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
-              >
-                <SidebarToggleIcon className="h-4 w-4" isCollapsed={true} />
-              </button>
-              <button
-                type="button"
-                onClick={onNewChat}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
-              >
-                <ComposeIcon className="h-4 w-4" />
-              </button>
-              {updateBadge}
-            </div>
-          )}
-          <h1 className="text-lg font-semibold text-foreground">
-            {i18nService.t('myAgents')}
-          </h1>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 [scrollbar-gutter:stable]">
-        <div className="max-w-3xl mx-auto px-4 py-6">
-          {/* Subtitle */}
-          <p className="text-sm text-secondary mb-6">
+  const content = (
+    <div className={isPanel ? 'h-full overflow-y-auto min-h-0 [scrollbar-gutter:stable]' : 'flex-1 overflow-y-auto min-h-0 [scrollbar-gutter:stable]'}>
+      <div className={isPanel ? 'px-1 py-1' : 'max-w-3xl mx-auto px-4 py-6'}>
+        {!isPanel && (
+          <p className="mb-6 text-sm text-secondary">
             {i18nService.t('agentsSubtitle')}
           </p>
+        )}
 
-          {/* Preset Agents Section */}
-          {(presetAgents.length > 0 || uninstalledPresets.length > 0) && (
-            <div className="mb-8">
-              <h2 className="text-sm font-medium text-secondary mb-3">
-                {i18nService.t('presetAgents')}
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {/* Installed presets */}
-                {presetAgents.map((agent) => (
-                  <AgentCard
-                    key={agent.id}
-                    icon={agent.icon}
-                    name={agent.name}
-                    description={agent.description}
-                    isActive={agent.id === currentAgentId}
-                    onClick={() => setSettingsAgentId(agent.id)}
-                  />
-                ))}
-                {/* Uninstalled presets */}
-                {uninstalledPresets.map((preset) => {
-                  const isEn = i18nService.getLanguage() === 'en';
-                  return (
-                    <UninstalledPresetCard
-                      key={preset.id}
-                      icon={preset.icon}
-                      name={isEn && preset.nameEn ? preset.nameEn : preset.name}
-                      description={isEn && preset.descriptionEn ? preset.descriptionEn : preset.description}
-                      isAdding={addingPreset === preset.id}
-                      onAdd={() => handleAddPreset(preset.id)}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Custom Agents Section */}
-          <div>
+        {mainAgent && (
+          <div className="mb-8">
             <h2 className="text-sm font-medium text-secondary mb-3">
-              {i18nService.t('myCustomAgents')}
+              {i18nService.t('myAgents')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {customAgents.map((agent) => (
+              <AgentCard
+                icon={mainAgent.icon}
+                name={getAgentDisplayName(mainAgent)}
+                description={mainAgent.description}
+                isActive={mainAgent.id === currentAgentId || currentAgentId === AgentId.Main}
+                onClick={() => setSettingsAgentId(mainAgent.id)}
+              />
+            </div>
+          </div>
+        )}
+
+        {(presetAgents.length > 0 || uninstalledPresets.length > 0) && (
+          <div className="mb-8">
+            <h2 className="text-sm font-medium text-secondary mb-3">
+              {i18nService.t('presetAgents')}
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {presetAgents.map((agent) => (
                 <AgentCard
                   key={agent.id}
                   icon={agent.icon}
@@ -152,25 +117,89 @@ const AgentsView: React.FC<AgentsViewProps> = ({
                   onClick={() => setSettingsAgentId(agent.id)}
                 />
               ))}
-              {/* Create new agent card */}
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(true)}
-                className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-colors min-h-[140px] cursor-pointer"
-              >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10">
-                  <Plus className="h-5 w-5 text-primary" />
-                </div>
-                <span className="text-sm font-medium text-primary">
-                  {i18nService.t('createNewAgent')}
-                </span>
-              </button>
+              {uninstalledPresets.map((preset) => {
+                const isEn = i18nService.getLanguage() === 'en';
+                return (
+                  <UninstalledPresetCard
+                    key={preset.id}
+                    icon={preset.icon}
+                    name={isEn && preset.nameEn ? preset.nameEn : preset.name}
+                    description={isEn && preset.descriptionEn ? preset.descriptionEn : preset.description}
+                    isAdding={addingPreset === preset.id}
+                    onAdd={() => handleAddPreset(preset.id)}
+                  />
+                );
+              })}
             </div>
+          </div>
+        )}
+
+        <div>
+          <h2 className="text-sm font-medium text-secondary mb-3">
+            {i18nService.t('myCustomAgents')}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {customAgents.map((agent) => (
+              <AgentCard
+                key={agent.id}
+                icon={agent.icon}
+                name={agent.name}
+                description={agent.description}
+                isActive={agent.id === currentAgentId}
+                onClick={() => setSettingsAgentId(agent.id)}
+              />
+            ))}
+            <button
+              type="button"
+              onClick={() => setIsCreateOpen(true)}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-colors min-h-[140px] cursor-pointer"
+            >
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10">
+                <Plus className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-sm font-medium text-primary">
+                {i18nService.t('createNewAgent')}
+              </span>
+            </button>
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      {/* Modals */}
+  return (
+    <div className={isPanel ? 'flex h-full min-h-0 flex-col bg-background' : 'flex-1 flex flex-col bg-background h-full'}>
+      {!isPanel && (
+        <div className="draggable flex h-12 items-center justify-between px-4 border-b border-border shrink-0">
+          <div className="flex items-center space-x-3 h-8">
+            {isSidebarCollapsed && !isWindows && (
+              <div className={`non-draggable flex items-center gap-1 ${isMac ? 'pl-[68px]' : ''}`}>
+                <button
+                  type="button"
+                  onClick={onToggleSidebar}
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
+                >
+                  <SidebarToggleIcon className="h-4 w-4" isCollapsed={true} />
+                </button>
+                <button
+                  type="button"
+                  onClick={onNewChat}
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
+                >
+                  <ComposeIcon className="h-4 w-4" />
+                </button>
+                {updateBadge}
+              </div>
+            )}
+            <h1 className="text-lg font-semibold text-foreground">
+              {i18nService.t('myAgents')}
+            </h1>
+          </div>
+        </div>
+      )}
+
+      {content}
+
       <AgentCreateModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}

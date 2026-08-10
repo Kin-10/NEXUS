@@ -2018,7 +2018,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     ? 'relative rounded-2xl border border-border bg-surface shadow-subtle'
     : isLarge
     ? useHomeHeroLayout
-      ? 'relative rounded-[14px] border border-[#ededed] bg-white shadow-[0_12px_28px_rgba(0,0,0,0.10)]'
+      ? 'relative rounded-[14px] border border-border bg-surface shadow-card'
       : useHomeContextLayout
       ? 'relative rounded-2xl'
       : `relative rounded-2xl border border-border bg-surface ${showReadOnlyContext ? '' : 'shadow-card'}`
@@ -2029,7 +2029,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     : isLarge
     ? `w-full resize-none bg-transparent px-4 pb-2 text-foreground placeholder:dark:text-foregroundSecondary/60 placeholder:text-secondary/60 focus:outline-none min-h-[${minHeight}px] max-h-[${maxHeight}px] ${
       useHomeHeroLayout
-        ? `${hasActiveContext ? 'pt-3' : 'pt-4'} px-4 text-[14px] leading-6 placeholder:text-[#8f8f8f]`
+        ? `${hasActiveContext ? 'pt-3' : 'pt-4'} px-4 text-[14px] leading-6`
         : useHomeContextLayout
         ? `${hasActiveContext ? 'pt-2' : 'pt-3'} text-sm leading-[var(--lobster-leading-prompt)]`
         : `${hasActiveContext ? 'pt-2' : 'pt-2.5'} text-[length:var(--lobster-text-promptLarge)] leading-[var(--lobster-leading-promptLarge)]`
@@ -3003,12 +3003,8 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       disabled={!canUseSubmitButton}
       className={`flex ${largeSendButtonSizeClass} shrink-0 items-center justify-center rounded-full transition-all ${
         canUseSubmitButton
-          ? useHomeHeroLayout
-            ? 'bg-[#ff9fa3] text-white shadow-[0_8px_18px_rgba(255,139,148,0.32)] hover:bg-[#ff9096] active:scale-95'
-            : 'bg-neutral-950 text-white shadow-subtle hover:bg-neutral-800 active:scale-95 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200'
-          : useHomeHeroLayout
-            ? 'cursor-not-allowed bg-[#ffb8bd] text-white opacity-80'
-            : 'cursor-not-allowed bg-neutral-300 text-white dark:bg-neutral-700 dark:text-neutral-500'
+          ? 'bg-neutral-950 text-white shadow-subtle hover:bg-neutral-800 active:scale-95 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200'
+          : 'cursor-not-allowed bg-neutral-300 text-white dark:bg-neutral-700 dark:text-neutral-500'
       }`}
       aria-label={i18nService.t('sendMessage')}
       title={sendButtonTitle}

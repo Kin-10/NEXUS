@@ -278,6 +278,13 @@ class ThemeService {
     appearance: ThemeAppearance,
     preferredThemeId?: string,
   ): ThemeDefinition | undefined {
+    // Product appearance only exposes day/night (classic light/dark).
+    const classicThemeId = appearance === 'dark' ? 'classic-dark' : 'classic-light';
+    const classicTheme = this.getThemeDefinition(classicThemeId);
+    if (classicTheme) {
+      return classicTheme;
+    }
+
     const preferredTheme = preferredThemeId
       ? this.getThemeDefinition(preferredThemeId)
       : undefined;

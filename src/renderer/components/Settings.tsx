@@ -14,7 +14,6 @@ import {
   Globe,
   Info,
   MagnifyingGlass,
-  Sun,
   Trash,
   Warning,
   Wrench,
@@ -45,7 +44,7 @@ import {
   resolveCodingPlanBaseUrl,
   resolveModelRuntimeProfile,
 } from '../../shared/providers';
-import { type AppConfig, defaultConfig, FontPreferences, getProviderDisplayName, getVisibleProviders, isCustomProvider, normalizeFontPreference, resolveArtifactAutoPreviewEnabled, ShortcutAction, type ShortcutConfig } from '../config';
+import { type AppConfig, defaultConfig, getProviderDisplayName, getVisibleProviders, isCustomProvider, resolveArtifactAutoPreviewEnabled, ShortcutAction, type ShortcutConfig } from '../config';
 import { APP_ID, EXPORT_FORMAT_TYPE, EXPORT_PASSWORD } from '../constants/app';
 import { useSkin } from '../providers/SkinProvider';
 import { apiService } from '../services/api';
@@ -56,12 +55,6 @@ import { i18nService, LanguageType } from '../services/i18n';
 import { imService } from '../services/im';
 import { LogReporterAction, reportYdAnalyzer } from '../services/logReporter';
 import { formatShortcutForDisplay, getShortcutConflictSignature, matchesShortcut } from '../services/shortcuts';
-import {
-  type ThemeDefaultChangedDetail,
-  themeService,
-  ThemeServiceEvent,
-} from '../services/theme';
-import { applyTypographyPreferences } from '../services/typography';
 import type { RootState } from '../store';
 import { selectCoworkConfig } from '../store/selectors/coworkSelectors';
 import { setAvailableModels } from '../store/slices/modelSlice';
@@ -114,7 +107,6 @@ import {
 import ModelSettingsSection, { DeleteProviderConfirmDialog, ModelEditorDialog } from './settings/ModelSettingsSection';
 import EmailSkillConfig from './skills/EmailSkillConfig';
 import SkinPresentationScope from './skin/SkinPresentationScope';
-import SkinSettingsSection from './skin/SkinSettingsSection';
 import ThemedSelect from './ui/ThemedSelect';
 
 type TabType = 'general' | 'appearance' | 'coworkAgentEngine' | 'model' | 'browserWebAccess' | 'coworkMemory' | 'coworkDreaming' | 'shortcuts' | 'im' | 'email' | 'plugins' | 'about';
@@ -189,7 +181,6 @@ type ShortcutCommandDefinition = {
 
 const SETTINGS_TAB_SHORTCUT_ACTIONS: Partial<Record<ShortcutAction, TabType>> = {
   [ShortcutAction.OpenSettingsGeneral]: 'general',
-  [ShortcutAction.OpenSettingsAppearance]: 'appearance',
   [ShortcutAction.OpenSettingsAgentEngine]: 'coworkAgentEngine',
   [ShortcutAction.OpenSettingsModel]: 'model',
   [ShortcutAction.OpenSettingsIm]: 'im',
@@ -204,7 +195,6 @@ const SETTINGS_TAB_SHORTCUT_ACTIONS: Partial<Record<ShortcutAction, TabType>> = 
 
 const SettingsAnalyticsSource = {
   AgentEngine: 'settings_agent_engine',
-  Appearance: 'settings_appearance',
   Browser: 'settings_browser',
   Dreaming: 'settings_dreaming',
   General: 'settings_general',
@@ -608,20 +598,6 @@ const reportGeneralSettingChanged = (
   });
 };
 
-const reportAppearanceSettingChanged = (
-  settingKey: string,
-  settingValue: SettingsAnalyticsValue,
-  previousValue?: SettingsAnalyticsValue,
-): void => {
-  void reportYdAnalyzer({
-    action: LogReporterAction.AppearanceSettingChanged,
-    settingKey,
-    settingValue,
-    previousValue,
-    source: SettingsAnalyticsSource.Appearance,
-  });
-};
-
 const reportBrowserSettingChanged = (
   params: {
     blockedHostnameCount: number;
@@ -785,7 +761,6 @@ const AGENT_TASK_SLOT_COMMANDS: ShortcutCommandDefinition[] = [
 
 const SETTINGS_TAB_SHORTCUT_COMMANDS: ShortcutCommandDefinition[] = [
   { key: ShortcutAction.OpenSettingsGeneral, tabLabelKey: 'general' },
-  { key: ShortcutAction.OpenSettingsAppearance, tabLabelKey: 'appearance' },
   { key: ShortcutAction.OpenSettingsAgentEngine, tabLabelKey: 'coworkAgentEngine' },
   { key: ShortcutAction.OpenSettingsModel, tabLabelKey: 'settingsCustomModel' },
   { key: ShortcutAction.OpenSettingsIm, tabLabelKey: 'imBot' },
@@ -1345,48 +1320,8 @@ const SettingsRow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="px-4 py-3.5">{children}</div>
 );
 
-const SettingsNumberInputRow: React.FC<{
-  id: string;
-  title: string;
-  description: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-}> = ({ id, title, description, value, min, max, onChange }) => (
-  <div className="flex items-center justify-between gap-4">
-    <div className="min-w-0 flex-1">
-      <label htmlFor={id} className="block text-sm font-medium text-foreground">
-        {title}
-      </label>
-      <p className="mt-1 text-sm text-secondary">
-        {description}
-      </p>
-    </div>
-    <div className="flex shrink-0 items-center gap-2">
-      <input
-        id={id}
-        type="number"
-        min={min}
-        max={max}
-        step={1}
-        value={value}
-        onChange={(event) => {
-          onChange(normalizeFontPreference(event.currentTarget.value, value, min, max));
-        }}
-        onBlur={(event) => {
-          onChange(normalizeFontPreference(event.currentTarget.value, value, min, max));
-        }}
-        className="h-8 w-16 rounded-lg border border-border bg-surface px-2 text-center text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
-      />
-      <span className="text-sm text-secondary">px</span>
-    </div>
-  </div>
-);
-
 const Settings: React.FC<SettingsProps> = ({
   onClose,
-  onStartAiSkin,
   initialTab,
   initialTabRequestId,
   notice,
@@ -1397,17 +1332,10 @@ const Settings: React.FC<SettingsProps> = ({
 }) => {
   const dispatch = useDispatch();
   const {
-    activeSkin,
     isAppearanceChanging,
-    selectThemeById,
-    selectThemeMode,
   } = useSkin();
   // 状态
   const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'general');
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [themeId, setThemeId] = useState<string>(themeService.getDefaultThemeId());
-  const [uiFontSize, setUiFontSize] = useState<number>(FontPreferences.UiFontSizeDefault);
-  const [codeFontSize, setCodeFontSize] = useState<number>(FontPreferences.CodeFontSizeDefault);
   const [language, setLanguage] = useState<LanguageType>('zh');
   const [artifactAutoPreviewEnabled, setArtifactAutoPreviewEnabled] = useState(true);
   const [autoLaunch, setAutoLaunchState] = useState(false);
@@ -1442,28 +1370,8 @@ const Settings: React.FC<SettingsProps> = ({
   const [pendingDeleteProvider, setPendingDeleteProvider] = useState<ProviderType | null>(null);
   const [isImportingProviders, setIsImportingProviders] = useState(false);
   const [isExportingProviders, setIsExportingProviders] = useState(false);
-  const initialThemeIdRef = useRef<string>(themeService.getDefaultThemeId());
-  const initialUiFontSizeRef = useRef<number>(FontPreferences.UiFontSizeDefault);
-  const initialCodeFontSizeRef = useRef<number>(FontPreferences.CodeFontSizeDefault);
   const initialLanguageRef = useRef<LanguageType>(i18nService.getLanguage());
   const didSaveRef = useRef(false);
-
-  useEffect(() => {
-    const handleDefaultThemeChanged = (event: Event) => {
-      const detail = (event as CustomEvent<ThemeDefaultChangedDetail>).detail;
-      if (!detail) {
-        return;
-      }
-
-      setTheme(detail.mode);
-      setThemeId(detail.themeId);
-    };
-
-    window.addEventListener(ThemeServiceEvent.DefaultChanged, handleDefaultThemeChanged);
-    return () => {
-      window.removeEventListener(ThemeServiceEvent.DefaultChanged, handleDefaultThemeChanged);
-    };
-  }, []);
 
   // Plugin settings handle (deferred save)
   const pluginsSettingsRef = useRef<PluginsSettingsHandle>(null);
@@ -1967,27 +1875,7 @@ const Settings: React.FC<SettingsProps> = ({
       const config = configService.getConfig();
 
       // Set general settings
-      const resolvedUiFontSize = normalizeFontPreference(
-        config.uiFontSize,
-        FontPreferences.UiFontSizeDefault,
-        FontPreferences.UiFontSizeMin,
-        FontPreferences.UiFontSizeMax,
-      );
-      const resolvedCodeFontSize = normalizeFontPreference(
-        config.codeFontSize,
-        FontPreferences.CodeFontSizeDefault,
-        FontPreferences.CodeFontSizeMin,
-        FontPreferences.CodeFontSizeMax,
-      );
-      const defaultThemeId = themeService.getDefaultThemeId();
-      initialThemeIdRef.current = defaultThemeId;
-      initialUiFontSizeRef.current = resolvedUiFontSize;
-      initialCodeFontSizeRef.current = resolvedCodeFontSize;
       initialLanguageRef.current = config.language;
-      setTheme(config.theme);
-      setThemeId(defaultThemeId);
-      setUiFontSize(resolvedUiFontSize);
-      setCodeFontSize(resolvedCodeFontSize);
       setLanguage(config.language);
       setArtifactAutoPreviewEnabled(
         resolveArtifactAutoPreviewEnabled(config.artifactAutoPreviewEnabled),
@@ -2236,17 +2124,11 @@ const Settings: React.FC<SettingsProps> = ({
   }, []);
 
   useEffect(() => {
-    const initialUiFontSize = initialUiFontSizeRef.current;
-    const initialCodeFontSize = initialCodeFontSizeRef.current;
     const initialLanguage = initialLanguageRef.current;
     return () => {
       if (didSaveRef.current) {
         return;
       }
-      applyTypographyPreferences({
-        uiFontSize: initialUiFontSize,
-        codeFontSize: initialCodeFontSize,
-      });
       i18nService.setLanguage(initialLanguage, { persist: false });
     };
   }, []);
@@ -2290,9 +2172,9 @@ const Settings: React.FC<SettingsProps> = ({
   }, [buildNoticeMessage]);
 
   useEffect(() => {
-    if (initialTab) {
-      setActiveTab(initialTab);
-    }
+    if (!initialTab) return;
+    // Appearance moved to the sidebar rail; keep legacy callers from landing on an empty tab.
+    setActiveTab(initialTab === 'appearance' ? 'general' : initialTab);
   }, [initialTab, initialTabRequestId]);
 
   // Subscribe to language changes
@@ -3437,19 +3319,6 @@ const Settings: React.FC<SettingsProps> = ({
       const previousArtifactAutoPreviewEnabled = resolveArtifactAutoPreviewEnabled(
         previousConfig.artifactAutoPreviewEnabled,
       );
-      const previousThemeId = initialThemeIdRef.current;
-      const previousUiFontSize = normalizeFontPreference(
-        previousConfig.uiFontSize,
-        FontPreferences.UiFontSizeDefault,
-        FontPreferences.UiFontSizeMin,
-        FontPreferences.UiFontSizeMax,
-      );
-      const previousCodeFontSize = normalizeFontPreference(
-        previousConfig.codeFontSize,
-        FontPreferences.CodeFontSizeDefault,
-        FontPreferences.CodeFontSizeMin,
-        FontPreferences.CodeFontSizeMax,
-      );
       let savedPluginPendingChanges: PluginPendingChanges | null = null;
 
       await configService.updateConfig({
@@ -3458,9 +3327,6 @@ const Settings: React.FC<SettingsProps> = ({
           baseUrl: primaryProvider.baseUrl,
         },
         providers: normalizedProviders, // Save all providers configuration
-        theme,
-        uiFontSize,
-        codeFontSize,
         language,
         artifactAutoPreviewEnabled,
         useSystemProxy,
@@ -3485,7 +3351,6 @@ const Settings: React.FC<SettingsProps> = ({
         );
       }
 
-      applyTypographyPreferences({ uiFontSize, codeFontSize });
 
       // 应用语言
       i18nService.setLanguage(language, { persist: false });
@@ -3610,18 +3475,6 @@ const Settings: React.FC<SettingsProps> = ({
         }
         if (previousSkipMissedJobs !== skipMissedJobs) {
           reportGeneralSettingChanged('skipMissedJobs', skipMissedJobs, previousSkipMissedJobs);
-        }
-        if (previousConfig.theme !== theme) {
-          reportAppearanceSettingChanged('theme', theme, previousConfig.theme);
-        }
-        if (previousThemeId !== themeId) {
-          reportAppearanceSettingChanged('themeId', themeId, previousThemeId);
-        }
-        if (previousUiFontSize !== uiFontSize) {
-          reportAppearanceSettingChanged('uiFontSize', uiFontSize, previousUiFontSize);
-        }
-        if (previousCodeFontSize !== codeFontSize) {
-          reportAppearanceSettingChanged('codeFontSize', codeFontSize, previousCodeFontSize);
         }
         const browserSettingParams = buildBrowserSettingAnalyticsParams(
           previousBrowserWebAccess,
@@ -4500,7 +4353,6 @@ const Settings: React.FC<SettingsProps> = ({
   const sidebarTabs: { key: TabType; label: string; icon: React.ReactNode }[] = (() => {
     const allTabs = [
       { key: 'general' as TabType,        label: i18nService.t('general'),        icon: <SettingsSlidersIcon className="h-5 w-5" /> },
-      { key: 'appearance' as TabType,     label: i18nService.t('appearance'),     icon: <Sun className="h-5 w-5" /> },
       { key: 'coworkAgentEngine' as TabType, label: i18nService.t('coworkAgentEngine'), icon: <Cpu className="h-5 w-5" /> },
       { key: 'model' as TabType,          label: i18nService.t('settingsCustomModel'), icon: <Cube className="h-5 w-5" /> },
       { key: 'im' as TabType,             label: i18nService.t('imBot'),          icon: <ChatCircle className="h-5 w-5" /> },
@@ -4545,236 +4397,6 @@ const Settings: React.FC<SettingsProps> = ({
     document.addEventListener('keydown', handleSettingsTabShortcut);
     return () => document.removeEventListener('keydown', handleSettingsTabShortcut);
   }, [shortcuts, sidebarTabs, handleTabChange]);
-
-  const handleUiFontSizeChange = useCallback((nextValue: number) => {
-    setUiFontSize(nextValue);
-    applyTypographyPreferences({
-      uiFontSize: nextValue,
-      codeFontSize,
-    });
-  }, [codeFontSize]);
-
-  const handleCodeFontSizeChange = useCallback((nextValue: number) => {
-    setCodeFontSize(nextValue);
-    applyTypographyPreferences({
-      uiFontSize,
-      codeFontSize: nextValue,
-    });
-  }, [uiFontSize]);
-
-  const handleThemeModeSelection = useCallback(async (
-    mode: 'light' | 'dark' | 'system',
-  ) => {
-    setError(null);
-    try {
-      const selection = await selectThemeMode(mode);
-      setTheme(selection.mode);
-      setThemeId(selection.themeId);
-    } catch (selectionError) {
-      console.error('[Settings] Failed to select the default theme mode', selectionError);
-      setError(i18nService.t('themeApplyFailed'));
-    }
-  }, [selectThemeMode]);
-
-  const handleThemeIdSelection = useCallback(async (nextThemeId: string) => {
-    setError(null);
-    try {
-      const selection = await selectThemeById(nextThemeId);
-      setTheme(selection.mode);
-      setThemeId(selection.themeId);
-    } catch (selectionError) {
-      console.error('[Settings] Failed to select the default color theme', selectionError);
-      setError(i18nService.t('themeApplyFailed'));
-    }
-  }, [selectThemeById]);
-
-  const renderAppearanceSettings = () => (
-    <div className="space-y-8">
-      <div>
-        <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--lobster-text-primary)' }}>
-          {i18nService.t('appearance')}
-        </h4>
-
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {(['light', 'dark', 'system'] as const).map((mode) => {
-            const isSelected = !activeSkin && theme === mode;
-            return (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => void handleThemeModeSelection(mode)}
-                disabled={isAppearanceChanging}
-                className="flex flex-col items-center rounded-xl border-2 p-3 transition-colors cursor-pointer disabled:cursor-wait disabled:opacity-60"
-                style={{
-                  borderColor: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-border)',
-                  backgroundColor: isSelected ? 'var(--lobster-primary-muted)' : undefined,
-                }}
-              >
-                <svg viewBox="0 0 120 80" className="w-full h-auto rounded-md mb-2 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
-                  {mode === 'light' && (
-                    <>
-                      <rect width="120" height="80" fill="#F8F9FB" />
-                      <rect x="0" y="0" width="30" height="80" fill="#EBEDF0" />
-                      <rect x="4" y="8" width="22" height="4" rx="2" fill="#C8CBD0" />
-                      <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#D5D7DB" />
-                      <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#D5D7DB" />
-                      <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#D5D7DB" />
-                      <rect x="36" y="8" width="78" height="64" rx="4" fill="#FFFFFF" />
-                      <rect x="42" y="16" width="50" height="4" rx="2" fill="#D5D7DB" />
-                      <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#E2E4E7" />
-                      <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#E2E4E7" />
-                      <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#E2E4E7" />
-                      <rect x="42" y="46" width="40" height="4" rx="2" fill="#D5D7DB" />
-                      <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#E2E4E7" />
-                      <rect x="42" y="60" width="58" height="3" rx="1.5" fill="#E2E4E7" />
-                    </>
-                  )}
-                  {mode === 'dark' && (
-                    <>
-                      <rect width="120" height="80" fill="#0F1117" />
-                      <rect x="0" y="0" width="30" height="80" fill="#151820" />
-                      <rect x="4" y="8" width="22" height="4" rx="2" fill="#3A3F4B" />
-                      <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#2A2F3A" />
-                      <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#2A2F3A" />
-                      <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#2A2F3A" />
-                      <rect x="36" y="8" width="78" height="64" rx="4" fill="#1A1D27" />
-                      <rect x="42" y="16" width="50" height="4" rx="2" fill="#3A3F4B" />
-                      <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#252930" />
-                      <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#252930" />
-                      <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#252930" />
-                      <rect x="42" y="46" width="40" height="4" rx="2" fill="#3A3F4B" />
-                      <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#252930" />
-                      <rect x="42" y="60" width="58" height="3" rx="1.5" fill="#252930" />
-                    </>
-                  )}
-                  {mode === 'system' && (
-                    <>
-                      <defs>
-                        <clipPath id="left-half">
-                          <rect x="0" y="0" width="60" height="80" />
-                        </clipPath>
-                        <clipPath id="right-half">
-                          <rect x="60" y="0" width="60" height="80" />
-                        </clipPath>
-                      </defs>
-                      <g clipPath="url(#left-half)">
-                        <rect width="120" height="80" fill="#F8F9FB" />
-                        <rect x="0" y="0" width="30" height="80" fill="#EBEDF0" />
-                        <rect x="4" y="8" width="22" height="4" rx="2" fill="#C8CBD0" />
-                        <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#D5D7DB" />
-                        <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#D5D7DB" />
-                        <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#D5D7DB" />
-                        <rect x="36" y="8" width="78" height="64" rx="4" fill="#FFFFFF" />
-                        <rect x="42" y="16" width="50" height="4" rx="2" fill="#D5D7DB" />
-                        <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#E2E4E7" />
-                        <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#E2E4E7" />
-                        <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#E2E4E7" />
-                        <rect x="42" y="46" width="40" height="4" rx="2" fill="#D5D7DB" />
-                        <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#E2E4E7" />
-                      </g>
-                      <g clipPath="url(#right-half)">
-                        <rect width="120" height="80" fill="#0F1117" />
-                        <rect x="0" y="0" width="30" height="80" fill="#151820" />
-                        <rect x="4" y="8" width="22" height="4" rx="2" fill="#3A3F4B" />
-                        <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#2A2F3A" />
-                        <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#2A2F3A" />
-                        <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#2A2F3A" />
-                        <rect x="36" y="8" width="78" height="64" rx="4" fill="#1A1D27" />
-                        <rect x="42" y="16" width="50" height="4" rx="2" fill="#3A3F4B" />
-                        <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#252930" />
-                        <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#252930" />
-                        <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#252930" />
-                        <rect x="42" y="46" width="40" height="4" rx="2" fill="#3A3F4B" />
-                        <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#252930" />
-                      </g>
-                      <line x1="60" y1="0" x2="60" y2="80" stroke="#888" strokeWidth="0.5" />
-                    </>
-                  )}
-                </svg>
-                <span className="text-xs font-medium" style={{ color: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-text-primary)' }}>
-                  {i18nService.t(mode)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        <h4 className="text-sm font-medium mb-3 mt-5" style={{ color: 'var(--lobster-text-primary)' }}>
-          {i18nService.t('themeColor')}
-        </h4>
-        {(() => {
-          const allThemes = themeService.getAllThemes();
-          const classicThemes = allThemes.filter(t => t.meta.id === 'classic-light' || t.meta.id === 'classic-dark');
-          const otherThemes = allThemes.filter(t => t.meta.id !== 'classic-light' && t.meta.id !== 'classic-dark');
-          const renderTile = (t: import('../theme').ThemeDefinition) => {
-            const isSelected = !activeSkin && themeId === t.meta.id;
-            const [bg, c1, c2, c3] = t.meta.preview;
-            return (
-              <button
-                key={t.meta.id}
-                type="button"
-                onClick={() => void handleThemeIdSelection(t.meta.id)}
-                disabled={isAppearanceChanging}
-                className="flex flex-col items-center rounded-xl border-2 p-2 transition-colors cursor-pointer disabled:cursor-wait disabled:opacity-60"
-                style={{
-                  borderColor: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-border)',
-                  backgroundColor: isSelected ? 'var(--lobster-primary-muted)' : undefined,
-                }}
-              >
-                <svg viewBox="0 0 80 48" className="w-full h-auto rounded-md mb-1.5 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="80" height="48" fill={bg} />
-                  <rect x="4" y="6" width="20" height="36" rx="3" fill={c1} opacity="0.7" />
-                  <rect x="28" y="6" width="48" height="36" rx="3" fill={c2} opacity="0.5" />
-                  <circle cx="52" cy="24" r="8" fill={c3} opacity="0.8" />
-                  <rect x="32" y="34" width="40" height="4" rx="2" fill={c1} opacity="0.6" />
-                </svg>
-                <span className="text-[10px] font-medium truncate w-full text-center" style={{ color: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-text-primary)' }}>
-                  {i18nService.t('theme-name-' + t.meta.id) || t.meta.name}
-                </span>
-              </button>
-            );
-          };
-          return (
-            <>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                {classicThemes.map(renderTile)}
-              </div>
-              <div className="grid grid-cols-4 gap-3">
-                {otherThemes.map(renderTile)}
-              </div>
-            </>
-          );
-        })()}
-
-        <SkinSettingsSection onStartAiSkin={onStartAiSkin} />
-
-        <div className="mt-5 divide-y divide-border rounded-xl border border-border bg-surface">
-          <div className="px-4 py-3">
-            <SettingsNumberInputRow
-              id="ui-font-size"
-              title={i18nService.t('uiFontSize')}
-              description={i18nService.t('uiFontSizeDescription')}
-              value={uiFontSize}
-              min={FontPreferences.UiFontSizeMin}
-              max={FontPreferences.UiFontSizeMax}
-              onChange={handleUiFontSizeChange}
-            />
-          </div>
-          <div className="px-4 py-3">
-            <SettingsNumberInputRow
-              id="code-font-size"
-              title={i18nService.t('codeFontSize')}
-              description={i18nService.t('codeFontSizeDescription')}
-              value={codeFontSize}
-              min={FontPreferences.CodeFontSizeMin}
-              max={FontPreferences.CodeFontSizeMax}
-              onChange={handleCodeFontSizeChange}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   const renderTabContent = () => {
     switch(activeTab) {
@@ -5046,7 +4668,7 @@ const Settings: React.FC<SettingsProps> = ({
         );
 
       case 'appearance':
-        return renderAppearanceSettings();
+        return null;
 
       case 'email':
         return <EmailSkillConfig />;

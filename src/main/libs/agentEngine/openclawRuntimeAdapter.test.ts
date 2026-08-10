@@ -6480,6 +6480,131 @@ test('chat error prevents stale empty final history sync from restarting context
   expect(maintenanceSpy).not.toHaveBeenCalledWith(session.id, true);
 });
 
+test('empty final without tool work waits for OpenClaw retry instead of silent complete', async () => {
+  vi.useFakeTimers();
+  try {
+    const { session, store } = createReconcileStore([
+      { id: 'msg-1', type: 'user', content: 'hi', timestamp: 1, metadata: {} },
+    ]);
+    const adapter = new OpenClawRuntimeAdapter(store, {});
+    const sessionKey = `agent:main:lobsterai:${session.id}`;
+    const completeSpy = vi.fn();
+    const errorSpy = vi.fn();
+
+    adapter.gatewayClient = {
+      start: () => {},
+      stop: () => {},
+      request: async () => ({ messages: [] }),
+    };
+
+    session.status = 'running';
+    adapter.on('complete', completeSpy);
+    adapter.on('error', errorSpy);
+    adapter.activeTurns.set(session.id, createActiveTurn(session.id, sessionKey, 'run-empty-final'));
+    adapter.sessionIdByRunId.set('run-empty-final', session.id);
+    adapter.latestTurnTokenBySession.set(session.id, 1);
+    adapter.rememberSessionKey(session.id, sessionKey);
+
+    adapter.handleChatEvent({
+      state: 'final',
+      runId: 'run-empty-final',
+      sessionKey,
+    }, 1);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(completeSpy).not.toHaveBeenCalled();
+    expect(session.status).toBe('running');
+    expect(adapter.activeTurns.has(session.id)).toBe(true);
+
+    adapter.handleChatEvent({
+      state: 'error',
+      runId: 'run-empty-final',
+      sessionKey,
+      errorMessage: 'LLM request failed.',
+      providerRuntimeFailureKind: 'timeout',
+      rawErrorPreview: 'LLM idle timeout (120s): no response from model',
+    }, 2);
+
+    expect(completeSpy).not.toHaveBeenCalled();
+    expect(session.status).toBe('error');
+    expect(adapter.activeTurns.has(session.id)).toBe(false);
+    expect(errorSpy).toHaveBeenCalledWith(session.id, expect.stringContaining('模型响应超时'));
+    expect(session.messages.some((message) => (
+      message.type === 'system'
+      && message.content.includes('模型响应超时')
+    ))).toBe(true);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('empty final without tool work surfaces timeout after grace expires', async () => {
+  vi.useFakeTimers();
+  try {
+    const { session, store } = createReconcileStore([
+      { id: 'msg-1', type: 'user', content: 'hi', timestamp: 1, metadata: {} },
+    ]);
+    const adapter = new OpenClawRuntimeAdapter(store, {});
+    const sessionKey = `agent:main:lobsterai:${session.id}`;
+    const completeSpy = vi.fn();
+    const errorSpy = vi.fn();
+    const abortSpy = vi.fn(async () => ({}));
+
+    adapter.gatewayClient = {
+      start: () => {},
+      stop: () => {},
+      request: async (method: string) => {
+        if (method === 'chat.abort') {
+          return abortSpy();
+        }
+        return { messages: [] };
+      },
+    };
+
+    session.status = 'running';
+    adapter.on('complete', completeSpy);
+    adapter.on('error', errorSpy);
+    adapter.activeTurns.set(session.id, createActiveTurn(session.id, sessionKey, 'run-empty-timeout'));
+    adapter.sessionIdByRunId.set('run-empty-timeout', session.id);
+    adapter.latestTurnTokenBySession.set(session.id, 1);
+    adapter.rememberSessionKey(session.id, sessionKey);
+
+    adapter.handleChatEvent({
+      state: 'final',
+      runId: 'run-empty-timeout',
+      sessionKey,
+    }, 1);
+
+    await vi.advanceTimersByTimeAsync(149_000);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(completeSpy).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(session.status).toBe('running');
+
+    // Cover the empty-final grace plus history sync retry sleeps (0/120/250/500ms).
+    await vi.advanceTimersByTimeAsync(3_000);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(completeSpy).not.toHaveBeenCalled();
+    expect(session.status).toBe('error');
+    expect(adapter.activeTurns.has(session.id)).toBe(false);
+    expect(errorSpy).toHaveBeenCalledWith(session.id, expect.stringContaining('模型响应超时'));
+    expect(abortSpy).toHaveBeenCalled();
+    expect(session.messages.some((message) => (
+      message.type === 'system'
+      && message.content.includes('模型响应超时')
+    ))).toBe(true);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
 test('compaction stream reuses active structured message for duplicate start events', () => {
   const { session, store } = createReconcileStore([
     { id: 'msg-1', type: 'user', content: 'continue the task', timestamp: 1, metadata: {} },

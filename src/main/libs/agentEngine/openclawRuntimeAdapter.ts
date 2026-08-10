@@ -724,6 +724,11 @@ type ActiveTurn = {
   /** True when a delayed empty-output fallback should be shown if no follow-up arrives. */
   pendingThinkingOnlyHint?: boolean;
   /**
+   * True when an empty chat.final arrived with no tool/assistant content and we
+   * are waiting for an OpenClaw idle-timeout retry or chat.error.
+   */
+  pendingEmptyFinalError?: boolean;
+  /**
    * Delayed completion after chat.final. OpenClaw can emit chat.final before
    * an overflow auto-compaction/retry path continues the same run.
    */
@@ -2334,6 +2339,12 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
   private static readonly PLAN_MODE_RECOVERY_FOLLOWUP_GRACE_MS = 15_000;
   private static readonly TOOL_USE_FINAL_LIFECYCLE_END_GRACE_MS = 45_000;
   private static readonly SILENT_MAINTENANCE_FOLLOWUP_GRACE_MS = 60_000;
+  /**
+   * OpenClaw can emit an empty chat.final when the first LLM attempt hits the
+   * idle watchdog and then retry the same run. Keep the turn open long enough
+   * for that retry (or a later chat.error) instead of silently completing.
+   */
+  private static readonly EMPTY_FINAL_RETRY_GRACE_MS = 150_000;
   private static readonly VISIBLE_FINAL_CONTINUATION_GRACE_MS = 120_000;
   private static readonly VISIBLE_FINAL_LARGE_TOOL_CONFIRMATION_GRACE_MS = 8_000;
   private static readonly VISIBLE_FINAL_TOOL_RESULT_CHAR_THRESHOLD = 20_000;
@@ -2624,6 +2635,7 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
     turn.pendingOpenClawRetry = false;
     turn.pendingVisibleFinalContinuation = false;
     turn.pendingThinkingOnlyHint = false;
+    turn.pendingEmptyFinalError = false;
     if (wasActive) {
       this.emitContextMaintenance(sessionId, false);
       console.debug(`[OpenClawRuntime] context maintenance ended because ${reason}.`);
@@ -2809,6 +2821,7 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
       graceMs: number;
       pendingThinkingOnlyHint?: boolean;
       pendingVisibleFinalContinuation?: boolean;
+      pendingEmptyFinalError?: boolean;
     },
   ): void {
     if (this.activeTurns.get(sessionId) !== turn || turn.stopRequested) {
@@ -2829,6 +2842,9 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
     }
     if (options.pendingVisibleFinalContinuation) {
       turn.pendingVisibleFinalContinuation = true;
+    }
+    if (options.pendingEmptyFinalError) {
+      turn.pendingEmptyFinalError = true;
     }
     this.store.updateSession(sessionId, { status: 'running' });
     this.emitSessionStatus(sessionId, 'running');
@@ -9219,6 +9235,17 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
         });
         return;
       }
+      // Idle-timeout retries emit an empty chat.final before OpenClaw retries the
+      // same run. Completing here drops the later chat.error and leaves the UI
+      // with only the user message.
+      if (!syncedVisibleText && !turn.assistantMessageId && !turn.currentText.trim()) {
+        this.waitForRecoverableOpenClawRetry(sessionId, turn, payload.runId ?? turn.runId, {
+          reason: 'empty final without visible content',
+          graceMs: OpenClawRuntimeAdapter.EMPTY_FINAL_RETRY_GRACE_MS,
+          pendingEmptyFinalError: true,
+        });
+        return;
+      }
     }
 
     if (stoppedByToolUse) {
@@ -9575,6 +9602,51 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
         });
         this.emit('message', sessionId, hintMessage);
         console.warn(`[OpenClawRuntime] thinking-only response detected after waiting for follow-up in session ${sessionId}.`);
+      }
+    }
+    if (turn.pendingEmptyFinalError) {
+      await this.syncFinalAssistantWithHistory(sessionId, turn);
+      if (this.activeTurns.get(sessionId) !== turn) {
+        return;
+      }
+      const visibleText = turn.currentAssistantSegmentText.trim() || turn.currentText.trim();
+      const session = this.store.getSession(sessionId);
+      const hasAssistantContent = Boolean(
+        visibleText
+        || session?.messages.some((message) => (
+          message.type === 'assistant' && message.content.trim().length > 0
+        )),
+      );
+      if (!hasAssistantContent) {
+        const errorMessage = t('coworkErrorModelResponseTimeout');
+        const client = this.gatewayClient;
+        if (client) {
+          void client.request('chat.abort', {
+            sessionKey: turn.sessionKey,
+            runId: turn.runId,
+          }).catch((err) => {
+            console.warn('[OpenClawRuntime] empty-final timeout: chat.abort failed:', err);
+          });
+        }
+        const erroredSessionKey = turn.sessionKey;
+        this.clearContextMaintenanceState(sessionId, turn, 'empty final timeout');
+        this.store.updateSession(sessionId, { status: 'error' });
+        const errorMsg = this.store.addMessage(sessionId, {
+          type: 'system',
+          content: errorMessage,
+          metadata: { error: errorMessage },
+        });
+        this.emit('message', sessionId, errorMsg);
+        this.emit('error', sessionId, errorMessage);
+        console.warn(
+          '[OpenClawRuntime] surfaced timeout after empty chat.final produced no follow-up.',
+          `sessionId=${sessionId}`,
+          `runId=${runId}`,
+        );
+        this.cleanupSessionTurn(sessionId);
+        this.rejectTurn(sessionId, new Error(errorMessage));
+        void this.syncSessionHistoryFromGateway(sessionId, erroredSessionKey);
+        return;
       }
     }
     if (turn.finalCompletionAllowLateContinuation) {

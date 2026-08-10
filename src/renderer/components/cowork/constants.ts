@@ -2,6 +2,7 @@ export const CoworkUiEvent = {
   OpenShareOptions: 'cowork:open-share-options',
   SelectSubagent: 'cowork:select-subagent',
   FocusInput: 'cowork:focus-input',
+  ToggleAppearance: 'cowork:toggle-appearance',
   ShortcutSearch: 'cowork:shortcut:search',
   ShortcutConversationSearch: 'cowork:shortcut:conversation-search',
   ShortcutNewSession: 'cowork:shortcut:new-session',

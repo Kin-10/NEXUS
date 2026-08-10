@@ -2,10 +2,16 @@ import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { useSkin } from '../providers/SkinProvider';
 import { agentService } from '../services/agent';
 import { coworkService } from '../services/cowork';
 import { i18nService } from '../services/i18n';
 import { LogReporterAction, reportYdAnalyzer } from '../services/logReporter';
+import {
+  type ThemeDefaultChangedDetail,
+  themeService,
+  ThemeServiceEvent,
+} from '../services/theme';
 import { RootState } from '../store';
 import {
   selectCoworkSessions,
@@ -23,7 +29,7 @@ import Modal from './common/Modal';
 import { CoworkUiEvent } from './cowork/constants';
 import CoworkSearchModal from './cowork/CoworkSearchModal';
 import Cog6ToothIcon from './icons/Cog6ToothIcon';
-import { Caution, ListChecks, Message } from './icons/iconParkCompat';
+import { Caution, ListChecks, Message, Moon, Sun } from './icons/iconParkCompat';
 import { iconParkOutlineProps } from './icons/iconStyle';
 import SidebarAutomationIcon from './icons/SidebarAutomationIcon';
 import SidebarKitsIcon from './icons/SidebarKitsIcon';
@@ -70,9 +76,9 @@ const SidebarNewFeatureBadge = {
   KitsVersion: '2026-06-05',
 } as const;
 const railButtonClassName =
-  'non-draggable relative inline-flex h-[56px] w-[50px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[#171717] transition-colors hover:bg-[#f1f1f1]';
+  'non-draggable relative inline-flex h-[56px] w-[50px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-foreground transition-colors hover:bg-surface-raised';
 const activeRailButtonClassName =
-  `${railButtonClassName} bg-[#eeeeee] text-[#111111] shadow-none hover:bg-[#eeeeee]`;
+  `${railButtonClassName} bg-surface-raised text-foreground shadow-none hover:bg-surface-raised`;
 const railIconClassName = 'h-5 w-5 shrink-0';
 const railLabelClassName = 'line-clamp-2 w-full text-center text-[11px] font-semibold leading-[13px]';
 
@@ -150,10 +156,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   hideLogin,
   hideSites,
 }) => {
+  const { isAppearanceChanging, selectThemeById } = useSkin();
   const currentAgentId = useSelector((state: RootState) => state.agent.currentAgentId);
   const agents = useSelector((state: RootState) => state.agent.agents);
   const sessions = useSelector(selectCoworkSessions);
   const currentSessionId = useSelector(selectCurrentSessionId);
+  const [appearanceMode, setAppearanceMode] = useState<'light' | 'dark'>(
+    () => themeService.getEffectiveTheme(),
+  );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchAgentId, setBatchAgentId] = useState<string | null>(null);
@@ -236,6 +246,52 @@ const Sidebar: React.FC<SidebarProps> = ({
         console.warn('[Sidebar] failed to save kits new feature badge state:', error);
       });
   }, [showKitsNewBadge]);
+
+  useEffect(() => {
+    const syncAppearanceMode = (event?: Event) => {
+      const detail = (event as CustomEvent<ThemeDefaultChangedDetail> | undefined)?.detail;
+      if (detail?.mode === 'light' || detail?.mode === 'dark') {
+        setAppearanceMode(detail.mode);
+        return;
+      }
+      setAppearanceMode(themeService.getEffectiveTheme());
+    };
+
+    syncAppearanceMode();
+    window.addEventListener(ThemeServiceEvent.DefaultChanged, syncAppearanceMode);
+    return () => {
+      window.removeEventListener(ThemeServiceEvent.DefaultChanged, syncAppearanceMode);
+    };
+  }, []);
+
+  const handleToggleAppearance = useCallback(() => {
+    if (isAppearanceChanging) return;
+    const nextThemeId = appearanceMode === 'dark' ? 'classic-light' : 'classic-dark';
+    void selectThemeById(nextThemeId).then(() => {
+      reportSidebarAction('toggle_appearance', {
+        activeView,
+        isCollapsed,
+        result: 'success',
+      });
+    }).catch((error) => {
+      console.error('[Sidebar] Failed to toggle appearance', error);
+      reportSidebarAction('toggle_appearance', {
+        activeView,
+        isCollapsed,
+        result: 'failed',
+      });
+    });
+  }, [activeView, appearanceMode, isAppearanceChanging, isCollapsed, selectThemeById]);
+
+  useEffect(() => {
+    const handleExternalToggle = () => {
+      handleToggleAppearance();
+    };
+    window.addEventListener(CoworkUiEvent.ToggleAppearance, handleExternalToggle);
+    return () => {
+      window.removeEventListener(CoworkUiEvent.ToggleAppearance, handleExternalToggle);
+    };
+  }, [handleToggleAppearance]);
 
   useEffect(() => {
     const handleSearch = () => {
@@ -545,14 +601,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       data-skin-sidebar="true"
-      className={`relative shrink-0 overflow-hidden border-r border-[#eeeeee] bg-white ${
+      className={`relative shrink-0 overflow-hidden border-r border-border bg-background ${
         isResizing ? '' : 'sidebar-transition'
       }`}
       style={{ width: sidebarShellWidth }}
     >
       <div className="flex h-full min-h-0">
         <div
-          className="flex h-full shrink-0 flex-col items-center bg-[#f6f6f6]"
+          className="flex h-full shrink-0 flex-col items-center bg-surface-raised"
           style={{ width: SIDEBAR_RAIL_WIDTH }}
         >
           <div className="draggable sidebar-header-drag flex h-[76px] shrink-0 flex-col items-center justify-center gap-1">
@@ -562,7 +618,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               draggable={false}
               className="h-8 w-8 rounded-xl object-contain"
             />
-            <span className="max-w-[52px] truncate text-center text-[9px] font-semibold leading-3 text-[#111111]">
+            <span className="max-w-[52px] truncate text-center text-[9px] font-semibold leading-3 text-foreground">
               LobsterAI
             </span>
           </div>
@@ -649,6 +705,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div className="non-draggable flex shrink-0 flex-col items-center gap-1.5 pb-2">
             {renderRailButton(
+              i18nService.t(appearanceMode),
+              appearanceMode === 'dark' ? (
+                <Moon className={railIconClassName} {...iconParkOutlineProps} />
+              ) : (
+                <Sun className={railIconClassName} {...iconParkOutlineProps} />
+              ),
+              handleToggleAppearance,
+            )}
+            {renderRailButton(
               i18nService.t('settings'),
               <Cog6ToothIcon className={railIconClassName} />,
               () => onShowSettings(),
@@ -656,7 +721,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
         <div
-          className={`relative flex h-full min-h-0 flex-col overflow-hidden border-r border-[#eeeeee] bg-white transition-[width,opacity] ease-out ${
+          className={`relative flex h-full min-h-0 flex-col overflow-hidden border-r border-border bg-background transition-[width,opacity] ease-out ${
             isCollapsed ? 'pointer-events-none opacity-0' : 'opacity-100'
           }`}
           style={{
@@ -668,7 +733,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#4d4d4d] transition-colors hover:bg-[#f3f3f3]"
+              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised"
               aria-label={isCollapsed ? i18nService.t('expand') : i18nService.t('collapse')}
               title={isCollapsed ? i18nService.t('expand') : i18nService.t('collapse')}
             >
@@ -681,7 +746,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onShowCowork();
                 setIsSearchOpen(true);
               }}
-              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#4d4d4d] transition-colors hover:bg-[#f3f3f3]"
+              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised"
               aria-label={i18nService.t('search')}
               title={i18nService.t('search')}
             >
@@ -693,7 +758,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 reportSidebarAction('new_task', { activeView, isCollapsed });
                 onNewChat();
               }}
-              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#4d4d4d] transition-colors hover:bg-[#f3f3f3]"
+              className="non-draggable inline-flex h-7 w-7 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised"
               aria-label={i18nService.t('newChat')}
               title={i18nService.t('newChat')}
             >
@@ -742,12 +807,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             )}
             <div
-              className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-white to-transparent transition-opacity duration-150 ${
+              className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-background to-transparent transition-opacity duration-150 ${
                 agentScrollEdges.top ? 'opacity-100' : 'opacity-0'
               }`}
             />
             <div
-              className={`pointer-events-none absolute inset-x-0 top-[60px] z-10 h-3 bg-gradient-to-b from-white to-transparent transition-opacity duration-150 ${
+              className={`pointer-events-none absolute inset-x-0 top-[60px] z-10 h-3 bg-gradient-to-b from-background to-transparent transition-opacity duration-150 ${
                 agentScrollEdges.top ? 'opacity-40' : 'opacity-0'
               }`}
             />

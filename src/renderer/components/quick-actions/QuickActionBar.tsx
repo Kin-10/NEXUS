@@ -44,7 +44,7 @@ const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions, selectedAction
             className={`group flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px] font-medium leading-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-200 ease-out active:translate-y-0 active:scale-[0.97] ${
               isSelected
                 ? 'border-[color-mix(in_srgb,var(--lobster-primary)_45%,transparent)] bg-primary-muted text-primary'
-                : 'border-[#e5e5e5] bg-white text-[#555555] hover:-translate-y-px hover:border-[#d4d4d4] hover:bg-[#fbfbfb] hover:text-[#111111]'
+                : 'border-border bg-surface text-secondary hover:-translate-y-px hover:border-border hover:bg-surface-raised hover:text-foreground'
             }`}
           >
             {IconComponent && (

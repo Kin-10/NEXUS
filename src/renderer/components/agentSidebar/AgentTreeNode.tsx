@@ -136,9 +136,9 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
   const disabledMenuItemClassName =
     'flex w-full cursor-not-allowed items-center gap-2 whitespace-nowrap px-2.5 py-1.5 text-left text-[13px] text-secondary/40';
   const rowActionButtonClassName =
-    'inline-flex h-6 w-6 items-center justify-center rounded-lg text-foreground opacity-[0.34] transition-opacity hover:bg-white/70 hover:opacity-70';
+    'inline-flex h-6 w-6 items-center justify-center rounded-lg text-foreground opacity-[0.34] transition-opacity hover:bg-surface hover:opacity-70';
   const rowEditActionButtonClassName =
-    'inline-flex h-6 w-6 items-center justify-center rounded-lg text-foreground opacity-[0.34] transition-opacity hover:bg-white/70 hover:opacity-70';
+    'inline-flex h-6 w-6 items-center justify-center rounded-lg text-foreground opacity-[0.34] transition-opacity hover:bg-surface hover:opacity-70';
   const menuIconClassName = 'h-3.5 w-3.5';
 
   const calculateMenuPosition = useCallback(() => {
@@ -284,23 +284,23 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
 
   return (
     <div className="space-y-1.5">
-      <div className={`group ${isMenuOpen ? 'z-50' : 'z-20'} relative h-[48px] rounded-xl bg-[#f1f1f1]`}>
+      <div className={`group ${isMenuOpen ? 'z-50' : 'z-20'} relative h-[48px] rounded-xl bg-surface-raised`}>
         <button
           type="button"
           onClick={handleAgentClick}
-          className="flex h-full w-full items-center gap-2 rounded-xl py-0 pl-3 pr-3 text-left text-[13px] font-semibold text-[#111111] transition-colors hover:bg-[#ececec]"
+          className="flex h-full w-full items-center gap-2 rounded-xl py-0 pl-3 pr-3 text-left text-[13px] font-semibold text-foreground transition-colors hover:bg-surface"
           role="treeitem"
           aria-level={1}
           aria-expanded={agent.isExpanded}
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/80 leading-none text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface/80 leading-none text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             <AgentAvatar agent={agent} />
           </span>
           <span className="min-w-0 flex-1 truncate">
             {agentName}
           </span>
           {isMainAgent && (
-            <span className="ml-auto shrink-0 rounded-lg bg-white/80 px-2 py-1 text-[11px] font-medium text-[#8a8a8a]">
+            <span className="ml-auto shrink-0 rounded-lg bg-surface/80 px-2 py-1 text-[11px] font-medium text-secondary">
               {i18nService.t('folderIconDefault')}
             </span>
           )}

@@ -7,6 +7,7 @@ import {
   DeviceMobile,
   ListChecks,
   Warning,
+  X,
 } from '@/components/icons/iconParkCompat';
 
 import { buildGoalSettingMessageMetadata } from '../../../common/goalCommandDisplay';
@@ -43,8 +44,11 @@ import type { MediaAttachmentRef } from '../../types/mediaGeneration';
 import { getAgentDisplayName } from '../../utils/agentDisplay';
 import { applyOptimisticGoalCommand } from '../../utils/goalCommand';
 import { toOpenClawModelRef } from '../../utils/openclawModelRef';
+import AgentsView, { AgentsViewVariant } from '../agent/AgentsView';
+import Modal from '../common/Modal';
 import ComposeIcon from '../icons/ComposeIcon';
 import SidebarToggleIcon from '../icons/SidebarToggleIcon';
+import IMSettings from '../im/IMSettings';
 import { ModelAccessPromptKind, ModelAccessPromptModal } from '../ModelSelector';
 import { PromptPanel, QuickActionBar } from '../quick-actions';
 import type { SettingsOpenOptions } from '../Settings';
@@ -95,6 +99,8 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   // Shown when a session start is blocked because no usable model config exists;
   // guides the user to plan models instead of pushing them into custom-model settings.
   const [modelAccessPrompt, setModelAccessPrompt] = useState<ModelAccessPromptKind | null>(null);
+  const [isAgentManagementOpen, setIsAgentManagementOpen] = useState(false);
+  const [isMobileRemoteOpen, setIsMobileRemoteOpen] = useState(false);
   // Track if we're starting/continuing a session to prevent duplicate submissions
   const isStartingRef = useRef(false);
   const isContinuingRef = useRef(false);
@@ -132,9 +138,9 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const currentAgentDisplayName = currentAgent
     ? getAgentDisplayName(currentAgent)
     : i18nService.t('coworkWelcome');
-  const homeHeroTitle = i18nService
+  const [homeHeroTitlePrefix = '', homeHeroTitleSuffix = ''] = i18nService
     .t('coworkHomeHeroTitle')
-    .replace('{name}', currentAgentDisplayName);
+    .split('{name}');
   const hasRenderableConversation = Boolean(
     currentSession
       && (
@@ -712,7 +718,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const isEngineReady = isOpenClawReadyForSession(openClawStatus);
 
   const homeHeader = (
-    <div className="draggable relative z-20 flex h-12 shrink-0 items-center justify-between bg-white px-5">
+    <div className="draggable relative z-20 flex h-12 shrink-0 items-center justify-between bg-background px-5">
       <div className="non-draggable flex h-9 items-center">
         {isSidebarCollapsed && !isWindows && (
           <div className={`flex items-center gap-1 mr-2 ${isMac ? 'pl-[68px]' : ''}`}>
@@ -736,22 +742,22 @@ const CoworkView: React.FC<CoworkViewProps> = ({
       </div>
       <div className="non-draggable flex items-center gap-3">
         <div
-          className="h-7 w-7 rounded-full bg-[#dbe4ef]"
+          className="h-7 w-7 rounded-full bg-primary-muted"
           title={isLoggedIn ? currentAgentDisplayName : undefined}
           aria-hidden="true"
         />
         <button
           type="button"
-          onClick={() => onRequestAppSettings?.({ initialTab: 'model' })}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e7e7e7] bg-white px-3 text-[13px] font-medium text-[#171717] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#fafafa]"
+          onClick={() => setIsAgentManagementOpen(true)}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-[13px] font-medium text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors hover:bg-surface-raised"
         >
           <ListChecks className="h-4 w-4" />
           <span>{i18nService.t('coworkHomeAgentManagement')}</span>
         </button>
         <button
           type="button"
-          onClick={() => onRequestAppSettings?.({ initialTab: 'im' })}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e7e7e7] bg-white px-3 text-[13px] font-medium text-[#171717] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#fafafa]"
+          onClick={() => setIsMobileRemoteOpen(true)}
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-[13px] font-medium text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors hover:bg-surface-raised"
         >
           <DeviceMobile className="h-4 w-4" />
           <span>{i18nService.t('coworkHomeMobileRemote')}</span>
@@ -839,20 +845,53 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           {homeHeader}
 
           {/* Main content */}
-          <div className="relative z-10 min-h-0 flex-1 overflow-hidden bg-white">
+          <div className="relative z-10 min-h-0 flex-1 overflow-hidden bg-background">
             <div
               className="absolute left-1/2 top-[47%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
               style={{ width: 'min(520px, calc(100% - 48px))' }}
             >
               <div data-skin-home-copy="true" className="w-full text-center">
                 <h2
-                  className="text-[28px] font-semibold leading-[1.18] tracking-normal text-[#111111] animate-fade-in-up"
+                  className="text-[28px] font-semibold leading-[1.18] tracking-normal text-foreground animate-fade-in-up"
                   style={{ animationDelay: '70ms', animationFillMode: 'both' }}
                 >
-                  {homeHeroTitle}
+                  {homeHeroTitlePrefix}
+                  <span
+                    key={currentAgentId}
+                    className="relative inline-block px-0.5 pb-[0.2em]"
+                  >
+                    {currentAgentDisplayName}
+                    <svg
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-[-3%] bottom-0 h-[0.48em] w-[106%] overflow-visible text-red-500"
+                      viewBox="0 0 120 12"
+                      preserveAspectRatio="none"
+                    >
+                      <path
+                        d="M1.8 7.2c9.6-3.4 18.4 2.8 29.6.4 9.8-2.1 16.2-4.6 27.4-1.2 10.4 3.2 17.8-2.4 28.2-3.1 8.6-.6 18.4 2.4 30.8 4.6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.35"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="cowork-hand-underline"
+                      />
+                      <path
+                        d="M3.4 8.1c12.8-1.8 24.6 1.6 37.8.1 12.4-1.4 22.8-3.2 35.6.8 7.8 2.4 16.2-.6 26.8-1.8"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        opacity="0.32"
+                        className="cowork-hand-underline-soft"
+                      />
+                    </svg>
+                  </span>
+                  {homeHeroTitleSuffix}
                 </h2>
                 <p
-                  className="mt-3 text-[16px] font-normal leading-6 text-[#8c8c8c] animate-fade-in-up"
+                  className="mt-3 text-[16px] font-normal leading-6 text-secondary animate-fade-in-up"
                   style={{ animationDelay: '120ms', animationFillMode: 'both' }}
                 >
                   {i18nService.t('coworkHomeHeroSubtitle')}
@@ -910,7 +949,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
                 )}
             </div>
 
-            <div className="pointer-events-none absolute bottom-4 left-0 right-0 text-center text-[14px] text-[#aaaaaa]">
+            <div className="pointer-events-none absolute bottom-4 left-0 right-0 text-center text-[14px] text-muted">
               {i18nService.t('aiGeneratedDisclaimer')}
             </div>
           </div>
@@ -921,6 +960,64 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           promptKind={modelAccessPrompt}
           onClose={() => setModelAccessPrompt(null)}
         />
+      )}
+      {isAgentManagementOpen && (
+        <Modal
+          onClose={() => setIsAgentManagementOpen(false)}
+          overlayClassName="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4"
+          className="flex h-[86vh] max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-[920px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-modal"
+        >
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/70 px-5 py-4">
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold text-foreground">
+                {i18nService.t('coworkHomeAgentManagement')}
+              </h2>
+              <p className="mt-0.5 truncate text-xs text-secondary">
+                {i18nService.t('agentsSubtitle')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAgentManagementOpen(false)}
+              aria-label={i18nService.t('close')}
+              className="rounded-lg p-1.5 text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-hidden px-5 py-4">
+            <AgentsView variant={AgentsViewVariant.Panel} />
+          </div>
+        </Modal>
+      )}
+      {isMobileRemoteOpen && (
+        <Modal
+          onClose={() => setIsMobileRemoteOpen(false)}
+          overlayClassName="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4"
+          className="flex h-[86vh] max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-[920px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-modal"
+        >
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/70 px-5 py-4">
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold text-foreground">
+                {i18nService.t('coworkHomeMobileRemote')}
+              </h2>
+              <p className="mt-0.5 truncate text-xs text-secondary">
+                {i18nService.t('imBot')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsMobileRemoteOpen(false)}
+              aria-label={i18nService.t('close')}
+              className="rounded-lg p-1.5 text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-hidden px-5 py-4">
+            <IMSettings />
+          </div>
+        </Modal>
       )}
     </div>
   );

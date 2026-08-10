@@ -671,6 +671,30 @@ select::-ms-expand {
   50% { opacity: 1; }
 }
 
+@keyframes cowork-hand-underline-draw {
+  from { stroke-dashoffset: 180; opacity: 0.2; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+
+.cowork-hand-underline {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 0;
+  animation: cowork-hand-underline-draw 0.48s cubic-bezier(0.22, 0.82, 0.28, 1) both;
+}
+
+.cowork-hand-underline-soft {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 0;
+  animation: cowork-hand-underline-draw 0.56s 40ms cubic-bezier(0.22, 0.82, 0.28, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cowork-hand-underline,
+  .cowork-hand-underline-soft {
+    animation: none;
+  }
+}
+
 .context-compaction-progress {
   position: relative;
   height: 3px;
