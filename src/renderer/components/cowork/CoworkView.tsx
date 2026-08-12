@@ -53,7 +53,11 @@ import { ModelAccessPromptKind, ModelAccessPromptModal } from '../ModelSelector'
 import { PromptPanel, QuickActionBar } from '../quick-actions';
 import type { SettingsOpenOptions } from '../Settings';
 import SkinBackdrop, { SkinBackdropVariant } from '../skin/SkinBackdrop';
-import { useAgentSelectedModel } from './agentModelSelection';
+import {
+  openStartupCreditCampaign,
+  useStartupCreditCampaignEntry,
+} from '../startupCreditCampaignBridge';
+import { resolveModelThinkingLevel, useAgentSelectedModel } from './agentModelSelection';
 import { CoworkUiEvent } from './constants';
 import CoworkPromptInput, { type CoworkPromptInputRef } from './CoworkPromptInput';
 import CoworkSessionDetail from './CoworkSessionDetail';
@@ -152,6 +156,10 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const shouldPresentConversation = Boolean(hasRenderableConversation || sessionNavigationTargetId);
   const currentAgentWorkingDirectory = currentAgent?.workingDirectory?.trim() || config.workingDirectory || '';
   const currentAgentSelectedModel = useAgentSelectedModel(currentAgentId, currentAgent?.model ?? '');
+  const currentAgentThinkingLevel = resolveModelThinkingLevel(
+    currentAgentSelectedModel,
+    currentAgent?.thinkingLevel,
+  );
   const homeDraftCollaborationMode = useSelector((state: RootState) => (
     state.cowork.draftCollaborationModes.__home__ || CoworkCollaborationMode.Default
   ));
@@ -331,6 +339,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
         id: tempSessionId,
         title: fallbackTitle,
         claudeSessionId: null,
+        scheduledTaskId: null,
         status: 'running',
         pinned: false,
         createdAt: now,
@@ -338,6 +347,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
         cwd: currentAgentWorkingDirectory,
         systemPrompt: '',
         modelOverride: currentAgentSelectedModel ? toOpenClawModelRef(currentAgentSelectedModel) : '',
+        thinkingLevel: currentAgentThinkingLevel ?? '',
         executionMode: config.executionMode || 'local',
         activeSkillIds: effectiveRuntimeSkillIds,
         activeKitIds: displayKitIds.length > 0 ? displayKitIds : undefined,
@@ -412,6 +422,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
         resolvedKitCapabilities: displayKitIds.length > 0 ? resolvedKitCapabilities : undefined,
         agentId: currentAgentId,
         modelOverride: sessionModelOverride,
+        thinkingLevel: currentAgentThinkingLevel,
         imageAttachments,
         mediaSelection: mediaSelection && mediaSelection.mode !== 'none' ? mediaSelection : undefined,
         mediaReferences,

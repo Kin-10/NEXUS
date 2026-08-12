@@ -120,8 +120,9 @@ blockquote {
   --lobster-text-2xl: 24px;
   --lobster-text-3xl: 30px;
   --lobster-text-4xl: 36px;
-  --lobster-text-markdown: 15px;
-  --lobster-text-markdownH2: 17px;
+  --lobster-text-markdown: 14px;
+  --lobster-text-markdownH2: 18px;
+  --lobster-text-markdownH3: 16px;
   --lobster-text-markdownH4: 15px;
   --lobster-text-promptLarge: 15px;
   --lobster-text-sidebarCompact: 13px;
@@ -133,8 +134,8 @@ blockquote {
   --lobster-leading-2xl: 32px;
   --lobster-leading-3xl: 36px;
   --lobster-leading-4xl: 40px;
-  --lobster-leading-markdown: 26px;
-  --lobster-leading-markdownCompact: 23px;
+  --lobster-leading-markdown: 22px;
+  --lobster-leading-markdownCompact: 21px;
   --lobster-leading-prompt: 22px;
   --lobster-leading-promptLarge: 23px;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Helvetica Neue', 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -159,6 +160,22 @@ samp {
   font-weight: 400;
 }
 
+/* Detail bodies inside activity-group rows stay one step below the row
+   title (text-xs), even when the user raises the code font size, so the
+   header > row > detail hierarchy always holds. */
+.activity-row-detail {
+  --lobster-activity-detail-font-size: min(
+    var(--lobster-code-font-size),
+    calc(var(--lobster-text-xs) - 1px)
+  );
+  font-size: var(--lobster-activity-detail-font-size);
+}
+
+.activity-row-detail .text-code {
+  font-size: var(--lobster-activity-detail-font-size);
+  line-height: calc(var(--lobster-activity-detail-font-size) + 8px);
+}
+
 .text-markdown-body {
   font-size: var(--lobster-text-markdown);
   line-height: var(--lobster-leading-markdown);
@@ -174,6 +191,17 @@ samp {
 body, #root, .App, main {
   background-color: var(--lobster-background);
   color: var(--lobster-foreground);
+}
+
+/* Conversation column: match design sample #F7F7F7 in light mode */
+html:not(.dark) [data-skin-cowork-frame="true"],
+html:not(.dark) [data-skin-cowork="true"] {
+  --lobster-background: #F7F7F7;
+}
+
+[data-skin-presentation="immersive_shell"] [data-skin-cowork-frame="true"],
+[data-skin-presentation="immersive_shell"] [data-skin-cowork="true"] {
+  --lobster-background: var(--lobster-skin-canvas);
 }
 
 body {
@@ -619,7 +647,22 @@ select::-ms-expand {
   animation: shimmer 1.5s infinite;
 }
 
-/* Streaming activity bar */
+/* Busy-state activity indicator: breathing dot + shimmering status text */
+.activity-indicator-dot {
+  animation: activity-dot-breathe 1.8s ease-in-out infinite;
+}
+
+@keyframes activity-dot-breathe {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+
 .streaming-bar {
   position: relative;
   height: 2px;
@@ -627,6 +670,7 @@ select::-ms-expand {
   border-radius: 1px;
   background: var(--lobster-primary-muted);
 }
+
 .streaming-bar::before {
   content: '';
   position: absolute;
@@ -638,10 +682,47 @@ select::-ms-expand {
   background: linear-gradient(90deg, transparent 0%, var(--lobster-primary) 50%, transparent 100%);
   opacity: 0.7;
   animation: streaming-slide 1.2s linear infinite;
-}
-/* Streaming bar glow uses primary color */
-.streaming-bar::before {
   box-shadow: 0 0 6px var(--lobster-primary-muted);
+}
+
+@keyframes streaming-slide {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+.shimmer-text {
+  background-image: linear-gradient(
+    100deg,
+    var(--lobster-text-secondary) 0%,
+    var(--lobster-text-secondary) 42%,
+    var(--lobster-text-primary) 50%,
+    var(--lobster-text-secondary) 58%,
+    var(--lobster-text-secondary) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer-text-sweep 2.4s linear infinite;
+}
+
+@keyframes shimmer-text-sweep {
+  0% { background-position: 175% 0; }
+  100% { background-position: -75% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-text {
+    animation: none;
+    background-image: none;
+    background-clip: border-box;
+    -webkit-background-clip: border-box;
+    color: inherit;
+  }
+  .activity-indicator-dot {
+    animation: none;
+    opacity: 0.7;
+  }
 }
 .streaming-bar--pulse {
   animation: cowork-waiting-bar-pulse 1.4s ease-in-out infinite;
@@ -754,11 +835,6 @@ select::-ms-expand {
 
 @keyframes context-compaction-slide {
   0% { left: -55%; }
-  100% { left: 100%; }
-}
-
-@keyframes streaming-slide {
-  0% { left: -40%; }
   100% { left: 100%; }
 }
 

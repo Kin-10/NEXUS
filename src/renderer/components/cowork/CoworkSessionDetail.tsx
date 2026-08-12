@@ -164,7 +164,6 @@ import {
   COWORK_DETAIL_GUTTER_CLASS,
   getStreamingActivityStatusText,
   getTurnMessageIds,
-  hasRenderableAssistantContent,
   MEDIA_TOKEN_DISPLAY_RE,
   type ToolGroupItem,
 } from './messageDisplayUtils';
@@ -179,7 +178,7 @@ import {
   type CoworkTextExportFormat as CoworkTextExportFormatValue,
   mergeCoworkTextExportMessages,
 } from './sessionExport';
-import SubagentTurnLinks from './SubagentTurnLinks';
+import SubagentSpawnCard from './SubagentSpawnCard';
 import { useCoworkConversationSearch } from './useCoworkConversationSearch';
 import UserMessageContent from './UserMessageContent';
 import UserMessageItem from './UserMessageItem';
@@ -5259,7 +5258,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   const renderConversationTurns = () => {
     let railCounter = 0;
     if (turns.length === 0) {
-      if (!isStreaming) return null;
+      if (!isSessionBusy) return null;
       return (
         <div data-export-role="assistant-block">
           <AssistantTurnBlock
@@ -5270,7 +5269,10 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
             }}
             resolveLocalFilePath={resolveLocalFilePath}
             localServiceDirectory={currentSession?.cwd}
-            showTypingIndicator
+            showActivityIndicator
+            activityStatusOverride={
+              isContextMaintenance ? i18nService.t('coworkContextMaintenanceRunning') : null
+            }
             showCopyButtons={!isStreaming}
             completedGoal={
               currentSession.goal?.status === CoworkGoalStatus.Complete
@@ -5281,6 +5283,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
             onConfirmPlan={handleConfirmPlan}
             onAdjustPlan={handleAdjustPlan}
             searchTargetMessageId={activeConversationSearchMatch?.messageId}
+            isStreamingTurn
           />
         </div>
       );
@@ -5288,8 +5291,10 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
 
     return turns.map((turn, index) => {
       const isLastTurn = index === turns.length - 1;
-      const showTypingIndicator = isStreaming && isLastTurn && !hasRenderableAssistantContent(turn);
-      const showAssistantBlock = turn.assistantItems.length > 0 || showTypingIndicator;
+      // Persistent busy-state indicator at the insertion point of the
+      // running turn (Codex/ChatGPT style: visible for the whole run).
+      const showActivityIndicator = isSessionBusy && isLastTurn;
+      const showAssistantBlock = turn.assistantItems.length > 0 || showActivityIndicator;
       // Always render last 3 turns (needed for streaming, auto-scroll, and smooth UX)
       const alwaysRender = index >= turns.length - 3 || index === forcedRailTurnIndex;
 
@@ -5303,6 +5308,12 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       const turnMessageIds = getTurnMessageIds(turn);
       const turnArtifacts = rawSessionArtifacts.filter(
         a => turnMessageIds.has(a.messageId) && PREVIEWABLE_ARTIFACT_TYPES.has(a.type)
+      );
+      // Subagents spawned in this turn that are still working keep the
+      // turn's process unfolded until they finish.
+      const turnHasRunningSubagents = turn.assistantItems.some(
+        item => item.type === 'tool_group'
+          && getToolGroupSubagents(item.group).some(subagent => subagent.status === 'running'),
       );
 
       return (
@@ -5340,18 +5351,20 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 onDeployLocalService={handleDeployLocalServiceArtifact}
                 onOpenHtmlFile={handleOpenHtmlFileInBrowser}
                 onForkMessage={remoteManaged ? undefined : handleForkMessage}
-                renderToolGroupFooter={(group) => {
+                renderToolGroupOverride={(group) => {
                   const groupSubagents = getToolGroupSubagents(group);
                   if (groupSubagents.length === 0) return null;
                   return (
-                    <SubagentTurnLinks
+                    <SubagentSpawnCard
                       subagents={groupSubagents}
-                      variant="tool"
                       onSelectSubagent={handleSelectSubagent}
                     />
                   );
                 }}
-                showTypingIndicator={showTypingIndicator}
+                showActivityIndicator={showActivityIndicator}
+                activityStatusOverride={
+                  isContextMaintenance ? i18nService.t('coworkContextMaintenanceRunning') : null
+                }
                 showCopyButtons={!isStreaming || !isLastTurn}
                 completedGoal={
                   isLastTurn && currentSession.goal?.status === CoworkGoalStatus.Complete
@@ -5362,6 +5375,8 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 onConfirmPlan={handleConfirmPlan}
                 onAdjustPlan={handleAdjustPlan}
                 searchTargetMessageId={activeConversationSearchMatch?.messageId}
+                isStreamingTurn={isStreaming && isLastTurn}
+                hasRunningSubagents={turnHasRunningSubagents}
               />
             </div>
           )}
@@ -6014,7 +6029,12 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       </div>
 
       {/* Streaming Activity Bar */}
-      {isSessionBusy && <StreamingActivityBar messages={currentSession.messages} isContextMaintenance={isContextMaintenance} />}
+      {isSessionBusy && currentSession && (
+        <StreamingActivityBar
+          messages={currentSession.messages}
+          isContextMaintenance={isContextMaintenance}
+        />
+      )}
 
       {/* Input Area */}
       <div
@@ -6177,7 +6197,6 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                               content={item.content}
                               className="prose dark:prose-invert max-w-none text-xs leading-5"
                               resolveLocalFilePath={resolveLocalFilePath}
-                              showRevealInFolderAction
                             />
                           )}
                         </div>

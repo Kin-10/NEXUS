@@ -360,7 +360,7 @@ const RunSessionModal: React.FC<RunSessionModalProps> = ({
                         artifacts={turnArtifacts}
                         localServiceDirectory={sessionCwd}
                         onOpenArtifactPreview={handleOpenArtifactPreview}
-                        showTypingIndicator={false}
+                        showActivityIndicator={false}
                         showCopyButtons={true}
                       />
                     )}
