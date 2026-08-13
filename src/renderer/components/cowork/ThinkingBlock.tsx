@@ -60,14 +60,14 @@ const ThinkingBlock: React.FC<{
           className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-surface-raised/40 transition-colors"
           aria-expanded={isExpanded}
         >
-          <LightBulbIcon className="h-3 w-3 text-secondary flex-shrink-0" />
+          <Lightbulb className="h-3 w-3 text-secondary flex-shrink-0" />
           <span className="text-xs text-secondary">
             {i18nService.t('reasoning')}
           </span>
           {isCurrentlyStreaming && (
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse flex-shrink-0" />
           )}
-          <ChevronRightIcon
+          <CaretRight
             className={`h-3 w-3 text-muted flex-shrink-0 transition-transform duration-200 ${
               isExpanded ? 'rotate-90' : ''
             }`}

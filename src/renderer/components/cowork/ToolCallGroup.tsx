@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import {
+  CaretRight,
   Check,
 } from '@/components/icons/iconParkCompat';
 
@@ -391,7 +392,7 @@ const ToolCallGroup: React.FC<{
               <ToolRunningElapsed startTimestamp={toolUse.timestamp} />
             </span>
           )}
-          <ChevronRightIcon
+          <CaretRight
             className={`h-3 w-3 text-muted flex-shrink-0 transition-transform duration-200 ${
               isExpanded ? 'rotate-90' : ''
             }`}

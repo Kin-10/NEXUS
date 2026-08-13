@@ -1,4 +1,4 @@
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronRight as ChevronRightIcon } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { bucketCount, reportConversationBlockAction } from './conversationAnalytics';

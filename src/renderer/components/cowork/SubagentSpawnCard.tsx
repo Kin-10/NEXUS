@@ -1,4 +1,4 @@
-import { CheckIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { Check as CheckIcon, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import React from 'react';
 import { useSelector } from 'react-redux';
 

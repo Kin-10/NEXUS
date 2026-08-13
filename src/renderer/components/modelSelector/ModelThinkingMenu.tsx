@@ -1,9 +1,9 @@
-import { CheckIcon } from '@heroicons/react/24/outline';
 import {
   getModelThinkingLevels,
   type ModelThinkingConfig,
   ModelThinkingLevel,
 } from '@shared/providers/modelThinking';
+import { Check as CheckIcon } from 'lucide-react';
 import React from 'react';
 
 import { i18nService } from '../../services/i18n';

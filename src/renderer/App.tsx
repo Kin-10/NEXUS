@@ -24,12 +24,11 @@ import EngineStartupOverlay from './components/cowork/EngineStartupOverlay';
 import { Message } from './components/icons/iconParkCompat';
 import { iconParkOutlineProps } from './components/icons/iconStyle';
 import KitsView from './components/kits/KitsView';
-import { McpView } from './components/mcp';
 import { ScheduledTasksView } from './components/scheduledTasks';
 import Settings, { type SettingsOpenOptions } from './components/Settings';
 import Sidebar from './components/Sidebar';
 import { SitesView } from './components/sites';
-import { SkillsView } from './components/skills';
+import { SkillsPluginsHubTab, SkillsView } from './components/skills';
 import SkinBackdrop, { SkinBackdropVariant } from './components/skin/SkinBackdrop';
 import SkinPresentationScope from './components/skin/SkinPresentationScope';
 import StartupCreditCampaign from './components/StartupCreditCampaign';
@@ -148,6 +147,7 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsOptions, setSettingsOptions] = useState<SettingsOpenOptions & { requestId: number }>({ requestId: 0 });
   const [mainView, setMainView] = useState<'cowork' | 'skills' | 'scheduledTasks' | 'kits' | 'mcp' | 'sites'>('cowork');
+  const [skillsHubTab, setSkillsHubTab] = useState<SkillsPluginsHubTab>(SkillsPluginsHubTab.Skills);
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -559,6 +559,7 @@ const App: React.FC = () => {
   }, [handleToggleAppearance]);
 
   const handleShowSkills = useCallback(() => {
+    setSkillsHubTab(SkillsPluginsHubTab.Skills);
     setMainView('skills');
   }, []);
 
@@ -571,7 +572,13 @@ const App: React.FC = () => {
   }, []);
 
   const handleShowMcp = useCallback(() => {
+    setSkillsHubTab(SkillsPluginsHubTab.Mcp);
     setMainView('mcp');
+  }, []);
+
+  const handleSkillsHubTabChange = useCallback((tab: SkillsPluginsHubTab) => {
+    setSkillsHubTab(tab);
+    setMainView(tab === SkillsPluginsHubTab.Mcp ? 'mcp' : 'skills');
   }, []);
 
   const handleShowSites = useCallback(() => {
@@ -1590,7 +1597,6 @@ const App: React.FC = () => {
           onShowCowork={handleShowCowork}
           onShowScheduledTasks={handleShowScheduledTasks}
           onShowKits={handleShowKits}
-          onShowMcp={handleShowMcp}
           onShowSites={handleShowSites}
           onNewChat={handleNewChat}
           isCollapsed={isSidebarCollapsed}
@@ -1615,7 +1621,7 @@ const App: React.FC = () => {
               <SkinBackdrop variant={SkinBackdropVariant.Management} />
             )}
             <EngineStartupOverlay />
-            {mainView === 'skills' ? (
+            {mainView === 'skills' || mainView === 'mcp' ? (
               <SkillsView
                 isSidebarCollapsed={isSidebarCollapsed}
                 onToggleSidebar={handleToggleSidebar}
@@ -1623,6 +1629,8 @@ const App: React.FC = () => {
                 onCreateSkillByChat={handleCreateSkillByChat}
                 updateBadge={collapsedHeaderUpdateBadge}
                 readOnly={enterpriseConfig?.ui?.skills === 'readonly'}
+                initialTab={skillsHubTab}
+                onTabChange={handleSkillsHubTabChange}
               />
             ) : mainView === 'scheduledTasks' ? (
               <ScheduledTasksView
@@ -1639,13 +1647,6 @@ const App: React.FC = () => {
                 updateBadge={collapsedHeaderUpdateBadge}
                 onTryAsking={handleKitTryAsking}
                 onUseKit={handleKitUse}
-              />
-            ) : mainView === 'mcp' ? (
-              <McpView
-                isSidebarCollapsed={isSidebarCollapsed}
-                onToggleSidebar={handleToggleSidebar}
-                onNewChat={handleNewChat}
-                updateBadge={collapsedHeaderUpdateBadge}
               />
             ) : mainView === 'sites' ? (
               <SitesView

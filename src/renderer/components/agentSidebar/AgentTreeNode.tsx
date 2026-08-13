@@ -299,11 +299,6 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
           <span className="min-w-0 flex-1 truncate">
             {agentName}
           </span>
-          {isMainAgent && (
-            <span className="ml-auto shrink-0 rounded-lg bg-surface/80 px-2 py-1 text-[11px] font-medium text-secondary">
-              {i18nService.t('folderIconDefault')}
-            </span>
-          )}
         </button>
 
         <div

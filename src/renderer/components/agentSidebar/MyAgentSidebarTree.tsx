@@ -71,6 +71,7 @@ interface MyAgentSidebarTreeProps {
   onToggleSelection: (selectionKey: string, agentId: string) => void;
   onEnterBatchMode: (sessionId: string, agentId: string) => void;
   onBatchSelectableItemsChange: (items: AgentSidebarBatchItem[]) => void;
+  onSearch: () => void;
 }
 
 const SortableAgentNode: React.FC<{
@@ -117,6 +118,7 @@ const MyAgentSidebarTree: React.FC<MyAgentSidebarTreeProps> = ({
   onToggleSelection,
   onEnterBatchMode,
   onBatchSelectableItemsChange,
+  onSearch,
 }) => {
   const currentAgentId = useSelector((state: RootState) => state.agent.currentAgentId);
   const dispatch = useDispatch();
@@ -492,6 +494,12 @@ const MyAgentSidebarTree: React.FC<MyAgentSidebarTreeProps> = ({
   }, [deletedSessionIds, removeTaskPreviews]);
 
   useEffect(() => {
+    if (!isBatchMode || !batchAgentId) return;
+    expandAgent(batchAgentId);
+    void expandTasks(batchAgentId);
+  }, [batchAgentId, expandAgent, expandTasks, isBatchMode]);
+
+  useEffect(() => {
     if (!batchAgentId) {
       onBatchSelectableItemsChange([]);
       return;
@@ -509,9 +517,17 @@ const MyAgentSidebarTree: React.FC<MyAgentSidebarTreeProps> = ({
 
   return (
     <div className="space-y-1 pb-3" role="tree" aria-label={i18nService.t('myAgents')}>
+      <MyAgentSidebarHeader
+        onCreateAgent={() => {
+          setCreateAgentSource('home_agent_sidebar');
+          setIsCreateOpen(true);
+        }}
+        onSearch={onSearch}
+      />
+
       {hasPinnedAgents && (
         <div className="space-y-2">
-          <div className="sticky top-0 z-30 flex h-9 items-center bg-background px-1">
+          <div className="sticky top-[52px] z-20 flex h-9 items-center bg-background px-1">
             <h2 className="min-w-0 truncate text-sm font-normal text-secondary">
               {i18nService.t('myAgentSidebarPinned')}
             </h2>
@@ -541,13 +557,6 @@ const MyAgentSidebarTree: React.FC<MyAgentSidebarTreeProps> = ({
           {renderSortableAgentGroup(projectAgentNodes)}
         </div>
       ) : null}
-
-      <MyAgentSidebarHeader
-        onCreateAgent={() => {
-          setCreateAgentSource('home_agent_sidebar');
-          setIsCreateOpen(true);
-        }}
-      />
 
       <AgentCreateModal
         isOpen={isCreateOpen}

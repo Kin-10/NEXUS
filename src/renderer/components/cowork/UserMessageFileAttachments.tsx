@@ -1,5 +1,4 @@
-import { FolderOpenIcon } from '@heroicons/react/24/outline';
-import { FolderIcon } from '@heroicons/react/24/solid';
+import { Folder as FolderIcon, FolderOpen as FolderOpenIcon } from 'lucide-react';
 import React, { useCallback } from 'react';
 
 import { ShellOpenFailureReason } from '../../../shared/shell/constants';
@@ -64,7 +63,7 @@ const UserMessageFileAttachments: React.FC<UserMessageFileAttachmentsProps> = ({
           >
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-black/[0.04] dark:bg-white/[0.08]">
               {attachment.isDirectory ? (
-                <FolderIcon className="h-5 w-5 flex-shrink-0 text-amber-500" />
+                <FolderIcon className="h-5 w-5 flex-shrink-0 text-amber-500" fill="currentColor" strokeWidth={1.5} />
               ) : (
                 <FileTypeIcon fileName={attachment.name} className="h-5 w-5 flex-shrink-0" />
               )}

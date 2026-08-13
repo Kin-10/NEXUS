@@ -53,6 +53,8 @@ export interface PluginsSettingsHandle {
 
 interface PluginsSettingsProps {
   handleRef?: React.Ref<PluginsSettingsHandle>;
+  /** Hide title/description when embedded in a parent hub that already shows them. */
+  hideTitle?: boolean;
 }
 
 const PLUGINS_ANALYTICS_SOURCE = 'settings_plugins';
@@ -82,7 +84,7 @@ const reportPluginAction = (
   });
 };
 
-export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
+export default function PluginsSettings({ handleRef, hideTitle = false }: PluginsSettingsProps) {
   const [plugins, setPlugins] = useState<PluginListItem[]>([]);
   const [loading, setLoading] = useState(true);
   // --- Unsaved-changes guard (internal dialog) ---
@@ -530,15 +532,17 @@ export default function PluginsSettings({ handleRef }: PluginsSettingsProps) {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base font-semibold text-foreground">
-            {i18nService.t('pluginsTitle')}
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            {i18nService.t('pluginsDesc')}
-          </p>
-        </div>
+      <div className={`flex items-center gap-2 ${hideTitle ? 'justify-end' : 'justify-between'}`}>
+        {!hideTitle && (
+          <div>
+            <h3 className="text-base font-semibold text-foreground">
+              {i18nService.t('pluginsTitle')}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {i18nService.t('pluginsDesc')}
+            </p>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <button
             type="button"
