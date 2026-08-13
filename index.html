@@ -58,6 +58,8 @@
         border-radius: 16px;
         user-select: none;
         -webkit-user-drag: none;
+        transform-origin: center;
+        animation: splash-logo-spin 1.4s linear infinite;
       }
       .splash-title {
         margin: 0 0 8px;
@@ -180,6 +182,14 @@
         }
         50% {
           opacity: 0.5;
+        }
+      }
+      @keyframes splash-logo-spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
         }
       }
       @keyframes splash-shimmer {

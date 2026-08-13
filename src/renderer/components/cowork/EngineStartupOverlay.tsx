@@ -20,6 +20,7 @@ const TIP_KEYS = [
 
 const TIP_ROTATE_MS = 5000;
 const SLOW_HINT_AFTER_MS = 15000;
+const LOGO_SPIN_DURATION_MS = 1400;
 
 // sessionStorage key written by index.html's static splash so the overlay
 // continues from the same tip instead of jumping to a different one.
@@ -91,6 +92,7 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
   });
   const [showSlowHint, setShowSlowHint] = useState(false);
   const hasRotatedTipRef = useRef(false);
+  const logoRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     coworkService.getOpenClawEngineStatus()
@@ -128,6 +130,28 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
 
     return () => {
       clearTimeout(slowHintTimer);
+    };
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) {
+      return undefined;
+    }
+
+    const logoAnimation = logoRef.current?.animate(
+      [
+        { transform: 'rotate(0deg)' },
+        { transform: 'rotate(360deg)' },
+      ],
+      {
+        duration: LOGO_SPIN_DURATION_MS,
+        iterations: Infinity,
+        easing: 'linear',
+      },
+    );
+
+    return () => {
+      logoAnimation?.cancel();
     };
   }, [visible]);
 
@@ -182,6 +206,7 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
         <div className="relative mb-5">
           <div className="absolute -inset-2 rounded-3xl bg-primary/20 blur-xl animate-pulse" aria-hidden="true" />
           <img
+            ref={logoRef}
             src="logo.svg"
             alt="LobsterAI"
             width={72}
