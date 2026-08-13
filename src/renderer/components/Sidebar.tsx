@@ -276,7 +276,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         result: 'failed',
       });
     });
-  }, [activeView, appearanceMode, isAppearanceChanging, isCollapsed, selectThemeById]);
+  }, [
+    activeView,
+    appearanceMode,
+    isAppearanceChanging,
+    isCollapsed,
+    selectThemeById,
+  ]);
 
   useEffect(() => {
     const handleExternalToggle = () => {
@@ -608,7 +614,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className="draggable sidebar-header-drag flex h-[76px] shrink-0 flex-col items-center justify-center gap-1">
             <img
-              src="logo.png"
+              src="logo.svg"
               alt="LobsterAI"
               draggable={false}
               className="h-8 w-8 rounded-xl object-contain"

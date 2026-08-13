@@ -75,7 +75,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({
             ))}
           </div>
           <img
-            src="logo.png"
+            src="logo.svg"
             alt="LobsterAI"
             width={72}
             height={72}

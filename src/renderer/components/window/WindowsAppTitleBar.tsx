@@ -63,7 +63,7 @@ const WindowsAppTitleBar: React.FC<WindowsAppTitleBarProps> = ({
       >
         <div className="flex shrink-0 items-center gap-2">
           <img
-            src="logo.png"
+            src="logo.svg"
             alt=""
             draggable={false}
             className="h-4 w-4 max-w-none shrink-0"

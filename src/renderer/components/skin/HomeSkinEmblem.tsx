@@ -18,7 +18,7 @@ const HomeSkinEmblem: React.FC<HomeSkinEmblemProps> = ({ className }) => {
 
   return (
     <img
-      src={shouldUseSkinAsset ? assetUrl ?? 'logo.png' : 'logo.png'}
+      src={shouldUseSkinAsset ? assetUrl ?? 'logo.svg' : 'logo.svg'}
       alt="LobsterAI"
       draggable={false}
       onError={() => {

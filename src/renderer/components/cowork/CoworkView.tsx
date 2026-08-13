@@ -52,11 +52,8 @@ import IMSettings from '../im/IMSettings';
 import { ModelAccessPromptKind, ModelAccessPromptModal } from '../ModelSelector';
 import { PromptPanel, QuickActionBar } from '../quick-actions';
 import type { SettingsOpenOptions } from '../Settings';
+import HomeSkinEmblem from '../skin/HomeSkinEmblem';
 import SkinBackdrop, { SkinBackdropVariant } from '../skin/SkinBackdrop';
-import {
-  openStartupCreditCampaign,
-  useStartupCreditCampaignEntry,
-} from '../startupCreditCampaignBridge';
 import { resolveModelThinkingLevel, useAgentSelectedModel } from './agentModelSelection';
 import { CoworkUiEvent } from './constants';
 import CoworkPromptInput, { type CoworkPromptInputRef } from './CoworkPromptInput';
@@ -68,6 +65,10 @@ const logCoworkViewModel = (message: string): void => {
   console.debug(`[CoworkView] ${message}`);
   window.electron?.log?.fromRenderer?.('debug', 'CoworkView', message);
 };
+
+const HOME_INTRO_LOGO_SPIN_DURATION_MS = 1180;
+const HOME_INTRO_COPY_DELAY_MS = 1120;
+const HOME_INTRO_SUBTITLE_DELAY_MS = 1320;
 
 export interface CoworkViewProps {
   onRequestAppSettings?: (options?: SettingsOpenOptions) => void;
@@ -154,6 +155,10 @@ const CoworkView: React.FC<CoworkViewProps> = ({
       ),
   );
   const shouldPresentConversation = Boolean(hasRenderableConversation || sessionNavigationTargetId);
+  const [homeIntroRunId, setHomeIntroRunId] = useState(0);
+  const [isHomeIntroCopyVisible, setIsHomeIntroCopyVisible] = useState(false);
+  const homeIntroLogoRef = useRef<HTMLDivElement>(null);
+  const wasHomeVisibleRef = useRef(false);
   const currentAgentWorkingDirectory = currentAgent?.workingDirectory?.trim() || config.workingDirectory || '';
   const currentAgentSelectedModel = useAgentSelectedModel(currentAgentId, currentAgent?.model ?? '');
   const currentAgentThinkingLevel = resolveModelThinkingLevel(
@@ -167,6 +172,61 @@ const CoworkView: React.FC<CoworkViewProps> = ({
     const key = currentSession?.id || '__home__';
     return state.cowork.mediaSelection[key];
   });
+
+  useEffect(() => {
+    const isHomeVisible = !shouldPresentConversation;
+    if (isHomeVisible && !wasHomeVisibleRef.current) {
+      setHomeIntroRunId((runId) => runId + 1);
+    }
+    wasHomeVisibleRef.current = isHomeVisible;
+  }, [shouldPresentConversation]);
+
+  useEffect(() => {
+    if (shouldPresentConversation) {
+      setIsHomeIntroCopyVisible(false);
+      return undefined;
+    }
+
+    const logoElement = homeIntroLogoRef.current;
+    setIsHomeIntroCopyVisible(false);
+
+    const copyTimer = window.setTimeout(() => {
+      setIsHomeIntroCopyVisible(true);
+    }, HOME_INTRO_COPY_DELAY_MS);
+
+    const logoAnimation = logoElement?.animate(
+      [
+        {
+          opacity: 0,
+          transform: 'rotate(0deg) scale(0.86)',
+          filter: 'drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08))',
+        },
+        {
+          opacity: 1,
+          offset: 0.18,
+        },
+        {
+          transform: 'rotate(430deg) scale(1.06)',
+          offset: 0.72,
+        },
+        {
+          opacity: 1,
+          transform: 'rotate(360deg) scale(1)',
+          filter: 'drop-shadow(0 12px 20px rgba(0, 0, 0, 0.1))',
+        },
+      ],
+      {
+        duration: HOME_INTRO_LOGO_SPIN_DURATION_MS,
+        easing: 'cubic-bezier(0.18, 0.88, 0.26, 1)',
+        fill: 'both',
+      },
+    );
+
+    return () => {
+      window.clearTimeout(copyTimer);
+      logoAnimation?.cancel();
+    };
+  }, [homeIntroRunId, shouldPresentConversation]);
 
   const buildCapabilitySelection = useCallback((skillIds: string[], kitIds: string[]) => {
     return buildCoworkCapabilitySelection(
@@ -861,10 +921,24 @@ const CoworkView: React.FC<CoworkViewProps> = ({
               className="absolute left-1/2 top-[47%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
               style={{ width: 'min(520px, calc(100% - 48px))' }}
             >
-              <div data-skin-home-copy="true" className="w-full text-center">
+              <div
+                key={homeIntroRunId}
+                data-skin-home-copy="true"
+                className="w-full text-center"
+              >
+                <div
+                  ref={homeIntroLogoRef}
+                  className="cowork-home-windmill-logo mx-auto mb-5 h-16 w-16"
+                >
+                  <HomeSkinEmblem
+                    className="h-full w-full select-none object-contain"
+                  />
+                </div>
                 <h2
-                  className="text-[28px] font-semibold leading-[1.18] tracking-normal text-foreground animate-fade-in-up"
-                  style={{ animationDelay: '70ms', animationFillMode: 'both' }}
+                  className={[
+                    'cowork-home-intro-copy text-[28px] font-semibold leading-[1.18] tracking-normal text-foreground',
+                    isHomeIntroCopyVisible ? 'cowork-home-intro-copy-visible' : undefined,
+                  ].filter(Boolean).join(' ')}
                 >
                   {homeHeroTitlePrefix}
                   <span
@@ -902,8 +976,11 @@ const CoworkView: React.FC<CoworkViewProps> = ({
                   {homeHeroTitleSuffix}
                 </h2>
                 <p
-                  className="mt-3 text-[16px] font-normal leading-6 text-secondary animate-fade-in-up"
-                  style={{ animationDelay: '120ms', animationFillMode: 'both' }}
+                  className={[
+                    'cowork-home-intro-copy mt-3 text-[16px] font-normal leading-6 text-secondary',
+                    isHomeIntroCopyVisible ? 'cowork-home-intro-copy-visible' : undefined,
+                  ].filter(Boolean).join(' ')}
+                  style={{ transitionDelay: `${HOME_INTRO_SUBTITLE_DELAY_MS - HOME_INTRO_COPY_DELAY_MS}ms` }}
                 >
                   {i18nService.t('coworkHomeHeroSubtitle')}
                 </p>

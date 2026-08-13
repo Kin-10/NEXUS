@@ -182,7 +182,7 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
         <div className="relative mb-5">
           <div className="absolute -inset-2 rounded-3xl bg-primary/20 blur-xl animate-pulse" aria-hidden="true" />
           <img
-            src="logo.png"
+            src="logo.svg"
             alt="LobsterAI"
             width={72}
             height={72}

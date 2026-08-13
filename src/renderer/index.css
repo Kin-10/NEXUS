@@ -757,6 +757,23 @@ select::-ms-expand {
   to { stroke-dashoffset: 0; opacity: 1; }
 }
 
+.cowork-home-windmill-logo {
+  transform-origin: center;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.cowork-home-intro-copy {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.44s ease-out, transform 0.44s ease-out;
+}
+
+.cowork-home-intro-copy-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .cowork-hand-underline {
   stroke-dasharray: 180;
   stroke-dashoffset: 0;
@@ -770,9 +787,13 @@ select::-ms-expand {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .cowork-home-windmill-logo,
+  .cowork-home-intro-copy,
   .cowork-hand-underline,
   .cowork-hand-underline-soft {
     animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 

@@ -21,12 +21,16 @@ export interface ThemeManagerOptions {
   onChange?: (theme: ThemeDefinition) => void;
 }
 
+const THEME_TRANSITION_CLASS = 'lobster-theme-transition';
+const THEME_TRANSITION_DURATION_MS = 300;
+
 export class ThemeManager {
   private themes: Map<string, ThemeDefinition>;
   private currentId: string;
   private opts: Required<ThemeManagerOptions>;
   private mq: MediaQueryList | null = null;
   private mqHandler: ((e: MediaQueryListEvent) => void) | null = null;
+  private transitionTimer: number | null = null;
 
   constructor(themes: ThemeDefinition[], options: ThemeManagerOptions = {}) {
     this.themes = new Map(themes.map((t) => [t.meta.id, t]));
@@ -100,10 +104,24 @@ export class ThemeManager {
   private apply(id: string): void {
     const theme = this.themes.get(id);
     if (!theme) return;
+    const previousId = this.currentId;
     this.currentId = id;
 
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
+      const shouldAnimateThemeChange = previousId !== id
+        && typeof window !== 'undefined'
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (shouldAnimateThemeChange) {
+        if (this.transitionTimer !== null) {
+          window.clearTimeout(this.transitionTimer);
+        }
+        root.classList.add(THEME_TRANSITION_CLASS);
+        this.transitionTimer = window.setTimeout(() => {
+          root.classList.remove(THEME_TRANSITION_CLASS);
+          this.transitionTimer = null;
+        }, THEME_TRANSITION_DURATION_MS);
+      }
 
       // Set data-theme attribute — CSS selectors do the rest
       root.dataset.theme = id;
