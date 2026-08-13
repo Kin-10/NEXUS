@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="LobsterAI">
+  <defs>
+    <linearGradient id="logo-blue" x1="108" y1="118" x2="404" y2="414" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f5da7"/>
+      <stop offset="0.45" stop-color="#2f7ac8"/>
+      <stop offset="1" stop-color="#115ca5"/>
+    </linearGradient>
+    <linearGradient id="logo-red" x1="404" y1="108" x2="108" y2="404" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff1524"/>
+      <stop offset="0.45" stop-color="#ff3b35"/>
+      <stop offset="1" stop-color="#f01522"/>
+    </linearGradient>
+    <filter id="logo-shadow" x="10%" y="10%" width="80%" height="80%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#logo-shadow)">
+    <path fill="url(#logo-blue)" d="M109.3 151.7 151.7 109.3 247.5 205.1 247.5 247.5 205.1 247.5z"/>
+    <path fill="url(#logo-red)" d="M360.3 109.3 402.7 151.7 306.9 247.5 264.5 247.5 264.5 205.1z"/>
+    <path fill="url(#logo-red)" d="M151.7 402.7 109.3 360.3 205.1 264.5 247.5 264.5 247.5 306.9z"/>
+    <path fill="url(#logo-blue)" d="M402.7 360.3 360.3 402.7 264.5 306.9 264.5 264.5 306.9 264.5z"/>
+  </g>
+</svg>
