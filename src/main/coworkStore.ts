@@ -3409,7 +3409,7 @@ export class CoworkStore {
       model: row.model,
       thinkingLevel: parseModelThinkingLevel(row.thinking_level) ?? '',
       workingDirectory: row.working_directory || '',
-      icon: row.icon,
+      icon: normalizeAgentAvatarIcon(row.icon),
       skillIds,
       subagentAllowAgentIds,
       enabled: Boolean(row.enabled),

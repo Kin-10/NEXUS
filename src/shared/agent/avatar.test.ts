@@ -35,6 +35,9 @@ describe('agent avatar icon encoding', () => {
     expect(normalizeAgentAvatarIcon('legacy-icon')).toBe(DefaultAgentAvatarIcon);
     expect(normalizeAgentAvatarIcon('agent-avatar:blue:code')).toBe(DefaultAgentAvatarIcon);
     expect(normalizeAgentAvatarIcon('agent-avatar:blue:missing')).toBe(DefaultAgentAvatarIcon);
+    expect(normalizeAgentAvatarIcon(encodeAgentAvatarIcon({
+      svg: AgentAvatarSvg.Lobster,
+    }))).toBe(DefaultAgentAvatarIcon);
   });
 
   test('preserves valid svg avatars when normalizing', () => {

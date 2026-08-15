@@ -125,15 +125,15 @@ const strokeWidthForWeight = (weight: IconWeight | undefined): number => {
     case 'thin':
       return 1;
     case 'light':
-      return 1.5;
+      return 1.25;
     case 'bold':
-      return 2.75;
+      return 2;
     case 'fill':
-      return 2.25;
+      return 1.75;
     case 'duotone':
     case 'regular':
     default:
-      return 2;
+      return 1.5;
   }
 };
 

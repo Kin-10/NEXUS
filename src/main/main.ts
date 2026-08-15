@@ -3661,15 +3661,34 @@ const BROWSER_ANNOTATION_PRELOAD_PATH = app.isPackaged
   ? path.join(__dirname, 'browserAnnotationPreload.js')
   : path.join(__dirname, '../dist-electron/browserAnnotationPreload.js');
 
-// 获取应用图标路径（Windows 使用 .ico，其他平台使用 .png）
+// 获取应用图标路径（与 Cowork UI logo.svg 同源；Windows 任务栏/窗口用 .ico，Linux 用 png）
 const getAppIconPath = (): string | undefined => {
   if (process.platform !== 'win32' && process.platform !== 'linux') return undefined;
-  const basePath = app.isPackaged
-    ? path.join(process.resourcesPath, 'tray')
-    : path.join(__dirname, '..', 'resources', 'tray');
-  return process.platform === 'win32'
-    ? path.join(basePath, 'tray-icon.ico')
-    : path.join(basePath, 'tray-icon.png');
+
+  const candidates = process.platform === 'win32'
+    ? (app.isPackaged
+      ? [
+          // electron-builder 会把 win.icon 嵌入 exe；额外资源里优先用正式 ico，再回退托盘 ico
+          path.join(process.resourcesPath, 'app-icon/icon.ico'),
+          path.join(process.resourcesPath, 'tray/tray-icon.ico'),
+        ]
+      : [
+          path.join(__dirname, '../build/icons/win/icon.ico'),
+          path.join(process.cwd(), 'build/icons/win/icon.ico'),
+          path.join(__dirname, '..', 'resources', 'tray', 'tray-icon.ico'),
+        ])
+    : (app.isPackaged
+      ? [
+          path.join(process.resourcesPath, 'app-icon/512x512.png'),
+          path.join(process.resourcesPath, 'tray/tray-icon.png'),
+        ]
+      : [
+          path.join(__dirname, '../build/icons/png/512x512.png'),
+          path.join(process.cwd(), 'build/icons/png/512x512.png'),
+          path.join(__dirname, '..', 'resources', 'tray', 'tray-icon.png'),
+        ]);
+
+  return candidates.find(candidate => fs.existsSync(candidate));
 };
 
 const getNotificationIconPath = (): string | null => {
@@ -3679,8 +3698,9 @@ const getNotificationIconPath = (): string | null => {
         path.join(process.resourcesPath, 'icon.icns'),
       ]
     : [
-        path.join(__dirname, 'build/icons/png/512x512.png'),
         path.join(__dirname, '../build/icons/png/512x512.png'),
+        path.join(__dirname, 'build/icons/png/512x512.png'),
+        path.join(__dirname, '../build/icons/win/icon.ico'),
       ];
   return candidates.find(candidate => fs.existsSync(candidate)) ?? null;
 };
@@ -12613,12 +12633,13 @@ if (!gotTheLock) {
     );
     const { isMaximized: shouldRestoreMaximized, ...initialWindowBounds } = initialWindowState;
 
+    const appIconPath = getAppIconPath();
     mainWindow = new BrowserWindow({
       ...initialWindowBounds,
       minWidth: MIN_APP_WINDOW_WIDTH,
       minHeight: MIN_APP_WINDOW_HEIGHT,
       title: APP_NAME,
-      icon: getAppIconPath(),
+      icon: appIconPath,
       ...(isMac
         ? {
             titleBarStyle: 'hiddenInset' as const,
@@ -12653,6 +12674,15 @@ if (!gotTheLock) {
       autoHideMenuBar: true,
       enableLargerThanScreen: false,
     });
+
+    // Windows 任务栏图标：与 Cowork 侧栏 logo.svg 同源；显式 setIcon 避免开发态落到 Electron 默认图标
+    if (process.platform === 'win32' && appIconPath) {
+      try {
+        mainWindow.setIcon(nativeImage.createFromPath(appIconPath));
+      } catch (error) {
+        console.warn('[App] failed to set Windows taskbar icon:', error);
+      }
+    }
 
     // 设置 macOS Dock 图标（开发模式下 Electron 默认图标不是应用 Logo）
     if (isMac && isDev) {

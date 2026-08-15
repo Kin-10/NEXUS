@@ -29,6 +29,7 @@ import musicIconUrl from '../../assets/agent-avatars/music.svg';
 import petIconUrl from '../../assets/agent-avatars/pet.svg';
 import pottedPlantIconUrl from '../../assets/agent-avatars/potted-plant.svg';
 import repairIconUrl from '../../assets/agent-avatars/repair.svg';
+import robotIconUrl from '../../assets/agent-avatars/robot.svg';
 import scalesIconUrl from '../../assets/agent-avatars/scales.svg';
 import shoppingCartIconUrl from '../../assets/agent-avatars/shopping-cart.svg';
 import tagIconUrl from '../../assets/agent-avatars/tag.svg';
@@ -37,7 +38,7 @@ import translationAltIconUrl from '../../assets/agent-avatars/translation-alt.sv
 import travelIconUrl from '../../assets/agent-avatars/travel.svg';
 
 export const AGENT_AVATAR_SVG_OPTIONS: Array<{ svg: AgentAvatarSvg; labelKey: string }> = [
-  { svg: AgentAvatarSvg.Lobster, labelKey: 'agentAvatarSvgLobster' },
+  { svg: AgentAvatarSvg.Robot, labelKey: 'agentAvatarSvgRobot' },
 
   { svg: AgentAvatarSvg.Code, labelKey: 'agentAvatarSvgCode' },
   { svg: AgentAvatarSvg.Repair, labelKey: 'agentAvatarSvgRepair' },
@@ -74,6 +75,7 @@ export const AGENT_AVATAR_SVG_OPTIONS: Array<{ svg: AgentAvatarSvg; labelKey: st
 ];
 
 const AGENT_AVATAR_SVG_URLS: Record<AgentAvatarSvg, string> = {
+  [AgentAvatarSvg.Robot]: robotIconUrl,
   [AgentAvatarSvg.Lobster]: lobsterIconUrl,
   [AgentAvatarSvg.Code]: codeIconUrl,
   [AgentAvatarSvg.Repair]: repairIconUrl,

@@ -27,10 +27,10 @@ export default {
       light: '300',
       normal: 'var(--lobster-ui-font-weight-normal, 445)',
       medium: 'var(--lobster-ui-font-weight-medium, 500)',
-      semibold: '600',
-      bold: '700',
-      extrabold: '800',
-      black: '900',
+      semibold: 'var(--lobster-ui-font-weight-semibold, 510)',
+      bold: 'var(--lobster-ui-font-weight-bold, 520)',
+      extrabold: 'var(--lobster-ui-font-weight-bold, 520)',
+      black: 'var(--lobster-ui-font-weight-bold, 520)',
     },
     extend: {
       boxShadow: {
@@ -128,7 +128,10 @@ export default {
             h2: { color: 'var(--lobster-text-primary)' },
             h3: { color: 'var(--lobster-text-primary)' },
             h4: { color: 'var(--lobster-text-primary)' },
-            strong: { color: 'var(--lobster-text-primary)' },
+            strong: {
+              color: 'var(--lobster-text-primary)',
+              fontWeight: 'var(--lobster-ui-font-weight-semibold, 510)',
+            },
             table: { marginTop: '0', marginBottom: '0' },
           },
         },

@@ -66,7 +66,7 @@ th, td {
 th {
   background-color: var(--lobster-surface-raised);
   opacity: 0.8;
-  font-weight: bold;
+  font-weight: var(--lobster-ui-font-weight-medium, 500);
 }
 
 /* Style for blockquotes */
@@ -117,11 +117,15 @@ blockquote {
      otherwise text visibly resizes right after startup. */
   --lobster-ui-font-size: 15px;
   --lobster-code-font-size: 14px;
-  /* 445 mirrors Codex/VS Code body weight (--vscode-font-weight: 445): between
-     Regular and Medium on variable system fonts (SF Pro, modern PingFang SC);
-     falls back to the nearest static face (e.g. 400 for Microsoft YaHei). */
+  /* Soft UI weights: avoid true Bold (600/700) so chrome stays refined on both
+     variable fonts (SF Pro / PingFang) and static CJK faces (YaHei → nearest).
+     445 mirrors Codex/VS Code body weight (--vscode-font-weight: 445). */
   --lobster-ui-font-weight-normal: 445;
   --lobster-ui-font-weight-medium: 500;
+  --lobster-ui-font-weight-semibold: 510;
+  --lobster-ui-font-weight-bold: 520;
+  /* Shared chrome icon stroke; keep Lucide / iconPark / SVG icons aligned. */
+  --lobster-icon-stroke-width: 1.5;
   --lobster-text-xs: 13px;
   --lobster-text-sm: 15px;
   --lobster-text-base: 17px;
@@ -151,6 +155,7 @@ blockquote {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Helvetica Neue', 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   font-weight: var(--lobster-ui-font-weight-normal);
+  letter-spacing: 0.01em;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

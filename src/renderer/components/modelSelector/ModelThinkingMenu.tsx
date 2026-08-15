@@ -137,7 +137,7 @@ const ModelThinkingMenu: React.FC<ModelThinkingMenuProps> = ({
               }`}
             >
               <span className="min-w-0 truncate">{getModelThinkingLevelLabel(level)}</span>
-              {selected && <CheckIcon className="h-4 w-4 shrink-0 text-emerald-500" strokeWidth={2.5} />}
+              {selected && <CheckIcon className="h-4 w-4 shrink-0 text-emerald-500" strokeWidth={1.75} />}
             </button>
           );
         })}

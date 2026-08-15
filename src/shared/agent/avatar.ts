@@ -9,6 +9,7 @@ export const AgentAvatarIconSeparator = {
 } as const;
 
 export const AgentAvatarSvg = {
+  Robot: 'robot',
   Lobster: 'lobster',
   Code: 'code',
   Repair: 'repair',
@@ -52,6 +53,10 @@ const AGENT_AVATAR_PART_COUNT = 2;
 const AGENT_AVATAR_SVGS = new Set<string>(Object.values(AgentAvatarSvg));
 
 export const DefaultAgentAvatar = {
+  svg: AgentAvatarSvg.Robot,
+} as const satisfies DesignedAgentAvatar;
+
+const LegacyDefaultAgentAvatar = {
   svg: AgentAvatarSvg.Lobster,
 } as const satisfies DesignedAgentAvatar;
 
@@ -97,6 +102,11 @@ export const isDesignedAgentAvatarIcon = (value: string | null | undefined): boo
 export const normalizeAgentAvatarIcon = (value: string | null | undefined): string => {
   const normalized = value?.trim() ?? '';
   const avatar = parseAgentAvatarIcon(normalized);
-  if (avatar) return encodeAgentAvatarIcon(avatar);
+  if (avatar) {
+    if (avatar.svg === LegacyDefaultAgentAvatar.svg) {
+      return DefaultAgentAvatarIcon;
+    }
+    return encodeAgentAvatarIcon(avatar);
+  }
   return DefaultAgentAvatarIcon;
 };

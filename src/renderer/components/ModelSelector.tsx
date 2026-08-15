@@ -871,7 +871,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
           <Lock className="h-3.5 w-3.5 shrink-0 text-secondary" />
         )}
         {selected && !blocked && (
-          <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />
+          <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
         )}
       </button>
     );
@@ -946,8 +946,8 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
                 resolveThinkingLevel(hoveredModel) ?? hoveredModel.thinkingConfig.defaultLevel,
               )}
               {thinkingConfigurable
-                ? <ChevronRightIcon className="h-3.5 w-3.5 text-secondary" />
-                : <LockClosedIcon className="h-3.5 w-3.5 text-secondary" />}
+                ? <CaretRight className="h-3.5 w-3.5 text-secondary" />
+                : <Lock className="h-3.5 w-3.5 text-secondary" />}
             </span>
           </button>
         )}
@@ -1063,7 +1063,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
             }`}
           >
             <span className={`truncate text-[13px] leading-5 ${!selectedModel ? 'font-medium' : 'font-normal'}`}>{defaultLabel}</span>
-            {!selectedModel && <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />}
+            {!selectedModel && <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />}
           </button>
         )}
         {accessibleModels.map(renderModelItem)}

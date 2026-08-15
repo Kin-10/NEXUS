@@ -1559,6 +1559,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     agentNamePlaceholder: 'Agent 名称',
     agentAvatarPickerTitle: '选择头像',
     agentAvatarPickerDone: '完成',
+    agentAvatarSvgRobot: '机器人',
     agentAvatarSvgLobster: '龙虾',
     agentAvatarSvgCode: '代码',
     agentAvatarSvgRepair: '修理',
@@ -1959,7 +1960,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
 
     // Skills
     skills: '技能',
-    skillsAndConnectors: '技能与连接器',
+    skillsAndConnectors: '能力',
     connectors: '连接器',
     useSkill: '使用技能',
     searchSkills: '搜索技能',
@@ -5060,6 +5061,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     agentNamePlaceholder: 'Agent name',
     agentAvatarPickerTitle: 'Choose avatar',
     agentAvatarPickerDone: 'Done',
+    agentAvatarSvgRobot: 'Robot',
     agentAvatarSvgLobster: 'Lobster',
     agentAvatarSvgCode: 'Code',
     agentAvatarSvgRepair: 'Repair',
@@ -5493,7 +5495,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
 
     // Skills
     skills: 'Skills',
-    skillsAndConnectors: 'Skills & Connectors',
+    skillsAndConnectors: 'Capabilities',
     connectors: 'Connectors',
     useSkill: 'Use Skill',
     searchSkills: 'Search skills',

@@ -67,7 +67,7 @@ const TodoWriteInputView: React.FC<{ items: ParsedTodoItem[] }> = ({ items }) =>
           className="flex items-start gap-2"
         >
           <span className={`mt-0.5 h-4 w-4 rounded-[4px] border flex-shrink-0 inline-flex items-center justify-center ${getStatusCheckboxClass(item.status)}`}>
-            {item.status === 'completed' && <Check className="h-3 w-3 stroke-[2.5]" />}
+            {item.status === 'completed' && <Check className="h-3 w-3" strokeWidth={1.75} />}
           </span>
           <div className="min-w-0 flex-1">
             <div className={`text-xs whitespace-pre-wrap break-words leading-5 ${

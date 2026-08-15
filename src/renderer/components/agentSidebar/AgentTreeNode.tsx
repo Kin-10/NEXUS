@@ -497,12 +497,6 @@ const AgentTreeNode: React.FC<AgentTreeNodeProps> = ({
                       onCollapseTasks(agent.id);
                     }
                   }}
-                  secondaryLabel={agent.canExpandTasks && agent.canCollapseTasks
-                    ? i18nService.t('myAgentSidebarCollapse')
-                    : undefined}
-                  onSecondaryClick={agent.canExpandTasks && agent.canCollapseTasks
-                    ? () => onCollapseTasks(agent.id)
-                    : undefined}
                 />
               )}
             </div>

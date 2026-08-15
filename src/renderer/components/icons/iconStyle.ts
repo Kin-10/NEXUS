@@ -16,10 +16,10 @@ export const filledIconProps: Pick<IconProps, 'weight' | 'aria-hidden'> = {
   'aria-hidden': true,
 };
 
-/** Default for Lucide outline chrome icons: currentColor-driven and class-sized. */
+/** Default for Lucide outline chrome icons: fine stroke, currentColor, class-sized. */
 export const iconParkOutlineProps = {
   size: '100%',
-  strokeWidth: 2,
+  strokeWidth: 1.5,
   'aria-hidden': true,
 } as const;
 
