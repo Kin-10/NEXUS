@@ -1,8 +1,9 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import https from 'https';
+import { BrowserWindow, ipcMain } from 'electron';
 
 import { McpIpcChannel } from '../../../shared/mcp/constants';
 import { normalizeMcpServerUrlInput } from '../../../shared/mcp/url';
+import { getMcpMarketplaceUrl } from '../../libs/endpoints';
+import { fetchTextUrl } from '../../libs/fetchTextUrl';
 import { OpenClawConfigImpact } from '../../libs/openclawConfigImpact';
 import type { McpRuntime } from '../../mcp/mcpRuntime';
 import type { McpServerFormData } from '../../mcp/mcpStore';
@@ -17,29 +18,6 @@ export interface McpHandlerDeps {
   }) => Promise<{ success: boolean; changed: boolean }>;
 }
 
-function fetchText(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const req = https.get(url, { timeout: 10000 }, res => {
-      if (res.statusCode !== 200) {
-        reject(new Error(`HTTP ${res.statusCode}`));
-        res.resume();
-        return;
-      }
-      let body = '';
-      res.setEncoding('utf8');
-      res.on('data', (chunk: string) => {
-        body += chunk;
-      });
-      res.on('end', () => resolve(body));
-      res.on('error', reject);
-    });
-    req.on('error', reject);
-    req.on('timeout', () => {
-      req.destroy();
-      reject(new Error('Request timeout'));
-    });
-  });
-}
 
 function syncMcpConfig(
   syncOpenClawConfig: McpHandlerDeps['syncOpenClawConfig'],
@@ -344,11 +322,9 @@ export function registerMcpHandlers(deps: McpHandlerDeps): void {
   });
 
   ipcMain.handle(McpIpcChannel.FetchMarketplace, async () => {
-    const url = app.isPackaged
-      ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/mcp-marketplace'
-      : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/mcp-marketplace';
+    const url = getMcpMarketplaceUrl();
     try {
-      const data = await fetchText(url);
+      const data = await fetchTextUrl(url);
       const json = JSON.parse(data);
       const value = json?.data?.value;
       if (!value) {

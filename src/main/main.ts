@@ -315,6 +315,8 @@ import { DesktopNotificationManager } from './libs/desktopNotificationManager';
 import {
   getHtmlSharePublicBaseUrl,
   getKitStoreUrl,
+  getLoginOvermindUrl,
+  getPortalBaseUrl,
   getPortalTasksUrl,
   getServerApiBaseUrl,
   getSkillStoreUrl,
@@ -6608,6 +6610,9 @@ if (!gotTheLock) {
     cachedMediaGenerationEntitled = quotaGateState.mediaGenerationEntitled;
     return quota;
   };
+
+  ipcMain.handle(AuthIpcChannel.GetLoginOvermindUrl, async () => getLoginOvermindUrl());
+  ipcMain.handle(AuthIpcChannel.GetPortalBaseUrl, async () => getPortalBaseUrl());
 
   ipcMain.handle(AuthIpcChannel.Login, async (_event, { loginUrl }: { loginUrl?: string } = {}) => {
     const baseUrl = loginUrl || `${getServerApiBaseUrl()}/login`;

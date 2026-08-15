@@ -1795,6 +1795,8 @@ interface IElectronAPI {
   };
   auth: {
     login: (loginUrl?: string) => Promise<AuthLoginResult>;
+    getLoginOvermindUrl: () => Promise<string>;
+    getPortalBaseUrl: () => Promise<string>;
     exchange: (
       code: string,
     ) => Promise<{

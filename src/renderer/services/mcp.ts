@@ -44,7 +44,10 @@ function readMarketplaceCache(): MarketplaceCachePayload | null {
     const raw = window.localStorage.getItem(MARKETPLACE_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as MarketplaceCachePayload;
-    if (!Array.isArray(parsed?.servers) || !Array.isArray(parsed?.categories)) return null;
+    if (!Array.isArray(parsed?.servers) || !Array.isArray(parsed?.categories)) {
+      window.localStorage.removeItem(MARKETPLACE_CACHE_KEY);
+      return null;
+    }
     return parsed;
   } catch {
     // localStorage unavailable or the cache is corrupt; fetch will repopulate.
@@ -240,9 +243,12 @@ class McpService {
     try {
       const result = await window.electron.mcp.fetchMarketplace();
       if (result.success && result.data) {
-        writeMarketplaceCache(result.data);
-        const registry = convertMarketplaceToRegistry(result.data.servers);
-        return { registry, categories: result.data.categories };
+        const servers = Array.isArray(result.data.servers) ? result.data.servers : [];
+        const categories = Array.isArray(result.data.categories) ? result.data.categories : [];
+        const normalized = { servers, categories };
+        writeMarketplaceCache(normalized);
+        const registry = convertMarketplaceToRegistry(servers);
+        return { registry, categories };
       }
       return null;
     } catch (error) {

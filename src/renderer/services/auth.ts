@@ -320,6 +320,16 @@ class AuthService {
 
     store.dispatch(setAuthLoading(true));
 
+    try {
+      if (typeof window.electron?.auth?.getPortalBaseUrl === 'function') {
+        const portalBase = await window.electron.auth.getPortalBaseUrl();
+        const { setPortalBaseOverride } = await import('./endpoints');
+        setPortalBaseOverride(portalBase);
+      }
+    } catch (error) {
+      writeAuthRendererLog('warn', 'failed to resolve portal base from main', error);
+    }
+
     // Listen for OAuth callback from protocol handler
     this.unsubCallback = window.electron.auth.onCallback(async ({ code }) => {
       await this.handleCallback(code);
@@ -404,8 +414,18 @@ class AuthService {
    * Fetch login URL from overmind, fallback to Portal login page.
    */
   private async fetchLoginUrl(): Promise<string> {
-    const { getLoginOvermindUrl } = await import('./endpoints');
-    const url = getLoginOvermindUrl();
+    let url = '';
+    try {
+      if (typeof window.electron?.auth?.getLoginOvermindUrl === 'function') {
+        url = await window.electron.auth.getLoginOvermindUrl();
+      }
+    } catch (e) {
+      writeAuthRendererLog('warn', 'failed to resolve login Overmind URL from main', e);
+    }
+    if (!url) {
+      const { getLoginOvermindUrl } = await import('./endpoints');
+      url = getLoginOvermindUrl();
+    }
     try {
       const response = await window.electron.api.fetch({
         url,

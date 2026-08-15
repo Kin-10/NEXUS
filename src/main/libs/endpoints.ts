@@ -6,6 +6,7 @@ import { resolveDevelopmentServerBaseUrl } from './developmentServerBaseUrl';
 
 let cachedTestMode: boolean | null = null;
 let loggedDevelopmentServerBaseUrl: string | null = null;
+let loggedDevelopmentOvermindBaseUrl: string | null = null;
 
 /**
  * Read testMode from store and cache it.
@@ -48,21 +49,46 @@ export const getServerApiBaseUrl = (): string => {
   return serverBaseUrl;
 };
 
+/**
+ * Overmind openapi origin. Prefers LOBSTER_OVERMIND_BASE_URL, then falls back to
+ * LOBSTER_SERVER_BASE_URL in development so BYServer can host both API + Overmind.
+ */
+export const getOvermindBaseUrl = (): string => {
+  const defaultBaseUrl = 'https://api-overmind.youdao.com';
+  const preferred = process.env.LOBSTER_OVERMIND_BASE_URL?.trim()
+    || process.env.LOBSTER_SERVER_BASE_URL?.trim();
+  if (!preferred) return defaultBaseUrl;
+
+  try {
+    const resolved = resolveDevelopmentServerBaseUrl({
+      defaultBaseUrl,
+      developmentOverride: preferred,
+      isDev: process.env.NODE_ENV === 'development',
+      isPackaged: app.isPackaged,
+    });
+    if (resolved !== defaultBaseUrl && loggedDevelopmentOvermindBaseUrl !== resolved) {
+      console.warn(`[Endpoints] routing Overmind traffic to development origin ${resolved}`);
+      loggedDevelopmentOvermindBaseUrl = resolved;
+    }
+    return resolved;
+  } catch (error) {
+    console.warn('[Endpoints] invalid Overmind development override, using default:', error);
+    return defaultBaseUrl;
+  }
+};
+
+const overmindPath = (key: string): string => {
+  const env = isTestModeEnabled() ? 'test' : 'prod';
+  return `${getOvermindBaseUrl()}/openapi/get/luna/hardware/lobsterai/${env}/${key}`;
+};
+
 export const getHtmlSharePublicBaseUrl = (): string => {
   return `${getServerApiBaseUrl()}${HtmlSharePublicRoute.Root}`;
 };
 
-export const getUpdateCheckUrl = (): string => (
-  isTestModeEnabled()
-    ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/update'
-    : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/update'
-);
+export const getUpdateCheckUrl = (): string => overmindPath('update');
 
-export const getManualUpdateCheckUrl = (): string => (
-  isTestModeEnabled()
-    ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/update-manual'
-    : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/update-manual'
-);
+export const getManualUpdateCheckUrl = (): string => overmindPath('update-manual');
 
 export const getFallbackDownloadUrl = (): string => (
   isTestModeEnabled()
@@ -70,22 +96,40 @@ export const getFallbackDownloadUrl = (): string => (
     : 'https://lobsterai.youdao.com/#/download-list'
 );
 
-export const getSkillStoreUrl = (): string => (
-  isTestModeEnabled()
-    ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/skill-store'
-    : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/skill-store'
-);
+export const getSkillStoreUrl = (): string => overmindPath('skill-store');
+
+export const getLoginOvermindUrl = (): string => overmindPath('login-url');
+
+export const getMcpMarketplaceUrl = (): string => overmindPath('mcp-marketplace');
+
+/**
+ * Portal web base (`.../portal#`). In local BYServer mode, points at the local
+ * portal pages under `${LOBSTER_SERVER_BASE_URL}/portal#`.
+ */
+export const getPortalBaseUrl = (): string => {
+  const defaultBaseUrl = isTestModeEnabled()
+    ? 'https://lobsterai.inner.youdao.com/portal#'
+    : 'https://lobsterai.youdao.com/portal#';
+  const preferred = process.env.LOBSTER_PORTAL_BASE_URL?.trim()
+    || process.env.LOBSTER_SERVER_BASE_URL?.trim();
+  if (!preferred) return defaultBaseUrl;
+
+  try {
+    const origin = resolveDevelopmentServerBaseUrl({
+      defaultBaseUrl: 'https://lobsterai.youdao.com',
+      developmentOverride: preferred,
+      isDev: process.env.NODE_ENV === 'development',
+      isPackaged: app.isPackaged,
+    });
+    if (origin === 'https://lobsterai.youdao.com') return defaultBaseUrl;
+    return `${origin}/portal#`;
+  } catch (error) {
+    console.warn('[Endpoints] invalid Portal development override, using default:', error);
+    return defaultBaseUrl;
+  }
+};
 
 // Portal 页面
-const PORTAL_BASE_TEST = 'https://lobsterai.inner.youdao.com/portal#';
-const PORTAL_BASE_PROD = 'https://lobsterai.youdao.com/portal#';
+export const getPortalTasksUrl = (): string => `${getPortalBaseUrl()}/profile/detail?tab=tasks`;
 
-const getPortalBase = (): string => isTestModeEnabled() ? PORTAL_BASE_TEST : PORTAL_BASE_PROD;
-
-export const getPortalTasksUrl = (): string => `${getPortalBase()}/profile/detail?tab=tasks`;
-
-export const getKitStoreUrl = (): string => (
-  isTestModeEnabled()
-    ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/kit-store'
-    : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/kit-store'
-);
+export const getKitStoreUrl = (): string => overmindPath('kit-store');

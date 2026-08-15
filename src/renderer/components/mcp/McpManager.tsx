@@ -75,11 +75,11 @@ type DetailTarget =
 
 /** "All" leads and resolves via i18n; remote categories carry their own names. */
 const buildCategoryOptions = (
-  categories: McpMarketplaceCategoryInfo[],
+  categories: McpMarketplaceCategoryInfo[] | null | undefined,
 ): Array<{ id: string; key: string; name_zh?: string; name_en?: string }> => [
   { id: 'all', key: 'mcpCategoryAll' },
-  ...categories
-    .filter(category => category.id !== 'all')
+  ...(Array.isArray(categories) ? categories : [])
+    .filter(category => category && category.id !== 'all')
     .map(category => ({
       id: category.id,
       key: '',

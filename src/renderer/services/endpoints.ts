@@ -38,11 +38,20 @@ export const getLoginOvermindUrl = () => isTestModeEnabled()
   ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/login-url'
   : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/login-url';
 
-// Portal 页面
+// Portal 页面（可被主进程本地 BYServer 覆盖）
+let portalBaseOverride: string | null = null;
+
+export const setPortalBaseOverride = (base: string | null): void => {
+  portalBaseOverride = typeof base === 'string' && base.trim() ? base.trim() : null;
+};
+
 const PORTAL_BASE_TEST = 'https://lobsterai.inner.youdao.com/portal#';
 const PORTAL_BASE_PROD = 'https://lobsterai.youdao.com/portal#';
 
-const getPortalBase = () => isTestModeEnabled() ? PORTAL_BASE_TEST : PORTAL_BASE_PROD;
+const getPortalBase = () => {
+  if (portalBaseOverride) return portalBaseOverride;
+  return isTestModeEnabled() ? PORTAL_BASE_TEST : PORTAL_BASE_PROD;
+};
 
 export const PortalPricingKeyfrom = {
   HtmlShare: 'html_share',

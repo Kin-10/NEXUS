@@ -1169,6 +1169,8 @@ contextBridge.exposeInMainWorld('electron', {
   },
   auth: {
     login: (loginUrl?: string) => ipcRenderer.invoke(AuthIpcChannel.Login, { loginUrl }),
+    getLoginOvermindUrl: () => ipcRenderer.invoke(AuthIpcChannel.GetLoginOvermindUrl),
+    getPortalBaseUrl: () => ipcRenderer.invoke(AuthIpcChannel.GetPortalBaseUrl),
     exchange: (code: string) => ipcRenderer.invoke(AuthIpcChannel.Exchange, { code }),
     getUser: () => ipcRenderer.invoke(AuthIpcChannel.GetUser),
     getQuota: () => ipcRenderer.invoke(AuthIpcChannel.GetQuota),
