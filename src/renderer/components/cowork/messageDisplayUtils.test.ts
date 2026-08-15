@@ -568,4 +568,3 @@ test('media polling groups count their polls as steps', () => {
 
   expect(summary.stepCount).toBe(4);
 });
-

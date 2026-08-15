@@ -10,6 +10,8 @@ import { i18nService } from '../../services/i18n';
 import SidebarSearchIcon from '../icons/SidebarSearchIcon';
 import {
   ConversationSearchDirection,
+  ConversationSearchErrorReason,
+  type ConversationSearchErrorReason as ConversationSearchErrorReasonValue,
   ConversationSearchStatus,
   type ConversationSearchStatus as ConversationSearchStatusValue,
 } from './conversationSearch';
@@ -17,6 +19,7 @@ import {
 interface CoworkConversationSearchProps {
   query: string;
   status: ConversationSearchStatusValue;
+  errorReason?: ConversationSearchErrorReasonValue | null;
   activeMatchIndex: number;
   resultCount: number;
   isResultLimitReached: boolean;
@@ -29,6 +32,7 @@ interface CoworkConversationSearchProps {
 const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
   query,
   status,
+  errorReason = null,
   activeMatchIndex,
   resultCount,
   isResultLimitReached,
@@ -40,6 +44,7 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const hasQuery = query.trim().length > 0;
   const hasResults = resultCount > 0;
+  const shouldShowNavigation = hasQuery && status === ConversationSearchStatus.Ready;
   const shouldShowResultRow = hasQuery
     || status === ConversationSearchStatus.Loading
     || status === ConversationSearchStatus.Error;
@@ -65,7 +70,9 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
   const resultText = status === ConversationSearchStatus.Loading
     ? i18nService.t('coworkConversationSearchLoading')
     : status === ConversationSearchStatus.Error
-      ? i18nService.t('coworkConversationSearchFailed')
+      ? i18nService.t(errorReason === ConversationSearchErrorReason.HistoryTooLarge
+        ? 'coworkConversationSearchTooLarge'
+        : 'coworkConversationSearchFailed')
       : hasQuery
         ? i18nService.t('coworkConversationSearchResults')
           .replace('{current}', String(hasResults ? activeMatchIndex + 1 : 0))
@@ -74,7 +81,7 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
 
   return (
     <div
-      className="non-draggable relative -mr-1 top-1 z-40 w-[340px] min-w-0 max-w-[calc(100vw_-_24px)] self-start overflow-hidden rounded-3xl border border-border/80 bg-surface-overlay text-foreground shadow-[0_10px_30px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:shadow-[0_12px_34px_rgba(0,0,0,0.42)]"
+      className="non-draggable relative -mr-1 top-1 z-40 w-[340px] min-w-[min(240px,calc(100vw_-_24px))] max-w-[calc(100vw_-_24px)] self-start overflow-hidden rounded-3xl border border-border/80 bg-surface-overlay text-foreground shadow-[0_10px_30px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:shadow-[0_12px_34px_rgba(0,0,0,0.42)]"
       role="search"
       data-cowork-conversation-search="true"
     >
@@ -118,7 +125,7 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
       </div>
       {shouldShowResultRow && (
         <div className="flex h-8 items-center justify-between border-t border-border/70 px-4 text-xs text-muted">
-          {hasQuery && (
+          {shouldShowNavigation && (
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -142,7 +149,12 @@ const CoworkConversationSearch: React.FC<CoworkConversationSearchProps> = ({
               </button>
             </div>
           )}
-          <div className="ml-auto min-w-0 truncate pl-3 text-right" role="status" aria-live="polite">
+          <div
+            className="ml-auto min-w-0 truncate pl-3 text-right"
+            role="status"
+            aria-live="polite"
+            title={resultText || undefined}
+          >
             {resultText}
           </div>
         </div>

@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   ArrowLeft,
   Plus,
+  XCircle,
 } from '@/components/icons/iconParkCompat';
 
 import { ScheduledTaskDataStatus } from '../../../scheduledTask/constants';
@@ -14,6 +15,7 @@ import { scheduledTaskService } from '../../services/scheduledTask';
 import { RootState } from '../../store';
 import { selectTask, setViewMode } from '../../store/slices/scheduledTaskSlice';
 import ManagementPageShell from '../management/ManagementPageShell';
+import SearchIcon from '../icons/SearchIcon';
 import AllRunsHistory from './AllRunsHistory';
 import { getTaskAnalyticsParams, reportScheduledTaskAction } from './analytics';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -55,6 +57,7 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
   const availableModels = useSelector((state: RootState) => state.model.availableModels);
   const selectedTask = selectedTaskId ? (tasks.find(t => t.id === selectedTaskId) ?? null) : null;
   const [activeTab, setActiveTab] = useState<TabType>('tasks');
+  const [searchText, setSearchText] = useState('');
   const [createTemplate, setCreateTemplate] = useState<ScheduledTaskTemplate | null>(null);
   const [deleteTaskInfo, setDeleteTaskInfo] = useState<DeleteTaskInfo | null>(null);
   const isFormDirtyRef = useRef(false);
@@ -235,38 +238,65 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
         ) : null
       }
     >
-      {/* Page header: description + New Task action + tabs */}
+      {/* Sticky toolbar: Search + tabs */}
       {showTabs && (
         <div className="shrink-0">
           <div className={`${pageGutterClass} pt-4`}>
-            <div className={pageContentClass}>
-              <div className="flex items-center border-b border-border">
-                {(['tasks', 'history'] as const).map(tab => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => handleTabChange(tab)}
-                    className={`relative px-2.5 pb-2.5 pt-0.5 text-[13px] font-semibold transition-colors ${
-                      activeTab === tab
-                        ? 'text-foreground'
-                        : 'text-secondary hover:text-foreground'
-                    }`}
-                  >
-                    {i18nService.t(
-                      tab === 'tasks' ? 'scheduledTasksTabTasks' : 'scheduledTasksTabHistory',
-                    )}
-                    {tab === 'tasks' && tasks.length > 0 && (
-                      <span className="ml-1.5 rounded-full bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium text-secondary">
-                        {tasks.length}
-                      </span>
-                    )}
-                    <div
-                      className={`absolute bottom-[-1px] left-0 right-0 h-0.5 rounded-full transition-colors ${
-                        activeTab === tab ? 'bg-primary' : 'bg-transparent'
+            <div className={`${pageContentClass} space-y-4`}>
+              <div
+                data-skin-management-toolbar="true"
+                className="sticky top-0 z-10 space-y-4 bg-background pb-2"
+              >
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
+                  <input
+                    type="text"
+                    value={searchText}
+                    onChange={e => setSearchText(e.target.value)}
+                    placeholder={i18nService.t('scheduledTasksSearchPlaceholder')}
+                    className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-8 text-sm text-foreground placeholder-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  {searchText && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchText('')}
+                      aria-label={i18nService.t('scheduledTasksClearSearch')}
+                      title={i18nService.t('scheduledTasksClearSearch')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-secondary transition-colors hover:text-primary"
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center border-b border-border">
+                  {(['tasks', 'history'] as const).map(tab => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => handleTabChange(tab)}
+                      className={`relative px-2.5 pb-2.5 pt-0.5 text-[13px] font-semibold transition-colors ${
+                        activeTab === tab
+                          ? 'text-foreground'
+                          : 'text-secondary hover:text-foreground'
                       }`}
-                    />
-                  </button>
-                ))}
+                    >
+                      {i18nService.t(
+                        tab === 'tasks' ? 'scheduledTasksTabTasks' : 'scheduledTasksTabHistory',
+                      )}
+                      {tab === 'tasks' && tasks.length > 0 && (
+                        <span className="ml-1.5 rounded-full bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium text-secondary">
+                          {tasks.length}
+                        </span>
+                      )}
+                      <div
+                        className={`absolute bottom-[-1px] left-0 right-0 h-0.5 rounded-full transition-colors ${
+                          activeTab === tab ? 'bg-primary' : 'bg-transparent'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -278,15 +308,25 @@ const ScheduledTasksView: React.FC<ScheduledTasksViewProps> = ({
         className={`flex-1 min-h-0 ${viewMode === 'create' || viewMode === 'edit' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'}`}
       >
         {showTabs && activeTab === 'history' ? (
-          <AllRunsHistory />
+          <div className={`${pageGutterClass} pb-6`}>
+            <div className={pageContentClass}>
+              <AllRunsHistory searchText={searchText} />
+            </div>
+          </div>
         ) : (
           <>
             {viewMode === 'list' && (
-              <TaskList
-                onRequestDelete={handleRequestDelete}
-                onCreateNew={handleCreateNew}
-                onCreateFromTemplate={handleCreateFromTemplate}
-              />
+              <div className={`${pageGutterClass} pb-6`}>
+                <div className={pageContentClass}>
+                  <TaskList
+                    searchText={searchText}
+                    onClearSearch={() => setSearchText('')}
+                    onRequestDelete={handleRequestDelete}
+                    onCreateNew={handleCreateNew}
+                    onCreateFromTemplate={handleCreateFromTemplate}
+                  />
+                </div>
+              </div>
             )}
             {viewMode === 'create' && (
               <TaskForm

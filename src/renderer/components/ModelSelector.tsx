@@ -4,6 +4,7 @@ import {
   type ModelThinkingConfig,
   type ModelThinkingLevel as ModelThinkingLevelType,
   ProviderName,
+  supportsLobsterAIRequestOptionsV1,
 } from '@shared/providers';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -256,6 +257,31 @@ export function resolveCascadePlacement(options: {
 }
 
 /**
+ * A third cascaded panel must not flip inward across its parent and cover the
+ * model dropdown. When the outward side is exhausted (notably at the 800px
+ * minimum window width), overlay the hover card itself instead; its 220px
+ * surface is wider than the 210px thinking menu and remains pointer-adjacent.
+ */
+export function resolveNestedCascadePlacement(options: Parameters<typeof resolveCascadePlacement>[0]): {
+  left: number;
+  side: CascadeSide;
+  overlaysAnchor: boolean;
+} {
+  const placement = resolveCascadePlacement(options);
+  if (placement.side === options.preferredSide) {
+    return { ...placement, overlaysAnchor: false };
+  }
+
+  const viewportMargin = options.viewportMargin ?? HOVER_CARD_VIEWPORT_MARGIN;
+  const maxLeft = Math.max(viewportMargin, options.viewportWidth - options.width - viewportMargin);
+  return {
+    left: Math.min(Math.max(options.anchorLeft, viewportMargin), maxLeft),
+    side: options.preferredSide,
+    overlaysAnchor: true,
+  };
+}
+
+/**
  * Thinking level the picker should show for one model, in precedence order:
  *
  * 1. the level being requested right now (the user just clicked it);
@@ -294,12 +320,25 @@ export function isModelAgenticBlocked(
 export function canConfigureModelThinking(
   model: Pick<
     Model,
-    'accessible' | 'agenticReady' | 'isServerModel' | 'runtimeProfile' | 'thinkingConfig'
+    | 'accessible'
+    | 'agenticReady'
+    | 'isServerModel'
+    | 'requestCapabilities'
+    | 'runtimeProfile'
+    | 'thinkingConfig'
   > | null | undefined,
 ): boolean {
   return !!model?.thinkingConfig
+    && supportsLobsterAIRequestOptionsV1(model.requestCapabilities)
     && model.accessible !== false
     && !isModelAgenticBlocked(model);
+}
+
+export function supportsConfigurableModelThinkingProtocol(
+  model: Pick<Model, 'requestCapabilities' | 'thinkingConfig'> | null | undefined,
+): boolean {
+  return !!model?.thinkingConfig
+    && supportsLobsterAIRequestOptionsV1(model.requestCapabilities);
 }
 
 const MODEL_ICON_PROVIDER_HINTS: Array<{ pattern: RegExp; providerName: ProviderName | ProviderIconId }> = [
@@ -345,6 +384,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
   const [restrictedPrompt, setRestrictedPrompt] = React.useState<ModelAccessPromptKind | null>(null);
   const hoverCardRef = React.useRef<HTMLDivElement>(null);
   const thinkingMenuRef = React.useRef<HTMLDivElement>(null);
+  const thinkingMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
   const hoverTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoverCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -526,6 +566,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
     model: Model,
     requestedLevel?: ModelThinkingLevelType,
   ): ModelThinkingLevelType | undefined => {
+    if (!canConfigureModelThinking(model)) return undefined;
     const config = model.thinkingConfig;
     if (!config) return undefined;
     return resolvePickerThinkingLevel({
@@ -752,7 +793,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
     const card = hoverCardRef.current;
     if (!card) return;
     const cardRect = card.getBoundingClientRect();
-    const { left } = resolveCascadePlacement({
+    const { left } = resolveNestedCascadePlacement({
       anchorLeft: cardRect.left,
       anchorRight: cardRect.right,
       width: THINKING_MENU_WIDTH,
@@ -776,6 +817,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
     const agenticBlocked = isModelAgenticBlocked(model);
     const restricted = model.accessible === false;
     const blocked = restricted || agenticBlocked;
+    const hasThinkingProtocol = supportsConfigurableModelThinkingProtocol(model);
 
     return (
       <button
@@ -788,7 +830,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
         onFocus={(event) => handleModelHover(model, event.currentTarget, 0)}
         onBlur={handleModelHoverEnd}
         aria-disabled={blocked}
-        aria-haspopup={thinkingSelectionEnabled && model.thinkingConfig ? 'menu' : undefined}
+        aria-haspopup={thinkingSelectionEnabled && hasThinkingProtocol ? 'menu' : undefined}
         className={`w-full px-3 py-2 text-left dark:text-claude-darkText text-claude-text flex items-center gap-2.5 transition-colors ${
           blocked
             ? 'cursor-pointer opacity-60 dark:hover:bg-claude-darkSurfaceHover hover:bg-claude-surfaceHover'
@@ -803,7 +845,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
         <span className={`min-w-0 truncate text-[13px] leading-5 ${selected ? 'font-medium' : 'font-normal'}`}>
           {model.name}
         </span>
-        {model.thinkingConfig && (
+        {hasThinkingProtocol && model.thinkingConfig && (
           <span className="shrink-0 text-[11px] font-medium text-secondary whitespace-nowrap">
             {getModelThinkingLevelLabel(resolveThinkingLevel(model) ?? model.thinkingConfig.defaultLevel)}
           </span>
@@ -837,6 +879,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
 
   const renderHoverCard = () => {
     if (!hoveredModel) return null;
+    const hasThinkingProtocol = supportsConfigurableModelThinkingProtocol(hoveredModel);
     const thinkingConfigurable = thinkingSelectionEnabled && canConfigureModelThinking(hoveredModel);
     const card = (
       <div
@@ -878,8 +921,9 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
             )}
           </div>
         )}
-        {thinkingSelectionEnabled && hoveredModel.thinkingConfig && (
+        {thinkingSelectionEnabled && hasThinkingProtocol && hoveredModel.thinkingConfig && (
           <button
+            ref={thinkingMenuTriggerRef}
             type="button"
             disabled={!thinkingConfigurable}
             aria-disabled={!thinkingConfigurable}

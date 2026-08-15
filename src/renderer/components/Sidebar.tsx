@@ -1,4 +1,4 @@
-import { AgentId } from '@shared/agent';
+﻿import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -26,7 +26,11 @@ import {
 } from './agentSidebar/batchSelection';
 import MyAgentSidebarTree from './agentSidebar/MyAgentSidebarTree';
 import Modal from './common/Modal';
-import { CoworkUiEvent } from './cowork/constants';
+import {
+  type CoworkTaskSearchRequestEventDetail,
+  CoworkTaskSearchRequestSource,
+  CoworkUiEvent,
+} from './cowork/constants';
 import CoworkSearchModal from './cowork/CoworkSearchModal';
 import Cog6ToothIcon from './icons/Cog6ToothIcon';
 import { Caution, Message, Moon, Sun } from './icons/iconParkCompat';
@@ -51,6 +55,10 @@ interface SidebarProps {
   onNewChat: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  isTaskFilterActive: boolean;
+  hasUnreadCompletedTasks: boolean;
+  onToggleTaskFilter: () => void;
+  onTaskFilterSummaryChange: (hasUnreadCompletedTasks: boolean) => void;
   onWidthChange?: (width: number) => void;
   updateNotice?: React.ReactNode;
   /** The expanded update card owns the sidebar bottom; temporarily hide the
@@ -134,6 +142,20 @@ const reportSidebarAction = (
   });
 };
 
+const logTaskSearchRequest = (
+  source: CoworkTaskSearchRequestSource,
+  activeView: SidebarProps['activeView'],
+): void => {
+  try {
+    const message = `task search requested source=${source} activeView=${activeView} platform=${window.electron?.platform ?? 'unknown'}`;
+    console.debug(`[Sidebar] ${message}`);
+    window.electron?.log?.fromRenderer?.('debug', 'Sidebar', message);
+  } catch (error) {
+    // Task search must remain available when renderer diagnostic logging fails.
+    console.debug('[Sidebar] task search diagnostic logging unavailable:', error);
+  }
+};
+
 const Sidebar: React.FC<SidebarProps> = ({
   onShowSettings,
   activeView,
@@ -145,6 +167,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   onNewChat: _onNewChat,
   isCollapsed,
   onToggleCollapse,
+  isTaskFilterActive,
+  hasUnreadCompletedTasks: _hasUnreadCompletedTasks,
+  onToggleTaskFilter: _onToggleTaskFilter,
+  onTaskFilterSummaryChange,
   onWidthChange,
   updateNotice,
   hideAdBanner,
@@ -294,16 +320,22 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
   }, [handleToggleAppearance]);
 
+  const openTaskSearch = useCallback((source: CoworkTaskSearchRequestSource) => {
+    logTaskSearchRequest(source, activeView);
+    onShowCowork();
+    setIsSearchOpen(true);
+  }, [activeView, onShowCowork]);
+
   useEffect(() => {
-    const handleSearch = () => {
-      onShowCowork();
-      setIsSearchOpen(true);
+    const handleSearch = (event: Event) => {
+      const detail = (event as CustomEvent<CoworkTaskSearchRequestEventDetail>).detail;
+      openTaskSearch(detail?.source ?? CoworkTaskSearchRequestSource.UiEvent);
     };
     window.addEventListener(CoworkUiEvent.ShortcutSearch, handleSearch);
     return () => {
       window.removeEventListener(CoworkUiEvent.ShortcutSearch, handleSearch);
     };
-  }, [onShowCowork]);
+  }, [openTaskSearch]);
 
   useEffect(() => {
     if (!isCollapsed) return;
@@ -636,7 +668,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 { active: activeView === 'cowork' },
               )}
               {renderRailButton(
-                i18nService.t('sidebarNavSkillsPlugins'),
+                i18nService.t('skillsAndConnectors'),
                 <SkillIcon className={railIconClassName} />,
                 () => {
                   reportSidebarAction('open_skills', { activeView, isCollapsed });
@@ -726,11 +758,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                 batchAgentId={batchAgentId}
                 deletedSessionIds={deletedSessionIds}
                 selectedKeys={selectedKeys}
+                isTaskFilterActive={isTaskFilterActive}
                 onShowCowork={onShowCowork}
+                onTaskFilterSummaryChange={onTaskFilterSummaryChange}
                 onSearch={() => {
                   reportSidebarAction('open_search', { activeView, isCollapsed });
-                  onShowCowork();
-                  setIsSearchOpen(true);
+                  openTaskSearch(CoworkTaskSearchRequestSource.SidebarHeader);
                 }}
                 onTaskSelected={(params) => {
                   console.debug('[Sidebar] reporting agent sidebar task selection analytics');
