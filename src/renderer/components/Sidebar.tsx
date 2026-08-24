@@ -37,6 +37,7 @@ import { Caution, Message, Moon, Sun } from './icons/iconParkCompat';
 import { iconParkOutlineProps } from './icons/iconStyle';
 import SidebarAutomationIcon from './icons/SidebarAutomationIcon';
 import SidebarKitsIcon from './icons/SidebarKitsIcon';
+import SidebarLabIcon from './icons/SidebarLabIcon';
 import SidebarSitesIcon from './icons/SidebarSitesIcon';
 import SkillIcon from './icons/SkillIcon';
 import TrashIcon from './icons/TrashIcon';
@@ -46,12 +47,13 @@ import SidebarExperienceSlot from './SidebarExperienceSlot';
 interface SidebarProps {
   onShowSettings: () => void;
   onShowLogin?: () => void;
-  activeView: 'cowork' | 'skills' | 'scheduledTasks' | 'kits' | 'mcp' | 'sites';
+  activeView: 'cowork' | 'skills' | 'scheduledTasks' | 'kits' | 'mcp' | 'sites' | 'lab';
   onShowSkills: () => void;
   onShowCowork: () => void;
   onShowScheduledTasks: () => void;
   onShowKits: () => void;
   onShowSites: () => void;
+  onShowLab: () => void;
   onNewChat: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -164,6 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onShowScheduledTasks,
   onShowKits,
   onShowSites,
+  onShowLab,
   onNewChat: _onNewChat,
   isCollapsed,
   onToggleCollapse,
@@ -702,6 +705,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onShowScheduledTasks();
                 },
                 { active: activeView === 'scheduledTasks' },
+              )}
+              {renderRailButton(
+                i18nService.t('sidebarNavLab'),
+                <SidebarLabIcon className={railIconClassName} />,
+                () => {
+                  reportSidebarAction('open_lab', { activeView, isCollapsed });
+                  setIsSearchOpen(false);
+                  onShowLab();
+                },
+                { active: activeView === 'lab' },
               )}
             </div>
             {!hideSites && (

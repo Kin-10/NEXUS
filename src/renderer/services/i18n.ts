@@ -1510,6 +1510,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     sidebarNavExperts: '专家',
     sidebarNavAutomation: '自动化',
     sidebarNavScheduled: '定时',
+    sidebarNavLab: '实验室',
+    labPageSubtitle: '试用尚未正式发布的功能',
     coworkGreetingMorning: '早上好',
     coworkGreetingAfternoon: '下午好',
     coworkGreetingEvening: '晚上好',
@@ -2468,7 +2470,6 @@ const translations: Record<LanguageType, Record<string, string>> = {
 
     // 插件管理
     pluginsTab: '插件',
-    experimentalTab: '实验功能',
     dshSettingsTitle: 'DeepSeek Harness',
     dshSettingsDesc: '内置 DeepSeek 官方开源 agent 框架（dsh）。启用后，LobsterAI 的模型供应商配置会自动同步给 dsh。',
     dshEnableLabel: '启用 DeepSeek Harness',
@@ -5033,6 +5034,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     sidebarNavExperts: 'Experts',
     sidebarNavAutomation: 'Automation',
     sidebarNavScheduled: 'Schedule',
+    sidebarNavLab: 'Lab',
+    labPageSubtitle: 'Try features that are not generally available yet',
     coworkGreetingMorning: 'Good morning',
     coworkGreetingAfternoon: 'Good afternoon',
     coworkGreetingEvening: 'Good evening',
@@ -6048,7 +6051,6 @@ const translations: Record<LanguageType, Record<string, string>> = {
 
     // Plugins
     pluginsTab: 'Plugins',
-    experimentalTab: 'Experimental',
     dshSettingsTitle: 'DeepSeek Harness',
     dshSettingsDesc: 'Bundles DeepSeek\'s official open-source agent framework (dsh). Once enabled, LobsterAI\'s model provider configuration syncs into dsh automatically.',
     dshEnableLabel: 'Enable DeepSeek Harness',
