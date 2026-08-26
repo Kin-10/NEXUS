@@ -1,24 +1,6 @@
-
+import { ArchiveBoxIcon, ArrowPathIcon, ArrowPathRoundedSquareIcon, ChatBubbleLeftIcon, CheckCircleIcon, CpuChipIcon, CubeIcon, EnvelopeIcon, ExclamationTriangleIcon, GlobeAltIcon, InformationCircleIcon, MagnifyingGlassIcon, SignalIcon, SunIcon, TrashIcon, WrenchScrewdriverIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
-import {
-  Archive,
-  ArrowsClockwise,
-  Broadcast,
-  ChatCircle,
-  CheckCircle,
-  Cpu,
-  Cube,
-  Envelope,
-  Globe,
-  Info,
-  MagnifyingGlass,
-  Trash,
-  Warning,
-  Wrench,
-  X,
-} from '@/components/icons/iconParkCompat';
 
 import { AppSettingsAutoLaunchErrorCode } from '../../shared/appSettings/constants';
 import { type AppUpdateInfo,type AppUpdateRuntimeState,AppUpdateSource,AppUpdateStatus } from '../../shared/appUpdate/constants';
@@ -44,7 +26,7 @@ import {
   resolveCodingPlanBaseUrl,
   resolveModelRuntimeProfile,
 } from '../../shared/providers';
-import { type AppConfig, defaultConfig, getProviderDisplayName, getVisibleProviders, isCustomProvider, resolveArtifactAutoPreviewEnabled, ShortcutAction, type ShortcutConfig } from '../config';
+import { type AppConfig, defaultConfig, FontPreferences, getProviderDisplayName, getVisibleProviders, isCustomProvider, normalizeFontPreference, resolveArtifactAutoPreviewEnabled, ShortcutAction, type ShortcutConfig } from '../config';
 import { APP_ID, EXPORT_FORMAT_TYPE, EXPORT_PASSWORD } from '../constants/app';
 import { useSkin } from '../providers/SkinProvider';
 import { apiService } from '../services/api';
@@ -54,7 +36,14 @@ import { decryptSecret, decryptWithPassword, EncryptedPayload, encryptWithPasswo
 import { i18nService, LanguageType } from '../services/i18n';
 import { imService } from '../services/im';
 import { LogReporterAction, reportYdAnalyzer } from '../services/logReporter';
+import { clearPendingPublishingConversionAttribution } from '../services/publishingConversionAttribution';
 import { formatShortcutForDisplay, getShortcutConflictSignature, isTextEditingSafeShortcut, matchesShortcut } from '../services/shortcuts';
+import {
+  type ThemeDefaultChangedDetail,
+  themeService,
+  ThemeServiceEvent,
+} from '../services/theme';
+import { applyTypographyPreferences } from '../services/typography';
 import type { RootState } from '../store';
 import { selectCoworkConfig } from '../store/selectors/coworkSelectors';
 import { setAvailableModels } from '../store/slices/modelSlice';
@@ -108,6 +97,7 @@ import ModelSettingsSection, { DeleteProviderConfirmDialog, ModelEditorDialog } 
 import { resolveSettingsEscapeAction, SettingsEscapeAction } from './settings/settingsEscape';
 import EmailSkillConfig from './skills/EmailSkillConfig';
 import SkinPresentationScope from './skin/SkinPresentationScope';
+import SkinSettingsSection from './skin/SkinSettingsSection';
 import ThemedSelect from './ui/ThemedSelect';
 
 type TabType = 'general' | 'appearance' | 'coworkAgentEngine' | 'model' | 'browserWebAccess' | 'coworkMemory' | 'coworkDreaming' | 'shortcuts' | 'im' | 'email' | 'plugins' | 'about';
@@ -182,6 +172,7 @@ type ShortcutCommandDefinition = {
 
 const SETTINGS_TAB_SHORTCUT_ACTIONS: Partial<Record<ShortcutAction, TabType>> = {
   [ShortcutAction.OpenSettingsGeneral]: 'general',
+  [ShortcutAction.OpenSettingsAppearance]: 'appearance',
   [ShortcutAction.OpenSettingsAgentEngine]: 'coworkAgentEngine',
   [ShortcutAction.OpenSettingsModel]: 'model',
   [ShortcutAction.OpenSettingsIm]: 'im',
@@ -196,6 +187,7 @@ const SETTINGS_TAB_SHORTCUT_ACTIONS: Partial<Record<ShortcutAction, TabType>> = 
 
 const SettingsAnalyticsSource = {
   AgentEngine: 'settings_agent_engine',
+  Appearance: 'settings_appearance',
   Browser: 'settings_browser',
   Dreaming: 'settings_dreaming',
   General: 'settings_general',
@@ -599,6 +591,20 @@ const reportGeneralSettingChanged = (
   });
 };
 
+const reportAppearanceSettingChanged = (
+  settingKey: string,
+  settingValue: SettingsAnalyticsValue,
+  previousValue?: SettingsAnalyticsValue,
+): void => {
+  void reportYdAnalyzer({
+    action: LogReporterAction.AppearanceSettingChanged,
+    settingKey,
+    settingValue,
+    previousValue,
+    source: SettingsAnalyticsSource.Appearance,
+  });
+};
+
 const reportBrowserSettingChanged = (
   params: {
     blockedHostnameCount: number;
@@ -762,6 +768,7 @@ const AGENT_TASK_SLOT_COMMANDS: ShortcutCommandDefinition[] = [
 
 const SETTINGS_TAB_SHORTCUT_COMMANDS: ShortcutCommandDefinition[] = [
   { key: ShortcutAction.OpenSettingsGeneral, tabLabelKey: 'general' },
+  { key: ShortcutAction.OpenSettingsAppearance, tabLabelKey: 'appearance' },
   { key: ShortcutAction.OpenSettingsAgentEngine, tabLabelKey: 'coworkAgentEngine' },
   { key: ShortcutAction.OpenSettingsModel, tabLabelKey: 'settingsCustomModel' },
   { key: ShortcutAction.OpenSettingsIm, tabLabelKey: 'imBot' },
@@ -903,6 +910,7 @@ interface SettingsProps extends SettingsOpenOptions {
     disableUpdate?: boolean;
   } | null;
 }
+
 
 type ProviderConnectionTestResult = {
   success: boolean;
@@ -1325,8 +1333,48 @@ const SettingsRow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="px-4 py-3.5">{children}</div>
 );
 
+const SettingsNumberInputRow: React.FC<{
+  id: string;
+  title: string;
+  description: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+}> = ({ id, title, description, value, min, max, onChange }) => (
+  <div className="flex items-center justify-between gap-4">
+    <div className="min-w-0 flex-1">
+      <label htmlFor={id} className="block text-sm font-medium text-foreground">
+        {title}
+      </label>
+      <p className="mt-1 text-sm text-secondary">
+        {description}
+      </p>
+    </div>
+    <div className="flex shrink-0 items-center gap-2">
+      <input
+        id={id}
+        type="number"
+        min={min}
+        max={max}
+        step={1}
+        value={value}
+        onChange={(event) => {
+          onChange(normalizeFontPreference(event.currentTarget.value, value, min, max));
+        }}
+        onBlur={(event) => {
+          onChange(normalizeFontPreference(event.currentTarget.value, value, min, max));
+        }}
+        className="h-8 w-16 rounded-lg border border-border bg-surface px-2 text-center text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+      />
+      <span className="text-sm text-secondary">px</span>
+    </div>
+  </div>
+);
+
 const Settings: React.FC<SettingsProps> = ({
   onClose,
+  onStartAiSkin,
   initialTab,
   initialTabRequestId,
   notice,
@@ -1337,10 +1385,17 @@ const Settings: React.FC<SettingsProps> = ({
 }) => {
   const dispatch = useDispatch();
   const {
+    activeSkin,
     isAppearanceChanging,
+    selectThemeById,
+    selectThemeMode,
   } = useSkin();
   // 状态
   const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'general');
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [themeId, setThemeId] = useState<string>(themeService.getDefaultThemeId());
+  const [uiFontSize, setUiFontSize] = useState<number>(FontPreferences.UiFontSizeDefault);
+  const [codeFontSize, setCodeFontSize] = useState<number>(FontPreferences.CodeFontSizeDefault);
   const [language, setLanguage] = useState<LanguageType>('zh');
   const [artifactAutoPreviewEnabled, setArtifactAutoPreviewEnabled] = useState(true);
   const [autoLaunch, setAutoLaunchState] = useState(false);
@@ -1375,8 +1430,28 @@ const Settings: React.FC<SettingsProps> = ({
   const [pendingDeleteProvider, setPendingDeleteProvider] = useState<ProviderType | null>(null);
   const [isImportingProviders, setIsImportingProviders] = useState(false);
   const [isExportingProviders, setIsExportingProviders] = useState(false);
+  const initialThemeIdRef = useRef<string>(themeService.getDefaultThemeId());
+  const initialUiFontSizeRef = useRef<number>(FontPreferences.UiFontSizeDefault);
+  const initialCodeFontSizeRef = useRef<number>(FontPreferences.CodeFontSizeDefault);
   const initialLanguageRef = useRef<LanguageType>(i18nService.getLanguage());
   const didSaveRef = useRef(false);
+
+  useEffect(() => {
+    const handleDefaultThemeChanged = (event: Event) => {
+      const detail = (event as CustomEvent<ThemeDefaultChangedDetail>).detail;
+      if (!detail) {
+        return;
+      }
+
+      setTheme(detail.mode);
+      setThemeId(detail.themeId);
+    };
+
+    window.addEventListener(ThemeServiceEvent.DefaultChanged, handleDefaultThemeChanged);
+    return () => {
+      window.removeEventListener(ThemeServiceEvent.DefaultChanged, handleDefaultThemeChanged);
+    };
+  }, []);
 
   // Plugin settings handle (deferred save)
   const pluginsSettingsRef = useRef<PluginsSettingsHandle>(null);
@@ -1419,6 +1494,7 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Add state for providers configuration
   const [providers, setProviders] = useState<ProvidersConfig>(() => getDefaultProviders());
+
 
   // authType defaults to undefined on first open, which should behave as OAuth mode
   const minimaxIsOAuthMode = providers.minimax.authType !== 'apikey';
@@ -1880,7 +1956,27 @@ const Settings: React.FC<SettingsProps> = ({
       const config = configService.getConfig();
 
       // Set general settings
+      const resolvedUiFontSize = normalizeFontPreference(
+        config.uiFontSize,
+        FontPreferences.UiFontSizeDefault,
+        FontPreferences.UiFontSizeMin,
+        FontPreferences.UiFontSizeMax,
+      );
+      const resolvedCodeFontSize = normalizeFontPreference(
+        config.codeFontSize,
+        FontPreferences.CodeFontSizeDefault,
+        FontPreferences.CodeFontSizeMin,
+        FontPreferences.CodeFontSizeMax,
+      );
+      const defaultThemeId = themeService.getDefaultThemeId();
+      initialThemeIdRef.current = defaultThemeId;
+      initialUiFontSizeRef.current = resolvedUiFontSize;
+      initialCodeFontSizeRef.current = resolvedCodeFontSize;
       initialLanguageRef.current = config.language;
+      setTheme(config.theme);
+      setThemeId(defaultThemeId);
+      setUiFontSize(resolvedUiFontSize);
+      setCodeFontSize(resolvedCodeFontSize);
       setLanguage(config.language);
       setArtifactAutoPreviewEnabled(
         resolveArtifactAutoPreviewEnabled(config.artifactAutoPreviewEnabled),
@@ -2129,11 +2225,17 @@ const Settings: React.FC<SettingsProps> = ({
   }, []);
 
   useEffect(() => {
+    const initialUiFontSize = initialUiFontSizeRef.current;
+    const initialCodeFontSize = initialCodeFontSizeRef.current;
     const initialLanguage = initialLanguageRef.current;
     return () => {
       if (didSaveRef.current) {
         return;
       }
+      applyTypographyPreferences({
+        uiFontSize: initialUiFontSize,
+        codeFontSize: initialCodeFontSize,
+      });
       i18nService.setLanguage(initialLanguage, { persist: false });
     };
   }, []);
@@ -2177,9 +2279,9 @@ const Settings: React.FC<SettingsProps> = ({
   }, [buildNoticeMessage]);
 
   useEffect(() => {
-    if (!initialTab) return;
-    // Appearance moved to the sidebar rail; keep legacy callers from landing on an empty tab.
-    setActiveTab(initialTab === 'appearance' ? 'general' : initialTab);
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
   }, [initialTab, initialTabRequestId]);
 
   // Subscribe to language changes
@@ -2750,7 +2852,7 @@ const Settings: React.FC<SettingsProps> = ({
 
     if (phase === OpenClawEnginePhase.Error) {
       return {
-        Icon: Warning,
+        Icon: ExclamationTriangleIcon,
         iconClassName: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
         progressClassName: 'bg-red-500',
         spinIcon: false,
@@ -2763,7 +2865,7 @@ const Settings: React.FC<SettingsProps> = ({
 
     if (phase === OpenClawEnginePhase.Running || phase === OpenClawEnginePhase.Ready) {
       return {
-        Icon: CheckCircle,
+        Icon: CheckCircleIcon,
         iconClassName: 'bg-primary-muted text-primary',
         progressClassName: 'bg-primary',
         spinIcon: false,
@@ -2778,7 +2880,7 @@ const Settings: React.FC<SettingsProps> = ({
 
     if (phase === OpenClawEnginePhase.Installing || phase === OpenClawEnginePhase.Starting) {
       return {
-        Icon: ArrowsClockwise,
+        Icon: ArrowPathIcon,
         iconClassName: 'bg-primary-muted text-primary',
         progressClassName: 'bg-primary',
         spinIcon: true,
@@ -2792,7 +2894,7 @@ const Settings: React.FC<SettingsProps> = ({
     }
 
     return {
-      Icon: Cpu,
+      Icon: CpuChipIcon,
       iconClassName: 'bg-surface-raised text-secondary',
       progressClassName: 'bg-primary',
       spinIcon: false,
@@ -3324,6 +3426,19 @@ const Settings: React.FC<SettingsProps> = ({
       const previousArtifactAutoPreviewEnabled = resolveArtifactAutoPreviewEnabled(
         previousConfig.artifactAutoPreviewEnabled,
       );
+      const previousThemeId = initialThemeIdRef.current;
+      const previousUiFontSize = normalizeFontPreference(
+        previousConfig.uiFontSize,
+        FontPreferences.UiFontSizeDefault,
+        FontPreferences.UiFontSizeMin,
+        FontPreferences.UiFontSizeMax,
+      );
+      const previousCodeFontSize = normalizeFontPreference(
+        previousConfig.codeFontSize,
+        FontPreferences.CodeFontSizeDefault,
+        FontPreferences.CodeFontSizeMin,
+        FontPreferences.CodeFontSizeMax,
+      );
       let savedPluginPendingChanges: PluginPendingChanges | null = null;
 
       await configService.updateConfig({
@@ -3332,6 +3447,9 @@ const Settings: React.FC<SettingsProps> = ({
           baseUrl: primaryProvider.baseUrl,
         },
         providers: normalizedProviders, // Save all providers configuration
+        theme,
+        uiFontSize,
+        codeFontSize,
         language,
         artifactAutoPreviewEnabled,
         useSystemProxy,
@@ -3350,12 +3468,17 @@ const Settings: React.FC<SettingsProps> = ({
         },
       });
 
+      if (!usageAnalyticsEnabled) {
+        clearPendingPublishingConversionAttribution();
+      }
+
       if (previousArtifactAutoPreviewEnabled !== artifactAutoPreviewEnabled) {
         console.log(
           `[Settings] artifact auto-preview preference updated: enabled=${artifactAutoPreviewEnabled}`,
         );
       }
 
+      applyTypographyPreferences({ uiFontSize, codeFontSize });
 
       // 应用语言
       i18nService.setLanguage(language, { persist: false });
@@ -3363,6 +3486,7 @@ const Settings: React.FC<SettingsProps> = ({
       // Set API with the primary provider - handle Qwen OAuth
       let apiKeyToUse = primaryProvider.apiKey;
       let baseUrlToUse = primaryProvider.baseUrl;
+
 
       apiService.setConfig({
         apiKey: apiKeyToUse,
@@ -3480,6 +3604,18 @@ const Settings: React.FC<SettingsProps> = ({
         }
         if (previousSkipMissedJobs !== skipMissedJobs) {
           reportGeneralSettingChanged('skipMissedJobs', skipMissedJobs, previousSkipMissedJobs);
+        }
+        if (previousConfig.theme !== theme) {
+          reportAppearanceSettingChanged('theme', theme, previousConfig.theme);
+        }
+        if (previousThemeId !== themeId) {
+          reportAppearanceSettingChanged('themeId', themeId, previousThemeId);
+        }
+        if (previousUiFontSize !== uiFontSize) {
+          reportAppearanceSettingChanged('uiFontSize', uiFontSize, previousUiFontSize);
+        }
+        if (previousCodeFontSize !== codeFontSize) {
+          reportAppearanceSettingChanged('codeFontSize', codeFontSize, previousCodeFontSize);
         }
         const browserSettingParams = buildBrowserSettingAnalyticsParams(
           previousBrowserWebAccess,
@@ -3927,6 +4063,7 @@ const Settings: React.FC<SettingsProps> = ({
     setTestResult(null);
 
     const hasValidAuth = providerConfig.apiKey;
+
 
     if (providerRequiresApiKey(testingProvider) && !hasValidAuth) {
       reportCustomModelConnectionTested(testingProvider, testingApiFormat, 'failed', {
@@ -4392,16 +4529,17 @@ const Settings: React.FC<SettingsProps> = ({
   const sidebarTabs: { key: TabType; label: string; icon: React.ReactNode }[] = (() => {
     const allTabs = [
       { key: 'general' as TabType,        label: i18nService.t('general'),        icon: <SettingsSlidersIcon className="h-5 w-5" /> },
-      { key: 'coworkAgentEngine' as TabType, label: i18nService.t('coworkAgentEngine'), icon: <Cpu className="h-5 w-5" /> },
-      { key: 'model' as TabType,          label: i18nService.t('settingsCustomModel'), icon: <Cube className="h-5 w-5" /> },
-      { key: 'im' as TabType,             label: i18nService.t('imBot'),          icon: <ChatCircle className="h-5 w-5" /> },
-      { key: 'browserWebAccess' as TabType, label: i18nService.t('browserWebAccessTab'), icon: <Globe className="h-5 w-5" /> },
-      { key: 'email' as TabType,          label: i18nService.t('emailTab'),       icon: <Envelope className="h-5 w-5" /> },
+      { key: 'appearance' as TabType,     label: i18nService.t('appearance'),     icon: <SunIcon className="h-5 w-5" /> },
+      { key: 'coworkAgentEngine' as TabType, label: i18nService.t('coworkAgentEngine'), icon: <CpuChipIcon className="h-5 w-5" /> },
+      { key: 'model' as TabType,          label: i18nService.t('settingsCustomModel'), icon: <CubeIcon className="h-5 w-5" /> },
+      { key: 'im' as TabType,             label: i18nService.t('imBot'),          icon: <ChatBubbleLeftIcon className="h-5 w-5" /> },
+      { key: 'browserWebAccess' as TabType, label: i18nService.t('browserWebAccessTab'), icon: <GlobeAltIcon className="h-5 w-5" /> },
+      { key: 'email' as TabType,          label: i18nService.t('emailTab'),       icon: <EnvelopeIcon className="h-5 w-5" /> },
       { key: 'coworkMemory' as TabType,   label: i18nService.t('coworkMemoryTitle'), icon: <BrainIcon className="h-5 w-5" /> },
       { key: 'coworkDreaming' as TabType, label: i18nService.t('coworkMemoryTabDreaming'), icon: <DreamingTabIcon className="h-5 w-5" /> },
       { key: 'plugins' as TabType,        label: i18nService.t('pluginsTab'),     icon: <PlugIcon className="h-5 w-5" /> },
       { key: 'shortcuts' as TabType,      label: i18nService.t('shortcuts'),      icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5"><rect x="2" y="4" width="20" height="14" rx="2" /><line x1="6" y1="8" x2="8" y2="8" /><line x1="10" y1="8" x2="12" y2="8" /><line x1="14" y1="8" x2="16" y2="8" /><line x1="6" y1="12" x2="8" y2="12" /><line x1="10" y1="12" x2="14" y2="12" /><line x1="16" y1="12" x2="18" y2="12" /><line x1="8" y1="15.5" x2="16" y2="15.5" /></svg> },
-      { key: 'about' as TabType,          label: i18nService.t('about'),          icon: <Info className="h-5 w-5" /> },
+      { key: 'about' as TabType,          label: i18nService.t('about'),          icon: <InformationCircleIcon className="h-5 w-5" /> },
     ];
     // Filter out tabs hidden by enterprise config
     // Filter out tabs with 'hide' action in enterprise config
@@ -4440,6 +4578,229 @@ const Settings: React.FC<SettingsProps> = ({
     document.addEventListener('keydown', handleSettingsTabShortcut);
     return () => document.removeEventListener('keydown', handleSettingsTabShortcut);
   }, [shortcuts, sidebarTabs, handleTabChange]);
+
+  const handleUiFontSizeChange = useCallback((nextValue: number) => {
+    setUiFontSize(nextValue);
+    applyTypographyPreferences({
+      uiFontSize: nextValue,
+      codeFontSize,
+    });
+  }, [codeFontSize]);
+
+  const handleCodeFontSizeChange = useCallback((nextValue: number) => {
+    setCodeFontSize(nextValue);
+    applyTypographyPreferences({
+      uiFontSize,
+      codeFontSize: nextValue,
+    });
+  }, [uiFontSize]);
+
+  const handleThemeModeSelection = useCallback(async (
+    mode: 'light' | 'dark' | 'system',
+  ) => {
+    setError(null);
+    try {
+      const selection = await selectThemeMode(mode);
+      setTheme(selection.mode);
+      setThemeId(selection.themeId);
+    } catch (selectionError) {
+      console.error('[Settings] Failed to select the default theme mode', selectionError);
+      setError(i18nService.t('themeApplyFailed'));
+    }
+  }, [selectThemeMode]);
+
+  const handleThemeIdSelection = useCallback(async (nextThemeId: string) => {
+    setError(null);
+    try {
+      const selection = await selectThemeById(nextThemeId);
+      setTheme(selection.mode);
+      setThemeId(selection.themeId);
+    } catch (selectionError) {
+      console.error('[Settings] Failed to select the default color theme', selectionError);
+      setError(i18nService.t('themeApplyFailed'));
+    }
+  }, [selectThemeById]);
+
+  const renderAppearanceSettings = () => (
+    <div className="space-y-8">
+      <div>
+        <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--lobster-text-primary)' }}>
+          {i18nService.t('appearance')}
+        </h4>
+
+        <div className="grid max-w-xl grid-cols-3 gap-3 mb-4">
+          {(['light', 'dark', 'system'] as const).map((mode) => {
+            const isSelected = !activeSkin && theme === mode;
+            return (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => void handleThemeModeSelection(mode)}
+                disabled={isAppearanceChanging}
+                className="flex flex-col items-center rounded-xl border-2 p-3 transition-colors cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                style={{
+                  borderColor: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-border)',
+                  backgroundColor: isSelected ? 'var(--lobster-primary-muted)' : undefined,
+                }}
+              >
+                <svg viewBox="0 0 120 80" className="w-full h-auto rounded-md mb-2 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
+                  {mode === 'light' && (
+                    <>
+                      <rect width="120" height="80" fill="#F8F9FB" />
+                      <rect x="0" y="0" width="30" height="80" fill="#EBEDF0" />
+                      <rect x="4" y="8" width="22" height="4" rx="2" fill="#C8CBD0" />
+                      <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#D5D7DB" />
+                      <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#D5D7DB" />
+                      <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#D5D7DB" />
+                      <rect x="36" y="8" width="78" height="64" rx="4" fill="#FFFFFF" />
+                      <rect x="42" y="16" width="50" height="4" rx="2" fill="#D5D7DB" />
+                      <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#E2E4E7" />
+                      <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#E2E4E7" />
+                      <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#E2E4E7" />
+                      <rect x="42" y="46" width="40" height="4" rx="2" fill="#D5D7DB" />
+                      <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#E2E4E7" />
+                      <rect x="42" y="60" width="58" height="3" rx="1.5" fill="#E2E4E7" />
+                    </>
+                  )}
+                  {mode === 'dark' && (
+                    <>
+                      <rect width="120" height="80" fill="#0F1117" />
+                      <rect x="0" y="0" width="30" height="80" fill="#151820" />
+                      <rect x="4" y="8" width="22" height="4" rx="2" fill="#3A3F4B" />
+                      <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#2A2F3A" />
+                      <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#2A2F3A" />
+                      <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#2A2F3A" />
+                      <rect x="36" y="8" width="78" height="64" rx="4" fill="#1A1D27" />
+                      <rect x="42" y="16" width="50" height="4" rx="2" fill="#3A3F4B" />
+                      <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#252930" />
+                      <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#252930" />
+                      <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#252930" />
+                      <rect x="42" y="46" width="40" height="4" rx="2" fill="#3A3F4B" />
+                      <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#252930" />
+                      <rect x="42" y="60" width="58" height="3" rx="1.5" fill="#252930" />
+                    </>
+                  )}
+                  {mode === 'system' && (
+                    <>
+                      <defs>
+                        <clipPath id="left-half">
+                          <rect x="0" y="0" width="60" height="80" />
+                        </clipPath>
+                        <clipPath id="right-half">
+                          <rect x="60" y="0" width="60" height="80" />
+                        </clipPath>
+                      </defs>
+                      <g clipPath="url(#left-half)">
+                        <rect width="120" height="80" fill="#F8F9FB" />
+                        <rect x="0" y="0" width="30" height="80" fill="#EBEDF0" />
+                        <rect x="4" y="8" width="22" height="4" rx="2" fill="#C8CBD0" />
+                        <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#D5D7DB" />
+                        <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#D5D7DB" />
+                        <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#D5D7DB" />
+                        <rect x="36" y="8" width="78" height="64" rx="4" fill="#FFFFFF" />
+                        <rect x="42" y="16" width="50" height="4" rx="2" fill="#D5D7DB" />
+                        <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#E2E4E7" />
+                        <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#E2E4E7" />
+                        <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#E2E4E7" />
+                        <rect x="42" y="46" width="40" height="4" rx="2" fill="#D5D7DB" />
+                        <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#E2E4E7" />
+                      </g>
+                      <g clipPath="url(#right-half)">
+                        <rect width="120" height="80" fill="#0F1117" />
+                        <rect x="0" y="0" width="30" height="80" fill="#151820" />
+                        <rect x="4" y="8" width="22" height="4" rx="2" fill="#3A3F4B" />
+                        <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#2A2F3A" />
+                        <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#2A2F3A" />
+                        <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#2A2F3A" />
+                        <rect x="36" y="8" width="78" height="64" rx="4" fill="#1A1D27" />
+                        <rect x="42" y="16" width="50" height="4" rx="2" fill="#3A3F4B" />
+                        <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#252930" />
+                        <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#252930" />
+                        <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#252930" />
+                        <rect x="42" y="46" width="40" height="4" rx="2" fill="#3A3F4B" />
+                        <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#252930" />
+                      </g>
+                      <line x1="60" y1="0" x2="60" y2="80" stroke="#888" strokeWidth="0.5" />
+                    </>
+                  )}
+                </svg>
+                <span className="text-xs font-medium" style={{ color: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-text-primary)' }}>
+                  {i18nService.t(mode)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <h4 className="text-sm font-medium mb-3 mt-5" style={{ color: 'var(--lobster-text-primary)' }}>
+          {i18nService.t('themeColor')}
+        </h4>
+        {(() => {
+          const allThemes = themeService.getAllThemes();
+          const renderTile = (t: import('../theme').ThemeDefinition) => {
+            const isSelected = !activeSkin && themeId === t.meta.id;
+            const [bg, c1, c2, c3] = t.meta.preview;
+            return (
+              <button
+                key={t.meta.id}
+                type="button"
+                onClick={() => void handleThemeIdSelection(t.meta.id)}
+                disabled={isAppearanceChanging}
+                className="flex flex-col items-center rounded-xl border-2 p-2 transition-colors cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                style={{
+                  borderColor: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-border)',
+                  backgroundColor: isSelected ? 'var(--lobster-primary-muted)' : undefined,
+                }}
+              >
+                <svg viewBox="0 0 80 48" className="w-full h-auto rounded-md mb-1.5 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="80" height="48" fill={bg} />
+                  <rect x="4" y="6" width="20" height="36" rx="3" fill={c1} opacity="0.7" />
+                  <rect x="28" y="6" width="48" height="36" rx="3" fill={c2} opacity="0.5" />
+                  <circle cx="52" cy="24" r="8" fill={c3} opacity="0.8" />
+                  <rect x="32" y="34" width="40" height="4" rx="2" fill={c1} opacity="0.6" />
+                </svg>
+                <span className="text-[10px] font-medium truncate w-full text-center" style={{ color: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-text-primary)' }}>
+                  {i18nService.t('theme-name-' + t.meta.id) || t.meta.name}
+                </span>
+              </button>
+            );
+          };
+          return (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
+              {allThemes.map(renderTile)}
+            </div>
+          );
+        })()}
+
+        <SkinSettingsSection onStartAiSkin={onStartAiSkin} />
+
+        <div className="mt-5 divide-y divide-border rounded-xl border border-border bg-surface">
+          <div className="px-4 py-3">
+            <SettingsNumberInputRow
+              id="ui-font-size"
+              title={i18nService.t('uiFontSize')}
+              description={i18nService.t('uiFontSizeDescription')}
+              value={uiFontSize}
+              min={FontPreferences.UiFontSizeMin}
+              max={FontPreferences.UiFontSizeMax}
+              onChange={handleUiFontSizeChange}
+            />
+          </div>
+          <div className="px-4 py-3">
+            <SettingsNumberInputRow
+              id="code-font-size"
+              title={i18nService.t('codeFontSize')}
+              description={i18nService.t('codeFontSizeDescription')}
+              value={codeFontSize}
+              min={FontPreferences.CodeFontSizeMin}
+              max={FontPreferences.CodeFontSizeMax}
+              onChange={handleCodeFontSizeChange}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderTabContent = () => {
     switch(activeTab) {
@@ -4711,7 +5072,7 @@ const Settings: React.FC<SettingsProps> = ({
         );
 
       case 'appearance':
-        return null;
+        return renderAppearanceSettings();
 
       case 'email':
         return <EmailSkillConfig />;
@@ -4761,7 +5122,7 @@ const Settings: React.FC<SettingsProps> = ({
                               className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-background hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/25"
                             >
                               {openClawGatewayCopied
-                                ? <CheckCircle className="h-4 w-4 text-primary" />
+                                ? <CheckCircleIcon className="h-4 w-4 text-primary" />
                                 : <MessageCopyIcon className="h-4 w-4" />}
                             </button>
                           </div>
@@ -4804,7 +5165,7 @@ const Settings: React.FC<SettingsProps> = ({
                             : 'bg-surface-raised text-secondary'
                         }`}
                       >
-                        <Broadcast className="h-5 w-5" />
+                        <SignalIcon className="h-5 w-5" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-3">
@@ -4836,7 +5197,7 @@ const Settings: React.FC<SettingsProps> = ({
                     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                          <Wrench className="h-[18px] w-[18px]" />
+                          <WrenchScrewdriverIcon className="h-[18px] w-[18px]" />
                         </span>
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-foreground">
@@ -4854,7 +5215,7 @@ const Settings: React.FC<SettingsProps> = ({
                         className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:self-auto"
                       >
                         {isRepairingOpenClaw && (
-                          <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
+                          <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
                         )}
                         {isRepairingOpenClaw
                           ? i18nService.t('openClawRepairRunning')
@@ -4890,7 +5251,7 @@ const Settings: React.FC<SettingsProps> = ({
                     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                          <Archive className="h-[18px] w-[18px]" />
+                          <ArchiveBoxIcon className="h-[18px] w-[18px]" />
                         </span>
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-foreground">
@@ -4908,7 +5269,7 @@ const Settings: React.FC<SettingsProps> = ({
                         className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:self-auto"
                       >
                         {isBackingUpOpenClawData && (
-                          <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
+                          <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
                         )}
                         {isBackingUpOpenClawData
                           ? i18nService.t('openClawDataBackupRunning')
@@ -4919,7 +5280,7 @@ const Settings: React.FC<SettingsProps> = ({
                     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                          <ArrowsClockwise className="h-[18px] w-[18px]" />
+                          <ArrowPathRoundedSquareIcon className="h-[18px] w-[18px]" />
                         </span>
                         <div className="min-w-0">
                           <div className="text-sm font-medium text-foreground">
@@ -4937,7 +5298,7 @@ const Settings: React.FC<SettingsProps> = ({
                         className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:self-auto"
                       >
                         {isRestoringOpenClawData && (
-                          <ArrowsClockwise className="h-3.5 w-3.5 animate-spin" />
+                          <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
                         )}
                         {isRestoringOpenClawData
                           ? i18nService.t('openClawDataMigrationRunning')
@@ -5135,7 +5496,7 @@ const Settings: React.FC<SettingsProps> = ({
                                             className="rounded-md p-1.5 text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-60 transition-colors"
                                             disabled={coworkMemoryListLoading}
                                           >
-                                            <Trash className="h-4 w-4" />
+                                            <TrashIcon className="h-4 w-4" />
                                           </button>
                                         </div>
                                       </div>
@@ -5173,7 +5534,7 @@ const Settings: React.FC<SettingsProps> = ({
                           aria-label={i18nService.t('close')}
                           className="p-2 rounded-lg hover:bg-surface-raised transition-colors"
                         >
-                          <X className="h-5 w-5 text-secondary" />
+                          <XMarkIcon className="h-5 w-5 text-secondary" />
                         </button>
                       </div>
                       <textarea
@@ -5313,7 +5674,7 @@ const Settings: React.FC<SettingsProps> = ({
         return (
           <div className="space-y-4">
             <div className="relative">
-              <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
               <input
                 value={shortcutSearchQuery}
                 onChange={(event) => setShortcutSearchQuery(event.target.value)}
@@ -5371,7 +5732,7 @@ const Settings: React.FC<SettingsProps> = ({
                               aria-label={i18nService.t('shortcutClear')}
                               className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
                             >
-                              <Trash className="h-3.5 w-3.5" />
+                              <TrashIcon className="h-3.5 w-3.5" />
                             </button>
                           ) : (
                             <span className="h-6 w-6 shrink-0" aria-hidden="true" />
@@ -5414,7 +5775,7 @@ const Settings: React.FC<SettingsProps> = ({
           <div className="flex min-h-full flex-col items-center pt-6 pb-3">
             {/* Logo & App Name */}
             <img
-              src="logo.svg"
+              src="logo.png"
               alt="LobsterAI"
               className="w-16 h-16 mb-3 cursor-pointer select-none"
               onClick={(e) => {
@@ -5572,16 +5933,16 @@ const Settings: React.FC<SettingsProps> = ({
       onClose={guardedClose}
       onEscape={handleEscape}
       overlayClassName="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4"
-      className="w-[calc(100vw-1.5rem)] max-w-[980px] min-w-0 sm:w-[calc(100vw-2rem)]"
+      className="w-[calc(100vw-1.5rem)] min-w-0 sm:w-[90vw] max-w-[1440px]"
     >
       <SkinPresentationScope
         enabled
         data-skin-settings="true"
-        className="relative flex h-[86vh] max-h-[calc(100vh-1.5rem)] w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-background shadow-modal modal-content sm:max-h-[calc(100vh-2rem)]"
+        className="relative flex h-[min(90vh,calc(100vh-6rem))] w-full min-w-0 rounded-2xl border-border border shadow-modal overflow-hidden modal-content"
         onClick={handleSettingsClick}
       >
         {/* Left sidebar */}
-        <div className="w-[232px] shrink-0 flex flex-col bg-surface/95 border-r border-border/70 rounded-l-2xl overflow-y-auto">
+        <div className="w-[220px] shrink-0 flex flex-col bg-surface-raised border-r border-border rounded-l-2xl overflow-y-auto">
           <div className="px-5 pt-5 pb-3">
             <h2 className="text-lg font-semibold text-foreground">{i18nService.t('settings')}</h2>
           </div>
@@ -5606,15 +5967,13 @@ const Settings: React.FC<SettingsProps> = ({
         {/* Right content */}
         <div className="relative flex-1 flex flex-col min-w-0 overflow-hidden bg-background rounded-r-2xl">
           {/* Content header */}
-          <div className="flex justify-between items-center gap-3 border-b border-border/70 bg-background/95 px-6 py-4 shrink-0 backdrop-blur-sm">
+          <div className="flex justify-between items-center gap-3 px-6 pt-5 pb-3 shrink-0">
             <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">{activeTabLabel}</h3>
             <button
-              type="button"
               onClick={guardedClose}
-              aria-label={i18nService.t('close')}
               className="text-secondary hover:text-foreground p-1.5 hover:bg-surface-raised rounded-lg transition-colors"
             >
-              <X className="h-5 w-5" />
+              <XMarkIcon className="h-5 w-5" />
             </button>
           </div>
 
@@ -5640,7 +5999,7 @@ const Settings: React.FC<SettingsProps> = ({
             {/* Tab content */}
             <div
               ref={contentRef}
-              className="px-6 py-5 flex-1 overflow-y-auto"
+              className="px-6 py-4 flex-1 overflow-y-auto"
               style={{ scrollbarGutter: 'stable' }}
             >
               {renderTabContent()}
@@ -5654,7 +6013,7 @@ const Settings: React.FC<SettingsProps> = ({
                   footerFadeVisible ? 'opacity-100' : 'opacity-0'
                 }`}
               />
-              <div className="flex justify-end space-x-4 border-t border-border/60 bg-background/95 px-6 pb-5 pt-3 backdrop-blur-sm">
+              <div className="flex justify-end space-x-4 px-6 pb-5 pt-3 bg-background">
                 <button
                   type="button"
                   onClick={guardedClose}
@@ -5720,7 +6079,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <div className="px-5 pt-5 pb-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                      <Wrench className="h-5 w-5" />
+                      <WrenchScrewdriverIcon className="h-5 w-5" />
                     </span>
                     <h3 className="text-base font-semibold text-foreground">
                       {i18nService.t('openClawRepairConfirmTitle')}
@@ -5748,7 +6107,7 @@ const Settings: React.FC<SettingsProps> = ({
                     disabled={isRepairingOpenClaw}
                     className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-white bg-primary hover:bg-primary-hover rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                   >
-                    <Wrench className="h-4 w-4" />
+                    <WrenchScrewdriverIcon className="h-4 w-4" />
                     {isRepairingOpenClaw
                       ? i18nService.t('openClawRepairRunning')
                       : i18nService.t('openClawRepairConfirmAction')}
@@ -5772,7 +6131,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <div className="px-5 pt-5 pb-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                      <Trash className="h-5 w-5" />
+                      <TrashIcon className="h-5 w-5" />
                     </span>
                     <h3 className="text-base font-semibold text-foreground">
                       {i18nService.t('coworkTempCleanDialogTitle')}
@@ -5853,8 +6212,8 @@ const Settings: React.FC<SettingsProps> = ({
                       className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-white bg-primary hover:bg-primary-hover rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                     >
                       {isCleaningTempStorage
-                        ? <ArrowsClockwise className="h-4 w-4 animate-spin" />
-                        : <Trash className="h-4 w-4" />}
+                        ? <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                        : <TrashIcon className="h-4 w-4" />}
                       {isCleaningTempStorage
                         ? i18nService.t('coworkTempCleaning')
                         : i18nService.t('coworkTempCleanDialogConfirm')}
@@ -5879,7 +6238,7 @@ const Settings: React.FC<SettingsProps> = ({
                 <div className="px-5 pt-5 pb-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-muted text-primary">
-                      <ArrowsClockwise className="h-5 w-5" />
+                      <ArrowPathRoundedSquareIcon className="h-5 w-5" />
                     </span>
                     <h3 className="text-base font-semibold text-foreground">
                       {i18nService.t('openClawDataMigrationConfirmTitle')}
@@ -5908,8 +6267,8 @@ const Settings: React.FC<SettingsProps> = ({
                     className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-white bg-primary hover:bg-primary-hover rounded-xl disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
                   >
                     {isRestoringOpenClawData
-                      ? <ArrowsClockwise className="h-4 w-4 animate-spin" />
-                      : <ArrowsClockwise className="h-4 w-4" />}
+                      ? <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                      : <ArrowPathRoundedSquareIcon className="h-4 w-4" />}
                     {isRestoringOpenClawData
                       ? i18nService.t('openClawDataMigrationRunning')
                       : i18nService.t('openClawDataMigrationConfirmAction')}
@@ -5923,7 +6282,7 @@ const Settings: React.FC<SettingsProps> = ({
             <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4">
               <div className="w-full max-w-md rounded-2xl border border-border bg-surface px-5 py-5 text-center shadow-xl">
                 <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-primary-muted text-primary">
-                  <ArrowsClockwise className="h-5 w-5 animate-spin" />
+                  <ArrowPathIcon className="h-5 w-5 animate-spin" />
                 </div>
                 <h3 className="mt-4 text-base font-semibold text-foreground">
                   {i18nService.t(isBackingUpOpenClawData
@@ -5936,7 +6295,7 @@ const Settings: React.FC<SettingsProps> = ({
                     : 'openClawDataMigrationBlockingDesc')}
                 </p>
                 <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs leading-5 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                  <Warning className="mt-0.5 h-4 w-4 shrink-0" />
+                  <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>
                     {i18nService.t(isBackingUpOpenClawData
                       ? 'openClawDataBackupBlockingWarning'

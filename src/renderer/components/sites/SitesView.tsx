@@ -1,23 +1,24 @@
-
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowUpTrayIcon,
+  ChartBarIcon,
+  ChatBubbleLeftRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClipboardDocumentIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  StarIcon,
+  TrashIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-
-import {
-  ArrowLeft,
-  ArrowsClockwise,
-  ArrowSquareOut,
-  CaretLeft,
-  CaretRight,
-  ChartBar,
-  ClipboardText,
-  Globe,
-  Lock,
-  MagnifyingGlass,
-  Plus,
-  Trash,
-  UploadSimple,
-  X,
-} from '@/components/icons/iconParkCompat';
 
 import { HtmlShareAccessMode, HtmlShareStatus } from '../../../shared/htmlShare/constants';
 import {
@@ -37,13 +38,37 @@ import {
 import { copyTextToClipboard } from '../../services/clipboard';
 import { i18nService } from '../../services/i18n';
 import type { RootState } from '../../store';
+import { showToast } from '../../utils/localFileActions';
+import { buildArtifactFileShareCopyText } from '../artifacts/artifactFileShareCopy';
+import {
+  MANAGEMENT_BODY_TEXT,
+  MANAGEMENT_META_TEXT,
+  MANAGEMENT_PAGE_TITLE_TEXT,
+  MANAGEMENT_TITLE_TEXT,
+} from '../common/managementTypography';
 import Modal from '../common/Modal';
 import { MessageCopyButton } from '../cowork/MessageActionButton';
 import Cog6ToothIcon from '../icons/Cog6ToothIcon';
 import EllipsisHorizontalIcon from '../icons/EllipsisHorizontalIcon';
-import { ManagementPageTitleBar } from '../management/ManagementPageShell';
+import SidebarToggleIcon from '../icons/SidebarToggleIcon';
+import Tooltip, { TooltipAlign, TooltipPosition } from '../ui/Tooltip';
 import SiteAnalyticsChart from './SiteAnalyticsChart';
 import SiteDefaultIcon from './SiteDefaultIcon';
+import {
+  resolveSiteSettingsSaveDecision,
+  SiteSettingsSaveDecision,
+} from './siteSettingsSaveDecision';
+
+type DetailTab = 'analytics' | 'settings';
+
+const SiteAccessSelection = {
+  Public: HtmlShareAccessMode.Public,
+  Code: HtmlShareAccessMode.Code,
+  Stopped: 'stopped',
+} as const;
+
+type SiteAccessSelection =
+  (typeof SiteAccessSelection)[keyof typeof SiteAccessSelection];
 
 interface SitesViewProps {
   isAuthenticated: boolean;
@@ -52,10 +77,19 @@ interface SitesViewProps {
   onToggleSidebar: () => void;
   updateBadge?: React.ReactNode;
   readOnly?: boolean;
+  embedded?: boolean;
+  initialShareId?: string;
+  initialAccessExpired?: boolean;
+  initialDetailTab?: DetailTab;
+  onBack?: () => void;
+  onSiteUpdated?: (site: SiteDetail) => void;
+  onSiteDeleted?: (shareId: string) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+  onOpenRelatedTask?: () => void;
 }
 
-type DetailTab = 'analytics' | 'settings';
-type ConfirmAction = 'stop' | 'resume' | null;
+type ConfirmAction = 'save' | 'stop' | 'resume' | null;
 type AnalyticsRange = 7 | 30;
 
 interface SiteActionMenuState {
@@ -145,32 +179,91 @@ const SiteStatusBadge: React.FC<{ status: SiteStatusValue }> = ({ status }) => (
     className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${statusTheme[status]}`}
   >
     {status === SiteStatus.Online && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
-    {status === SiteStatus.Deploying && <ArrowsClockwise className="h-3 w-3 animate-spin" />}
+    {status === SiteStatus.Deploying && <ArrowPathIcon className="h-3 w-3 animate-spin" />}
     {i18nService.t(`sitesStatus_${status}`)}
   </span>
+);
+
+const deriveSiteAccessSelection = (site: SiteDetail): SiteAccessSelection => (
+  site.siteStatus === SiteStatus.AccessStopped
+    ? SiteAccessSelection.Stopped
+    : site.accessMode
+);
+
+const getSiteAccessSelectionLabel = (selection: SiteAccessSelection): string => {
+  if (selection === SiteAccessSelection.Public) {
+    return i18nService.t('sitesPublicAccess');
+  }
+  if (selection === SiteAccessSelection.Code) {
+    return i18nService.t('sitesCodeAccess');
+  }
+  return i18nService.t('sitesStopAccess');
+};
+
+const SiteHeaderAction: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  label: string;
+  align?: TooltipAlign;
+}> = ({ label, align = TooltipAlign.Center, className = '', children, ...props }) => (
+  <Tooltip content={label} position={TooltipPosition.Bottom} align={align} delay={250}>
+    <button
+      {...props}
+      type="button"
+      aria-label={label}
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-secondary transition-colors hover:bg-surface-raised hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
+    >
+      {children}
+    </button>
+  </Tooltip>
 );
 
 const SitesTopBar: React.FC<{
   isSidebarCollapsed: boolean;
   onToggleSidebar: () => void;
   updateBadge?: React.ReactNode;
-  subtitle?: React.ReactNode;
-  actions?: React.ReactNode;
-}> = ({ isSidebarCollapsed, onToggleSidebar, updateBadge, subtitle, actions }) => (
-  <ManagementPageTitleBar
-    title={i18nService.t('sitesTitle')}
-    subtitle={subtitle}
-    isSidebarCollapsed={isSidebarCollapsed}
-    onToggleSidebar={onToggleSidebar}
-    updateBadge={updateBadge}
-    actions={actions}
-  />
-);
+}> = ({ isSidebarCollapsed, onToggleSidebar, updateBadge }) => {
+  const isMac = window.electron.platform === 'darwin';
+  const isWindows = window.electron.platform === 'win32';
+
+  return (
+    <div className="draggable flex h-12 shrink-0 items-center border-b border-border px-4">
+      <div className="flex h-8 items-center gap-3">
+        {isSidebarCollapsed && !isWindows && (
+          <div className={`non-draggable flex items-center gap-1 ${isMac ? 'pl-[68px]' : ''}`}>
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised"
+            >
+              <SidebarToggleIcon className="h-4 w-4" isCollapsed />
+            </button>
+            {updateBadge}
+          </div>
+        )}
+        <h1 className="text-lg font-semibold text-foreground">{i18nService.t('sitesTitle')}</h1>
+      </div>
+    </div>
+  );
+};
 
 const EmptyState: React.FC<{
   onCreateSiteByChat: (prompt: string) => void;
   readOnly: boolean;
-}> = ({ onCreateSiteByChat, readOnly }) => {
+  allowCreate: boolean;
+}> = ({ onCreateSiteByChat, readOnly, allowCreate }) => {
+  if (!allowCreate) {
+    return (
+      <div className="mx-auto mt-12 max-w-3xl rounded-xl border border-border bg-surface p-7 text-center">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <GlobeAltIcon className="h-5 w-5" />
+        </div>
+        <h2 className="mt-3 text-sm font-semibold text-foreground">
+          {i18nService.t('sitesEmptyTitle')}
+        </h2>
+        <p className="mt-1 text-xs text-secondary">{i18nService.t('sitesSubtitle')}</p>
+      </div>
+    );
+  }
+
   const templates = [
     ['sitesTemplateResume', 'sitesTemplateResumeDescription', 'sitesTemplateResumePrompt'],
     ['sitesTemplateShop', 'sitesTemplateShopDescription', 'sitesTemplateShopPrompt'],
@@ -180,7 +273,7 @@ const EmptyState: React.FC<{
   return (
     <div className="mx-auto mt-12 max-w-3xl rounded-xl border border-border bg-surface p-7 text-center">
       <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        <Globe className="h-5 w-5" />
+        <GlobeAltIcon className="h-5 w-5" />
       </div>
       <h2 className="mt-3 text-sm font-semibold text-foreground">
         {i18nService.t('sitesEmptyTitle')}
@@ -219,12 +312,24 @@ const SitesView: React.FC<SitesViewProps> = ({
   onToggleSidebar,
   updateBadge,
   readOnly = false,
+  embedded = false,
+  initialShareId,
+  initialAccessExpired = false,
+  initialDetailTab = 'analytics',
+  onBack,
+  onSiteUpdated,
+  onSiteDeleted,
+  isFavorite = false,
+  onToggleFavorite,
+  onOpenRelatedTask,
 }) => {
   const ownerAccountKey = useSelector((state: RootState) => state.auth.ownerAccountKey);
   const accountGeneration = useSelector((state: RootState) => state.auth.accountGeneration);
   const accountScopeKey = ownerAccountKey
     ? `${ownerAccountKey}:${accountGeneration}`
     : null;
+  const isEmbeddedDetail = embedded && Boolean(initialShareId);
+  const detailBackLabel = embedded ? i18nService.t('back') : i18nService.t('sitesBack');
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<SiteFilterStatusValue | undefined>();
@@ -263,6 +368,8 @@ const SitesView: React.FC<SitesViewProps> = ({
   const [accessModeDraft, setAccessModeDraft] = useState<HtmlShareAccessMode>(
     HtmlShareAccessMode.Public,
   );
+  const [siteAccessSelectionDraft, setSiteAccessSelectionDraft] =
+    useState<SiteAccessSelection>(SiteAccessSelection.Public);
   const listRequestRef = useRef(0);
   const listRequestsInFlightRef = useRef(0);
   const detailRequestRef = useRef(0);
@@ -317,6 +424,7 @@ const SitesView: React.FC<SitesViewProps> = ({
     setShareActionLoading(false);
     setShareError(null);
     setShareLinkCopied(false);
+    setSiteAccessSelectionDraft(SiteAccessSelection.Public);
   }, [accountScopeKey]);
 
   useEffect(() => {
@@ -397,8 +505,9 @@ const SitesView: React.FC<SitesViewProps> = ({
   );
 
   useEffect(() => {
+    if (isEmbeddedDetail) return;
     void loadSites();
-  }, [loadSites]);
+  }, [isEmbeddedDetail, loadSites]);
 
   const hasDeployingSite = useMemo(
     () =>
@@ -418,7 +527,10 @@ const SitesView: React.FC<SitesViewProps> = ({
     return () => window.clearInterval(timer);
   }, [hasDeployingSite, loadSites, selectedSite]);
 
-  const openSiteDetail = useCallback(async (site: SiteListItem, tab: DetailTab = 'analytics') => {
+  const openSiteDetail = useCallback(async (
+    site: Pick<SiteListItem, 'shareId'>,
+    tab: DetailTab = 'analytics',
+  ) => {
     const requestAccountScope = accountScopeKeyRef.current;
     if (!requestAccountScope) return;
     setSiteActionMenu(null);
@@ -434,6 +546,7 @@ const SitesView: React.FC<SitesViewProps> = ({
         setSelectedSite(result.data);
         setTitleDraft(result.data.title);
         setAccessModeDraft(result.data.accessMode);
+        setSiteAccessSelectionDraft(deriveSiteAccessSelection(result.data));
         setAnalytics(null);
       } else {
         setListError(result.error || i18nService.t('sitesLoadFailed'));
@@ -452,6 +565,15 @@ const SitesView: React.FC<SitesViewProps> = ({
       }
     }
   }, [isRequestScopeCurrent]);
+
+  useEffect(() => {
+    if (!initialShareId || !accountScopeKey || !isAuthenticated) return;
+    // Do not deduplicate this effect with a persistent ref. React StrictMode
+    // replays mount effects in development; the first request is invalidated
+    // by cleanup and the replay must be allowed to issue the current request.
+    // openSiteDetail already ignores stale responses with detailRequestRef.
+    void openSiteDetail({ shareId: initialShareId }, initialDetailTab);
+  }, [accountScopeKey, initialDetailTab, initialShareId, isAuthenticated, openSiteDetail]);
 
   const closeShareDialog = useCallback(() => {
     shareRequestRef.current += 1;
@@ -556,10 +678,18 @@ const SitesView: React.FC<SitesViewProps> = ({
       setSelectedSite(site);
       setTitleDraft(site.title);
       setAccessModeDraft(site.accessMode);
-      void loadSites(true);
+      setSiteAccessSelectionDraft(deriveSiteAccessSelection(site));
+      onSiteUpdated?.(site);
+      if (!isEmbeddedDetail) void loadSites(true);
     },
-    [loadSites],
+    [isEmbeddedDetail, loadSites, onSiteUpdated],
   );
+
+  const exitSiteDetail = useCallback(() => {
+    setSelectedSite(null);
+    setAnalytics(null);
+    if (embedded) onBack?.();
+  }, [embedded, onBack]);
 
   const saveTitle = async () => {
     if (readOnly || !selectedSite || !titleDraft.trim() || titleDraft.trim() === selectedSite.title)
@@ -628,6 +758,119 @@ const SitesView: React.FC<SitesViewProps> = ({
         `site access mode IPC failed; shareId=${selectedSite.shareId}`,
         error,
       );
+    } finally {
+      if (isRequestScopeCurrent(requestAccountScope)) setActionLoading(false);
+    }
+  };
+
+  const copySelectedSiteAccessInformation = async (): Promise<void> => {
+    if (!selectedSite || selectedSite.siteStatus !== SiteStatus.Online) return;
+    const copyResult = buildArtifactFileShareCopyText({
+      accessMode: selectedSite.accessMode,
+      labels: {
+        link: i18nService.t('htmlShareClipboardLinkLabel'),
+        shareCode: i18nService.t('sitesShareCode'),
+      },
+      shareCode: selectedSite.shareCode,
+      url: selectedSite.url,
+    });
+    if (!copyResult.copyable) {
+      setActionError(i18nService.t('sitesShareCodeCopyUnavailable'));
+      return;
+    }
+    const copied = await copyTextToClipboard(copyResult.text);
+    if (copied) {
+      setActionError(null);
+      showToast(i18nService.t('copied'));
+    } else {
+      setActionError(i18nService.t('copyFailed'));
+    }
+  };
+
+  const saveEmbeddedSettings = async (): Promise<void> => {
+    if (!selectedSite || readOnly || actionLoading) return;
+    const nextTitle = titleDraft.trim();
+    const titleChanged = Boolean(nextTitle) && nextTitle !== selectedSite.title;
+    const committedAccess = deriveSiteAccessSelection(selectedSite);
+    const targetAccess = siteAccessSelectionDraft;
+    const accessChanged = targetAccess !== committedAccess;
+    if (!titleChanged && !accessChanged) return;
+
+    const requestAccountScope = accountScopeKeyRef.current;
+    if (!requestAccountScope) return;
+    setActionLoading(true);
+    setActionError(null);
+    let workingSite = selectedSite;
+    try {
+      if (titleChanged) {
+        const titleResult = await window.electron.sites.updateTitle({
+          shareId: workingSite.shareId,
+          title: nextTitle,
+        });
+        if (!titleResult.success || !titleResult.data) {
+          throw new Error(titleResult.error || i18nService.t('sitesUpdateFailed'));
+        }
+        workingSite = titleResult.data;
+      }
+
+      if (accessChanged) {
+        if (targetAccess === SiteAccessSelection.Stopped) {
+          const statusResult = await window.electron.sites.updateAccessStatus({
+            shareId: workingSite.shareId,
+            status: HtmlShareStatus.Disabled,
+          });
+          if (!statusResult.success || !statusResult.data) {
+            throw new Error(statusResult.error || i18nService.t('sitesUpdateFailed'));
+          }
+          workingSite = statusResult.data;
+        } else {
+          if (workingSite.accessMode !== targetAccess) {
+            const accessResult = await window.electron.sites.updateAccessMode({
+              shareId: workingSite.shareId,
+              accessMode: targetAccess,
+            });
+            if (!accessResult.success || !accessResult.data) {
+              throw new Error(accessResult.error || i18nService.t('sitesUpdateFailed'));
+            }
+            workingSite = accessResult.data;
+          }
+          if (committedAccess === SiteAccessSelection.Stopped) {
+            const statusResult = await window.electron.sites.updateAccessStatus({
+              shareId: workingSite.shareId,
+              status: HtmlShareStatus.Live,
+            });
+            if (!statusResult.success || !statusResult.data) {
+              throw new Error(statusResult.error || i18nService.t('sitesUpdateFailed'));
+            }
+            workingSite = statusResult.data;
+          }
+        }
+      }
+
+      if (!isRequestScopeCurrent(requestAccountScope)) return;
+      applyUpdatedSite(workingSite);
+      setConfirmAction(null);
+      showToast(i18nService.t('sitesSettingsUpdated'));
+    } catch (error) {
+      if (!isRequestScopeCurrent(requestAccountScope)) return;
+      setActionError(resolveUnexpectedSiteError(error, i18nService.t('sitesUpdateFailed')));
+      try {
+        const latestResult = await window.electron.sites.get(selectedSite.shareId);
+        if (
+          isRequestScopeCurrent(requestAccountScope)
+          && latestResult.success
+          && latestResult.data
+        ) {
+          applyUpdatedSite(latestResult.data);
+        }
+      } catch (reconciliationError) {
+        logSitesDiagnostic(
+          'warn',
+          `site settings reconciliation failed; shareId=${selectedSite.shareId}`,
+          reconciliationError,
+        );
+      }
+      setConfirmAction(null);
     } finally {
       if (isRequestScopeCurrent(requestAccountScope)) setActionLoading(false);
     }
@@ -760,13 +1003,16 @@ const SitesView: React.FC<SitesViewProps> = ({
       const result = await window.electron.sites.delete(selectedSite.shareId);
       if (!isRequestScopeCurrent(requestAccountScope)) return;
       if (result.success) {
+        const deletedShareId = selectedSite.shareId;
         logSitesDiagnostic('info', `site deleted; shareId=${selectedSite.shareId}`);
         setDeleteConfirmOpen(false);
         setDeleteConfirmText('');
-        setSelectedSite(null);
-        setAnalytics(null);
-        if (page === 1) void loadSites(true);
-        else setPage(1);
+        onSiteDeleted?.(deletedShareId);
+        exitSiteDetail();
+        if (!isEmbeddedDetail) {
+          if (page === 1) void loadSites(true);
+          else setPage(1);
+        }
       } else {
         setActionError(
           result.code === SiteErrorCode.DeleteRequiresStopped
@@ -794,15 +1040,16 @@ const SitesView: React.FC<SitesViewProps> = ({
         data-skin-management-page="true"
         className="relative z-10 flex h-full flex-col bg-background"
       >
-        <SitesTopBar
-          isSidebarCollapsed={isSidebarCollapsed}
-          onToggleSidebar={onToggleSidebar}
-          updateBadge={updateBadge}
-          subtitle={i18nService.t('sitesSubtitle')}
-        />
+        {!embedded && (
+          <SitesTopBar
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={onToggleSidebar}
+            updateBadge={updateBadge}
+          />
+        )}
         <div className="flex flex-1 items-center justify-center p-8">
           <div className="max-w-sm text-center">
-            <Lock className="mx-auto h-10 w-10 text-secondary" />
+            <LockClosedIcon className="mx-auto h-10 w-10 text-secondary" />
             <h1 className="mt-4 text-xl font-semibold text-foreground">
               {i18nService.t('sitesLoginTitle')}
             </h1>
@@ -813,99 +1060,276 @@ const SitesView: React.FC<SitesViewProps> = ({
     );
   }
 
+  if (isEmbeddedDetail && initialShareId && !selectedSite) {
+    return (
+      <div
+        data-skin-management-page="true"
+        className="relative z-10 flex h-full min-h-0 flex-col bg-background"
+      >
+        <header className="flex h-[52px] shrink-0 items-center border-b border-border px-4">
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
+            aria-label={detailBackLabel}
+            title={detailBackLabel}
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+          </button>
+        </header>
+        <div className="flex min-h-0 flex-1 items-center justify-center p-8">
+          {listError ? (
+            <div className="max-w-sm text-center">
+              <p className="text-sm text-red-600">{listError}</p>
+              <button
+                type="button"
+                onClick={() => void openSiteDetail({ shareId: initialShareId }, initialDetailTab)}
+                className="mt-3 text-sm font-medium text-primary"
+              >
+                {i18nService.t('retry')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <ArrowPathIcon className="mr-2 h-4 w-4 animate-spin text-secondary" />
+              <span className="text-sm text-secondary">{i18nService.t('loading')}</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (selectedSite) {
     const isNode = selectedSite.siteKind === SiteKind.NodeService;
     const canStop = !readOnly && selectedSite.editableActions.includes(SiteAction.StopAccess);
-    const canResume = !readOnly && selectedSite.editableActions.includes(SiteAction.ResumeAccess);
+    const canResume = !readOnly
+      && !initialAccessExpired
+      && selectedSite.editableActions.includes(SiteAction.ResumeAccess);
     const canDelete = !readOnly && selectedSite.editableActions.includes(SiteAction.Delete);
     const requiresResourceRelease =
       isNode && selectedSite.siteStatus === SiteStatus.Blocked && canStop;
+    const committedSiteAccess = deriveSiteAccessSelection(selectedSite);
+    const titleChanged = titleDraft.trim() !== selectedSite.title;
+    const siteAccessChanged = siteAccessSelectionDraft !== committedSiteAccess;
     const hasUnsavedSettings =
-      titleDraft.trim() !== selectedSite.title || accessModeDraft !== selectedSite.accessMode;
-    const canVisit = selectedSite.siteStatus === SiteStatus.Online;
+      titleChanged
+      || (embedded
+        ? siteAccessChanged
+        : accessModeDraft !== selectedSite.accessMode);
+    const isSiteOnline = selectedSite.siteStatus === SiteStatus.Online;
+    const canVisit = isSiteOnline && !initialAccessExpired;
+    const canChangeAccessMode = !initialAccessExpired
+      && selectedSite.editableActions.includes(SiteAction.ChangeAccessMode);
+    const canCopyAccessInformation = isSiteOnline
+      && !siteAccessChanged
+      && (selectedSite.accessMode !== HtmlShareAccessMode.Code || Boolean(selectedSite.shareCode));
+    const requestEmbeddedSettingsSave = () => {
+      const decision = resolveSiteSettingsSaveDecision({
+        accessChanged: siteAccessChanged,
+        actionLoading,
+        currentAccessStopped: committedSiteAccess === SiteAccessSelection.Stopped,
+        hasUnsavedSettings,
+        targetAccessStopped: siteAccessSelectionDraft === SiteAccessSelection.Stopped,
+      });
+      switch (decision) {
+        case SiteSettingsSaveDecision.SaveDirectly:
+          void saveEmbeddedSettings();
+          break;
+        case SiteSettingsSaveDecision.ConfirmStop:
+          setConfirmAction('stop');
+          break;
+        case SiteSettingsSaveDecision.ConfirmResume:
+          setConfirmAction('resume');
+          break;
+        case SiteSettingsSaveDecision.ConfirmChange:
+          setConfirmAction('save');
+          break;
+        default:
+          break;
+      }
+    };
+    const confirmationTargetAccess = confirmAction === 'stop'
+      ? SiteAccessSelection.Stopped
+      : confirmAction === 'resume' && !embedded
+        ? selectedSite.accessMode
+        : siteAccessSelectionDraft;
+    const confirmationTransition = confirmAction && committedSiteAccess !== confirmationTargetAccess
+      ? {
+          from: getSiteAccessSelectionLabel(committedSiteAccess),
+          to: getSiteAccessSelectionLabel(confirmationTargetAccess),
+        }
+      : undefined;
     const leaveSiteDetail = () => {
       if (hasUnsavedSettings) {
         setLeaveConfirmOpen(true);
         return;
       }
-      setSelectedSite(null);
+      exitSiteDetail();
     };
     return (
       <div
         data-skin-management-page="true"
         className="relative z-10 flex h-full min-h-0 flex-col overflow-x-auto bg-background"
       >
-        <div className="min-w-[720px] shrink-0">
-          <SitesTopBar
-            isSidebarCollapsed={isSidebarCollapsed}
-            onToggleSidebar={onToggleSidebar}
-            updateBadge={updateBadge}
-          />
-        </div>
-        <header className="flex h-[52px] min-w-[720px] shrink-0 items-center gap-2 border-b border-border px-4">
-          <button
-            type="button"
-            onClick={leaveSiteDetail}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
-            aria-label={i18nService.t('sitesBack')}
-            title={i18nService.t('sitesBack')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div
-            className="flex min-w-0 max-w-[320px] items-center gap-2 px-1"
-            title={selectedSite.url}
-          >
-            <h1 className="truncate text-sm font-semibold text-foreground">{selectedSite.title}</h1>
-            <SiteStatusBadge status={selectedSite.siteStatus} />
+        {!embedded && (
+          <div className="min-w-[720px] shrink-0">
+            <SitesTopBar
+              isSidebarCollapsed={isSidebarCollapsed}
+              onToggleSidebar={onToggleSidebar}
+              updateBadge={updateBadge}
+            />
           </div>
-          <span className="mx-2 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
-          <nav
-            className="flex h-full shrink-0 items-center gap-1"
-            aria-label={i18nService.t('sitesTitle')}
-          >
-            {(['analytics', 'settings'] as DetailTab[]).map(tab => (
+        )}
+        {embedded ? (
+          <header className="mx-auto w-full max-w-[1120px] shrink-0 px-6 pt-6 sm:px-8">
+            <div className="w-full max-w-[920px]">
               <button
-                key={tab}
                 type="button"
-                onClick={() => setDetailTab(tab)}
-                className={`h-full border-b-2 px-3 text-sm transition-colors ${detailTab === tab ? 'border-primary font-medium text-foreground' : 'border-transparent text-secondary hover:text-foreground'}`}
+                onClick={detailTab === 'analytics'
+                  ? () => setDetailTab('settings')
+                  : leaveSiteDetail}
+                className="inline-flex h-8 items-center gap-1.5 px-1 text-xs text-secondary transition-colors hover:text-foreground"
               >
-                {i18nService.t(`sitesTab_${tab}`)}
+                <ArrowLeftIcon className="h-4 w-4" />
+                {i18nService.t('back')}
               </button>
-            ))}
-          </nav>
-          <div className="min-w-0 flex-1" />
-          <button
-            type="button"
-            disabled={!canVisit}
-            onClick={() => void window.electron.shell.openExternal(selectedSite.url)}
-            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-            title={!canVisit ? i18nService.t('sitesVisitUnavailable') : undefined}
-          >
-            <ArrowSquareOut className="h-4 w-4" />
-            {i18nService.t('sitesVisit')}
-          </button>
-        </header>
-        <main className="min-h-0 min-w-[720px] flex-1 overflow-y-auto p-6">
+              <div className="mt-3 flex items-center gap-3 border-b border-border pb-5 pt-2">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
+                  <GlobeAltIcon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className={`truncate ${MANAGEMENT_PAGE_TITLE_TEXT} font-semibold text-foreground`}>
+                    {selectedSite.title}
+                  </h1>
+                  <div className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 ${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-secondary`}>
+                    <span>{i18nService.t('sitesTitle')}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{i18nService.t('libraryLastModifiedAt')}: {formatDateTime(selectedSite.updatedAt)}</span>
+                    <span aria-hidden="true">·</span>
+                    <span className={`inline-flex items-center gap-1.5 ${
+                      canVisit ? 'text-emerald-600 dark:text-emerald-400' : 'text-secondary'
+                    }`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${
+                        canVisit ? 'bg-emerald-500' : 'bg-tertiary'
+                      }`} />
+                      {i18nService.t(canVisit
+                        ? 'libraryCloudAvailability_available'
+                        : 'libraryCloudAvailability_unavailable')}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <SiteHeaderAction
+                    label={i18nService.t('libraryOpenLink')}
+                    disabled={!canVisit}
+                    onClick={() => void window.electron.shell.openExternal(selectedSite.url)}
+                  >
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                  </SiteHeaderAction>
+                  {detailTab === 'settings' && (
+                    <SiteHeaderAction
+                      label={i18nService.t('sitesViewAnalytics')}
+                      onClick={() => setDetailTab('analytics')}
+                    >
+                      <ChartBarIcon className="h-4 w-4" />
+                    </SiteHeaderAction>
+                  )}
+                  {onToggleFavorite && (
+                    <SiteHeaderAction
+                      label={isFavorite
+                        ? i18nService.t('libraryRemoveFavorite')
+                        : i18nService.t('libraryAddFavorite')}
+                      aria-pressed={isFavorite}
+                      onClick={onToggleFavorite}
+                      className={isFavorite ? '!text-amber-500' : ''}
+                    >
+                      {isFavorite
+                        ? <StarSolidIcon className="h-4 w-4" />
+                        : <StarIcon className="h-4 w-4" />}
+                    </SiteHeaderAction>
+                  )}
+                  {onOpenRelatedTask && (
+                    <SiteHeaderAction
+                      label={i18nService.t('libraryRelatedSessions')}
+                      align={TooltipAlign.End}
+                      onClick={onOpenRelatedTask}
+                    >
+                      <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                    </SiteHeaderAction>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
+        ) : (
+          <header className="flex h-[52px] min-w-[720px] shrink-0 items-center gap-2 border-b border-border px-4">
+            <button
+              type="button"
+              onClick={leaveSiteDetail}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised hover:text-foreground"
+              aria-label={detailBackLabel}
+              title={detailBackLabel}
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+            </button>
+            <div
+              className="flex min-w-0 max-w-[320px] items-center gap-2 px-1"
+              title={selectedSite.url}
+            >
+              <h1 className="truncate text-sm font-semibold text-foreground">{selectedSite.title}</h1>
+              <SiteStatusBadge status={selectedSite.siteStatus} />
+            </div>
+            <span className="mx-2 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
+            <nav
+              className="flex h-full shrink-0 items-center gap-1"
+              aria-label={i18nService.t('sitesTitle')}
+            >
+              {(['analytics', 'settings'] as DetailTab[]).map(tab => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setDetailTab(tab)}
+                  className={`h-full border-b-2 px-3 text-sm transition-colors ${detailTab === tab ? 'border-primary font-medium text-foreground' : 'border-transparent text-secondary hover:text-foreground'}`}
+                >
+                  {i18nService.t(`sitesTab_${tab}`)}
+                </button>
+              ))}
+            </nav>
+            <div className="min-w-0 flex-1" />
+            <button
+              type="button"
+              disabled={!canVisit}
+              onClick={() => void window.electron.shell.openExternal(selectedSite.url)}
+              className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+              title={!canVisit ? i18nService.t('sitesVisitUnavailable') : undefined}
+            >
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+              {i18nService.t('sitesVisit')}
+            </button>
+          </header>
+        )}
+        <main className={embedded
+          ? 'mx-auto min-h-0 w-full max-w-[1120px] flex-1 overflow-y-auto px-6 pb-8 sm:px-8'
+          : 'min-h-0 min-w-[720px] flex-1 overflow-y-auto p-6'}>
           {actionError && (
-            <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-sm text-red-600">
+            <div className={`${embedded ? 'max-w-[920px]' : 'mx-auto max-w-3xl'} ${MANAGEMENT_BODY_TEXT} mb-4 mt-4 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-red-600`}>
               {actionError}
             </div>
           )}
           {readOnly && detailTab === 'settings' && (
-            <div className="mx-auto mb-4 max-w-3xl rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+            <div className={`${embedded ? 'max-w-[920px]' : 'mx-auto max-w-3xl'} ${MANAGEMENT_BODY_TEXT} mb-4 mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-amber-700 dark:text-amber-300`}>
               {i18nService.t('sitesReadOnlyNotice')}
             </div>
           )}
           {detailTab === 'analytics' && (
-            <div className="mx-auto max-w-5xl space-y-3">
+            <div className={`${embedded ? 'max-w-[920px] pt-5' : 'mx-auto max-w-5xl'} space-y-3`}>
               <div className="flex min-h-9 items-center justify-between gap-4 px-0.5">
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground">
+                  <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
                     {i18nService.t('sitesPerformance')}
                   </h2>
-                  <p className="mt-1 text-xs text-secondary">
+                  <p className={`${MANAGEMENT_META_TEXT} mt-1 leading-[var(--lobster-leading-xs)] text-secondary`}>
                     {formatAnalyticsDate(analytics?.meta.from ?? requestedAnalyticsDates.from)}
                     {' – '}
                     {formatAnalyticsDate(analytics?.meta.to ?? requestedAnalyticsDates.to)}
@@ -924,8 +1348,8 @@ const SitesView: React.FC<SitesViewProps> = ({
                 </select>
               </div>
               {analyticsLoading && !analytics ? (
-                <div className="flex h-56 items-center justify-center text-sm text-secondary">
-                  <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
+                <div className={`flex h-56 items-center justify-center ${MANAGEMENT_BODY_TEXT} text-secondary`}>
+                  <ArrowPathIcon className="mr-2 h-4 w-4 animate-spin" />
                   {i18nService.t('loading')}
                 </div>
               ) : (
@@ -933,7 +1357,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                   <>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div className="rounded-xl border border-border bg-surface p-4">
-                        <p className="text-xs text-secondary">
+                        <p className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-secondary`}>
                           {i18nService.t('sitesUniqueVisitors')}
                         </p>
                         <p className="mt-1.5 text-2xl font-semibold leading-none text-foreground">
@@ -941,7 +1365,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                         </p>
                       </div>
                       <div className="rounded-xl border border-border bg-surface p-4">
-                        <p className="text-xs text-secondary">{i18nService.t('sitesPageViews')}</p>
+                        <p className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-secondary`}>
+                          {i18nService.t('sitesPageViews')}
+                        </p>
                         <p className="mt-1.5 text-2xl font-semibold leading-none text-foreground">
                           {analytics.summary.pageViews}
                         </p>
@@ -949,24 +1375,24 @@ const SitesView: React.FC<SitesViewProps> = ({
                     </div>
                     <SiteAnalyticsChart trend={analytics.trend} />
                     <section className="rounded-xl border border-border bg-surface p-4">
-                      <h2 className="text-sm font-semibold text-foreground">
+                      <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
                         {i18nService.t('sitesPopularPages')}
                       </h2>
                       <div className="mt-2.5">
-                        <div className="grid grid-cols-[minmax(0,1fr)_96px_96px] border-b border-border pb-2 text-xs text-secondary sm:grid-cols-[minmax(0,1fr)_120px_120px]">
+                        <div className={`grid grid-cols-[minmax(0,1fr)_96px_96px] border-b border-border pb-2 ${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-secondary sm:grid-cols-[minmax(0,1fr)_120px_120px]`}>
                           <span>{i18nService.t('sitesPage')}</span>
                           <span className="text-right">{i18nService.t('sitesPageViews')}</span>
                           <span className="text-right">{i18nService.t('sitesUniqueVisitors')}</span>
                         </div>
                         {analytics.topPages.length === 0 ? (
-                          <p className="py-5 text-center text-xs text-secondary">
+                          <p className={`${MANAGEMENT_BODY_TEXT} py-5 text-center text-secondary`}>
                             {i18nService.t('sitesNoAnalyticsData')}
                           </p>
                         ) : (
                           analytics.topPages.map(item => (
                             <div
                               key={item.path}
-                              className="grid grid-cols-[minmax(0,1fr)_96px_96px] border-b border-border/60 py-2.5 text-sm last:border-0 sm:grid-cols-[minmax(0,1fr)_120px_120px]"
+                              className={`grid grid-cols-[minmax(0,1fr)_96px_96px] border-b border-border/60 py-2.5 ${MANAGEMENT_BODY_TEXT} last:border-0 sm:grid-cols-[minmax(0,1fr)_120px_120px]`}
                             >
                               <span className="truncate font-mono text-xs text-foreground">
                                 {item.path}
@@ -985,7 +1411,212 @@ const SitesView: React.FC<SitesViewProps> = ({
               )}
             </div>
           )}
-          {detailTab === 'settings' && (
+          {detailTab === 'settings' && (embedded ? (
+            <div className="max-w-[920px] space-y-3 pt-5">
+              <section className="rounded-xl border border-border p-5">
+                <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
+                  {i18nService.t('libraryShareAccessSetting')}
+                </h2>
+                <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--lobster-leading-sm)] text-secondary`}>
+                  {i18nService.t('sitesUnifiedAccessSettingDescription')}
+                </p>
+
+                <div className="mt-4">
+                  <div className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--lobster-leading-xs)] text-secondary`}>
+                    {i18nService.t('libraryShareAccessAddress')}
+                  </div>
+                  <div className="mt-2 flex min-w-0 items-center gap-3 rounded-lg bg-surface-raised px-3 py-2.5">
+                    <p className={`min-w-0 flex-1 truncate ${MANAGEMENT_BODY_TEXT} text-secondary`}>
+                      {selectedSite.url}
+                    </p>
+                    <button
+                      type="button"
+                      disabled={!canCopyAccessInformation || actionLoading}
+                      onClick={() => void copySelectedSiteAccessInformation()}
+                      className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:text-tertiary"
+                    >
+                      <ClipboardDocumentIcon className="h-4 w-4" />
+                      {selectedSite.accessMode === HtmlShareAccessMode.Code
+                        ? i18nService.t('sitesCopyLinkAndCode')
+                        : i18nService.t('sitesCopyLink')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                  {([
+                    SiteAccessSelection.Public,
+                    SiteAccessSelection.Code,
+                    SiteAccessSelection.Stopped,
+                  ] as SiteAccessSelection[]).map(option => {
+                    const selected = siteAccessSelectionDraft === option;
+                    const isStoppedOption = option === SiteAccessSelection.Stopped;
+                    const disabled = readOnly
+                      || actionLoading
+                      || (isStoppedOption
+                        ? (!canStop && deriveSiteAccessSelection(selectedSite) !== SiteAccessSelection.Stopped)
+                        : (!canChangeAccessMode
+                          && selectedSite.accessMode !== option
+                          && deriveSiteAccessSelection(selectedSite) !== SiteAccessSelection.Stopped))
+                      || (!isStoppedOption
+                        && deriveSiteAccessSelection(selectedSite) === SiteAccessSelection.Stopped
+                        && !canResume);
+                    const label = option === SiteAccessSelection.Public
+                      ? i18nService.t('sitesPublicAccess')
+                      : option === SiteAccessSelection.Code
+                        ? i18nService.t('sitesCodeAccess')
+                        : i18nService.t('sitesStopAccess');
+                    const description = option === SiteAccessSelection.Public
+                      ? i18nService.t('sitesPublicAccessDescription')
+                      : option === SiteAccessSelection.Code
+                        ? i18nService.t('sitesCodeAccessDescription')
+                        : i18nService.t(isNode
+                          ? 'sitesNodeStopDescription'
+                          : 'sitesStaticStopDescription');
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        aria-pressed={selected}
+                        disabled={disabled}
+                        onClick={() => setSiteAccessSelectionDraft(option)}
+                        className={`rounded-xl border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
+                          selected
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:bg-surface-raised'
+                        }`}
+                      >
+                        <span className={`flex items-center gap-2 ${MANAGEMENT_BODY_TEXT} font-medium text-foreground`}>
+                          <span className={`flex h-4 w-4 items-center justify-center rounded-full border ${
+                            selected ? 'border-primary' : 'border-border'
+                          }`}>
+                            {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
+                          </span>
+                          {label}
+                        </span>
+                        <span className={`${MANAGEMENT_META_TEXT} mt-2 block leading-[var(--lobster-leading-xs)] text-secondary`}>
+                          {description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedSite.accessMode === HtmlShareAccessMode.Code && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-surface-raised px-3 py-2.5 text-xs">
+                    <span className="text-tertiary">{i18nService.t('sitesShareCode')}</span>
+                    <span className="font-medium text-foreground">
+                      {selectedSite.shareCode ?? '—'}
+                    </span>
+                  </div>
+                )}
+                {hasUnsavedSettings && (
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+                    <span className="text-xs text-amber-600 dark:text-amber-400">
+                      {i18nService.t('sitesUnsavedChanges')}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={actionLoading}
+                        onClick={() => {
+                          setTitleDraft(selectedSite.title);
+                          setSiteAccessSelectionDraft(deriveSiteAccessSelection(selectedSite));
+                        }}
+                        className="rounded-lg px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {i18nService.t('sitesDiscardChanges')}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={readOnly
+                          || initialAccessExpired
+                          || actionLoading
+                          || !titleDraft.trim()}
+                        onClick={requestEmbeddedSettingsSave}
+                        className="rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {actionLoading
+                          ? i18nService.t('saving')
+                          : i18nService.t('libraryShareSaveChanges')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-xl border border-border p-5">
+                <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
+                  {i18nService.t('libraryShareBasicInfo')}
+                </h2>
+                <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--lobster-leading-sm)] text-secondary`}>
+                  {i18nService.t('sitesBasicInfoDescription')}
+                </p>
+                <div className="mt-4">
+                  <label className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--lobster-leading-xs)] text-secondary`} htmlFor="site-name">
+                    {i18nService.t('libraryResourceName')}
+                  </label>
+                  <input
+                    id="site-name"
+                    value={titleDraft}
+                    maxLength={100}
+                    disabled={readOnly || actionLoading}
+                    onChange={event => setTitleDraft(event.target.value)}
+                    className={`${MANAGEMENT_BODY_TEXT} mt-2 h-9 w-full rounded-lg border border-border bg-background px-3 text-foreground outline-none transition-colors focus:border-primary disabled:text-tertiary`}
+                  />
+                </div>
+                <dl className="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-3">
+                  <div>
+                    <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-tertiary`}>
+                      {i18nService.t('libraryResourceType')}
+                    </dt>
+                    <dd className={`${MANAGEMENT_BODY_TEXT} mt-1 text-foreground`}>
+                      {i18nService.t(isNode ? 'sitesNodeService' : 'sitesStaticSite')}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-tertiary`}>
+                      {i18nService.t('sitesCreatedAt')}
+                    </dt>
+                    <dd className={`${MANAGEMENT_BODY_TEXT} mt-1 text-foreground`}>
+                      {formatDateTime(selectedSite.createdAt)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-tertiary`}>
+                      {i18nService.t('libraryLastModifiedAt')}
+                    </dt>
+                    <dd className={`${MANAGEMENT_BODY_TEXT} mt-1 text-foreground`}>
+                      {formatDateTime(selectedSite.updatedAt)}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="flex items-center justify-between gap-6 rounded-xl border border-red-500/25 p-5">
+                <div className="min-w-0">
+                  <p className={`${MANAGEMENT_BODY_TEXT} leading-[var(--lobster-leading-sm)] text-secondary`}>
+                    {canDelete
+                      ? i18nService.t('sitesDeleteDescription')
+                      : i18nService.t('sitesDeleteRequiresStopped')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={!canDelete || actionLoading}
+                  onClick={() => {
+                    setActionError(null);
+                    setDeleteConfirmText('');
+                    setDeleteConfirmOpen(true);
+                  }}
+                  className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-red-500/40 px-3 text-xs font-medium text-red-600 transition-colors hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  {i18nService.t('sitesDeleteAction')}
+                </button>
+              </section>
+            </div>
+          ) : (
             <div className="mx-auto max-w-3xl space-y-3">
               <section className="rounded-xl border border-border bg-surface p-4">
                 <h2 className="text-sm font-semibold text-foreground">
@@ -1047,9 +1678,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                     >
                       <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                         {mode === HtmlShareAccessMode.Public ? (
-                          <Globe className="h-4 w-4" />
+                          <GlobeAltIcon className="h-4 w-4" />
                         ) : (
-                          <Lock className="h-4 w-4" />
+                          <LockClosedIcon className="h-4 w-4" />
                         )}
                         {mode === HtmlShareAccessMode.Public
                           ? i18nService.t('sitesPublicAccess')
@@ -1145,10 +1776,7 @@ const SitesView: React.FC<SitesViewProps> = ({
               </section>
               <section className="flex items-center justify-between gap-6 rounded-xl border border-red-500/25 bg-red-500/[0.025] p-4">
                 <div className="min-w-0">
-                  <h2 className="text-sm font-semibold text-red-600">
-                    {i18nService.t('sitesDeleteTitle')}
-                  </h2>
-                  <p className="mt-1 text-xs leading-5 text-secondary">
+                  <p className="text-xs leading-5 text-secondary">
                     {canDelete
                       ? i18nService.t('sitesDeleteDescription')
                       : i18nService.t('sitesDeleteRequiresStopped')}
@@ -1164,51 +1792,68 @@ const SitesView: React.FC<SitesViewProps> = ({
                   }}
                   className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-red-500/40 px-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  <Trash className="h-4 w-4" />
+                  <TrashIcon className="h-4 w-4" />
                   {i18nService.t('sitesDeleteAction')}
                 </button>
               </section>
             </div>
-          )}
+          ))}
         </main>
         <Modal
           isOpen={confirmAction !== null}
           onClose={() => !actionLoading && setConfirmAction(null)}
           className="w-[430px] max-w-[calc(100vw-32px)] rounded-2xl border border-border bg-background p-6 shadow-2xl"
         >
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
             {confirmAction === 'stop'
               ? i18nService.t(
                   requiresResourceRelease
                     ? 'sitesReleaseResourcesConfirmTitle'
                     : 'sitesStopConfirmTitle',
                 )
-              : i18nService.t('sitesResumeConfirmTitle')}
+              : confirmAction === 'resume'
+                ? i18nService.t('sitesResumeConfirmTitle')
+                : i18nService.t('sitesSettingsConfirmTitle')}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-secondary">
+          <p className={`${MANAGEMENT_BODY_TEXT} mt-2 leading-[var(--lobster-leading-sm)] text-secondary`}>
             {confirmAction === 'stop'
               ? requiresResourceRelease
                 ? i18nService.t('sitesReleaseResourcesConfirm')
                 : isNode
                 ? i18nService.t('sitesNodeStopConfirm')
                 : i18nService.t('sitesStaticStopConfirm')
-              : i18nService.t('sitesResumeConfirm')}
+              : confirmAction === 'resume'
+                ? i18nService.t('sitesResumeConfirm')
+                : i18nService.t('sitesSettingsConfirmDescription')}
           </p>
-          {actionError && <p className="mt-3 text-sm text-red-600">{actionError}</p>}
+          {confirmationTransition && (
+            <div className={`mt-3 flex min-w-0 items-center gap-2 rounded-lg bg-surface-raised px-3 py-2 ${MANAGEMENT_BODY_TEXT}`}>
+              <span className="min-w-0 truncate font-medium text-foreground">
+                {confirmationTransition.from}
+              </span>
+              <span className="shrink-0 text-tertiary" aria-hidden="true">→</span>
+              <span className="min-w-0 truncate font-medium text-foreground">
+                {confirmationTransition.to}
+              </span>
+            </div>
+          )}
+          {actionError && (
+            <p className={`${MANAGEMENT_BODY_TEXT} mt-3 text-red-600`}>{actionError}</p>
+          )}
           <div className="mt-6 flex justify-end gap-2">
             <button
               type="button"
               disabled={actionLoading}
               onClick={() => setConfirmAction(null)}
-              className="rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-surface-raised"
+              className={`rounded-lg border border-border px-4 py-2 ${MANAGEMENT_BODY_TEXT} text-foreground hover:bg-surface-raised`}
             >
               {i18nService.t('cancel')}
             </button>
             <button
               type="button"
               disabled={actionLoading}
-              onClick={() => void updateAccessStatus()}
-              className={`rounded-lg px-4 py-2 text-sm font-medium ${confirmAction === 'stop' ? 'bg-red-600 text-white' : 'bg-primary text-primary-foreground hover:bg-primary-hover'}`}
+              onClick={() => void (embedded ? saveEmbeddedSettings() : updateAccessStatus())}
+              className={`rounded-lg px-4 py-2 ${MANAGEMENT_BODY_TEXT} font-medium ${confirmAction === 'stop' ? 'bg-red-600 text-white' : 'bg-primary text-primary-foreground hover:bg-primary-hover'}`}
             >
               {actionLoading
                 ? i18nService.t('saving')
@@ -1217,7 +1862,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                       ? requiresResourceRelease
                         ? 'sitesConfirmReleaseResources'
                         : 'sitesConfirmStopAccess'
-                      : 'sitesConfirmResumeAccess',
+                      : confirmAction === 'resume'
+                        ? 'sitesConfirmResumeAccess'
+                        : 'sitesConfirmSaveSettings',
                   )}
             </button>
           </div>
@@ -1233,12 +1880,12 @@ const SitesView: React.FC<SitesViewProps> = ({
           className="w-[460px] max-w-[calc(100vw-32px)] rounded-2xl border border-border bg-background p-6 shadow-2xl"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10 text-red-600">
-            <Trash className="h-5 w-5" />
+            <TrashIcon className="h-5 w-5" />
           </div>
-          <h2 className="mt-4 text-base font-semibold text-foreground">
+          <h2 className={`${MANAGEMENT_TITLE_TEXT} mt-4 font-semibold text-foreground`}>
             {i18nService.t('sitesDeleteConfirmTitle')}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-secondary">
+          <p className={`${MANAGEMENT_BODY_TEXT} mt-2 leading-[var(--lobster-leading-sm)] text-secondary`}>
             {i18nService.t('sitesDeleteConfirmDescription')}
           </p>
           {isNode && selectedSite.persistence?.enabled && (
@@ -1247,7 +1894,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             </p>
           )}
           <label
-            className="mt-4 block text-xs font-medium text-secondary"
+            className={`${MANAGEMENT_META_TEXT} mt-4 block font-medium leading-[var(--lobster-leading-xs)] text-secondary`}
             htmlFor="site-delete-confirm"
           >
             {i18nService.t('sitesDeleteConfirmInputLabel').replace('{name}', selectedSite.title)}
@@ -1258,9 +1905,11 @@ const SitesView: React.FC<SitesViewProps> = ({
             disabled={actionLoading}
             onChange={event => setDeleteConfirmText(event.target.value)}
             autoComplete="off"
-            className="mt-2 h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-foreground outline-none transition-colors focus:border-red-500"
+            className={`${MANAGEMENT_BODY_TEXT} mt-2 h-10 w-full rounded-lg border border-border bg-surface px-3 text-foreground outline-none transition-colors focus:border-red-500`}
           />
-          {actionError && <p className="mt-3 text-sm text-red-600">{actionError}</p>}
+          {actionError && (
+            <p className={`${MANAGEMENT_BODY_TEXT} mt-3 text-red-600`}>{actionError}</p>
+          )}
           <div className="mt-6 flex justify-end gap-2">
             <button
               type="button"
@@ -1270,7 +1919,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                 setDeleteConfirmText('');
                 setActionError(null);
               }}
-              className="rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-surface-raised disabled:opacity-40"
+              className={`rounded-lg border border-border px-4 py-2 ${MANAGEMENT_BODY_TEXT} text-foreground hover:bg-surface-raised disabled:opacity-40`}
             >
               {i18nService.t('cancel')}
             </button>
@@ -1279,11 +1928,11 @@ const SitesView: React.FC<SitesViewProps> = ({
               disabled={actionLoading || deleteConfirmText !== selectedSite.title}
               onClick={() => void deleteSelectedSite()}
               aria-busy={actionLoading}
-              className="inline-flex min-w-[104px] items-center justify-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`inline-flex min-w-[104px] items-center justify-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 ${MANAGEMENT_BODY_TEXT} font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40`}
             >
               {actionLoading ? (
                 <>
-                  <ArrowsClockwise className="h-4 w-4 animate-spin" />
+                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
                   {i18nService.t('sitesDeleting')}
                 </>
               ) : (
@@ -1297,17 +1946,17 @@ const SitesView: React.FC<SitesViewProps> = ({
           onClose={() => setLeaveConfirmOpen(false)}
           className="w-[430px] max-w-[calc(100vw-32px)] rounded-2xl border border-border bg-background p-6 shadow-2xl"
         >
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
             {i18nService.t('sitesDiscardConfirmTitle')}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-secondary">
+          <p className={`${MANAGEMENT_BODY_TEXT} mt-2 leading-[var(--lobster-leading-sm)] text-secondary`}>
             {i18nService.t('sitesDiscardConfirmDescription')}
           </p>
           <div className="mt-6 flex justify-end gap-2">
             <button
               type="button"
               onClick={() => setLeaveConfirmOpen(false)}
-              className="rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-surface-raised"
+              className={`rounded-lg border border-border px-4 py-2 ${MANAGEMENT_BODY_TEXT} text-foreground hover:bg-surface-raised`}
             >
               {i18nService.t('cancel')}
             </button>
@@ -1315,9 +1964,9 @@ const SitesView: React.FC<SitesViewProps> = ({
               type="button"
               onClick={() => {
                 setLeaveConfirmOpen(false);
-                setSelectedSite(null);
+                exitSiteDetail();
               }}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover"
+              className={`rounded-lg bg-primary px-4 py-2 ${MANAGEMENT_BODY_TEXT} font-medium text-primary-foreground hover:bg-primary-hover`}
             >
               {i18nService.t('sitesDiscardAndLeave')}
             </button>
@@ -1346,7 +1995,7 @@ const SitesView: React.FC<SitesViewProps> = ({
       onClick={() => onCreateSiteByChat(i18nService.t('sitesCreatePrompt'))}
       className={`inline-flex shrink-0 items-center rounded-lg bg-primary font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40 ${compact ? 'h-8 gap-1 px-2.5 text-xs' : 'h-9 gap-1.5 px-3.5 text-sm shadow-sm'}`}
     >
-      <Plus className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+      <PlusIcon className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
       {i18nService.t(compact ? 'sitesCreateShort' : 'sitesCreate')}
     </button>
   );
@@ -1355,20 +2004,24 @@ const SitesView: React.FC<SitesViewProps> = ({
       data-skin-management-page="true"
       className="relative z-10 flex h-full min-h-0 flex-col overflow-x-auto overflow-y-hidden bg-background"
     >
-      <div className="min-w-[720px] shrink-0">
-        <SitesTopBar
-          isSidebarCollapsed={isSidebarCollapsed}
-          onToggleSidebar={onToggleSidebar}
-          updateBadge={updateBadge}
-          subtitle={i18nService.t('sitesSubtitle')}
-          actions={isUnfilteredEmpty ? createSiteButton(false) : undefined}
-        />
-      </div>
-      {!isUnfilteredEmpty && (
-        <header className="mx-auto w-full min-w-[720px] max-w-[840px] shrink-0 px-6 py-4">
-          <div className="flex flex-nowrap items-center gap-2.5">
+      {!embedded && (
+        <div className="min-w-[720px] shrink-0">
+          <SitesTopBar
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={onToggleSidebar}
+            updateBadge={updateBadge}
+          />
+        </div>
+      )}
+      <header className="mx-auto w-full min-w-[720px] max-w-[840px] shrink-0 px-6 py-4">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-secondary">{i18nService.t('sitesSubtitle')}</p>
+          {isUnfilteredEmpty && !embedded && createSiteButton(true)}
+        </div>
+        {!isUnfilteredEmpty && (
+          <div className="mt-3 flex flex-nowrap items-center gap-2.5">
             <div className="relative min-w-[280px] flex-1">
-              <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
               <input
                 value={keywordInput}
                 onChange={event => setKeywordInput(event.target.value)}
@@ -1404,12 +2057,12 @@ const SitesView: React.FC<SitesViewProps> = ({
               onClick={() => void loadSites()}
               className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface text-secondary hover:bg-surface-raised hover:text-foreground"
             >
-              <ArrowsClockwise className={`h-4 w-4 ${listLoading ? 'animate-spin' : ''}`} />
+              <ArrowPathIcon className={`h-4 w-4 ${listLoading ? 'animate-spin' : ''}`} />
             </button>
-            {createSiteButton(true)}
+            {!embedded && createSiteButton(true)}
           </div>
-        </header>
-      )}
+        )}
+      </header>
       <main className="min-h-0 w-full min-w-[720px] flex-1 overflow-y-auto [scrollbar-gutter:stable]">
         <div className="mx-auto w-full max-w-[840px] px-6 pb-6">
           {listError && (
@@ -1422,14 +2075,18 @@ const SitesView: React.FC<SitesViewProps> = ({
           )}
           {listLoading && listData.list.length === 0 ? (
             <div className="flex h-64 items-center justify-center text-sm text-secondary">
-              <ArrowsClockwise className="mr-2 h-4 w-4 animate-spin" />
+              <ArrowPathIcon className="mr-2 h-4 w-4 animate-spin" />
               {i18nService.t('loading')}
             </div>
           ) : isUnfilteredEmpty ? (
-            <EmptyState onCreateSiteByChat={onCreateSiteByChat} readOnly={readOnly} />
+            <EmptyState
+              onCreateSiteByChat={onCreateSiteByChat}
+              readOnly={readOnly}
+              allowCreate={!embedded}
+            />
           ) : listData.list.length === 0 ? (
             <div className="flex h-56 flex-col items-center justify-center text-sm text-secondary">
-              <MagnifyingGlass className="mb-3 h-8 w-8" />
+              <MagnifyingGlassIcon className="mb-3 h-8 w-8" />
               {i18nService.t('sitesNoResults')}
             </div>
           ) : (
@@ -1474,9 +2131,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                       </div>
                       <div className="flex w-[140px] shrink-0 items-center gap-2 px-3 text-xs text-foreground">
                         {site.accessMode === HtmlShareAccessMode.Code ? (
-                          <Lock className="h-4 w-4 shrink-0 text-secondary" />
+                          <LockClosedIcon className="h-4 w-4 shrink-0 text-secondary" />
                         ) : (
-                          <Globe className="h-4 w-4 shrink-0 text-secondary" />
+                          <GlobeAltIcon className="h-4 w-4 shrink-0 text-secondary" />
                         )}
                         <span className="truncate">
                           {site.accessMode === HtmlShareAccessMode.Code
@@ -1493,7 +2150,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                         aria-label={i18nService.t('sitesShare')}
                         title={i18nService.t('sitesShare')}
                       >
-                        <UploadSimple className="h-4 w-4" />
+                        <ArrowUpTrayIcon className="h-4 w-4" />
                         <span>{i18nService.t('sitesShare')}</span>
                       </button>
                       <button
@@ -1540,7 +2197,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             aria-label={i18nService.t('sitesPreviousPage')}
             title={i18nService.t('sitesPreviousPage')}
           >
-            <CaretLeft className="h-4 w-4" />
+            <ChevronLeftIcon className="h-4 w-4" />
           </button>
           <span className="text-xs text-secondary">
             {i18nService
@@ -1556,7 +2213,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             aria-label={i18nService.t('sitesNextPage')}
             title={i18nService.t('sitesNextPage')}
           >
-            <CaretRight className="h-4 w-4" />
+            <ChevronRightIcon className="h-4 w-4" />
           </button>
         </footer>
       )}
@@ -1585,7 +2242,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                 className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised hover:text-foreground disabled:opacity-40"
                 aria-label={i18nService.t('close')}
               >
-                <X className="h-4 w-4" />
+                <XMarkIcon className="h-4 w-4" />
               </button>
             </div>
 
@@ -1609,7 +2266,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                 <h3 className="text-xs font-semibold text-foreground">
                   {i18nService.t('sitesWhoCanAccess')}
                 </h3>
-                {shareDialogLoading && <ArrowsClockwise className="h-4 w-4 animate-spin text-secondary" />}
+                {shareDialogLoading && <ArrowPathIcon className="h-4 w-4 animate-spin text-secondary" />}
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {[HtmlShareAccessMode.Public, HtmlShareAccessMode.Code].map(mode => (
@@ -1630,9 +2287,9 @@ const SitesView: React.FC<SitesViewProps> = ({
                   >
                     <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                       {mode === HtmlShareAccessMode.Public ? (
-                        <Globe className="h-4 w-4" />
+                        <GlobeAltIcon className="h-4 w-4" />
                       ) : (
-                        <Lock className="h-4 w-4" />
+                        <LockClosedIcon className="h-4 w-4" />
                       )}
                       {mode === HtmlShareAccessMode.Public
                         ? i18nService.t('sitesPublicAccess')
@@ -1671,7 +2328,7 @@ const SitesView: React.FC<SitesViewProps> = ({
                     aria-label={i18nService.t('copy')}
                     title={i18nService.t('copy')}
                   >
-                    <ClipboardText className="h-4 w-4" />
+                    <ClipboardDocumentIcon className="h-4 w-4" />
                   </button>
                 </div>
               )}
@@ -1702,12 +2359,12 @@ const SitesView: React.FC<SitesViewProps> = ({
                 }
                 className="inline-flex h-9 min-w-[104px] items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {shareActionLoading && <ArrowsClockwise className="h-4 w-4 animate-spin" />}
+                {shareActionLoading && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
                 {!shareActionLoading &&
                   (shareHasAccessChange ? (
-                    <Globe className="h-4 w-4" />
+                    <GlobeAltIcon className="h-4 w-4" />
                   ) : (
-                    <ClipboardText className="h-4 w-4" />
+                    <ClipboardDocumentIcon className="h-4 w-4" />
                   ))}
                 {shareActionLoading
                   ? i18nService.t('saving')
@@ -1725,7 +2382,7 @@ const SitesView: React.FC<SitesViewProps> = ({
       </Modal>
       {detailLoading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
-          <ArrowsClockwise className="h-5 w-5 animate-spin text-secondary" />
+          <ArrowPathIcon className="h-5 w-5 animate-spin text-secondary" />
         </div>
       )}
       {siteActionMenu && (
@@ -1741,7 +2398,7 @@ const SitesView: React.FC<SitesViewProps> = ({
             onClick={() => void openSiteDetail(siteActionMenu.site, 'analytics')}
             className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-raised"
           >
-            <ChartBar className="h-4 w-4 text-secondary" />
+            <ChartBarIcon className="h-4 w-4 text-secondary" />
             {i18nService.t('sitesViewAnalytics')}
           </button>
           <button

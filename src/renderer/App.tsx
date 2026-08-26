@@ -10,6 +10,11 @@ import {
   AppUpdateStatus,
   isManualDownloadUrl,
 } from '../shared/appUpdate/constants';
+import {
+  LibraryNavigationEvent,
+  LibrarySourceFilter,
+} from '../shared/library/constants';
+import type { LibrarySessionRef } from '../shared/library/types';
 import { ProviderAuthType, ProviderName, ProviderRegistry } from '../shared/providers';
 import { SIDEBAR_TASK_FILTER_ENABLED } from './components/agentSidebar/SidebarTaskFilterButton';
 import { CoworkView } from './components/cowork';
@@ -31,10 +36,10 @@ import { Message } from './components/icons/iconParkCompat';
 import { iconParkOutlineProps } from './components/icons/iconStyle';
 import KitsView from './components/kits/KitsView';
 import LabView from './components/lab/LabView';
+import LibraryView from './components/library/LibraryView';
 import { ScheduledTasksView } from './components/scheduledTasks';
 import Settings, { type SettingsOpenOptions } from './components/Settings';
 import Sidebar from './components/Sidebar';
-import { SitesView } from './components/sites';
 import { SkillsAndConnectorsView, SkillsConnectorsSection } from './components/skillsAndConnectors';
 import SkinBackdrop, { SkinBackdropVariant } from './components/skin/SkinBackdrop';
 import SkinPresentationScope from './components/skin/SkinPresentationScope';
@@ -61,7 +66,6 @@ import { apiService } from './services/api';
 import { authService } from './services/auth';
 import { configService } from './services/config';
 import { coworkService } from './services/cowork';
-import { isTestModeEnabled } from './services/endpoints';
 import { i18nService } from './services/i18n';
 import {
   beginLatestAsyncRequest,
@@ -79,6 +83,7 @@ import {
   selectFirstCurrentSessionPendingPermission,
   selectPendingPermissions,
 } from './store/selectors/coworkSelectors';
+import { openArtifactPreviewTab } from './store/slices/artifactSlice';
 import {
   clearDraftAttachments,
   clearDraftSelectedTextSnippets,
@@ -162,7 +167,14 @@ const logAppUpdateRendererLifecycle = (
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsOptions, setSettingsOptions] = useState<SettingsOpenOptions & { requestId: number }>({ requestId: 0 });
-  const [mainView, setMainView] = useState<'cowork' | 'skills' | 'scheduledTasks' | 'kits' | 'mcp' | 'sites' | 'lab'>('cowork');
+  const [mainView, setMainView] = useState<'cowork' | 'skills' | 'scheduledTasks' | 'kits' | 'mcp' | 'library' | 'lab'>('cowork');
+  const [libraryNavigationRequest, setLibraryNavigationRequest] = useState<{
+    source: LibrarySourceFilter;
+    requestId: number;
+  }>({
+    source: LibrarySourceFilter.Local,
+    requestId: 0,
+  });
   const [isInitialized, setIsInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<ToastEventDetail | null>(null);
@@ -647,9 +659,38 @@ const App: React.FC = () => {
     setMainView('mcp');
   }, []);
 
-  const handleShowSites = useCallback(() => {
-    setMainView('sites');
+  const handleShowLibrary = useCallback(() => {
+    setLibraryNavigationRequest(current => ({
+      source: LibrarySourceFilter.Local,
+      requestId: current.requestId + 1,
+    }));
+    setMainView('library');
   }, []);
+
+  useEffect(() => {
+    const handleOpenCloudLibrary = (): void => {
+      setLibraryNavigationRequest(current => ({
+        source: LibrarySourceFilter.Cloud,
+        requestId: current.requestId + 1,
+      }));
+      setMainView('library');
+    };
+    window.addEventListener(LibraryNavigationEvent.OpenCloud, handleOpenCloudLibrary);
+    return () => {
+      window.removeEventListener(LibraryNavigationEvent.OpenCloud, handleOpenCloudLibrary);
+    };
+  }, []);
+
+  const handleOpenLibrarySession = useCallback((session: LibrarySessionRef) => {
+    setMainView('cowork');
+    void coworkService.loadSession(session.sessionId).then(loaded => {
+      if (!loaded || !session.sessionArtifactId) return;
+      dispatch(openArtifactPreviewTab({
+        sessionId: session.sessionId,
+        artifactId: session.sessionArtifactId,
+      }));
+    });
+  }, [dispatch]);
 
   const handleShowKits = useCallback(() => {
     setMainView('kits');
@@ -790,26 +831,6 @@ const App: React.FC = () => {
       mode: CoworkCollaborationMode.Default,
     }));
     setMainView('cowork');
-  }, [dispatch]);
-
-  const handleCreateSiteByChat = useCallback((prompt: string) => {
-    coworkService.clearSession({ restoreAgentSkills: true });
-    dispatch(clearSelection());
-    dispatch(clearDraftAttachments('__home__'));
-    dispatch(clearDraftSelectedTextSnippets('__home__'));
-    dispatch(setActiveKitIds([]));
-    dispatch(setDraftKitIds({ draftKey: '__home__', kitIds: [] }));
-    dispatch(setDraftCollaborationMode({
-      draftKey: '__home__',
-      mode: CoworkCollaborationMode.Default,
-    }));
-    dispatch(setDraftPrompt({ sessionId: '__home__', draft: prompt }));
-    setMainView('cowork');
-    window.setTimeout(() => {
-      window.dispatchEvent(new CustomEvent(CoworkUiEvent.FocusInput, {
-        detail: { clear: false, resetCollaborationMode: true, text: prompt },
-      }));
-    }, 0);
   }, [dispatch]);
 
   const showToast = useCallback((toast: string | ToastEventDetail) => {
@@ -1746,7 +1767,7 @@ const App: React.FC = () => {
           onShowCowork={handleShowCowork}
           onShowScheduledTasks={handleShowScheduledTasks}
           onShowKits={handleShowKits}
-          onShowSites={handleShowSites}
+          onShowLibrary={handleShowLibrary}
           onShowLab={handleShowLab}
           onNewChat={handleNewChat}
           isCollapsed={isSidebarCollapsed}
@@ -1759,7 +1780,6 @@ const App: React.FC = () => {
           updateNotice={!isSidebarCollapsed && !isUpdateInteractionBlocked ? updateCard : null}
           hideAdBanner={isUpdateCardExpanded}
           hideLogin={enterpriseConfig?.ui?.login === 'hide'}
-          hideSites={!isTestModeEnabled() || enterpriseConfig?.ui?.sites === 'hide'}
         />
         <div className="flex-1 min-w-0">
           <div
@@ -1803,14 +1823,17 @@ const App: React.FC = () => {
                 onTryAsking={handleKitTryAsking}
                 onUseKit={handleKitUse}
               />
-            ) : mainView === 'sites' ? (
-              <SitesView
+            ) : mainView === 'library' ? (
+              <LibraryView
                 isAuthenticated={Boolean(authUser)}
-                onCreateSiteByChat={handleCreateSiteByChat}
                 isSidebarCollapsed={isSidebarCollapsed}
                 onToggleSidebar={handleToggleSidebar}
+                onOpenSession={handleOpenLibrarySession}
+                sitesHidden={enterpriseConfig?.ui?.sites === 'hide'}
+                sitesReadOnly={enterpriseConfig?.ui?.sites === 'readonly'}
                 updateBadge={collapsedHeaderUpdateBadge}
-                readOnly={enterpriseConfig?.ui?.sites === 'readonly'}
+                requestedSource={libraryNavigationRequest.source}
+                navigationRequestId={libraryNavigationRequest.requestId}
               />
             ) : mainView === 'lab' ? (
               <LabView
