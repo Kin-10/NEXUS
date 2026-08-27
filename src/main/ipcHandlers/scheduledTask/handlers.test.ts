@@ -203,6 +203,54 @@ describe('registerScheduledTaskHandlers', () => {
     });
   });
 
+  test('restores a WeCom direct chat id from case-preserving origin metadata on create', async () => {
+    const nativeDirectId = 'wohdYqCAAAddkuHZHNvmo6JQEeGpSrvw';
+    const request = vi.fn(async () => ({
+      sessions: [
+        {
+          updatedAt: 2_000,
+          lastChannel: 'wecom',
+          lastTo: nativeDirectId.toLowerCase(),
+          origin: {
+            provider: 'wecom',
+            surface: 'wecom',
+            chatType: 'single',
+            to: `wecom:${nativeDirectId}`,
+            accountId: 'wecom-bot-1',
+          },
+        },
+      ],
+    }));
+    const { cronJobService, deps } = makeDeps(OpenClawEnginePhase.Running, {
+      gatewayClient: { request },
+    });
+    registerScheduledTaskHandlers(deps);
+
+    const handler = registeredHandlers.get(ScheduledTaskIpc.Create);
+    await handler?.(undefined, {
+      name: 'wecom direct',
+      enabled: true,
+      schedule: { kind: 'cron', expr: '0 13 * * *' },
+      payload: { kind: PayloadKind.AgentTurn, message: 'hi' },
+      delivery: {
+        mode: DeliveryMode.Announce,
+        channel: 'wecom',
+        to: nativeDirectId.toLowerCase(),
+        accountId: 'wecom-bot-1',
+      },
+    });
+
+    const input = cronJobService.addJob.mock.calls[0][0] as {
+      delivery: Record<string, unknown>;
+    };
+    expect(input.delivery).toEqual({
+      mode: DeliveryMode.Announce,
+      channel: 'wecom',
+      to: nativeDirectId,
+      accountId: 'wecom-bot-1',
+    });
+  });
+
   test('restores a DingTalk group id from case-preserving origin metadata on create', async () => {
     const nativeConversationId = 'cid+wQbmjFBusv8Bld+Du9t1w==';
     const request = vi.fn(async () => ({
@@ -298,6 +346,62 @@ describe('registerScheduledTaskHandlers', () => {
         mode: DeliveryMode.Announce,
         channel: 'wecom',
         to: nativeGroupId,
+      },
+    });
+  });
+
+  test('repairs only the casing of an existing WeCom direct target', async () => {
+    const nativeDirectId = 'wohdYqCAAAddkuHZHNvmo6JQEeGpSrvw';
+    const request = vi.fn(async () => ({
+      sessions: [
+        {
+          lastChannel: 'wecom',
+          lastTo: nativeDirectId.toLowerCase(),
+          origin: {
+            provider: 'wecom',
+            chatType: 'single',
+            to: `wecom:${nativeDirectId}`,
+            accountId: 'wecom-bot-1',
+          },
+        },
+      ],
+    }));
+    const { cronJobService, deps } = makeDeps(OpenClawEnginePhase.Running, {
+      gatewayClient: { request },
+    });
+    cronJobService.listJobs.mockResolvedValue([
+      {
+        id: 'legacy-wecom-direct-job',
+        name: 'legacy wecom direct',
+        description: '',
+        enabled: true,
+        schedule: { kind: 'cron', expr: '0 13 * * *' },
+        sessionTarget: SessionTarget.Isolated,
+        wakeMode: WakeMode.Now,
+        payload: { kind: PayloadKind.AgentTurn, message: 'hi' },
+        delivery: {
+          mode: DeliveryMode.Announce,
+          channel: 'wecom',
+          to: nativeDirectId.toLowerCase(),
+          accountId: 'wecom-bot-1',
+        },
+        agentId: 'agent-wecom-bot-1',
+        sessionKey: null,
+        state: {},
+        createdAt: '2026-07-09T00:00:00.000Z',
+        updatedAt: '2026-07-09T00:00:00.000Z',
+      },
+    ]);
+
+    const result = await migrateScheduledTaskAnnounceJobs(deps);
+
+    expect(result).toEqual({ checked: 1, updated: 1 });
+    expect(cronJobService.updateJob).toHaveBeenCalledWith('legacy-wecom-direct-job', {
+      delivery: {
+        mode: DeliveryMode.Announce,
+        channel: 'wecom',
+        to: nativeDirectId,
+        accountId: 'wecom-bot-1',
       },
     });
   });

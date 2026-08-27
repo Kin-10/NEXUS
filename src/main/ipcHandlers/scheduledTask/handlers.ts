@@ -27,8 +27,8 @@ import {
   dedupeConversationMappings,
   filterConversationMappingsForSelectedAccount,
   listScheduledTaskChannels,
+  resolveCaseSensitiveDeliveryTargetFromSessions,
   resolveConversationAgentIdFromMappings,
-  resolveGroupDeliveryTargetFromSessions,
   resolveImDeliveryHintsFromSessions,
 } from './helpers';
 
@@ -365,20 +365,20 @@ async function restoreAnnounceDeliveryHintsFromGateway(
         }
 
         if (CASE_SENSITIVE_GROUP_TARGET_PLATFORMS.has(context.platform)) {
-          const nativeGroupTarget = resolveGroupDeliveryTargetFromSessions({
+          const nativeTarget = resolveCaseSensitiveDeliveryTargetFromSessions({
             sessions,
             platform: context.platform,
             peerId: delivery.to,
             preferredAccountId: selectedAccountId,
           });
-          if (nativeGroupTarget && nativeGroupTarget !== delivery.to) {
+          if (nativeTarget && nativeTarget !== delivery.to) {
             console.log(
-              `[ScheduledTask] restored ${context.platform} group delivery.to casing from gateway origin:`,
+              `[ScheduledTask] restored ${context.platform} delivery.to casing from gateway origin:`,
               delivery.to,
               '->',
-              nativeGroupTarget,
+              nativeTarget,
             );
-            delivery.to = nativeGroupTarget;
+            delivery.to = nativeTarget;
           }
         }
       }
@@ -459,7 +459,7 @@ async function buildAnnounceNormalizationPatch(
     normalizedTo &&
     normalizedTo === normalizedTo.toLowerCase()
   ) {
-    // Historical repair must only restore the case-sensitive native group id;
+    // Historical repair must only restore the case-sensitive native peer id;
     // it must not infer or change account routing from gateway metadata.
     await restoreAnnounceDeliveryHintsFromGateway(normalizedInput, context, deps, {
       casingOnly: true,

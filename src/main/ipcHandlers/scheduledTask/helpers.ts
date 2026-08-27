@@ -277,6 +277,68 @@ export function resolveGroupDeliveryTargetFromSessions(params: {
   return nativeTargets.size === 1 ? [...nativeTargets][0] : null;
 }
 
+/** WeCom bot DM sessions use chatType "single" instead of OpenClaw's "direct". */
+const CASE_SENSITIVE_DIRECT_ORIGIN_CHAT_TYPES = new Set<string>([
+  ImPeerKind.Direct,
+  'single',
+]);
+
+function expectedPeerKindForOriginChatType(
+  chatType: string,
+): typeof ImPeerKind.Direct | typeof ImPeerKind.Group | null {
+  if (chatType === ImPeerKind.Group) return ImPeerKind.Group;
+  if (CASE_SENSITIVE_DIRECT_ORIGIN_CHAT_TYPES.has(chatType)) return ImPeerKind.Direct;
+  return null;
+}
+
+/**
+ * Restores a case-sensitive native peer id (group or direct) from inbound session
+ * origin metadata. OpenClaw lowercases channel peer ids in session keys, but
+ * providers such as WeCom and DingTalk require their opaque ids unchanged.
+ */
+export function resolveCaseSensitiveDeliveryTargetFromSessions(params: {
+  sessions: readonly unknown[];
+  platform: Platform;
+  peerId: string;
+  preferredAccountId?: string;
+}): string | null {
+  const requestedPeer = parseImConversationId(params.peerId).peerId.trim().toLowerCase();
+  const preferredAccountId = params.preferredAccountId?.trim();
+  if (!requestedPeer) return null;
+
+  const nativeTargets = new Set<string>();
+  for (const row of params.sessions) {
+    if (!row || typeof row !== 'object') continue;
+    const origin = (row as GatewaySessionRowLike).origin;
+    const chatType = asNonEmptyString(origin?.chatType);
+    const expectedPeerKind = chatType ? expectedPeerKindForOriginChatType(chatType) : null;
+    if (!origin || !expectedPeerKind) continue;
+
+    const originChannel = asNonEmptyString(origin.provider) ?? asNonEmptyString(origin.surface);
+    if (!originChannel || PlatformRegistry.platformOfChannel(originChannel) !== params.platform) {
+      continue;
+    }
+
+    const originAccountId = asNonEmptyString(origin.accountId);
+    if (preferredAccountId && originAccountId !== preferredAccountId) continue;
+
+    const originTo = asNonEmptyString(origin.to);
+    if (!originTo) continue;
+    const colonIndex = originTo.indexOf(':');
+    const prefix = colonIndex > 0 ? originTo.slice(0, colonIndex) : '';
+    const withoutChannel = prefix && PlatformRegistry.platformOfChannel(prefix) === params.platform
+      ? originTo.slice(colonIndex + 1)
+      : originTo;
+    const parsedTarget = parseImConversationId(withoutChannel);
+    if (parsedTarget.peerKind && parsedTarget.peerKind !== expectedPeerKind) continue;
+    const nativePeer = parsedTarget.peerId.trim();
+    if (!nativePeer || nativePeer.toLowerCase() !== requestedPeer) continue;
+    nativeTargets.add(nativePeer);
+  }
+
+  return nativeTargets.size === 1 ? [...nativeTargets][0] : null;
+}
+
 /** Backward-compatible WeCom wrapper for existing callers and tests. */
 export function resolveWecomGroupDeliveryTargetFromSessions(params: {
   sessions: readonly unknown[];

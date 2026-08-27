@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   dedupeConversationMappings,
   filterConversationMappingsForSelectedAccount,
+  resolveCaseSensitiveDeliveryTargetFromSessions,
   resolveConversationAgentIdFromMappings,
   resolveGroupDeliveryTargetFromSessions,
   resolveImDeliveryHintsFromSessions,
@@ -216,6 +217,64 @@ describe('resolveWecomGroupDeliveryTargetFromSessions', () => {
         preferredAccountId: 'dingtalk-bot-1',
       }),
     ).toBe(nativeConversationId);
+  });
+});
+
+describe('resolveCaseSensitiveDeliveryTargetFromSessions', () => {
+  const nativeDirectId = 'wohdYqCAAAddkuHZHNvmo6JQEeGpSrvw';
+  const lowerDirectId = nativeDirectId.toLowerCase();
+
+  function wecomDirectOrigin(
+    accountId: string,
+    to = `wecom:${nativeDirectId}`,
+    overrides: Record<string, unknown> = {},
+  ): Record<string, unknown> {
+    return {
+      origin: {
+        provider: 'wecom',
+        surface: 'wecom',
+        chatType: 'single',
+        to,
+        accountId,
+        ...overrides,
+      },
+    };
+  }
+
+  test('restores the native WeCom direct chat id from single-chat origin metadata', () => {
+    expect(
+      resolveCaseSensitiveDeliveryTargetFromSessions({
+        sessions: [wecomDirectOrigin('bot-1')],
+        platform: 'wecom',
+        peerId: lowerDirectId,
+        preferredAccountId: 'bot-1',
+      }),
+    ).toBe(nativeDirectId);
+  });
+
+  test('restores direct chat ids when origin uses OpenClaw direct chatType', () => {
+    expect(
+      resolveCaseSensitiveDeliveryTargetFromSessions({
+        sessions: [wecomDirectOrigin('bot-1', `wecom:${nativeDirectId}`, { chatType: 'direct' })],
+        platform: 'wecom',
+        peerId: lowerDirectId,
+        preferredAccountId: 'bot-1',
+      }),
+    ).toBe(nativeDirectId);
+  });
+
+  test('rejects conflicting native ids instead of guessing', () => {
+    expect(
+      resolveCaseSensitiveDeliveryTargetFromSessions({
+        sessions: [
+          wecomDirectOrigin('bot-1'),
+          wecomDirectOrigin('bot-1', `wecom:${lowerDirectId}`),
+        ],
+        platform: 'wecom',
+        peerId: lowerDirectId,
+        preferredAccountId: 'bot-1',
+      }),
+    ).toBeNull();
   });
 });
 
