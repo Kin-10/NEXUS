@@ -148,6 +148,9 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
   useEffect(() => {
     let isActive = true;
     setIsLoadingMarketplace(true);
+    // Clear any empty cache from a prior failed fetch so Market can recover
+    // after Baiying endpoint wiring without requiring a full app restart.
+    skillService.clearMarketplaceCache();
     skillService.fetchMarketplaceSkills().then((data) => {
       if (!isActive) return;
       setMarketplaceSkills(data.skills);

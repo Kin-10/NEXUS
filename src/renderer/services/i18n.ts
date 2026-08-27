@@ -376,7 +376,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     dailyCheckInTodayClaimed: '今日已领',
     dailyCheckInCompleted: '本期已完成',
     dailyCheckInStartingLogin: '正在前往登录…',
-    dailyCheckInLoginHint: '登录只在 LobsterAI 客户端中完成，活动不会获取账号令牌',
+    dailyCheckInLoginHint: '功能暂未开放，请稍后重试',
     dailyCheckInLoginFailed: '暂时无法发起登录',
     dailyCheckInClaimSuccess: '已领取 {credits} 积分',
     dailyCheckInClaimFailed: '领取失败，请重试',

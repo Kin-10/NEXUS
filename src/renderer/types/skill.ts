@@ -47,3 +47,10 @@ export interface MarketplaceSkill {
   icon?: string;
   downloadCount?: number;
 }
+
+/** Overmind / Baiying skill-store `data.value` payload. */
+export interface SkillStoreCatalog {
+  localSkill?: LocalSkillInfo[];
+  marketplace?: MarketplaceSkill[];
+  marketTags?: MarketTag[];
+}

@@ -9,34 +9,33 @@ export const isTestModeEnabled = () => {
   return configService.getConfig().app?.testMode === true;
 };
 
+const OVERMIND_PRODUCT = 'baiying';
+const OVERMIND_ORIGIN = 'https://api-overmind.youdao.com';
+
+const overmindCatalogUrl = (key: string) => (
+  isTestModeEnabled()
+    ? `${OVERMIND_ORIGIN}/openapi/get/luna/hardware/${OVERMIND_PRODUCT}/test/${key}`
+    : `${OVERMIND_ORIGIN}/openapi/get/luna/hardware/${OVERMIND_PRODUCT}/prod/${key}`
+);
+
 // 自动更新
-export const getUpdateCheckUrl = () => isTestModeEnabled()
-  ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/update'
-  : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/update';
+export const getUpdateCheckUrl = () => overmindCatalogUrl('update');
 
 // 手动检查更新
-export const getManualUpdateCheckUrl = () => isTestModeEnabled()
-  ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/update-manual'
-  : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/update-manual';
+export const getManualUpdateCheckUrl = () => overmindCatalogUrl('update-manual');
 
 export const getFallbackDownloadUrl = () => isTestModeEnabled()
   ? 'https://lobsterai.inner.youdao.com/#/download-list'
   : 'https://lobsterai.youdao.com/#/download-list';
 
 // Skill 商店
-export const getSkillStoreUrl = () => isTestModeEnabled()
-  ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/skill-store'
-  : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/skill-store';
+export const getSkillStoreUrl = () => overmindCatalogUrl('skill-store');
 
 // Kit 商店
-export const getKitStoreUrl = () => isTestModeEnabled()
-  ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/kit-store'
-  : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/kit-store';
+export const getKitStoreUrl = () => overmindCatalogUrl('kit-store');
 
 // 登录地址
-export const getLoginOvermindUrl = () => isTestModeEnabled()
-  ? 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/test/login-url'
-  : 'https://api-overmind.youdao.com/openapi/get/luna/hardware/lobsterai/prod/login-url';
+export const getLoginOvermindUrl = () => overmindCatalogUrl('login-url');
 
 // Portal 页面（可被主进程本地 BYServer 覆盖）
 let portalBaseOverride: string | null = null;

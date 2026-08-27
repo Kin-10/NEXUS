@@ -81,7 +81,7 @@
     "build:skill:tech-news": "node scripts/build-skill-tech-news.js",
     "build:skill:email": "cd SKILLs/imap-smtp-email && npm install --production",
     "build:skills": "npm run build:skill:web-search && npm run build:skill:tech-news && npm run build:skill:email",
-    "start:electron": "cross-env NODE_ENV=development ELECTRON_START_URL=http://localhost:5175 electron .",
+    "start:electron": "cross-env NODE_ENV=development BAIYING_SERVER_BASE_URL=http://127.0.0.1:8899 BAIYING_OVERMIND_BASE_URL=http://127.0.0.1:8899 BAIYING_PORTAL_BASE_URL=http://127.0.0.1:8899 ELECTRON_START_URL=http://localhost:5175 electron .",
     "electron:dev": "rimraf dist-electron && npm run compile:electron && concurrently \"vite --port 5175 --strictPort\" \"wait-on -v -t 120000 -d 20000 http://localhost:5175 dist-electron/.electron-ready && npm run start:electron\"",
     "electron:dev:openclaw": "npm run openclaw:runtime:host && npm run electron:dev",
     "postinstall": "patch-package && electron-builder install-app-deps",

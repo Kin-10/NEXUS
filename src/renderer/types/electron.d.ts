@@ -501,6 +501,7 @@ import type { AgentLegacyIdentityCleanupResult } from '@shared/agent';
 import type { Platform } from '@shared/platform';
 
 import type { Agent, PresetAgent } from './agent';
+import type { SkillStoreCatalog } from './skill';
 
 interface CreditItem {
   type: 'subscription' | 'boost' | 'free' | 'bonus' | 'invitation' | 'campaign';
@@ -667,7 +668,11 @@ interface IElectronAPI {
       skillId: string,
       config: Record<string, string>,
     ) => Promise<{ success: boolean; result?: EmailConnectivityTestResult; error?: string }>;
-    fetchMarketplace: () => Promise<{ success: boolean; data?: string; error?: string }>;
+    fetchMarketplace: () => Promise<{
+      success: boolean;
+      data?: SkillStoreCatalog;
+      error?: string;
+    }>;
     detectFromOpenClaw: () => Promise<{
       skills: Array<{ name: string; description: string; skillKey: string; baseDir: string }>;
       error?: string;

@@ -8,6 +8,25 @@ let cachedTestMode: boolean | null = null;
 let loggedDevelopmentServerBaseUrl: string | null = null;
 let loggedDevelopmentOvermindBaseUrl: string | null = null;
 
+/** Local BYServer default for unpackaged dev builds (API + Overmind + Portal). */
+export const LOCAL_BAIYING_BASE_URL = 'http://127.0.0.1:8899';
+
+/** @deprecated Use {@link LOCAL_BAIYING_BASE_URL}. */
+export const LOCAL_OVERMIND_BASE_URL = LOCAL_BAIYING_BASE_URL;
+
+/** Overmind product segment per Baiying Server integration guide. */
+export const OVERMIND_PRODUCT = 'baiying';
+
+const readEnvWithLegacy = (baiyingKey: string, lobsterKey: string): string | undefined => {
+  const baiying = process.env[baiyingKey]?.trim();
+  if (baiying) return baiying;
+  return process.env[lobsterKey]?.trim();
+};
+
+const isUnpackagedDevelopment = (): boolean => (
+  process.env.NODE_ENV === 'development' && !app.isPackaged
+);
+
 /**
  * Read testMode from store and cache it.
  * Call once at startup and again whenever app_config changes.
@@ -25,9 +44,15 @@ export const isTestModeEnabled = (): boolean => {
   return cachedTestMode ?? !app.isPackaged;
 };
 
+const resolveDevServerOverride = (): string | undefined => {
+  const fromEnv = readEnvWithLegacy('BAIYING_SERVER_BASE_URL', 'LOBSTER_SERVER_BASE_URL');
+  if (fromEnv) return fromEnv;
+  return isUnpackagedDevelopment() ? LOCAL_BAIYING_BASE_URL : undefined;
+};
+
 /**
  * Server API base URL — switches based on testMode.
- * Used for auth exchange/refresh, models, proxy, etc.
+ * Used for auth exchange/refresh, banners, activities, installations, etc.
  */
 export const getServerApiBaseUrl = (): string => {
   const defaultBaseUrl = isTestModeEnabled()
@@ -35,14 +60,14 @@ export const getServerApiBaseUrl = (): string => {
     : 'https://lobsterai-server.youdao.com';
   const serverBaseUrl = resolveDevelopmentServerBaseUrl({
     defaultBaseUrl,
-    developmentOverride: process.env.LOBSTER_SERVER_BASE_URL,
+    developmentOverride: resolveDevServerOverride(),
     isDev: process.env.NODE_ENV === 'development',
     isPackaged: app.isPackaged,
   });
   if (serverBaseUrl !== defaultBaseUrl
       && loggedDevelopmentServerBaseUrl !== serverBaseUrl) {
     console.warn(
-      `[Endpoints] routing all Lobster server traffic to development origin ${serverBaseUrl}`,
+      `[Endpoints] routing Baiying server traffic to development origin ${serverBaseUrl}`,
     );
     loggedDevelopmentServerBaseUrl = serverBaseUrl;
   }
@@ -50,13 +75,15 @@ export const getServerApiBaseUrl = (): string => {
 };
 
 /**
- * Overmind openapi origin. Prefers LOBSTER_OVERMIND_BASE_URL, then falls back to
- * LOBSTER_SERVER_BASE_URL in development so BYServer can host both API + Overmind.
+ * Overmind openapi origin. Prefers BAIYING_OVERMIND_BASE_URL (LOBSTER_* legacy),
+ * then server base URL in development so BYServer can host both API + Overmind.
+ * Unpackaged dev builds default to {@link LOCAL_BAIYING_BASE_URL}.
  */
 export const getOvermindBaseUrl = (): string => {
   const defaultBaseUrl = 'https://api-overmind.youdao.com';
-  const preferred = process.env.LOBSTER_OVERMIND_BASE_URL?.trim()
-    || process.env.LOBSTER_SERVER_BASE_URL?.trim();
+  const preferred = readEnvWithLegacy('BAIYING_OVERMIND_BASE_URL', 'LOBSTER_OVERMIND_BASE_URL')
+    || readEnvWithLegacy('BAIYING_SERVER_BASE_URL', 'LOBSTER_SERVER_BASE_URL')
+    || (isUnpackagedDevelopment() ? LOCAL_BAIYING_BASE_URL : undefined);
   if (!preferred) return defaultBaseUrl;
 
   try {
@@ -77,9 +104,13 @@ export const getOvermindBaseUrl = (): string => {
   }
 };
 
+export const buildOvermindCatalogUrl = (baseUrl: string, env: 'test' | 'prod', key: string): string => (
+  `${baseUrl}/openapi/get/luna/hardware/${OVERMIND_PRODUCT}/${env}/${key}`
+);
+
 const overmindPath = (key: string): string => {
   const env = isTestModeEnabled() ? 'test' : 'prod';
-  return `${getOvermindBaseUrl()}/openapi/get/luna/hardware/lobsterai/${env}/${key}`;
+  return buildOvermindCatalogUrl(getOvermindBaseUrl(), env, key);
 };
 
 export const getHtmlSharePublicBaseUrl = (): string => {
@@ -104,14 +135,15 @@ export const getMcpMarketplaceUrl = (): string => overmindPath('mcp-marketplace'
 
 /**
  * Portal web base (`.../portal#`). In local BYServer mode, points at the local
- * portal pages under `${LOBSTER_SERVER_BASE_URL}/portal#`.
+ * portal pages under `${BAIYING_SERVER_BASE_URL}/portal#`.
  */
 export const getPortalBaseUrl = (): string => {
   const defaultBaseUrl = isTestModeEnabled()
     ? 'https://lobsterai.inner.youdao.com/portal#'
     : 'https://lobsterai.youdao.com/portal#';
-  const preferred = process.env.LOBSTER_PORTAL_BASE_URL?.trim()
-    || process.env.LOBSTER_SERVER_BASE_URL?.trim();
+  const preferred = readEnvWithLegacy('BAIYING_PORTAL_BASE_URL', 'LOBSTER_PORTAL_BASE_URL')
+    || readEnvWithLegacy('BAIYING_SERVER_BASE_URL', 'LOBSTER_SERVER_BASE_URL')
+    || (isUnpackagedDevelopment() ? LOCAL_BAIYING_BASE_URL : undefined);
   if (!preferred) return defaultBaseUrl;
 
   try {

@@ -1,5 +1,5 @@
 import { BUNDLED_SKILL_DISPLAY_NAMES } from '../components/skills/bundledSkillNames';
-import { LocalizedText, LocalSkillInfo, MarketplaceSkill, MarketTag, Skill } from '../types/skill';
+import { LocalizedText, LocalSkillInfo, MarketplaceSkill, MarketTag, Skill, SkillStoreCatalog } from '../types/skill';
 import { i18nService } from './i18n';
 import { LogReporterAction, reportYdAnalyzer } from './logReporter';
 
@@ -8,6 +8,24 @@ export function resolveLocalizedText(text: string | LocalizedText): string {
   if (typeof text === 'string') return text;
   const lang = i18nService.getLanguage();
   return text[lang] || text.en || '';
+}
+
+/**
+ * Normalize skill-store IPC payload: main now returns the catalog object, but
+ * older envelopes (raw Overmind JSON string) are still accepted.
+ */
+export function resolveSkillStoreCatalog(data: string | SkillStoreCatalog): SkillStoreCatalog {
+  if (typeof data !== 'string') {
+    return data;
+  }
+  const parsed = JSON.parse(data) as { data?: { value?: SkillStoreCatalog } } | SkillStoreCatalog;
+  if (parsed && typeof parsed === 'object' && 'data' in parsed) {
+    const wrapped = parsed.data?.value;
+    if (wrapped && typeof wrapped === 'object') {
+      return wrapped;
+    }
+  }
+  return parsed as SkillStoreCatalog;
 }
 
 /** Segments that should stay uppercase instead of becoming `Hr` / `Ai`. */
@@ -409,8 +427,7 @@ class SkillService {
       if (!result.success || !result.data) {
         throw new Error(result.error || 'Failed to fetch');
       }
-      const json = JSON.parse(result.data);
-      const value = json?.data?.value;
+      const value = resolveSkillStoreCatalog(result.data);
       // Store local skill descriptions for i18n lookup
       const localSkills: LocalSkillInfo[] = Array.isArray(value?.localSkill) ? value.localSkill : [];
       this.localSkillDescriptions.clear();
@@ -439,12 +456,22 @@ class SkillService {
         }
         if (ms.icon) this.skillIcons.set(ms.id, ms.icon);
       }
+      // Do not cache empty catalogs — a transient fetch/parse failure would
+      // otherwise pin the Market tab empty for the rest of the session.
+      if (skills.length === 0 && tags.length === 0 && localSkills.length === 0) {
+        console.warn('[SkillService] skill marketplace returned no entries');
+        return { skills: [], tags: [] };
+      }
       this.marketplaceCache = { skills, tags };
       return this.marketplaceCache;
     } catch (error) {
       console.error('Failed to fetch marketplace skills:', error);
       return { skills: [], tags: [] };
     }
+  }
+
+  clearMarketplaceCache(): void {
+    this.marketplaceCache = null;
   }
 
   private async loadInstalledKitSkillDescriptions(): Promise<void> {

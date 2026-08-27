@@ -162,10 +162,39 @@ export function registerSkillHandlers(deps: SkillHandlerDeps): void {
     console.log(`[SkillMarketplace] fetching from: ${url}`);
     try {
       const { fetchTextUrl } = await import('../../libs/fetchTextUrl');
-      const data = await fetchTextUrl(url);
-      return { success: true, data };
+      const raw = await fetchTextUrl(url);
+      const json = JSON.parse(raw) as {
+        code?: number;
+        message?: string;
+        data?: { value?: unknown };
+      };
+      if (json.code !== 0) {
+        return {
+          success: false,
+          error: json.message || `Skill store API returned code ${json.code ?? 'unknown'}`,
+        };
+      }
+      let value = json.data?.value;
+      if (value == null) {
+        return { success: false, error: 'Invalid response: missing data.value' };
+      }
+      if (typeof value === 'string') {
+        value = JSON.parse(value);
+      }
+      const catalog = value as {
+        localSkill?: unknown[];
+        marketplace?: unknown[];
+        marketTags?: unknown[];
+      };
+      const marketplaceCount = Array.isArray(catalog.marketplace) ? catalog.marketplace.length : 0;
+      console.log(`[SkillMarketplace] loaded ${marketplaceCount} marketplace skill(s)`);
+      return { success: true, data: catalog };
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch skill marketplace' };
+      console.error('[SkillMarketplace] fetch failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch skill marketplace',
+      };
     }
   });
 
