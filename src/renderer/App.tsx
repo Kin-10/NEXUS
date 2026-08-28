@@ -60,6 +60,7 @@ import WindowsAppTitleBar from './components/window/WindowsAppTitleBar';
 import WindowTitleBar from './components/window/WindowTitleBar';
 import { defaultConfig, getProviderDisplayName, ShortcutAction } from './config';
 import { selectIsEnterpriseAccount } from './features/enterpriseAccount/selectors';
+import { LOGIN_FEATURE_DISABLED } from './features/loginFeature';
 import { SkinProvider } from './providers/SkinProvider';
 import type { ApiConfig } from './services/api';
 import { apiService } from './services/api';
@@ -405,6 +406,13 @@ const App: React.FC = () => {
           }),
           runStep('privacy check', async () => {
             const requestId = beginLatestAsyncRequest(privacyGateRequestIdRef);
+            if (LOGIN_FEATURE_DISABLED) {
+              // TEMP: skip first-launch login welcome gate while login is disabled.
+              await window.electron.store.set('privacy_agreed', true);
+              if (!isLatestAsyncRequest(privacyGateRequestIdRef, requestId)) return;
+              setPrivacyAgreed(true);
+              return;
+            }
             const agreed = await window.electron.store.get('privacy_agreed');
             if (!isLatestAsyncRequest(privacyGateRequestIdRef, requestId)) return;
             setPrivacyAgreed(agreed === true);
@@ -1779,7 +1787,7 @@ const App: React.FC = () => {
           onWidthChange={setSidebarWidth}
           updateNotice={!isSidebarCollapsed && !isUpdateInteractionBlocked ? updateCard : null}
           hideAdBanner={isUpdateCardExpanded}
-          hideLogin={enterpriseConfig?.ui?.login === 'hide'}
+          hideLogin={LOGIN_FEATURE_DISABLED || enterpriseConfig?.ui?.login === 'hide'}
         />
         <div className="flex-1 min-w-0">
           <div

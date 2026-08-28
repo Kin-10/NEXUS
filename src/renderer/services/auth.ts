@@ -22,6 +22,7 @@ import {
   applyEnterpriseAccountContext,
   refreshEnterpriseAccountContext,
 } from '../features/enterpriseAccount/context';
+import { LOGIN_FEATURE_DISABLED } from '../features/loginFeature';
 import { store } from '../store';
 import {
   clearProfileSummary,
@@ -339,6 +340,38 @@ class AuthService {
   }
 
   /**
+   * TEMP: inject a local authenticated session when product login is disabled.
+   */
+  private applyLoginFeatureBypass(): void {
+    const user: UserProfile = {
+      yid: 'login-bypass',
+      userId: 'login-bypass',
+      nickname: 'Local Dev',
+      avatarUrl: null,
+      accountMode: 'personal',
+    };
+    const quota: UserQuota = {
+      planName: 'Dev',
+      subscriptionStatus: AuthSubscriptionStatus.Active,
+      creditsLimit: 999_999,
+      creditsUsed: 0,
+      creditsRemaining: 999_999,
+      hasPaidCredits: true,
+      mediaGenerationEntitled: true,
+      shareEntitled: true,
+      deploymentEntitled: true,
+      accountMode: 'personal',
+    };
+    const ownerAccountKey = createAccountOwnerKey({ user });
+    if (!ownerAccountKey) {
+      throw new Error('Login bypass owner account key could not be created');
+    }
+    store.dispatch(setLoggedIn({ user, quota, ownerAccountKey }));
+    applyEnterpriseAccountContext(null);
+    writeAuthRendererLog('warn', 'LOGIN_FEATURE_DISABLED: using local bypass session');
+  }
+
+  /**
    * Initialize: try to restore login state from persisted token.
    */
   async init() {
@@ -346,6 +379,11 @@ class AuthService {
     this.destroy();
 
     store.dispatch(setAuthLoading(true));
+
+    if (LOGIN_FEATURE_DISABLED) {
+      this.applyLoginFeatureBypass();
+      return true;
+    }
 
     try {
       if (typeof window.electron?.auth?.getPortalBaseUrl === 'function') {
@@ -419,6 +457,12 @@ class AuthService {
    * Initiate login (opens system browser).
    */
   async login(): Promise<AuthLoginResult> {
+    if (LOGIN_FEATURE_DISABLED) {
+      this.applyLoginFeatureBypass();
+      writeAuthRendererLog('warn', 'LOGIN_FEATURE_DISABLED: login() skipped');
+      return { success: true };
+    }
+
     const attemptId = ++this.loginAttemptSequence;
     writeAuthRendererLog('info', `login attempt ${attemptId} started`);
 
@@ -613,6 +657,11 @@ class AuthService {
    * Logout.
    */
   async logout() {
+    if (LOGIN_FEATURE_DISABLED) {
+      this.applyLoginFeatureBypass();
+      writeAuthRendererLog('warn', 'LOGIN_FEATURE_DISABLED: logout() skipped');
+      return;
+    }
     clearPendingPublishingConversionAttribution();
     await window.electron.auth.logout();
     await this.applyLoggedOutState(false);
@@ -804,6 +853,10 @@ class AuthService {
   }
 
   private async handleSessionChanged(event: AuthSessionChangedEvent): Promise<void> {
+    if (LOGIN_FEATURE_DISABLED) {
+      this.applyLoginFeatureBypass();
+      return;
+    }
     if (event.status !== AuthSessionStatus.Expired) return;
     writeAuthRendererLog('warn', `login session expired (${event.reason})`);
     const cleanup = this.applyLoggedOutState(true);
