@@ -25,6 +25,8 @@ interface KitsPopoverProps {
   onSelectKit: (kitId: string) => void;
   onManageKits: () => void;
   anchorRef: React.RefObject<HTMLElement>;
+  /** Open direction relative to the trigger. */
+  placement?: 'up' | 'down';
 }
 
 const KitsPopover: React.FC<KitsPopoverProps> = ({
@@ -33,6 +35,7 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
   onSelectKit,
   onManageKits,
   anchorRef,
+  placement = 'up',
 }) => {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,6 +72,9 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
     const loadData = async () => {
       setIsLoading(true);
       try {
+        // Refresh catalog on each open so marketplace icon/name updates apply
+        // without restarting the client (same issue SkillsManager already avoids).
+        kitService.clearCache();
         const [mkKits, installed] = await Promise.all([
           kitService.fetchMarketplaceKits(),
           kitService.getInstalledKits(),
@@ -90,8 +96,9 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
     if (isOpen) {
       if (anchorRef.current) {
         const anchorRect = anchorRef.current.getBoundingClientRect();
-        // Reserve room above the popover plus the search bar and footer chrome
-        const availableHeight = anchorRect.top - 120 - 104;
+        const availableHeight = placement === 'down'
+          ? window.innerHeight - anchorRect.bottom - 120 - 104
+          : anchorRect.top - 120 - 104;
         setMaxListHeight(Math.max(120, Math.min(300, availableHeight)));
       }
       if (shouldShowSearch && searchInputRef.current) {
@@ -101,7 +108,7 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
     if (!isOpen) {
       setSearchQuery('');
     }
-  }, [isOpen, anchorRef, shouldShowSearch]);
+  }, [isOpen, anchorRef, shouldShowSearch, placement]);
 
   useEffect(() => {
     if (!shouldShowSearch && searchQuery) {
@@ -158,7 +165,9 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
   return (
     <div
       ref={popoverRef}
-      className={`absolute bottom-full left-0 z-50 mb-1 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-border bg-surface shadow-popover ${
+      className={`absolute left-0 z-50 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-border bg-surface shadow-popover ${
+        placement === 'down' ? 'top-full mt-1' : 'bottom-full mb-1'
+      } ${
         shouldShowInstallGuide ? 'w-60' : 'w-80'
       }`}
       role="menu"

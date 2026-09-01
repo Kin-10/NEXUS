@@ -179,6 +179,9 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
+    // Match SkillsManager: drop in-memory catalog so icon/metadata changes from
+    // kit-store apply on re-enter without requiring an app restart.
+    kitService.clearCache();
     const [marketKits, installed] = await Promise.all([
       kitService.fetchMarketplaceKits(),
       kitService.getInstalledKits(),

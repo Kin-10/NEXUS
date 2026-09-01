@@ -14,7 +14,6 @@ import {
   ArrowBendDownRight,
   ArrowUp,
   CaretDown,
-  CaretRight,
   Check,
   Folder,
   PauseCircle,
@@ -115,8 +114,6 @@ import EditIcon from '../icons/EditIcon';
 import GoalIcon from '../icons/GoalIcon';
 import PaperClipIcon from '../icons/PaperClipIcon';
 import PlanModeIcon from '../icons/PlanModeIcon';
-import PromptAddIcon from '../icons/PromptAddIcon';
-import SkillIcon from '../icons/SkillIcon';
 import TaskPauseIcon from '../icons/TaskPauseIcon';
 import TrashIcon from '../icons/TrashIcon';
 import XMarkIcon from '../icons/XMarkIcon';
@@ -128,7 +125,7 @@ import ModelSelector, {
   type ModelSelectorChangeMeta,
   ModelSelectorGroup,
 } from '../ModelSelector';
-import { ActiveSkillBadge, SkillsPopover } from '../skills';
+import { ActiveSkillBadge, SkillsButton } from '../skills';
 import {
   resolveAgentModelSelection,
   resolveEffectiveModel,
@@ -542,8 +539,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     const [mentionCursorPos, setMentionCursorPos] = useState(0);
     const [mentionPickerPosition, setMentionPickerPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const [textareaScrollTop, setTextareaScrollTop] = useState(0);
-    const [showAddMenu, setShowAddMenu] = useState(false);
-    const [showSkillsPopover, setShowSkillsPopover] = useState(false);
     const [goalInputActive, setGoalInputActive] = useState(false);
     const [goalInputMode, setGoalInputMode] = useState<GoalInputMode>('start');
     const [goalEditModalOpen, setGoalEditModalOpen] = useState(false);
@@ -560,10 +555,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const draftKeyRef = useRef(draftKey);
     draftKeyRef.current = draftKey;
-    const addMenuButtonRef = useRef<HTMLButtonElement>(null);
-    const addMenuRef = useRef<HTMLDivElement>(null);
     const goalEditTextareaRef = useRef<HTMLTextAreaElement>(null);
-    const skillMenuItemRef = useRef<HTMLButtonElement>(null);
     const folderButtonRef = useRef<HTMLButtonElement>(null);
     const agentButtonRef = useRef<HTMLButtonElement>(null);
     const agentMenuRef = useRef<HTMLDivElement>(null);
@@ -572,7 +564,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     const dragDepthRef = useRef(0);
     const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const modelPatchRequestIdRef = useRef(0);
-    const skillSubmenuCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const goalInputBaselineRef = useRef<string | null>(null);
     const goalInputReturnDraftRef = useRef<string | null>(null);
     const draftStartedAnalyticsRef = useRef(false);
@@ -959,7 +950,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     return () => {
       window.removeEventListener(CoworkUiEvent.FocusInput, handleFocusInput);
       if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
-      if (skillSubmenuCloseTimerRef.current) clearTimeout(skillSubmenuCloseTimerRef.current);
     };
   }, [dispatch, draftKey]);
 
@@ -1035,42 +1025,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       document.removeEventListener('keydown', handleEscape, true);
     };
   }, [showAgentMenu]);
-
-  useEffect(() => {
-    if (!showAddMenu) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (!addMenuButtonRef.current?.contains(target) && !addMenuRef.current?.contains(target)) {
-        setShowAddMenu(false);
-        setShowSkillsPopover(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setShowAddMenu(false);
-        setShowSkillsPopover(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside, true);
-    document.addEventListener('keydown', handleEscape, true);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside, true);
-      document.removeEventListener('keydown', handleEscape, true);
-    };
-  }, [showAddMenu]);
-
-  useEffect(() => {
-    if (!showAddMenu) {
-      setShowSkillsPopover(false);
-      if (skillSubmenuCloseTimerRef.current) {
-        clearTimeout(skillSubmenuCloseTimerRef.current);
-        skillSubmenuCloseTimerRef.current = null;
-      }
-    }
-  }, [showAddMenu]);
 
   useEffect(() => {
     modelPatchRequestIdRef.current += 1;
@@ -1684,7 +1638,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       resetGoalInput(false);
       setValue('');
       dispatch(setDraftPrompt({ sessionId: draftKey, draft: '' }));
-      setShowAddMenu(false);
       reportPromptSubmit({
         ...getPromptContextAnalyticsParams(),
         submitMethod: effectiveSubmitMethod,
@@ -1879,8 +1832,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     reportPromptControl('manage_skills_click', {
       activeSkillCount: activeSkillIds.length,
     });
-    setShowAddMenu(false);
-    setShowSkillsPopover(false);
     if (onManageSkills) {
       onManageSkills();
     }
@@ -2034,8 +1985,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       if (goalInputActive) {
         resetGoalInput(true);
       }
-      setShowAddMenu(false);
-      setShowSkillsPopover(false);
       const nextSteerValue = steerDraft || value;
       setSteerValue(nextSteerValue);
       if (!steerDraft && value) {
@@ -2381,7 +2330,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     reportPromptControl('attach_file_click', {
       source: 'picker',
     });
-    setShowAddMenu(false);
     setIsAddingFile(true);
     try {
       const result = await window.electron.dialog.selectFiles({
@@ -2445,64 +2393,8 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     }
   }, [addAttachment, effectiveSelectedModel, isAddingFile, disabled, modelSupportsImage, reportPromptControl, voiceInputLocksEditing]);
 
-  const handleOpenAddMenu = useCallback(() => {
-    reportPromptControl(showAddMenu ? 'add_menu_close' : 'add_menu_open', {
-      activeSkillCount: activeSkillIds.length,
-      activeKitCount: activeKitIds.length,
-    });
-    setShowSkillsPopover(false);
-    setShowAddMenu(prev => !prev);
-  }, [activeKitIds.length, activeSkillIds.length, reportPromptControl, showAddMenu]);
-
-  const handleOpenSkillsPopover = useCallback(() => {
-    if (skillSubmenuCloseTimerRef.current) {
-      clearTimeout(skillSubmenuCloseTimerRef.current);
-      skillSubmenuCloseTimerRef.current = null;
-    }
-    if (!showSkillsPopover) {
-      reportPromptControl('skill_menu_open', {
-        activeSkillCount: activeSkillIds.length,
-      });
-    }
-    setShowAddMenu(true);
-    setShowSkillsPopover(true);
-  }, [activeSkillIds.length, reportPromptControl, showSkillsPopover]);
-
-  const cancelCloseSkillsPopover = useCallback(() => {
-    if (skillSubmenuCloseTimerRef.current) {
-      clearTimeout(skillSubmenuCloseTimerRef.current);
-      skillSubmenuCloseTimerRef.current = null;
-    }
-  }, []);
-
-  const handleCloseSkillsPopover = useCallback(() => {
-    if (skillSubmenuCloseTimerRef.current) {
-      clearTimeout(skillSubmenuCloseTimerRef.current);
-      skillSubmenuCloseTimerRef.current = null;
-    }
-    setShowSkillsPopover(false);
-  }, []);
-
-  const scheduleCloseSkillsPopover = useCallback(() => {
-    if (skillSubmenuCloseTimerRef.current) {
-      clearTimeout(skillSubmenuCloseTimerRef.current);
-    }
-    skillSubmenuCloseTimerRef.current = setTimeout(() => {
-      const activeElement = document.activeElement;
-      if (activeElement && addMenuRef.current?.contains(activeElement)) {
-        logPromptModelSelection('debug', 'kept skill submenu open because focus remains inside prompt tools menu');
-        skillSubmenuCloseTimerRef.current = null;
-        return;
-      }
-      setShowSkillsPopover(false);
-      skillSubmenuCloseTimerRef.current = null;
-    }, 120);
-  }, []);
-
   const handleTogglePlanMode = useCallback(() => {
     const nextMode = isPlanMode ? CoworkCollaborationMode.Default : CoworkCollaborationMode.Plan;
-    handleCloseSkillsPopover();
-    setShowAddMenu(false);
     logPromptModelSelection('debug', `plan mode ${nextMode === CoworkCollaborationMode.Plan ? 'enabled' : 'disabled'} for draft ${draftKey}`);
     reportPromptControl(nextMode === CoworkCollaborationMode.Plan ? 'plan_mode_enabled' : 'plan_mode_disabled', {
       entry: LogReporterEntry.PromptToolsMenu,
@@ -2527,12 +2419,10 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
         entry: LogReporterEntry.PromptToolsMenu,
       });
     }
-  }, [dispatch, draftKey, goalInputActive, handleCloseSkillsPopover, isPlanMode, planConfirmation?.messageId, planConfirmation?.state, reportPromptControl, resetGoalInput]);
+  }, [dispatch, draftKey, goalInputActive, isPlanMode, planConfirmation?.messageId, planConfirmation?.state, reportPromptControl, resetGoalInput]);
 
   const handleEnableGoalInput = useCallback((mode: GoalInputMode = 'start', initialValue?: string) => {
     if (disabled || voiceInputLocksEditing || !onGoalCommand) return;
-    handleCloseSkillsPopover();
-    setShowAddMenu(false);
     goalInputReturnDraftRef.current = value;
     goalInputBaselineRef.current = mode === 'set' && initialValue !== undefined
       ? initialValue.trim()
@@ -2570,7 +2460,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     dispatch,
     draftKey,
     goal,
-    handleCloseSkillsPopover,
     isPlanMode,
     onGoalCommand,
     planConfirmation?.messageId,
@@ -2582,8 +2471,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
 
   const handleOpenGoalEditModal = useCallback((initialValue: string) => {
     if (disabled || voiceInputLocksEditing || !onGoalCommand) return;
-    handleCloseSkillsPopover();
-    setShowAddMenu(false);
     setGoalEditDraft(initialValue);
     setGoalEditModalOpen(true);
     console.debug('[CoworkGoal] opening goal edit modal.');
@@ -2591,7 +2478,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       goalEditTextareaRef.current?.focus();
       goalEditTextareaRef.current?.select();
     });
-  }, [disabled, handleCloseSkillsPopover, onGoalCommand, voiceInputLocksEditing]);
+  }, [disabled, onGoalCommand, voiceInputLocksEditing]);
 
   const handleCloseGoalEditModal = useCallback(() => {
     if (goalEditSaving) return;
@@ -2900,127 +2787,99 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     </div>
   ) : null;
 
-  const addMenuAction = !remoteManaged ? (
-    <div className="relative">
-      <button
-        ref={addMenuButtonRef}
-        type="button"
-        onClick={handleOpenAddMenu}
-        className="flex h-[34px] w-[34px] items-center justify-center rounded-lg text-secondary hover:bg-surface-raised hover:text-foreground transition-colors"
-        title={i18nService.t('add')}
-        aria-label={i18nService.t('add')}
-        aria-haspopup="menu"
-        aria-expanded={showAddMenu || showSkillsPopover}
-      >
-        <PromptAddIcon className="h-5 w-5" />
-      </button>
-
-      {showAddMenu && (
-        <div
-          ref={addMenuRef}
-          className="absolute bottom-full left-0 z-50 mb-2 w-48 rounded-xl border border-border bg-surface py-1 shadow-popover"
-          role="menu"
-          onMouseEnter={cancelCloseSkillsPopover}
-          onMouseLeave={scheduleCloseSkillsPopover}
-        >
-          <button
-            type="button"
-            onClick={handleAddFile}
-            onMouseEnter={handleCloseSkillsPopover}
-            onFocus={handleCloseSkillsPopover}
-            disabled={disabled || isAddingFile || voiceInputLocksEditing}
-            className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-50"
-            role="menuitem"
-          >
-            <PaperClipIcon className="h-5 w-5 shrink-0 text-secondary" />
-            <span className="min-w-0 truncate">{i18nService.t('coworkAddFile')}</span>
-          </button>
-          <button
-            ref={skillMenuItemRef}
-            type="button"
-            onClick={handleOpenSkillsPopover}
-            onMouseEnter={handleOpenSkillsPopover}
-            onFocus={handleOpenSkillsPopover}
-            className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-foreground transition-colors ${
-              showSkillsPopover ? 'bg-surface-raised' : 'hover:bg-surface-raised'
-            }`}
-            role="menuitem"
-            aria-haspopup="menu"
-            aria-expanded={showSkillsPopover}
-          >
-            <SkillIcon className="h-5 w-5 shrink-0 text-secondary" />
-            <span className="min-w-0 flex-1 truncate">{i18nService.t('useSkill')}</span>
-            <CaretRight className="h-4 w-4 shrink-0 text-secondary" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (goal?.objective) {
-                handleOpenGoalEditModal(goal.objective);
-              } else {
-                handleEnableGoalInput('start');
-              }
-            }}
-            onMouseEnter={handleCloseSkillsPopover}
-            onFocus={handleCloseSkillsPopover}
-            disabled={disabled || voiceInputLocksEditing || !onGoalCommand}
-            className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-              goalInputActive ? 'bg-surface-raised text-foreground' : 'text-foreground hover:bg-surface-raised'
-            }`}
-            role="menuitem"
-          >
-            <GoalIcon className="h-5 w-5 shrink-0 text-secondary" />
-            <span className="shrink-0 text-foreground">{i18nService.t('coworkGoal')}</span>
-            {goal?.objective && (
-              <span className="min-w-0 flex-1 truncate text-secondary">
-                {goal.objective}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={handleTogglePlanMode}
-            onMouseEnter={handleCloseSkillsPopover}
-            onFocus={handleCloseSkillsPopover}
-            disabled={disabled || isStreaming || voiceInputLocksEditing}
-            className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-50"
-            role="menuitemcheckbox"
-            aria-checked={isPlanMode}
-          >
-            <PlanModeIcon className="h-5 w-5 shrink-0 text-secondary" />
-            <span className="min-w-0 flex-1 truncate">{i18nService.t('coworkPlanMode')}</span>
-          </button>
-
-          <SkillsPopover
-            isOpen={showSkillsPopover}
-            onClose={() => setShowSkillsPopover(false)}
-            onSelectSkill={handleSelectSkill}
-            onManageSkills={handleManageSkills}
-            anchorRef={skillMenuItemRef as React.RefObject<HTMLElement>}
-            asSubmenu
-            autoFocusSearch={false}
-            onMouseEnter={cancelCloseSkillsPopover}
-            onMouseLeave={scheduleCloseSkillsPopover}
-          />
-        </div>
-      )}
-    </div>
+  const addFileAction = !remoteManaged ? (
+    <button
+      type="button"
+      onClick={handleAddFile}
+      disabled={disabled || isAddingFile || voiceInputLocksEditing}
+      className="flex h-[34px] w-[34px] items-center justify-center rounded-lg text-secondary transition-colors hover:bg-surface-raised hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      title={i18nService.t('coworkAddFile')}
+      aria-label={i18nService.t('coworkAddFile')}
+    >
+      <PaperClipIcon className="h-5 w-5" />
+    </button>
   ) : null;
 
-  const largeInputActions = !remoteManaged ? (
-    <div className="flex items-center gap-0.5">
-      {addMenuAction}
-      <KitsButton
-        onSelectKit={handleSelectKit}
-        onManageKits={handleManageKits}
+  const kitsAction = !remoteManaged ? (
+    <KitsButton
+      placement={useHomeContextLayout ? 'down' : 'up'}
+      onSelectKit={handleSelectKit}
+      onManageKits={handleManageKits}
+      onOpenChange={(open) => {
+        reportPromptControl(open ? 'kit_menu_open' : 'kit_menu_close', {
+          activeKitCount: activeKitIds.length,
+        });
+      }}
+    />
+  ) : null;
+
+  const skillsOrMediaAction = !remoteManaged
+    ? (useHomeContextLayout ? (
+      <SkillsButton
+        variant="labeled"
+        onSelectSkill={handleSelectSkill}
+        onManageSkills={handleManageSkills}
         onOpenChange={(open) => {
-          reportPromptControl(open ? 'kit_menu_open' : 'kit_menu_close', {
-            activeKitCount: activeKitIds.length,
+          reportPromptControl(open ? 'skill_menu_open' : 'skill_menu_close', {
+            activeSkillCount: activeSkillIds.length,
           });
         }}
       />
-    </div>
+    ) : (
+      <MediaModelPicker draftKey={draftKey} disabled={disabled || voiceInputLocksEditing} />
+    ))
+    : null;
+
+  /** Goal / Plan sit beside the folder control on the home context strip. */
+  const homeContextModeActions = !remoteManaged ? (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          if (goal?.objective) {
+            handleOpenGoalEditModal(goal.objective);
+          } else {
+            handleEnableGoalInput('start');
+          }
+        }}
+        disabled={disabled || voiceInputLocksEditing || !onGoalCommand}
+        className={`flex h-7 max-w-[180px] items-center gap-1.5 rounded-lg px-2 text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          goalInputActive
+            ? 'bg-background/80 text-foreground'
+            : 'text-secondary hover:bg-background/80 hover:text-foreground'
+        }`}
+        title={i18nService.t('coworkGoal')}
+        aria-label={i18nService.t('coworkGoal')}
+      >
+        <GoalIcon className="h-4 w-4 shrink-0" />
+        <span className="min-w-0 truncate">{i18nService.t('coworkGoal')}</span>
+      </button>
+      <button
+        type="button"
+        onClick={handleTogglePlanMode}
+        disabled={disabled || isStreaming || voiceInputLocksEditing}
+        className={`flex h-7 max-w-[180px] items-center gap-1.5 rounded-lg px-2 text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          isPlanMode
+            ? 'bg-background/80 text-foreground'
+            : 'text-secondary hover:bg-background/80 hover:text-foreground'
+        }`}
+        aria-pressed={isPlanMode}
+        title={i18nService.t('coworkPlanMode')}
+        aria-label={i18nService.t('coworkPlanMode')}
+      >
+        <PlanModeIcon className="h-4 w-4 shrink-0" />
+        <span className="min-w-0 truncate">{i18nService.t('coworkPlanMode')}</span>
+      </button>
+    </>
   ) : null;
+
+  const largeInputToolActions = (
+    <div className={`flex items-center ${useLargeToolbarCompactLayout ? 'gap-0' : 'gap-0.5'}`}>
+      {addFileAction}
+      {skillsOrMediaAction}
+      {kitsAction}
+    </div>
+  );
 
   const renderVoiceInputButton = (buttonClassName: string, iconClassName: string) => (
     <VoiceInputButton
@@ -3041,12 +2900,6 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     isVoiceRecording,
   });
 
-  const largeInputToolActions = (
-    <div className={`flex items-center ${useLargeToolbarCompactLayout ? 'gap-0' : 'gap-0.5'}`}>
-      {largeInputActions}
-      <MediaModelPicker draftKey={draftKey} disabled={disabled || voiceInputLocksEditing} />
-    </div>
-  );
   const largeSendButtonSizeClass = useCompactSendButton ? 'h-7 w-7' : useHomeHeroLayout ? 'h-9 w-9' : 'h-8 w-8';
   const largeSendIconSizeClass = useCompactSendButton ? 'h-4 w-4' : useHomeHeroLayout ? 'h-4 w-4' : 'h-[18px] w-[18px]';
   const largeVoiceInputButton = !remoteManaged ? renderVoiceInputButton(
@@ -3753,6 +3606,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                     )}
                   </div>
                 )}
+                {homeContextModeActions}
                 <div className="relative min-w-0 shrink">
                   <button
                     ref={agentButtonRef}
@@ -3877,6 +3731,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
                       )}
                     </>
                   )}
+                  {voiceRecordingUiState.showLargeInputControls && homeContextModeActions}
                   {voiceRecordingUiState.showLargeInputControls && largeInputToolActions}
                 </div>
                 <div className={`flex shrink-0 items-center ${largeToolbarControlGapClass}`}>

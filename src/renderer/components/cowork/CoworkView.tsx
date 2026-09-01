@@ -1006,7 +1006,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           <div className="relative z-10 min-h-0 flex-1 overflow-hidden bg-background">
             <div
               className="absolute left-1/2 top-[47%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
-              style={{ width: 'min(520px, calc(100% - 48px))' }}
+              style={{ width: 'min(640px, calc(100% - 48px))' }}
             >
               <div
                 key={homeIntroRunId}
@@ -1075,7 +1075,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
 
               {/* Prompt Input Area - Large version with folder selector */}
               <div
-                className="relative z-30 mt-9 w-full max-w-3xl animate-fade-in-up"
+                className="relative z-30 mt-9 w-full animate-fade-in-up"
                 style={{ animationDelay: '180ms', animationFillMode: 'both' }}
               >
                 <CoworkPromptInput
@@ -1105,7 +1105,7 @@ const CoworkView: React.FC<CoworkViewProps> = ({
               </div>
 
               <div
-                className="relative z-0 mt-8 flex w-full max-w-3xl flex-col items-center animate-fade-in-up"
+                className="relative z-0 mt-8 flex w-full flex-col items-center animate-fade-in-up"
                 style={{ animationDelay: '260ms', animationFillMode: 'both' }}
               >
                 <QuickActionBar

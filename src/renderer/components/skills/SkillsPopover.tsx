@@ -17,6 +17,8 @@ interface SkillsPopoverProps {
   onManageSkills: () => void;
   anchorRef: React.RefObject<HTMLElement>;
   asSubmenu?: boolean;
+  /** Standalone popover open direction. Ignored when `asSubmenu` is true. */
+  placement?: 'up' | 'down';
   autoFocusSearch?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -29,6 +31,7 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
   onManageSkills,
   anchorRef,
   asSubmenu = false,
+  placement = 'up',
   autoFocusSearch = true,
   onMouseEnter,
   onMouseLeave,
@@ -76,15 +79,17 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
   // Calculate available height and focus search input when popover opens
   useEffect(() => {
     if (isOpen) {
-      // Calculate available space above the anchor
       if (anchorRef.current) {
         const anchorRect = anchorRef.current.getBoundingClientRect();
         const maxHeight = asSubmenu ? 300 : 256;
         const minHeight = asSubmenu ? 180 : 120;
         const availableHeight = asSubmenu
           ? anchorRect.bottom - 72
-          // Available height = distance from top of viewport to anchor, minus padding for search bar (~120px) and some margin (~60px)
-          : anchorRect.top - 120 - 60;
+          : placement === 'down'
+            // Below the trigger: viewport bottom minus trigger bottom, minus chrome.
+            ? window.innerHeight - anchorRect.bottom - 120 - 60
+            // Above the trigger: distance from viewport top to trigger, minus chrome.
+            : anchorRect.top - 120 - 60;
         setMaxListHeight(Math.max(minHeight, Math.min(maxHeight, availableHeight)));
       }
       if (autoFocusSearch && searchInputRef.current) {
@@ -94,7 +99,7 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
     if (!isOpen) {
       setSearchQuery('');
     }
-  }, [isOpen, anchorRef, asSubmenu, autoFocusSearch]);
+  }, [isOpen, anchorRef, asSubmenu, autoFocusSearch, placement]);
 
   // Handle click outside
   useEffect(() => {
@@ -197,7 +202,9 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
 
   const popoverClassName = asSubmenu
     ? 'absolute bottom-0 left-[calc(100%-1px)] z-[60] w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-border bg-surface shadow-popover'
-    : 'absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-border bg-surface shadow-xl';
+    : placement === 'down'
+      ? 'absolute top-full left-0 z-50 mt-2 w-72 rounded-xl border border-border bg-surface shadow-xl'
+      : 'absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-border bg-surface shadow-xl';
   const searchWrapperClassName = asSubmenu
     ? 'px-3 py-2 border-b border-border'
     : 'p-3 border-b border-border';

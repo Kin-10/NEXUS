@@ -1,4 +1,4 @@
-﻿import { AgentId } from '@shared/agent';
+import { AgentId } from '@shared/agent';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -70,9 +70,10 @@ interface SidebarProps {
 }
 
 const SIDEBAR_RAIL_WIDTH = 56;
-const DEFAULT_CONTEXT_PANEL_WIDTH = 184;
 const MIN_CONTEXT_PANEL_WIDTH = 172;
 const MAX_CONTEXT_PANEL_WIDTH = 260;
+/** Expanded agent panel opens at the maximum allowed width. */
+const DEFAULT_CONTEXT_PANEL_WIDTH = MAX_CONTEXT_PANEL_WIDTH;
 const SIDEBAR_COLLAPSE_TRANSITION_MS = 200;
 const normalizeAgentId = (agentId?: string | null) => agentId?.trim() || AgentId.Main;
 const SidebarNewFeatureBadge = {
