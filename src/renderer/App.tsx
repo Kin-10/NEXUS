@@ -15,6 +15,7 @@ import {
   LibrarySourceFilter,
 } from '../shared/library/constants';
 import type { LibrarySessionRef } from '../shared/library/types';
+import { OpenClawEnginePhase } from '../shared/openclawEngine/constants';
 import { ProviderAuthType, ProviderName, ProviderRegistry } from '../shared/providers';
 import { SIDEBAR_TASK_FILTER_ENABLED } from './components/agentSidebar/SidebarTaskFilterButton';
 import { CoworkView } from './components/cowork';
@@ -37,6 +38,10 @@ import { iconParkOutlineProps } from './components/icons/iconStyle';
 import KitsView from './components/kits/KitsView';
 import LabView from './components/lab/LabView';
 import LibraryView from './components/library/LibraryView';
+import NewUserOnboardingOverlay, {
+  NewUserOnboardingStep,
+  type NewUserOnboardingStep as NewUserOnboardingStepType,
+} from './components/NewUserOnboardingOverlay';
 import { ScheduledTasksView } from './components/scheduledTasks';
 import Settings, { type SettingsOpenOptions } from './components/Settings';
 import Sidebar from './components/Sidebar';
@@ -55,9 +60,7 @@ import {
   shouldBlockAppInteractionForUpdate,
 } from './components/update/appUpdateInteractionState';
 import AppUpdateModal from './components/update/AppUpdateModal';
-import WelcomeDialog from './components/WelcomeDialog';
 import WindowsAppTitleBar from './components/window/WindowsAppTitleBar';
-import WindowTitleBar from './components/window/WindowTitleBar';
 import { defaultConfig, getProviderDisplayName, ShortcutAction } from './config';
 import { selectIsEnterpriseAccount } from './features/enterpriseAccount/selectors';
 import { LOGIN_FEATURE_DISABLED } from './features/loginFeature';
@@ -74,6 +77,7 @@ import {
   isLatestAsyncRequest,
 } from './services/latestAsyncRequest';
 import { LogReporterAction, reportYdAnalyzer } from './services/logReporter';
+import { getOnboardingErrorCode, reportOnboardingAction } from './services/onboardingAnalytics';
 import { scheduledTaskService } from './services/scheduledTask';
 import { isTextEditingSafeShortcut, matchesShortcut } from './services/shortcuts';
 import { themeService } from './services/theme';
@@ -111,6 +115,50 @@ const AGENT_TASK_SLOT_SHORTCUT_ACTIONS = [
   ShortcutAction.OpenAgentTask9,
 ] as const;
 
+const NEW_USER_WELCOME_AFTER_LOGIN_STORAGE_KEY = 'lobsterai:newUserWelcomeAfterLogin';
+const NEW_USER_WELCOME_AFTER_LOGIN_RESTART_GRACE_MS = 1800;
+const NEW_USER_WELCOME_AFTER_LOGIN_ENGINE_SETTLE_MS = 700;
+const NEW_USER_WELCOME_UNAUTHENTICATED_RETURN_DELAY_MS = 600;
+const NEW_USER_WELCOME_AUTH_CALLBACK_SUPPRESSION_MS = 5000;
+
+const setNewUserWelcomeAfterLoginPending = (): void => {
+  try {
+    window.localStorage.setItem(NEW_USER_WELCOME_AFTER_LOGIN_STORAGE_KEY, String(Date.now()));
+  } catch {
+    // Best-effort only; the login flow can still succeed without this handoff marker.
+  }
+};
+
+const getNewUserWelcomeAfterLoginPendingAgeMs = (): number | null => {
+  try {
+    const rawValue = window.localStorage.getItem(NEW_USER_WELCOME_AFTER_LOGIN_STORAGE_KEY);
+    if (!rawValue) return null;
+    const startedAt = Number(rawValue);
+    if (!Number.isFinite(startedAt) || startedAt <= 0) {
+      return Number.POSITIVE_INFINITY;
+    }
+    return Math.max(Date.now() - startedAt, 0);
+  } catch {
+    return null;
+  }
+};
+
+const hasNewUserWelcomeAfterLoginPending = (): boolean => (
+  getNewUserWelcomeAfterLoginPendingAgeMs() !== null
+);
+
+const consumeNewUserWelcomeAfterLoginPending = (): boolean => {
+  try {
+    if (!hasNewUserWelcomeAfterLoginPending()) {
+      return false;
+    }
+    window.localStorage.removeItem(NEW_USER_WELCOME_AFTER_LOGIN_STORAGE_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const SETTINGS_TAB_SHORTCUT_ACTIONS: Array<{
   action: ShortcutAction;
   initialTab: NonNullable<SettingsOpenOptions['initialTab']>;
@@ -127,6 +175,8 @@ const SETTINGS_TAB_SHORTCUT_ACTIONS: Array<{
   { action: ShortcutAction.OpenSettingsPlugins, initialTab: 'plugins' },
   { action: ShortcutAction.OpenSettingsAbout, initialTab: 'about' },
 ];
+
+type NewUserOnboardingCompletionSource = 'skip' | 'next' | 'start_experience';
 
 /** Used for config + i18n init; longer on Windows where main-process IPC can stall during cold start. */
 const INIT_STEP_TIMEOUT_MS_WINDOWS = 24_000;
@@ -184,6 +234,13 @@ const App: React.FC = () => {
   const [isTaskFilterActive, setIsTaskFilterActive] = useState(false);
   const [hasUnreadCompletedTasks, setHasUnreadCompletedTasks] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(316);
+  const initialOpenClawEngineStatusRef = useRef(coworkService.getOpenClawEngineStatusSnapshot());
+  const [isEngineStartupOverlayVisible, setIsEngineStartupOverlayVisible] = useState(
+    () => initialOpenClawEngineStatusRef.current?.phase === OpenClawEnginePhase.Starting,
+  );
+  const [hasResolvedEngineStartupOverlayState, setHasResolvedEngineStartupOverlayState] = useState(
+    () => initialOpenClawEngineStatusRef.current !== null,
+  );
   const [appUpdateState, setAppUpdateState] = useState<AppUpdateRuntimeState>({
     status: AppUpdateStatus.Idle,
     source: null,
@@ -197,7 +254,10 @@ const App: React.FC = () => {
   const [isUpdateCardExpanded, setIsUpdateCardExpanded] = useState(false);
   const [isUserInitiatedUpdateFlowActive, setIsUserInitiatedUpdateFlowActive] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState<boolean | null>(null);
-  const [welcomeLoginPending, setWelcomeLoginPending] = useState(false);
+  const [newUserOnboardingStep, setNewUserOnboardingStep] =
+    useState<NewUserOnboardingStepType>(NewUserOnboardingStep.NewTask);
+  const [isNewUserOnboardingDismissed, setIsNewUserOnboardingDismissed] = useState(false);
+  const [newUserWelcomeAfterLoginSignal, setNewUserWelcomeAfterLoginSignal] = useState(0);
   const [enterpriseConfig, setEnterpriseConfig] = useState<{
     ui?: Record<string, 'hide' | 'disable' | 'readonly'>;
     disableUpdate?: boolean;
@@ -215,6 +275,9 @@ const App: React.FC = () => {
   const coreStartupServicesInitializedRef = useRef(false);
   const enterpriseGateRequestIdRef = useRef(0);
   const privacyGateRequestIdRef = useRef(0);
+  const pendingNewUserWelcomeAfterLoginSawStartupRef = useRef(false);
+  const pendingNewUserWelcomeAfterLoginWaitingLoggedRef = useRef(false);
+  const pendingNewUserWelcomeAuthCallbackAtRef = useRef(0);
   const previousUpdateStatusRef = useRef<AppUpdateRuntimeState['status']>(AppUpdateStatus.Idle);
   const shouldInstallReadyUpdateRef = useRef(false);
   const isUserInitiatedUpdateFlowActiveRef = useRef(false);
@@ -235,6 +298,52 @@ const App: React.FC = () => {
     isUserInitiatedUpdateFlowActive,
     appUpdateState.status,
   );
+  const shouldShowNewUserOnboarding =
+    privacyAgreed === false
+    && !isNewUserOnboardingDismissed
+    && hasResolvedEngineStartupOverlayState
+    && !isEngineStartupOverlayVisible
+    && !isUpdateInteractionBlocked;
+
+  useEffect(() => {
+    if (!shouldShowNewUserOnboarding) return;
+    console.log(`[Onboarding] showing new user onboarding step=${newUserOnboardingStep}`);
+    reportOnboardingAction('guide_exposure', {
+      source: 'first_run_gate',
+      step: newUserOnboardingStep,
+    });
+    setMainView('cowork');
+    setIsSidebarCollapsed(false);
+  }, [newUserOnboardingStep, shouldShowNewUserOnboarding]);
+
+  useEffect(() => {
+    let isCurrent = true;
+    const resolveOverlayVisible = (phase?: string | null) =>
+      phase === OpenClawEnginePhase.Starting;
+
+    coworkService.getOpenClawEngineStatus()
+      .then((status) => {
+        if (!isCurrent) return;
+        setIsEngineStartupOverlayVisible(resolveOverlayVisible(status?.phase));
+        setHasResolvedEngineStartupOverlayState(true);
+      })
+      .catch((error) => {
+        console.debug('[App] failed to refresh OpenClaw engine status for sidebar promo timing:', error);
+        if (isCurrent) {
+          setHasResolvedEngineStartupOverlayState(true);
+        }
+      });
+
+    const unsubscribe = coworkService.onOpenClawEngineStatus((status) => {
+      setIsEngineStartupOverlayVisible(resolveOverlayVisible(status.phase));
+      setHasResolvedEngineStartupOverlayState(true);
+    });
+
+    return () => {
+      isCurrent = false;
+      unsubscribe();
+    };
+  }, []);
 
   const waitWithTimeout = useCallback(
     async <T,>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
@@ -956,15 +1065,18 @@ const App: React.FC = () => {
     showToast(i18nService.t('featureInDevelopment'));
   }, [showToast]);
 
-  const runUpdateCheck = useCallback(async () => {
+  const runUpdateCheck = useCallback(async (): Promise<boolean> => {
     try {
       const result = await window.electron.appUpdate.checkNow({ userId: authUser?.yid });
       setAppUpdateState(result.state);
       if (!result.success) {
         console.error('[App] app update check failed:', result.error);
+        return false;
       }
+      return true;
     } catch (error) {
       console.error('Failed to check app update:', error);
+      return false;
     }
   }, [authUser]);
 
@@ -1093,33 +1205,309 @@ const App: React.FC = () => {
     setPrivacyAgreed(true);
   }, []);
 
-  // Login keeps the welcome gate on screen while the browser flow runs; the
-  // effect below releases the gate only once the user is actually logged in.
-  const handleWelcomeLogin = useCallback(async () => {
-    setWelcomeLoginPending(true);
-    try {
-      await authService.login();
-    } catch (error) {
-      console.error('[App] welcome login failed before browser handoff:', error);
-      setWelcomeLoginPending(false);
-      showToast(i18nService.t('welcomeLoginFailed'));
-    }
-  }, [showToast]);
-  const handleWelcomeCancelLogin = useCallback(() => {
-    setWelcomeLoginPending(false);
-  }, []);
-  const handleWelcomeCustomModel = useCallback(async () => {
-    await acceptPrivacyAgreement();
-    handleShowSettings({ initialTab: 'model' });
-  }, [acceptPrivacyAgreement, handleShowSettings]);
-
-  // Release the first-launch gate once login completes — including when the
-  // browser callback lands after the user tapped back on the welcome screen.
+  // Release the first-launch gate once login completes in an external auth flow.
   useEffect(() => {
     if (privacyAgreed === false && authUser) {
-      void acceptPrivacyAgreement();
+      void acceptPrivacyAgreement().catch((error) => {
+        console.warn('[Onboarding] failed to persist privacy agreement after login callback:', error);
+      });
     }
   }, [privacyAgreed, authUser, acceptPrivacyAgreement]);
+
+  const finishNewUserOnboarding = useCallback((source: NewUserOnboardingCompletionSource) => {
+    console.log(`[Onboarding] completing new user onboarding source=${source}`);
+    setIsNewUserOnboardingDismissed(true);
+    if (privacyAgreed === false) {
+      void acceptPrivacyAgreement()
+        .then(() => {
+          console.log(`[Onboarding] privacy agreement accepted from onboarding source=${source}`);
+        })
+        .catch((error) => {
+          console.warn(
+            `[Onboarding] failed to persist privacy agreement from onboarding source=${source}:`,
+            error,
+          );
+        });
+    }
+  }, [acceptPrivacyAgreement, privacyAgreed]);
+
+  const openNewUserWelcomeTask = useCallback((source: string) => {
+    setMainView('cowork');
+    console.log(`[Onboarding] opening new user welcome task source=${source}`);
+    void coworkService.seedNewUserWelcomeTask()
+      .then((result) => {
+        if (!result.session) {
+          console.warn(
+            `[Onboarding] new user welcome task seed returned no session source=${source}: `
+            + `${result.error ?? 'unknown error'}`,
+          );
+          reportOnboardingAction('welcome_task_open_result', {
+            source,
+            result: 'failed',
+            errorCode: result.error ? 'seed_failed' : 'unknown',
+          });
+          showToast(i18nService.t('newUserWelcomeTaskCreateFailed'));
+          return;
+        }
+        console.log(
+          `[Onboarding] new user welcome task opened source=${source} session=${result.session.id}`,
+        );
+        reportOnboardingAction('welcome_task_open_result', {
+          source,
+          result: 'success',
+          created: result.created === true,
+        });
+      })
+      .catch((error) => {
+        console.warn(`[Onboarding] failed to open new user welcome task source=${source}:`, error);
+        reportOnboardingAction('welcome_task_open_result', {
+          source,
+          result: 'failed',
+          errorCode: getOnboardingErrorCode(error),
+        });
+        showToast(i18nService.t('newUserWelcomeTaskCreateFailed'));
+      });
+  }, [showToast]);
+
+  useEffect(() => {
+    const unsubscribe = window.electron.auth.onCallback(() => {
+      pendingNewUserWelcomeAuthCallbackAtRef.current = Date.now();
+      if (hasNewUserWelcomeAfterLoginPending()) {
+        console.log('[Onboarding] auth callback observed during new user login handoff');
+        reportOnboardingAction('auth_callback_observed', {
+          source: 'new_user_onboarding',
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!authUser || !hasNewUserWelcomeAfterLoginPending()) {
+      pendingNewUserWelcomeAfterLoginSawStartupRef.current = false;
+      pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current = false;
+      return;
+    }
+
+    const snapshotPhase = coworkService.getOpenClawEngineStatusSnapshot()?.phase ?? null;
+    const isOpenClawStarting =
+      isEngineStartupOverlayVisible || snapshotPhase === OpenClawEnginePhase.Starting;
+
+    if (isOpenClawStarting) {
+      pendingNewUserWelcomeAfterLoginSawStartupRef.current = true;
+      if (!pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current) {
+        console.log(
+          '[Onboarding] login callback detected; waiting for OpenClaw startup before opening '
+          + `new user welcome task phase=${snapshotPhase ?? 'unknown'}`,
+        );
+        reportOnboardingAction('login_success_wait_gateway', {
+          source: 'new_user_onboarding',
+          phase: snapshotPhase ?? 'unknown',
+        });
+        pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current = true;
+      }
+      return;
+    }
+
+    const delayMs = pendingNewUserWelcomeAfterLoginSawStartupRef.current
+      ? NEW_USER_WELCOME_AFTER_LOGIN_ENGINE_SETTLE_MS
+      : NEW_USER_WELCOME_AFTER_LOGIN_RESTART_GRACE_MS;
+
+    if (!pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current) {
+      console.log(
+        '[Onboarding] login callback detected; delaying new user welcome task open for '
+        + `gateway restart grace delay=${delayMs}ms phase=${snapshotPhase ?? 'unknown'}`,
+      );
+      pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current = true;
+    }
+
+    const timer = window.setTimeout(() => {
+      const latestPhase = coworkService.getOpenClawEngineStatusSnapshot()?.phase ?? null;
+      if (latestPhase === OpenClawEnginePhase.Starting) {
+        pendingNewUserWelcomeAfterLoginSawStartupRef.current = true;
+        setNewUserWelcomeAfterLoginSignal((value) => value + 1);
+        return;
+      }
+
+      if (!consumeNewUserWelcomeAfterLoginPending()) {
+        pendingNewUserWelcomeAfterLoginSawStartupRef.current = false;
+        pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current = false;
+        return;
+      }
+
+      console.log(
+        '[Onboarding] OpenClaw startup settled; opening pending new user welcome task '
+        + `phase=${latestPhase ?? 'unknown'} sawStartup=${pendingNewUserWelcomeAfterLoginSawStartupRef.current}`,
+      );
+      reportOnboardingAction('login_success_gateway_settled', {
+        source: 'new_user_onboarding',
+        phase: latestPhase ?? 'unknown',
+        sawStartup: pendingNewUserWelcomeAfterLoginSawStartupRef.current,
+      });
+      pendingNewUserWelcomeAfterLoginSawStartupRef.current = false;
+      pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current = false;
+      setIsNewUserOnboardingDismissed(true);
+      openNewUserWelcomeTask('start_experience_login_callback');
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [
+    authUser,
+    isEngineStartupOverlayVisible,
+    newUserWelcomeAfterLoginSignal,
+    openNewUserWelcomeTask,
+  ]);
+
+  useEffect(() => {
+    if (authUser) return undefined;
+
+    let returnTimer: number | null = null;
+
+    const clearReturnTimer = () => {
+      if (returnTimer === null) return;
+      window.clearTimeout(returnTimer);
+      returnTimer = null;
+    };
+
+    const scheduleUnauthenticatedReturnOpen = (source: string) => {
+      const pendingAgeMs = getNewUserWelcomeAfterLoginPendingAgeMs();
+      if (pendingAgeMs === null) return;
+
+      clearReturnTimer();
+      const delayMs = NEW_USER_WELCOME_UNAUTHENTICATED_RETURN_DELAY_MS;
+      console.log(
+        '[Onboarding] app returned during new user login handoff; verifying auth state '
+        + `source=${source} delay=${delayMs}ms pendingAge=${Math.round(pendingAgeMs)}ms`,
+      );
+
+      returnTimer = window.setTimeout(() => {
+        returnTimer = null;
+        if (!hasNewUserWelcomeAfterLoginPending()) return;
+        if (store.getState().auth.isLoggedIn) return;
+
+        const lastCallbackAgeMs = Date.now() - pendingNewUserWelcomeAuthCallbackAtRef.current;
+        if (lastCallbackAgeMs >= 0 && lastCallbackAgeMs < NEW_USER_WELCOME_AUTH_CALLBACK_SUPPRESSION_MS) {
+          console.log(
+            '[Onboarding] auth callback recently observed; waiting for login exchange before '
+            + `opening fallback welcome task callbackAge=${lastCallbackAgeMs}ms`,
+          );
+          return;
+        }
+
+        if (!consumeNewUserWelcomeAfterLoginPending()) return;
+
+        console.log(
+          '[Onboarding] login handoff returned without authenticated callback; opening '
+          + `new user welcome task source=${source}`,
+        );
+        reportOnboardingAction('login_return_without_auth', {
+          source,
+          pendingAge: Math.round(getNewUserWelcomeAfterLoginPendingAgeMs() ?? 0),
+        });
+        pendingNewUserWelcomeAfterLoginSawStartupRef.current = false;
+        pendingNewUserWelcomeAfterLoginWaitingLoggedRef.current = false;
+        setIsNewUserOnboardingDismissed(true);
+        openNewUserWelcomeTask(source);
+      }, delayMs);
+    };
+
+    const unsubscribeWindowState = window.electron.window.onStateChanged((state) => {
+      if (!state.isFocused) return;
+      scheduleUnauthenticatedReturnOpen('start_experience_window_focus_without_login');
+    });
+
+    const handleWindowFocus = () => {
+      scheduleUnauthenticatedReturnOpen('start_experience_dom_focus_without_login');
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      scheduleUnauthenticatedReturnOpen('start_experience_visibility_without_login');
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearReturnTimer();
+      unsubscribeWindowState();
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [authUser, openNewUserWelcomeTask]);
+
+  const handleNewUserOnboardingSkip = useCallback(() => {
+    reportOnboardingAction('guide_skip_click', {
+      source: 'new_user_onboarding',
+      step: newUserOnboardingStep,
+    });
+    finishNewUserOnboarding('skip');
+    if (privacyAgreed !== false) return;
+
+    openNewUserWelcomeTask('skip');
+  }, [finishNewUserOnboarding, newUserOnboardingStep, openNewUserWelcomeTask, privacyAgreed]);
+
+  const handleNewUserOnboardingNext = useCallback(() => {
+    if (newUserOnboardingStep === NewUserOnboardingStep.NewTask) {
+      console.log('[Onboarding] advancing new user onboarding step=new-task next=prompt-input');
+      reportOnboardingAction('guide_next_click', {
+        source: 'new_user_onboarding',
+        step: newUserOnboardingStep,
+        nextStep: NewUserOnboardingStep.PromptInput,
+      });
+      setNewUserOnboardingStep(NewUserOnboardingStep.PromptInput);
+      return;
+    }
+    finishNewUserOnboarding('next');
+  }, [finishNewUserOnboarding, newUserOnboardingStep]);
+
+  const handleNewUserOnboardingStartExperience = useCallback(() => {
+    console.log('[Onboarding] start experience clicked; starting login handoff');
+    reportOnboardingAction('guide_start_experience_click', {
+      source: 'new_user_onboarding',
+      step: newUserOnboardingStep,
+    });
+    setNewUserWelcomeAfterLoginPending();
+    setNewUserWelcomeAfterLoginSignal((value) => value + 1);
+    finishNewUserOnboarding('start_experience');
+    void authService.login()
+      .then((result) => {
+        if (!result.success) {
+          console.warn(
+            `[Onboarding] login handoff from new user onboarding failed: ${result.error ?? 'unknown error'}`,
+          );
+          reportOnboardingAction('login_redirect_result', {
+            source: 'new_user_onboarding',
+            result: 'failed',
+            errorCode: result.error ? 'login_redirect_failed' : 'unknown',
+          });
+          consumeNewUserWelcomeAfterLoginPending();
+          showToast(i18nService.t('welcomeLoginFailed'));
+          return;
+        }
+        console.log('[Onboarding] login handoff from new user onboarding succeeded');
+        reportOnboardingAction('login_redirect_result', {
+          source: 'new_user_onboarding',
+          result: 'success',
+        });
+        setNewUserWelcomeAfterLoginSignal((value) => value + 1);
+      })
+      .catch((error) => {
+        console.warn('[Onboarding] failed to start login from new user onboarding:', error);
+        reportOnboardingAction('login_redirect_result', {
+          source: 'new_user_onboarding',
+          result: 'failed',
+          errorCode: getOnboardingErrorCode(error),
+        });
+        consumeNewUserWelcomeAfterLoginPending();
+        showToast(i18nService.t('welcomeLoginFailed'));
+      });
+  }, [finishNewUserOnboarding, newUserOnboardingStep, showToast]);
 
   const handlePermissionResponse = useCallback(async (result: CoworkPermissionResult) => {
     if (!pendingPermission) return;
@@ -1531,13 +1919,24 @@ const App: React.FC = () => {
     let cancelled = false;
     let lastCheckTime = 0;
 
-    const maybeCheck = async (reason: 'startup' | 'heartbeat' | 'visibility') => {
+    const maybeCheck = async (reason: 'startup' | 'heartbeat' | 'visibility' | 'online') => {
       if (cancelled) return;
       const now = Date.now();
       if (lastCheckTime > 0 && now - lastCheckTime < APP_UPDATE_POLL_INTERVAL_MS) return;
+      // 离线时不发起注定失败的检查（休眠唤醒后网络栈尚未恢复的窗口会返回
+      // ERR_NETWORK_IO_SUSPENDED），等 'online' 事件再补查。
+      if (!navigator.onLine) {
+        console.log(`[App] auto update check skipped while offline, reason=${reason}`);
+        return;
+      }
       lastCheckTime = now;
       console.log(`[App] auto update check triggered, reason=${reason}, at=${new Date(now).toISOString()}`);
-      await runUpdateCheck();
+      const ok = await runUpdateCheck();
+      // 失败的检查不占用 2 小时轮询窗口：释放门槛让 30 分钟心跳、
+      // 窗口重新可见或网络恢复时能尽快重试。
+      if (!ok && !cancelled && lastCheckTime === now) {
+        lastCheckTime = 0;
+      }
     };
 
     // 启动时立即检查
@@ -1556,10 +1955,18 @@ const App: React.FC = () => {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // 网络恢复时补一次检查（唤醒场景下网络恢复晚于窗口可见，
+    // 离线跳过的那次检查在这里补上）
+    const handleOnline = () => {
+      void maybeCheck('online');
+    };
+    window.addEventListener('online', handleOnline);
+
     return () => {
       cancelled = true;
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
     };
   }, [isInitialized, runUpdateCheck, enterpriseConfig]);
 
@@ -1602,7 +2009,8 @@ const App: React.FC = () => {
   const isOverlayActive = showSettings
     || showUpdateModal
     || isPermissionModalOpen
-    || isUpdateInteractionBlocked;
+    || isUpdateInteractionBlocked
+    || shouldShowNewUserOnboarding;
   // Keep the badge visible while downloading so the collapsed-sidebar layouts
   // still surface progress; only a plain re-check hides nothing new.
   const shouldShowUpdateBadge = updateInfo && appUpdateState.status !== AppUpdateStatus.Checking;
@@ -1711,37 +2119,6 @@ const App: React.FC = () => {
     );
   }
 
-  if (privacyAgreed === false) {
-    // First-launch gate: render only the welcome screen — no app chrome (title
-    // bar/sidebar) until the agreement is accepted. An invisible drag strip
-    // keeps the frameless window movable; Windows caption buttons stay on top.
-    return (
-      <div className="relative h-screen overflow-hidden">
-        {toastMessage && (
-          <Toast
-            message={toastMessage.message}
-            actionLabel={toastMessage.actionLabel}
-            onAction={toastMessage.onAction}
-            closeLabel={i18nService.t('close')}
-            onClose={() => setToastMessage(null)}
-          />
-        )}
-        <WelcomeDialog
-          onLogin={handleWelcomeLogin}
-          loginPending={welcomeLoginPending}
-          onCancelLogin={handleWelcomeCancelLogin}
-          onCustomModel={handleWelcomeCustomModel}
-        />
-        <div className="draggable absolute inset-x-0 top-0 z-[70] h-9" />
-        {isWindows && (
-          <div className="absolute right-0 top-0 z-[80] h-9">
-            <WindowTitleBar inline />
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
     <SkinProvider>
       <SkinPresentationScope
@@ -1757,8 +2134,6 @@ const App: React.FC = () => {
           onClose={() => setToastMessage(null)}
         />
       )}
-      {/* The welcome screen renders via the early return above, so agreement
-          alone gates the campaign here (no separate showWelcome flag). */}
       <StartupCreditCampaign
         enabled={privacyAgreed === true && !isEnterpriseAccount}
       />
@@ -1788,6 +2163,7 @@ const App: React.FC = () => {
           updateNotice={!isSidebarCollapsed && !isUpdateInteractionBlocked ? updateCard : null}
           hideAdBanner={isUpdateCardExpanded}
           hideLogin={LOGIN_FEATURE_DISABLED || enterpriseConfig?.ui?.login === 'hide'}
+          isEngineStartupOverlayVisible={isEngineStartupOverlayVisible}
         />
         <div className="flex-1 min-w-0">
           <div
@@ -1873,6 +2249,14 @@ const App: React.FC = () => {
               onCancelDownload={handleCancelDownload}
             />
           </AppUpdateInteractionOverlay>
+        )}
+        {shouldShowNewUserOnboarding && (
+          <NewUserOnboardingOverlay
+            step={newUserOnboardingStep}
+            onNext={handleNewUserOnboardingNext}
+            onSkip={handleNewUserOnboardingSkip}
+            onStartExperience={handleNewUserOnboardingStartExperience}
+          />
         )}
       </div>
 

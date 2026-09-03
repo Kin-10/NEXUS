@@ -10,6 +10,9 @@ const unpackScript = repoFile('scripts/unpack-cfmind.cjs');
 const installSection = repoFile(
   'node_modules/app-builder-lib/templates/nsis/installSection.nsh',
 );
+const installUtilTemplate = repoFile(
+  'node_modules/app-builder-lib/templates/nsis/include/installUtil.nsh',
+);
 const extractTemplate = repoFile(
   'node_modules/app-builder-lib/templates/nsis/include/extractAppPackage.nsh',
 );
@@ -31,6 +34,7 @@ const differentialUpdateInfoBuilder = repoFile(
 const appBuilderPatch = repoFile('patches/app-builder-lib+24.13.3.patch');
 const gateScript = repoFile('scripts/verify-installer-patches.cjs');
 const webBuildScript = repoFile('scripts/dist-win-web.cjs');
+const builderHooks = repoFile('scripts/electron-builder-hooks.cjs');
 const packageScripts = (JSON.parse(repoFile('package.json')) as { scripts: Record<string, string> })
   .scripts;
 const electronBuilderConfig = JSON.parse(repoFile('electron-builder.json')) as {
@@ -78,26 +82,35 @@ describe('Windows installer hardening contracts', () => {
     expect(initLog).toBeGreaterThan(setSilent);
   });
 
-  test('hides the silent banner only for double-click-silent dictbind artifacts', () => {
-    const policyEnd = installerInclude.indexOf('Var lobsterCurrentProcessPid');
-    const policy = installerInclude.slice(0, policyEnd);
-    const checkStart = installerInclude.indexOf('!macro customCheckAppRunning');
-    const checkEnd = installerInclude.indexOf('!macroend', checkStart);
-    const check = installerInclude.slice(checkStart, checkEnd);
-    const bannerGuard = check.indexOf('!ifndef LOBSTERAI_HIDE_SILENT_BANNER');
-    const bannerShow = check.indexOf('Banner::show /NOUNLOAD');
+  test('keeps silent installs free of installer-owned UI', () => {
+    // /S is a zero-UI contract: app stores and IT deployment drive silent
+    // installs with their own progress experience, so the installer may not
+    // own any window and every dialog needs a silent default.
+    expect(installerInclude).not.toContain('Banner::');
+    expect(installerInclude).not.toContain('LOBSTERAI_HIDE_SILENT_BANNER');
 
-    expect(policy).toContain('!if "$%KEYFROM%" == "dictbind"');
-    expect(policy).toContain('!if "$%LOBSTERAI_CHANNEL_BUILD%" == "1"');
-    expect(policy).toContain('!if "$%LOBSTERAI_SILENT_ON_DOUBLE_CLICK%" == "1"');
-    expect(policy).toContain('!define LOBSTERAI_HIDE_SILENT_BANNER');
-    expect(bannerGuard).toBeGreaterThan(-1);
-    expect(bannerShow).toBeGreaterThan(bannerGuard);
-    expect(check.slice(bannerGuard, bannerShow)).not.toContain('!else');
-    expect(installerInclude.match(/Banner::show \/NOUNLOAD/g)).toHaveLength(1);
+    const messageBoxLines = installerInclude
+      .split('\n')
+      .filter((line) => line.includes('MessageBox'));
+    expect(messageBoxLines.length).toBeGreaterThan(0);
+    for (const line of messageBoxLines) {
+      expect(line).toContain('/SD');
+    }
   });
 
-  test('releases the installer current-directory lock before the update rename', () => {
+  test('keeps the stock old-uninstaller failure dialog silent-safe', () => {
+    // handleUninstallResult fires when every legacy-uninstaller attempt
+    // failed (field dialog "Failed to uninstall old application files...: 2",
+    // 2026-09-01). Stock code had no silent default, so the dialog popped out
+    // of /S channel installs; the exit path must stay SetErrorLevel-readable
+    // instead.
+    expect(installUtilTemplate).toContain(
+      'MessageBox MB_OK|MB_ICONEXCLAMATION "$(uninstallFailed): $R0" /SD IDOK',
+    );
+    expect(appBuilderPatch).toContain('"$(uninstallFailed): $R0" /SD IDOK');
+  });
+
+  test('releases the installer current-directory lock before the old-install rename', () => {
     const switchOutPath = installerInclude.indexOf('SetOutPath "$PLUGINSDIR"');
     const rename = installerInclude.indexOf(
       'MoveFileW(w "$lobsterOldInstallOriginalPath", w "$lobsterOldInstallBackupPath")',
@@ -105,13 +118,33 @@ describe('Windows installer hardening contracts', () => {
 
     expect(switchOutPath).toBeGreaterThan(-1);
     expect(rename).toBeGreaterThan(switchOutPath);
-    expect(installerInclude).toContain('${IfNot} ${isUpdated}');
     expect(installerInclude).toContain('"install-location-mismatch"');
     expect(installerInclude).toContain('"ambiguous-dual-registration"');
     expect(installerInclude).toContain('phase=old-install-rename-attempt');
     expect(installerInclude).toContain('phase=old-install-rename-complete attempt_id=');
     expect(installerInclude).toContain('status=$lobsterOldInstallRenameStatus');
     expect(installerInclude).not.toContain('phase=old-install-cleanup-complete');
+  });
+
+  test('offers the rename fast path to manual overwrite installs, not only updates', () => {
+    // Field logs 2026-09-01: manual/channel overwrite installs fell back to
+    // the legacy uninstaller, whose stock un.atomicRMDir (--updated is always
+    // passed) moves the whole tree file-by-file into the unexcluded %TEMP%
+    // plugins dir -- 79s..31min per attempt, and one locked file aborts it
+    // wholesale after five silent retries (exit=2 dialog). Eligibility must
+    // therefore be decided by the registration ladder alone; no
+    // invocation-mode gate may sit between the rename-start log and the
+    // ladder.
+    const ladder = installerInclude.slice(
+      installerInclude.indexOf('phase=old-install-rename-start'),
+      installerInclude.indexOf('OldInstallRenameEligible:'),
+    );
+    expect(ladder).toContain('"registered-install-missing"');
+    expect(ladder).toContain('"install-location-mismatch"');
+    expect(ladder).toContain('"ambiguous-dual-registration"');
+    expect(ladder).toContain('"install-files-missing"');
+    expect(ladder).not.toContain('isUpdated');
+    expect(installerInclude).not.toContain('${IfNot} ${isUpdated}');
   });
 
   test('captures shortcut state before rename and explicitly controls old uninstallers', () => {
@@ -556,6 +589,45 @@ describe('Windows installer hardening contracts', () => {
     expect(stopMacro).toContain('exit $$procs.Count');
   });
 
+  test('sweeps every process running from the install tree, excluding itself', () => {
+    // Name filters alone miss python-win skill/MCP servers and bundled
+    // git/ssh helpers; a survivor under the tree held a handle that failed
+    // the old-install replacement in the field (2026-09-01). The sweep is
+    // path-prefix based, must never match the invoking process (the stock
+    // fallback can run the old uninstaller in place from $INSTDIR), and is
+    // skipped for drive-root paths where the prefix would match everything.
+    const start = installerInclude.indexOf('!macro stopLobsterAIProcesses');
+    const end = installerInclude.indexOf('!macroend', start);
+    const stopMacro = installerInclude.slice(start, end);
+
+    expect(stopMacro).toContain(
+      'SetEnvironmentVariable(t "LOBSTERAI_STOP_ROOT", t "$INSTDIR")',
+    );
+    expect(stopMacro).toContain(
+      'SetEnvironmentVariable(t "LOBSTERAI_STOP_SELF_PID", t "$lobsterCurrentProcessPid")',
+    );
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "LOBSTERAI_STOP_ROOT", t "")');
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "LOBSTERAI_STOP_SELF_PID", t "")');
+
+    // Both the kill loop and the survivor snapshot must use the same sweep so
+    // diagnostics describe the same process set the kill acted on.
+    const sweeps = stopMacro.match(
+      /\$\$fp\.StartsWith\(\$\$root, \[System\.StringComparison\]::OrdinalIgnoreCase\)/g,
+    );
+    expect(sweeps).toHaveLength(2);
+    const selfExclusions = stopMacro.match(/\$\$_\.Id\.ToString\(\) -ne \$\$selfPid/g);
+    expect(selfExclusions).toHaveLength(2);
+    const rootGuards = stopMacro.match(/\$\$root\.Length -gt 3/g);
+    expect(rootGuards).toHaveLength(2);
+    // The env-var clear must sit on the shared exit label so the non-survivor
+    // paths clear it too.
+    const logLabel = stopMacro.indexOf('StopLobsterAIProcessesLog:');
+    expect(logLabel).toBeGreaterThan(-1);
+    expect(
+      stopMacro.indexOf('SetEnvironmentVariable(t "LOBSTERAI_STOP_ROOT", t "")'),
+    ).toBeGreaterThan(logLabel);
+  });
+
   test('treats only an enumerably empty target as fresh', () => {
     expect(
       classifyFreshTarget({ hasRegistrationEvidence: false, entries: [] }),
@@ -620,7 +692,7 @@ describe('Windows installer hardening contracts', () => {
     expect(installerInclude).toContain(String.raw`$WINDIR\Sysnative\tar.exe`);
     expect(installerInclude).toContain(String.raw`$WINDIR\System32\tar.exe`);
     expect(installerInclude).toContain(
-      String.raw`nsExec::ExecToLog '"$lobsterTrustedTarPath"`,
+      String.raw`nsExec::ExecToStack '"$lobsterTrustedTarPath"`,
     );
     expect(installerInclude).not.toMatch(
       /(?:nsExec::\w+|Exec)\s+['"][^'"\n]*\bpowershell(?:\.exe)?\b/i,
@@ -995,6 +1067,253 @@ describe('Windows installer hardening contracts', () => {
     expect(electronBuilderConfig.nsis?.deleteAppDataOnUninstall).toBe(false);
   });
 
+  test('stages the embedded package through a selectable staging directory', () => {
+    // Template contract: default init -> selection hook -> materialize hook ->
+    // File materialize, all against $appPackageStagingDir, so the preflight
+    // runs before any payload byte is written.
+    const x64 = extractTemplate.slice(
+      extractTemplate.indexOf('!macro x64_app_files'),
+      extractTemplate.indexOf('!macro ia32_app_files'),
+    );
+    const defaultInit = x64.indexOf('StrCpy $appPackageStagingDir "$PLUGINSDIR"');
+    const selectHook = x64.indexOf('!insertmacro customSelectAppPackageStagingDir');
+    const materializeHook = x64.indexOf('!insertmacro customAppPackageMaterializeStart');
+    const materialize = x64.indexOf(
+      'File /oname=$appPackageStagingDir\\app-64.${COMPRESSION_METHOD}',
+    );
+    expect(defaultInit).toBeGreaterThan(-1);
+    expect(selectHook).toBeGreaterThan(defaultInit);
+    expect(materializeHook).toBeGreaterThan(selectHook);
+    expect(materialize).toBeGreaterThan(materializeHook);
+
+    // The variable is declared at installer.nsi file scope so both the
+    // custom include's functions and every template site can reference it.
+    expect(rootInstallerTemplate).toContain('Var appPackageStagingDir');
+
+    // Every staging-path usage goes through the variable; the web-installer
+    // path (which skips the embedded materialize step) falls back to
+    // $PLUGINSDIR before first use.
+    expect(extractTemplate).toContain('StrCmp $appPackageStagingDir "" 0 +2');
+    expect(extractTemplate).toContain('CreateDirectory "$appPackageStagingDir\\7z-out"');
+    expect(extractTemplate).toContain('SetOutPath "$appPackageStagingDir\\7z-out"');
+    expect(extractTemplate).toContain(
+      'CopyFiles /SILENT "$appPackageStagingDir\\7z-out\\*" $OUTDIR',
+    );
+    expect(extractTemplate).toContain('RMDir /r "$appPackageStagingDir\\7z-out"');
+    expect(extractTemplate).toContain(
+      '!insertmacro extractUsing7za "$appPackageStagingDir\\app-$packageArch.7z"',
+    );
+    expect(extractTemplate).not.toContain(String.raw`$PLUGINSDIR\7z-out`);
+    expect(extractTemplate).not.toContain(String.raw`/oname=$PLUGINSDIR\app-`);
+  });
+
+  test('web install runs the staging preflight before extracting the downloaded package', () => {
+    // The web installer never materializes an embedded package, but
+    // extractUsing7za still stages the extracted tree in
+    // $appPackageStagingDir\7z-out, so the same default-init -> selection
+    // hook ordering must run before extraction. This is also what keeps
+    // lobsterSelectPayloadStagingDir referenced in nsis-web compiles: with
+    // the hook only in the embedded path, makensis failed the WebSetup build
+    // with warning 6010 (unreferenced install function) treated as an error.
+    const installFilesStart = installerTemplate.indexOf('!macro installApplicationFiles');
+    const installFilesEnd = installerTemplate.indexOf('!macroend', installFilesStart);
+    const installFilesBody = installerTemplate.slice(installFilesStart, installFilesEnd);
+    const webBranchStart = installFilesBody.indexOf('!ifdef APP_PACKAGE_URL');
+    expect(webBranchStart).toBeGreaterThan(-1);
+    const webBranch = installFilesBody.slice(
+      webBranchStart,
+      installFilesBody.indexOf('!else', webBranchStart),
+    );
+    const defaultInit = webBranch.indexOf('StrCpy $appPackageStagingDir "$PLUGINSDIR"');
+    const selectGuard = webBranch.indexOf('!ifmacrodef customSelectAppPackageStagingDir');
+    const selectHook = webBranch.indexOf('!insertmacro customSelectAppPackageStagingDir');
+    const extract = webBranch.indexOf('!insertmacro extractUsing7za "$packageFile"');
+    expect(defaultInit).toBeGreaterThan(-1);
+    expect(selectGuard).toBeGreaterThan(defaultInit);
+    expect(selectHook).toBeGreaterThan(selectGuard);
+    expect(extract).toBeGreaterThan(selectHook);
+  });
+
+  test('preflights staging drive space and relocates or aborts before materialize', () => {
+    const start = installerInclude.indexOf('Function lobsterSelectPayloadStagingDir');
+    const end = installerInclude.indexOf('FunctionEnd', start);
+    const select = installerInclude.slice(start, end);
+
+    // All space math is in MB (NSIS integers are 32-bit signed; the staged
+    // tree exceeds 2 GB in bytes), with 64-bit probes for the raw counts.
+    expect(installerInclude).toContain(
+      "System::Call 'kernel32::GetDiskFreeSpaceExW(w r0, *l .r1, p 0, p 0) i .r2'",
+    );
+    expect(select).toContain('System::Int64Op $0 / 1048576');
+    expect(select).toContain('IntOp $1 $0 + ${LOBSTER_PAYLOAD_UNPACKED_MB}');
+    expect(select).toContain('IntOp $1 $1 + ${LOBSTER_STAGING_MARGIN_MB}');
+    expect(select).toContain('IntOp $6 $6 + ${LOBSTER_WIN_RESOURCES_TAR_MB}');
+
+    // Decision phases: healthy default, relocation, probe failure (fail-open),
+    // and the only abort -- when no drive has room.
+    expect(select).toContain('phase=staging-drive-selected');
+    expect(select).toContain('mode=plugins-dir');
+    expect(select).toContain('mode=install-dir');
+    expect(select).toContain('result=query-failed');
+    expect(select).toContain('result=relocate-create-failed');
+    expect(select).toContain('free_mb=');
+    expect(select).toContain('needed_mb=');
+    expect(select).toContain('CreateDirectory "$INSTDIR\\.lobsterai-staging"');
+    expect(select).toContain('phase=staging-preflight-insufficient');
+    expect(select).toContain(
+      '!insertmacro customBeforeInstallerQuit "staging-space-insufficient"',
+    );
+    expect(select).toContain('SetErrorLevel 2');
+
+    // Relocated staging is removed on the success path (before tar
+    // extraction needs the space) and from every controlled failure exit.
+    expect(installerInclude).toContain('Function lobsterCleanupRelocatedPayloadStaging');
+    expect(installerInclude).toContain('phase=staging-relocated-cleanup');
+    expect(
+      installerInclude.match(/Call lobsterCleanupRelocatedPayloadStaging/g)?.length,
+    ).toBeGreaterThanOrEqual(4);
+    const quitMacro = installerInclude.slice(
+      installerInclude.indexOf('!macro customBeforeInstallerQuit REASON'),
+      installerInclude.indexOf('!macro customInstallerFailed'),
+    );
+    expect(quitMacro).toContain('Call lobsterCleanupRelocatedPayloadStaging');
+    const beforeRegistry = installerInclude.slice(
+      installerInclude.indexOf('!macro customBeforeRegistryAddInstallInfo'),
+      installerInclude.indexOf('phase=tar-extract-start'),
+    );
+    expect(beforeRegistry).toContain('Call lobsterCleanupRelocatedPayloadStaging');
+
+    // The staging functions reference the installer.nsi-declared variable, so
+    // they must be emitted from customHeader, not at include parse time.
+    const header = installerInclude.slice(
+      installerInclude.indexOf('!macro customHeader'),
+      installerInclude.indexOf('!macro stopLobsterAIProcesses'),
+    );
+    expect(header).toContain('!insertmacro DefineLobsterPayloadStagingFunctions');
+  });
+
+  test('validates the staged payload against build-time sizes before CopyFiles', () => {
+    // Template ordering: the extract-end hook (which validates) sits between
+    // Nsis7z::Extract and the CopyFiles commit loop.
+    const extractCall = extractTemplate.indexOf('Nsis7z::Extract');
+    const extractEndHook = extractTemplate.indexOf(
+      'customAppPackageExtractEnd "staging" "unchecked"',
+    );
+    const copyFiles = extractTemplate.indexOf('CopyFiles /SILENT');
+    expect(extractCall).toBeGreaterThan(-1);
+    expect(extractEndHook).toBeGreaterThan(extractCall);
+    expect(extractEndHook).toBeLessThan(copyFiles);
+
+    // The nsh wires validation into the extract-end hook for both the staged
+    // and the fallback-direct trees.
+    expect(installerInclude).toContain('!macro LobsterValidateStagedPayload MODE');
+    expect(installerInclude).toContain(
+      '!insertmacro LobsterValidateStagedPayload "${MODE}"',
+    );
+
+    const validate = installerInclude.slice(
+      installerInclude.indexOf('!macro LobsterValidateStagedPayload MODE'),
+      installerInclude.indexOf('!macroend', installerInclude.indexOf('!macro LobsterValidateStagedPayload MODE')),
+    );
+    expect(validate).toContain(String.raw`"$0\${APP_EXECUTABLE_FILENAME}"`);
+    expect(validate).toContain(String.raw`"$0\resources\win-resources.tar"`);
+    expect(validate).toContain('"app-executable-missing"');
+    expect(validate).toContain('"resources-tar-missing"');
+    expect(validate).toContain('"resources-tar-size-mismatch"');
+    // The exact byte compare stays 64-bit safe: a decimal string comparison
+    // against the build-time size, never 32-bit IntCmp arithmetic.
+    expect(validate).toContain('${ElseIf} $2 != "${LOBSTER_WIN_RESOURCES_TAR_BYTES}"');
+    expect(validate).toContain('phase=payload-staging-validation-failed');
+    expect(validate).toContain('found_bytes=$2 expected_bytes=$3');
+    expect(validate).toContain('action=abort-install');
+    expect(validate).toContain(
+      '!insertmacro customBeforeInstallerQuit "payload-staging-validation-failed"',
+    );
+    expect(validate).toContain('SetErrorLevel 2');
+    expect(validate).toContain('phase=payload-staging-validated');
+    // A failed size probe on an existing file logs but does not abort.
+    expect(validate).toContain('"size-query-failed"');
+
+    // 64-bit file size probe used for the compare.
+    expect(installerInclude).toContain('Function lobsterQueryFileSizeBytes');
+    expect(installerInclude).toContain('kernel32::GetFileSizeEx');
+
+    // The expected size comes from the generated build fragment; packaging
+    // builds fail loudly when it is missing.
+    expect(installerInclude).toContain(
+      '!include "${PROJECT_DIR}\\build-tar\\win-installer-payload-size.nsh"',
+    );
+  });
+
+  test('generates the payload size fragment during Windows packaging', () => {
+    expect(builderHooks).toContain('function writeWindowsPayloadSizeFragment');
+    expect(builderHooks).toContain('LOBSTER_WIN_RESOURCES_TAR_BYTES');
+    expect(builderHooks).toContain('LOBSTER_WIN_RESOURCES_TAR_MB');
+    expect(builderHooks).toContain('LOBSTER_PAYLOAD_UNPACKED_MB');
+    expect(builderHooks).toContain("'win-installer-payload-size.nsh'");
+
+    // afterPack is the generation point: extraResources are in place and the
+    // NSIS targets have not archived appOutDir yet.
+    const afterPack = builderHooks.slice(builderHooks.indexOf('async function afterPack'));
+    expect(afterPack).toContain('writeWindowsPayloadSizeFragment(context)');
+
+    // A build machine that itself truncated the extraResources copy must
+    // fail the build instead of baking the wrong "expected" size in.
+    expect(builderHooks).toContain('packagedTarBytes !== tarBytes');
+    expect(builderHooks).toContain("path.join(context.appOutDir, 'resources', 'win-resources.tar')");
+  });
+
+  test('captures a bounded tar failure tail without changing exit semantics', () => {
+    expect(installerInclude).not.toContain(
+      String.raw`nsExec::ExecToLog '"$lobsterTrustedTarPath"`,
+    );
+    const tarStart = installerInclude.indexOf(
+      String.raw`nsExec::ExecToStack '"$lobsterTrustedTarPath"`,
+    );
+    const tarEnd = installerInclude.indexOf('TarExtractElectron:', tarStart);
+    const tar = installerInclude.slice(tarStart, tarEnd);
+
+    // Exit code and output are always both popped (stack balance), and the
+    // original exit-code dispatch survives verbatim.
+    expect(tar).toContain('Pop $0');
+    expect(tar).toContain('Pop $R6');
+    expect(tar).toContain('IntCmp $R2 0 TarExtractVerify TarExtractElectron TarExtractElectron');
+
+    // The failure tail is captured before the dispatch can leave for the
+    // electron fallback, from the same non-success condition.
+    const capture = tar.indexOf('phase=tar-extract-output');
+    expect(capture).toBeGreaterThan(-1);
+    expect(tar.slice(0, capture)).toContain('Call lobsterBuildSingleLineTail');
+    expect(capture).toBeLessThan(
+      tar.indexOf('IntCmp $R2 0 TarExtractVerify TarExtractElectron TarExtractElectron'),
+    );
+    expect(tar).toContain('text=$R6');
+
+    // The sanitizer bounds the text and collapses it to one line.
+    const sanitizer = installerInclude.slice(
+      installerInclude.indexOf('Function lobsterBuildSingleLineTail'),
+      installerInclude.indexOf('FunctionEnd', installerInclude.indexOf('Function lobsterBuildSingleLineTail')),
+    );
+    expect(sanitizer).toContain('StrCpy $0 $0 512 $1');
+    expect(sanitizer).toContain('StrCmp $2 "$\\r" LobsterTailBlank');
+    expect(sanitizer).toContain('StrCmp $2 "$\\n" LobsterTailBlank');
+  });
+
+  test('records Win32 error and destination free space for failed cache copies', () => {
+    const start = installerInclude.indexOf('!macro customInstallerCacheCopyEnd');
+    const end = installerInclude.indexOf('!macroend', start);
+    const macro = installerInclude.slice(start, end);
+
+    expect(macro).toContain("System::Call 'kernel32::GetLastError() i .r2'");
+    expect(macro).toContain('win32_error=$2 dest_free_mb=$3');
+    expect(macro).toContain('Call lobsterQueryFreeMegabytes');
+    // The success line keeps its original shape; only the error line grows
+    // the diagnostic keys, and the failure stays non-fatal (no Quit/abort).
+    expect(macro).toContain('result=${RESULT} elapsed_ms=$1');
+    expect(macro).not.toContain('Quit');
+    expect(macro).not.toContain('Abort');
+  });
+
   test('persists every template hook in the version-pinned patch', () => {
     expect(appBuilderPatch).toContain('templates/nsis/installSection.nsh');
     expect(appBuilderPatch).toContain('templates/nsis/installer.nsi');
@@ -1005,6 +1324,8 @@ describe('Windows installer hardening contracts', () => {
     expect(appBuilderPatch).toContain('customBeforeRegistryAddInstallInfo');
     expect(appBuilderPatch).toContain('customAppPackageExtractStart');
     expect(appBuilderPatch).toContain('customInstallerCacheCopyStart');
+    expect(appBuilderPatch).toContain('customSelectAppPackageStagingDir');
+    expect(appBuilderPatch).toContain('Var appPackageStagingDir');
 
     // Preserve the existing explicit web-package URL behavior while updating
     // the larger patch file.

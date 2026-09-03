@@ -1743,7 +1743,7 @@ const Settings: React.FC<SettingsProps> = ({
   const [tempCleanPreviewDirs, setTempCleanPreviewDirs] = useState<CoworkTempDirPreview[]>([]);
   const [tempCleanSelection, setTempCleanSelection] = useState<Record<string, boolean>>({});
   const [showTempCleanConfirm, setShowTempCleanConfirm] = useState<boolean>(false);
-  const [openClawHeartbeatEnabled, setOpenClawHeartbeatEnabled] = useState<boolean>(coworkConfig.openClawHeartbeatEnabled ?? true);
+  const [openClawHeartbeatEnabled, setOpenClawHeartbeatEnabled] = useState<boolean>(coworkConfig.openClawHeartbeatEnabled ?? false);
   const [embeddingEnabled, setEmbeddingEnabled] = useState<boolean>(coworkConfig.embeddingEnabled ?? false);
   const [embeddingProvider, setEmbeddingProvider] = useState<string>(coworkConfig.embeddingProvider ?? 'openai');
   const [embeddingModel, setEmbeddingModel] = useState<string>(coworkConfig.embeddingModel ?? '');
@@ -1785,7 +1785,7 @@ const Settings: React.FC<SettingsProps> = ({
     setCoworkMemoryEnabled(coworkConfig.memoryEnabled ?? true);
     setCoworkMemoryLlmJudgeEnabled(coworkConfig.memoryLlmJudgeEnabled ?? false);
     setSkipMissedJobs(coworkConfig.skipMissedJobs ?? true);
-    setOpenClawHeartbeatEnabled(coworkConfig.openClawHeartbeatEnabled ?? true);
+    setOpenClawHeartbeatEnabled(coworkConfig.openClawHeartbeatEnabled ?? false);
     setEmbeddingEnabled(coworkConfig.embeddingEnabled ?? false);
     setEmbeddingProvider(coworkConfig.embeddingProvider ?? 'openai');
     setEmbeddingModel(coworkConfig.embeddingModel ?? '');
@@ -2827,7 +2827,7 @@ const Settings: React.FC<SettingsProps> = ({
     || coworkMemoryEnabled !== coworkConfig.memoryEnabled
     || coworkMemoryLlmJudgeEnabled !== coworkConfig.memoryLlmJudgeEnabled
     || skipMissedJobs !== (coworkConfig.skipMissedJobs ?? true)
-    || openClawHeartbeatEnabled !== (coworkConfig.openClawHeartbeatEnabled ?? true)
+    || openClawHeartbeatEnabled !== (coworkConfig.openClawHeartbeatEnabled ?? false)
     || openClawSessionKeepAlive !== (coworkConfig.openClawSessionPolicy?.keepAlive || OpenClawSessionKeepAliveValues.ThirtyDays)
     || embeddingEnabled !== (coworkConfig.embeddingEnabled ?? false)
     || embeddingProvider !== (coworkConfig.embeddingProvider ?? 'openai')
@@ -3388,7 +3388,7 @@ const Settings: React.FC<SettingsProps> = ({
         ? normalizeProvidersForSettingsSave(previousConfig.providers as ProvidersConfig)
         : normalizedProviders;
       const previousSkipMissedJobs = coworkConfig.skipMissedJobs ?? true;
-      const previousOpenClawHeartbeatEnabled = coworkConfig.openClawHeartbeatEnabled ?? true;
+      const previousOpenClawHeartbeatEnabled = coworkConfig.openClawHeartbeatEnabled ?? false;
       const previousAgentEngine = coworkConfig.agentEngine || 'openclaw';
       const previousOpenClawSessionKeepAlive = coworkConfig.openClawSessionPolicy?.keepAlive
         || OpenClawSessionKeepAliveValues.ThirtyDays;
@@ -3513,6 +3513,11 @@ const Settings: React.FC<SettingsProps> = ({
       dispatch(setAvailableModels(allModels));
 
       if (hasCoworkConfigChanges) {
+        if (previousOpenClawHeartbeatEnabled !== openClawHeartbeatEnabled) {
+          console.log(
+            `[Settings] updating OpenClaw heartbeat: enabled=${openClawHeartbeatEnabled}, previous=${previousOpenClawHeartbeatEnabled}`,
+          );
+        }
         const updated = await coworkService.updateConfig({
           agentEngine: coworkAgentEngine,
           memoryEnabled: coworkMemoryEnabled,

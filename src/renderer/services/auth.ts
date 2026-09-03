@@ -62,23 +62,37 @@ interface AuthQuotaCheckResult {
   enterpriseQuotaAvailable: boolean;
 }
 
-export interface PricingCatalogTextModel {
+export interface PricingCatalogBaseModel {
   modelId?: string;
   modelName?: string;
   provider?: string;
   providerLabel?: string;
   description?: string;
+  capabilities?: string | null;
+}
+
+export interface PricingCatalogTextModel extends PricingCatalogBaseModel {
   supportsImage?: boolean;
   supportsThinking?: boolean;
   thinkingConfig?: ModelThinkingConfig;
   contextWindow?: number | null;
   costMultiplier?: number;
+  moreModel?: boolean;
+}
+
+export interface PricingCatalogMediaModel extends PricingCatalogBaseModel {
+  mediaType?: string;
+  billingUnit?: string;
+  unitLabel?: string;
+  unitCredits?: number;
+  unitPriceYuan?: number;
+  pricingDescription?: string | null;
 }
 
 export interface PricingCatalogResponse {
   textModels?: PricingCatalogTextModel[];
-  imageModels?: unknown[];
-  videoModels?: unknown[];
+  imageModels?: PricingCatalogMediaModel[];
+  videoModels?: PricingCatalogMediaModel[];
 }
 
 export interface AvailableServerModelEntry {
@@ -99,6 +113,7 @@ export interface AvailableServerModelEntry {
   explicitContextCache?: boolean;
   costMultiplier?: number;
   description?: string;
+  moreModel?: boolean;
   accessible?: boolean;
   restrictionHint?: string;
 }
@@ -201,6 +216,7 @@ export function mapPricingCatalogTextModelsToServerModels(
       description: readString(model.description) || undefined,
       costMultiplier,
       contextWindow,
+      moreModel: model.moreModel === true,
       accessible: false,
     }];
   });
@@ -242,6 +258,7 @@ export function mapAvailableServerModelsToModels(
       explicitContextCache: model.explicitContextCache ?? false,
       description: model.description,
       costMultiplier: model.costMultiplier,
+      moreModel: model.moreModel === true,
       accessible: model.accessible ?? true,
       restrictionHint: model.restrictionHint ?? undefined,
     };

@@ -6,15 +6,21 @@ import { afterEach, describe, expect, test } from 'vitest';
 import {
   HtmlShareAccessMode,
   HtmlShareDisabledSource,
+  HtmlShareErrorCode,
+  HtmlShareFailureKind,
   HtmlShareSourceType,
   HtmlShareStatus,
 } from '../../../shared/htmlShare/constants';
 import {
   buildHtmlSharePublicUrl,
+  createGeneratedVideoShare,
+  deleteHtmlSharePermanently,
+  getGeneratedVideoShareSource,
   getHtmlShareAnalytics,
   getHtmlShareBySource,
   getHtmlShareQuota,
   getPublishingTrialPolicy,
+  resolveLegacyGeneratedVideoSource,
   updateHtmlShare,
   updateHtmlShareAccessMode,
   updateHtmlShareStatus,
@@ -38,6 +44,229 @@ afterEach(async () => {
 });
 
 describe('htmlShareClient', () => {
+  test('creates a generated video share using only task provenance', async () => {
+    let requestedUrl = '';
+    let requestedBody = '';
+    const result = await createGeneratedVideoShare(
+      'https://lobsterai-server.inner.youdao.com',
+      'https://lobsterai-server.inner.youdao.com/s',
+      async (url, options) => {
+        requestedUrl = url;
+        requestedBody = String(options?.body || '');
+        return new Response(JSON.stringify({
+          code: 0,
+          data: {
+            state: 'ready',
+            taskId: 123,
+            outputIndex: 1,
+            assetStatus: 'persisted',
+            share: {
+              shareId: 'shr_video',
+              accessMode: HtmlShareAccessMode.Code,
+              shareCode: 'V8D3O1',
+              status: HtmlShareStatus.Live,
+            },
+          },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      },
+      {
+        taskId: '123',
+        outputIndex: 1,
+        sessionId: 'session-1',
+        artifactId: 'artifact-video-1',
+        title: 'Generated video',
+        accessMode: HtmlShareAccessMode.Code,
+      },
+    );
+
+    expect(requestedUrl).toBe(
+      'https://lobsterai-server.inner.youdao.com/api/html-shares/generated-videos',
+    );
+    expect(JSON.parse(requestedBody)).toEqual({
+      taskId: '123',
+      outputIndex: 1,
+      sessionId: 'session-1',
+      artifactId: 'artifact-video-1',
+      title: 'Generated video',
+      accessMode: HtmlShareAccessMode.Code,
+    });
+    expect(result.success).toBe(true);
+    expect(result.shareId).toBe('shr_video');
+  });
+
+  test('preserves the server video size limit for renderer messaging', async () => {
+    const result = await createGeneratedVideoShare(
+      'https://lobsterai-server.inner.youdao.com',
+      'https://lobsterai-server.inner.youdao.com/s',
+      async () => new Response(JSON.stringify({
+        code: HtmlShareErrorCode.TooLarge,
+        message: '分享视频超过文件大小限制',
+        data: {
+          limitBytes: 100 * 1024 * 1024,
+          actualBytes: 101 * 1024 * 1024,
+        },
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      {
+        taskId: '123',
+        outputIndex: 0,
+        sessionId: 'session-1',
+        artifactId: 'artifact-video-1',
+        title: 'Generated video',
+      },
+    );
+
+    expect(result).toMatchObject({
+      success: false,
+      code: HtmlShareErrorCode.TooLarge,
+      failureKind: HtmlShareFailureKind.FileTooLarge,
+      details: {
+        limitBytes: 100 * 1024 * 1024,
+        actualBytes: 101 * 1024 * 1024,
+      },
+    });
+  });
+
+  test('looks up generated video share state by task and output', async () => {
+    let requestedUrl = '';
+    const result = await getGeneratedVideoShareSource(
+      'https://lobsterai-server.inner.youdao.com',
+      'https://lobsterai-server.inner.youdao.com/s',
+      async url => {
+        requestedUrl = url;
+        return new Response(JSON.stringify({
+          code: 0,
+          data: {
+            state: 'preparing',
+            taskId: 123,
+            outputIndex: 0,
+            assetStatus: 'persisting',
+            retryAfterMs: 1500,
+          },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      },
+      '123',
+      0,
+    );
+
+    expect(requestedUrl).toBe(
+      'https://lobsterai-server.inner.youdao.com/api/html-shares/generated-videos/source?taskId=123&outputIndex=0',
+    );
+    expect(result).toMatchObject({
+      success: true,
+      state: 'preparing',
+      assetStatus: 'persisting',
+      retryAfterMs: 1500,
+    });
+  });
+
+  test('maps a background video download size failure to the shared file limit error', async () => {
+    let requestCount = 0;
+    const result = await createGeneratedVideoShare(
+      'https://lobsterai-server.inner.youdao.com',
+      'https://lobsterai-server.inner.youdao.com/s',
+      async () => {
+        requestCount += 1;
+        if (requestCount === 1) {
+          return new Response(JSON.stringify({
+            code: 0,
+            data: {
+              state: 'preparing',
+              taskId: 123,
+              outputIndex: 0,
+              assetStatus: 'persisting',
+              retryAfterMs: 1,
+            },
+          }), { status: 202, headers: { 'Content-Type': 'application/json' } });
+        }
+        return new Response(JSON.stringify({
+          code: 0,
+          data: {
+            state: 'checking',
+            taskId: 123,
+            outputIndex: 0,
+            assetStatus: 'invalid',
+            failureReason: 'too_large',
+            limitBytes: 100 * 1024 * 1024,
+          },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      },
+      {
+        taskId: '123',
+        outputIndex: 0,
+        sessionId: 'session-1',
+        artifactId: 'artifact-video-1',
+        title: 'Generated video',
+      },
+    );
+
+    expect(requestCount).toBe(2);
+    expect(result).toMatchObject({
+      success: false,
+      code: HtmlShareErrorCode.TooLarge,
+      failureKind: HtmlShareFailureKind.FileTooLarge,
+      details: { limitBytes: 100 * 1024 * 1024 },
+    });
+  });
+
+  test('resolves legacy video provenance using a URL hash only', async () => {
+    let requestedBody = '';
+    const result = await resolveLegacyGeneratedVideoSource(
+      'https://lobsterai-server.inner.youdao.com',
+      async (_url, options) => {
+        requestedBody = String(options?.body || '');
+        return new Response(JSON.stringify({
+          code: 0,
+          data: { taskId: 456, outputIndex: 2 },
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      },
+      'a'.repeat(64),
+    );
+
+    expect(JSON.parse(requestedBody)).toEqual({ resultUrlSha256: 'a'.repeat(64) });
+    expect(result).toEqual({ success: true, taskId: '456', outputIndex: 2 });
+  });
+
+  test('permanently deletes a stopped shared file through the dedicated endpoint', async () => {
+    let requestedUrl = '';
+    let requestedMethod = '';
+    const result = await deleteHtmlSharePermanently(
+      'https://lobsterai-server.inner.youdao.com',
+      async (url, options) => {
+        requestedUrl = url;
+        requestedMethod = options?.method || '';
+        return new Response(JSON.stringify({ code: 0, data: null }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      },
+      'shr_file/with space',
+    );
+
+    expect(requestedUrl).toBe(
+      'https://lobsterai-server.inner.youdao.com/api/html-shares/shr_file%2Fwith%20space/permanent',
+    );
+    expect(requestedMethod).toBe('DELETE');
+    expect(result).toEqual({ success: true, httpStatus: 200 });
+  });
+
+  test('preserves server deletion errors for renderer recovery', async () => {
+    const result = await deleteHtmlSharePermanently(
+      'https://lobsterai-server.inner.youdao.com',
+      async () => new Response(JSON.stringify({
+        code: 41315,
+        message: '请先停止分享，再永久删除',
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      'shr_live',
+    );
+
+    expect(result).toEqual({
+      success: false,
+      error: '请先停止分享，再永久删除',
+      code: 41315,
+      httpStatus: 200,
+    });
+  });
+
   test('builds environment-specific public share URLs', () => {
     expect(buildHtmlSharePublicUrl('https://lobsterai-server.inner.youdao.com/s', 'shr_123')).toBe(
       'https://lobsterai-server.inner.youdao.com/s/shr_123/',
