@@ -2,14 +2,14 @@
 
 ## 1. 概述
 
-LobsterAI 当前 Windows NSIS 安装包已经支持 `/S` 静默安装，企业或渠道侧可以通过命令行完成无人值守部署。但部分渠道希望用户直接双击安装包时也进入静默安装流程，减少安装向导步骤和人工选择，适配批量分发、预装、网管工具下发等场景。
+BaiYing 当前 Windows NSIS 安装包已经支持 `/S` 静默安装，企业或渠道侧可以通过命令行完成无人值守部署。但部分渠道希望用户直接双击安装包时也进入静默安装流程，减少安装向导步骤和人工选择，适配批量分发、预装、网管工具下发等场景。
 
 本功能在现有渠道包构建能力上增加显式“双击静默”打包参数：`dist:win:channel` 完整安装包和 `dist:win:web` Web 安装包均根据命令行参数生成不同安装器行为。传入 `--silent` 的渠道包在用户直接打开时自动进入 NSIS silent mode；未传入该参数时保持普通交互式安装向导。已有 `/S` 命令行能力保持不变。
 
 ### 1.1 目标
 
 - 允许通过显式打包参数生成“用户双击也静默安装”的 Windows 完整安装包或 Web 安装包。
-- 静默安装（双击静默包或命令行 `/S`，如应用商店后台安装）不显示任何 LobsterAI 自有安装窗口，安装体验由分发渠道承载。
+- 静默安装（双击静默包或命令行 `/S`，如应用商店后台安装）不显示任何 BaiYing 自有安装窗口，安装体验由分发渠道承载。
 - 继续复用现有 NSIS 安装器、渠道归因、签名、OpenClaw runtime 打包和资源恢复流程。
 - 将双击静默行为固化在构建产物中，不依赖用户机器环境变量或安装时读取 `.keyfrom-build`。
 - 保持普通渠道包的安装向导体验不变。
@@ -22,7 +22,7 @@ LobsterAI 当前 Windows NSIS 安装包已经支持 `/S` 静默安装，企业�
 - 不新增 MSI、便携版、免安装版或独立“silent setup”打包体系。
 - 不改变 `keyfrom` 归因语义；`keyfrom` 仍只表示渠道来源，不直接作为用户可编辑配置。
 - 不让普通用户在安装向导里切换是否静默。
-- 不在运行后的 LobsterAI 应用内提供修改安装器静默策略的入口。
+- 不在运行后的 BaiYing 应用内提供修改安装器静默策略的入口。
 - 不改变安装目录、卸载、自动更新、资源解压、Defender 排除项和旧版本迁移的既有业务规则。
 
 ## 2. 核心流程
@@ -78,12 +78,12 @@ npm run dist:win:web -- --keyfrom dictbind --silent --pkg-url <uploaded-url>
 ### 3.3 Electron Builder 配置
 
 - `scripts/electron-builder-config.cjs` 读取构建脚本注入的策略值。
-- 当策略开启时，给 NSIS 注入编译期宏，例如 `LOBSTERAI_SILENT_ON_DOUBLE_CLICK`。
+- 当策略开启时，给 NSIS 注入编译期宏，例如 `BAIYING_SILENT_ON_DOUBLE_CLICK`。
 - 产物命名建议包含可识别标记，例如：
 
 ```text
-LobsterAI-Setup-x64-${version}-${keyfrom}-silent.exe
-LobsterAI-WebSetup-x64-${version}-${keyfrom}-silent.exe
+BaiYing-Setup-x64-${version}-${keyfrom}-silent.exe
+BaiYing-WebSetup-x64-${version}-${keyfrom}-silent.exe
 ```
 
 - 如果不改变产物名，至少需要在构建日志和发布记录中明确标注 silent 行为。
@@ -103,7 +103,7 @@ LobsterAI-WebSetup-x64-${version}-${keyfrom}-silent.exe
 建议伪代码：
 
 ```nsh
-!ifdef LOBSTERAI_SILENT_ON_DOUBLE_CLICK
+!ifdef BAIYING_SILENT_ON_DOUBLE_CLICK
   SetSilent silent
 !endif
 
@@ -121,7 +121,7 @@ ${EndIf}
   - `mode=full-installer`
   - `silentOnDoubleClick`
   - 最终 artifact name
-- 安装失败时仍优先写入 `$APPDATA\LobsterAI\install-timing.log`，静默渠道不吞掉错误。
+- 安装失败时仍优先写入 `$APPDATA\BaiYing\install-timing.log`，静默渠道不吞掉错误。
 
 ### 3.6 兼容性与安全边界
 
@@ -170,7 +170,7 @@ ${EndIf}
 5. `install-timing.log` 对双击静默包记录 `ui_mode=silent`，并能区分是构建参数触发还是命令行 `/S` 触发。
 6. 双击静默包遇到资源解压失败、旧版本迁移失败或校验失败时，仍保留现有日志、回滚和错误默认处理。
 7. 构建日志能清楚显示 `keyfrom`、`silentOnDoubleClick` 和产物路径，发布人员可以区分普通渠道包和双击静默渠道包。
-8. 传入 `dist:win:web -- --keyfrom dictbind --silent` 时，最终 WebSetup 产物名包含 `-silent`，双击后下载与安装过程均不展示 LobsterAI 安装器 UI；Windows UAC 不在此约束内。
+8. 传入 `dist:win:web -- --keyfrom dictbind --silent` 时，最终 WebSetup 产物名包含 `-silent`，双击后下载与安装过程均不展示 BaiYing 安装器 UI；Windows UAC 不在此约束内。
 9. WebSetup 静默下载失败时使用非交互默认选项退出，不因错误弹窗阻塞无人值守流程。
 10. macOS、Linux 和应用运行时 UI 不受该功能影响。
 11. 任何静默安装（双击静默包或命令行 `/S`）均不显示 LobsterAI 自有窗口；交互式安装向导与 `--updated` 更新进度页保持既有 UI。

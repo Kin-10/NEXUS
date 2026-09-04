@@ -987,7 +987,7 @@ export const isMediaStatusPoll = (group: ToolGroupItem): boolean => {
   const toolName = group.toolUse.metadata?.toolName;
   if (!toolName) return false;
   const normalized = normalizeToolName(toolName);
-  if (normalized !== 'lobsteraivideogenerate' && normalized !== 'lobsteraiimagegenerate') return false;
+  if (normalized !== 'baiyingvideogenerate' && normalized !== 'baiyingimagegenerate') return false;
   const input = group.toolUse.metadata?.toolInput as Record<string, unknown> | undefined;
   return input?.action === 'status' && typeof input?.taskId === 'string';
 };
@@ -1037,7 +1037,7 @@ export const isMediaGenerateRunning = (group: ToolGroupItem): boolean => {
   const toolName = group.toolUse.metadata?.toolName;
   if (!toolName) return false;
   const normalized = normalizeToolName(toolName);
-  if (normalized !== 'lobsteraivideogenerate') return false;
+  if (normalized !== 'baiyingvideogenerate') return false;
   const input = group.toolUse.metadata?.toolInput as Record<string, unknown> | undefined;
   const action = input?.action;
   if (action !== 'generate' && action !== undefined) return false;
@@ -1505,7 +1505,7 @@ export const getActivityCurrentActionText = (item: ConsolidatedItem): string => 
       ? item.group.toolUse.metadata?.toolName
       : null;
   if (typeof mediaToolName === 'string') {
-    const isVideo = normalizeToolName(mediaToolName) === 'lobsteraivideogenerate';
+    const isVideo = normalizeToolName(mediaToolName) === 'baiyingvideogenerate';
     return i18nService.t(isVideo ? 'mediaGeneratingVideo' : 'mediaGeneratingImage');
   }
   if (item.type === 'tool_group') {

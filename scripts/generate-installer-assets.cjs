@@ -175,7 +175,7 @@ function drawDownloadBadge(ctx, centerX, centerY) {
 
 function drawTitle(ctx) {
   const prefix = '点击按钮安装 ';
-  const product = 'LobsterAI';
+  const product = 'BaiYing';
   ctx.save();
   ctx.font = '700 28px "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif';
   ctx.fillStyle = '#050505';

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { ProviderName } from '@shared/providers/constants';
-import type { LobsterAIRequestCapability } from '@shared/providers/lobsterAIRequestOptions';
+import type { BaiYingRequestCapability } from '@shared/providers/baiYingRequestOptions';
 import type { ModelRuntimeProfile } from '@shared/providers/modelRuntimeProfiles';
 import type { ModelThinkingConfig } from '@shared/providers/modelThinking';
 
@@ -18,7 +18,7 @@ export interface Model {
   supportsVideo?: boolean;
   supportsThinking?: boolean;
   thinkingConfig?: ModelThinkingConfig;
-  requestCapabilities?: LobsterAIRequestCapability[];
+  requestCapabilities?: BaiYingRequestCapability[];
   supportsToolCalling?: boolean;
   agenticReady?: boolean;
   contextWindow?: number;
@@ -34,7 +34,7 @@ export interface Model {
 }
 
 function isServerModelIdentity(model: Pick<Model, 'providerKey' | 'isServerModel'>): boolean {
-  return model.isServerModel === true || model.providerKey === ProviderName.LobsteraiServer;
+  return model.isServerModel === true || model.providerKey === ProviderName.BaiyingServer;
 }
 
 export function getModelIdentityKey(model: Pick<Model, 'id' | 'providerKey' | 'isServerModel'>): string {

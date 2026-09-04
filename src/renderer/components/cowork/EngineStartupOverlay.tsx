@@ -208,7 +208,7 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
           <img
             ref={logoRef}
             src="logo.svg"
-            alt="LobsterAI"
+            alt="BaiYing"
             width={72}
             height={72}
             className="relative rounded-2xl select-none"

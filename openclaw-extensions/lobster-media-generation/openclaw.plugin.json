@@ -1,12 +1,12 @@
 {
   "id": "lobster-media-generation",
   "name": "LobsterMediaGeneration",
-  "description": "Image/video generation and AI skin management tools powered by LobsterAI.",
+  "description": "Image/video generation and AI skin management tools powered by BaiYing.",
   "contracts": {
     "tools": [
-      "lobsterai_image_generate",
-      "lobsterai_video_generate",
-      "lobsterai_skin_manage"
+      "baiying_image_generate",
+      "baiying_video_generate",
+      "baiying_skin_manage"
     ]
   },
   "configSchema": {
@@ -15,7 +15,7 @@
     "properties": {
       "callbackUrl": {
         "type": "string",
-        "description": "LobsterAI HTTP callback URL for media generation requests"
+        "description": "BaiYing HTTP callback URL for media generation requests"
       },
       "secret": {
         "type": "string",

@@ -4,7 +4,7 @@
 
 ## Change Summary
 
-`lobsterai-server` 现已允许有效企业的普通成员和超级管理员使用现有 artifact 分享、静态部署和动态 Node 服务部署，不要求该用户同时拥有个人订阅。分享与部署属于企业产品权益，不消耗企业积分、成员月度额度或个人积分。
+`baiying-server` 现已允许有效企业的普通成员和超级管理员使用现有 artifact 分享、静态部署和动态 Node 服务部署，不要求该用户同时拥有个人订阅。分享与部署属于企业产品权益，不消耗企业积分、成员月度额度或个人积分。
 
 本次契约和数据归属变化：
 
@@ -137,7 +137,7 @@
 
 1. 执行服务端迁移 `sql/V66__publishing_account_scope.sql`，为 `html_shares`、`share_deployments` 增加 `account_mode`、`tob_enterprise_id` 和所有者索引。历史记录自动归入个人空间。
 2. 部署服务端权益和所有者隔离逻辑。
-3. 发布使用显式权益、owner key 和 account generation 的 LobsterAI 客户端。
+3. 发布使用显式权益、owner key 和 account generation 的 BaiYing 客户端。
 4. 使用同一测试用户分别在个人、企业 A、企业 B 验证分享、静态部署、动态部署、相同 `clientSourceKey` 和超限清理。
 
 回滚客户端不会破坏服务端数据，但旧客户端无法正确开放企业入口。回滚服务端时必须先关闭企业分享和部署入口；数据库新增列和索引保留，不做破坏性回滚。

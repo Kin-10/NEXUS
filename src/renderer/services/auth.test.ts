@@ -3,7 +3,7 @@ import {
   AuthSessionChangeReason,
   AuthSessionStatus,
 } from '@shared/auth/constants';
-import { LobsterAIRequestCapability, ProviderName } from '@shared/providers';
+import { BaiYingRequestCapability, ProviderName } from '@shared/providers';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import {
@@ -41,8 +41,8 @@ describe('pricing catalog model mapping', () => {
       {
         modelId: 'qwen3.7-plus',
         modelName: 'Qwen3.7-Plus',
-        provider: 'LobsterAI',
-        providerLabel: 'LobsterAI Plan',
+        provider: 'BaiYing',
+        providerLabel: 'BaiYing Plan',
         description: 'Strong multimodal model',
         supportsImage: true,
         supportsThinking: true,
@@ -63,8 +63,8 @@ describe('pricing catalog model mapping', () => {
     expect(model).toMatchObject({
       id: 'qwen3.7-plus',
       name: 'Qwen3.7-Plus',
-      provider: 'LobsterAI Plan',
-      providerKey: ProviderName.LobsteraiServer,
+      provider: 'BaiYing Plan',
+      providerKey: ProviderName.BaiyingServer,
       isServerModel: true,
       accessible: false,
       description: 'Strong multimodal model',
@@ -130,7 +130,7 @@ describe('authenticated server model mapping', () => {
         ],
         defaultLevel: 'high',
       },
-      requestCapabilities: [LobsterAIRequestCapability.OptionsV1],
+      requestCapabilities: [BaiYingRequestCapability.OptionsV1],
       supportsToolCalling: true,
       agenticReady: false,
       contextWindow: 1_048_576,
@@ -141,7 +141,7 @@ describe('authenticated server model mapping', () => {
 
     expect(model).toMatchObject({
       id: 'kimi-k3-YoudaoInner',
-      providerKey: ProviderName.LobsteraiServer,
+      providerKey: ProviderName.BaiyingServer,
       isServerModel: true,
       serverApiFormat: 'openai',
       runtimeProfile: 'moonshot-kimi-k3',
@@ -156,7 +156,7 @@ describe('authenticated server model mapping', () => {
         ],
         defaultLevel: 'high',
       },
-      requestCapabilities: [LobsterAIRequestCapability.OptionsV1],
+      requestCapabilities: [BaiYingRequestCapability.OptionsV1],
       supportsToolCalling: true,
       agenticReady: false,
       contextWindow: 1_048_576,
@@ -170,7 +170,7 @@ describe('authenticated server model mapping', () => {
     const [model] = mapAvailableServerModelsToModels([{
       modelId: 'deepseek-v4-flash',
       modelName: 'DeepSeek V4 Flash',
-      provider: 'LobsterAI',
+      provider: 'BaiYing',
       apiFormat: 'openai',
       supportsThinking: true,
       thinkingConfig: {
@@ -191,15 +191,15 @@ describe('authenticated server model mapping', () => {
     const [model] = mapAvailableServerModelsToModels([{
       modelId: 'capability-test',
       modelName: 'Capability Test',
-      provider: 'LobsterAI',
+      provider: 'BaiYing',
       apiFormat: 'openai',
       requestCapabilities: [
-        LobsterAIRequestCapability.OptionsV1,
+        BaiYingRequestCapability.OptionsV1,
         'future-unknown-capability',
       ],
     }]);
 
-    expect(model.requestCapabilities).toEqual([LobsterAIRequestCapability.OptionsV1]);
+    expect(model.requestCapabilities).toEqual([BaiYingRequestCapability.OptionsV1]);
   });
 });
 
@@ -269,7 +269,7 @@ describe('login diagnostics', () => {
     const fromRenderer = vi.fn();
     const loginResult = {
       success: true,
-      redirectUrl: 'https://lobsterai.youdao.com/portal#/login?source=electron',
+      redirectUrl: 'https://baiying.youdao.com/portal#/login?source=electron',
     };
     const login = vi.fn().mockResolvedValue(loginResult);
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -279,7 +279,7 @@ describe('login diagnostics', () => {
         api: {
           fetch: vi.fn().mockResolvedValue({
             ok: true,
-            data: { data: { value: 'https://lobsterai.youdao.com/portal#/login' } },
+            data: { data: { value: 'https://baiying.youdao.com/portal#/login' } },
           }),
         },
         auth: { login },
@@ -289,7 +289,7 @@ describe('login diagnostics', () => {
 
     await expect(authService.login()).resolves.toEqual(loginResult);
 
-    expect(login).toHaveBeenCalledWith('https://lobsterai.youdao.com/portal#/login');
+    expect(login).toHaveBeenCalledWith('https://baiying.youdao.com/portal#/login');
     expect(fromRenderer).toHaveBeenCalledWith(
       'info',
       'AuthService',
@@ -300,7 +300,7 @@ describe('login diagnostics', () => {
       'AuthService',
       expect.stringMatching(/^login attempt \d+ handed off to the system browser$/),
     );
-    expect(fromRenderer.mock.calls.flat().join(' ')).not.toContain('lobsterai.youdao.com');
+    expect(fromRenderer.mock.calls.flat().join(' ')).not.toContain('baiying.youdao.com');
   });
 
   test('returns the IPC failure result without throwing and records a warning', async () => {
@@ -313,7 +313,7 @@ describe('login diagnostics', () => {
         api: {
           fetch: vi.fn().mockResolvedValue({
             ok: true,
-            data: { data: { value: 'https://lobsterai.youdao.com/portal#/login' } },
+            data: { data: { value: 'https://baiying.youdao.com/portal#/login' } },
           }),
         },
         auth: { login: vi.fn().mockResolvedValue({ success: false, error: 'open failed' }) },
@@ -378,7 +378,7 @@ describe('quota checks', () => {
       models: [{
         modelId: 'qwen3.7-plus',
         modelName: 'Qwen3.7 Plus',
-        provider: 'LobsterAI',
+        provider: 'BaiYing',
         apiFormat: 'openai',
         accessible: true,
       }],
@@ -414,7 +414,7 @@ describe('quota checks', () => {
     expect(store.getState().model.availableModels).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: 'qwen3.7-plus',
-        providerKey: ProviderName.LobsteraiServer,
+        providerKey: ProviderName.BaiyingServer,
         accessible: true,
       }),
     ]));
@@ -587,7 +587,7 @@ describe('server model loading', () => {
   const serverModel = {
     modelId: 'qwen3.7-plus',
     modelName: 'Qwen3.7 Plus',
-    provider: 'LobsterAI',
+    provider: 'BaiYing',
     apiFormat: 'openai',
     accessible: true,
   };

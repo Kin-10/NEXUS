@@ -29,31 +29,31 @@ afterEach(() => {
 test('portal account urls use production base when test mode is disabled', () => {
   mockTestMode(false);
 
-  expect(getPortalProfileUrl()).toBe('https://lobsterai.youdao.com/portal#/profile');
-  expect(getPortalCreditsDetailUrl()).toBe('https://lobsterai.youdao.com/portal#/profile/detail');
-  expect(getPortalRechargeUrl()).toBe('https://lobsterai.youdao.com/portal#/');
-  expect(getPortalInvitationUrl()).toBe('https://lobsterai.youdao.com/portal#/invitation');
-  expect(getPortalCreditsResetActivityUrl()).toBe('https://lobsterai.youdao.com/portal#/profile?activity=credits_reset');
+  expect(getPortalProfileUrl()).toBe('https://baiying.youdao.com/portal#/profile');
+  expect(getPortalCreditsDetailUrl()).toBe('https://baiying.youdao.com/portal#/profile/detail');
+  expect(getPortalRechargeUrl()).toBe('https://baiying.youdao.com/portal#/');
+  expect(getPortalInvitationUrl()).toBe('https://baiying.youdao.com/portal#/invitation');
+  expect(getPortalCreditsResetActivityUrl()).toBe('https://baiying.youdao.com/portal#/profile?activity=credits_reset');
   expect(getPortalCreditsResetActivityUrl('credits_final_reward_2026_07')).toBe(
-    'https://lobsterai.youdao.com/portal#/profile?activity=credits_reset&campaignCode=credits_final_reward_2026_07',
+    'https://baiying.youdao.com/portal#/profile?activity=credits_reset&campaignCode=credits_final_reward_2026_07',
   );
 });
 
 test('portal account urls use test base when test mode is enabled', () => {
   mockTestMode(true);
 
-  expect(getPortalProfileUrl()).toBe('https://lobsterai.inner.youdao.com/portal#/profile');
-  expect(getPortalCreditsDetailUrl()).toBe('https://lobsterai.inner.youdao.com/portal#/profile/detail');
-  expect(getPortalRechargeUrl()).toBe('https://lobsterai.inner.youdao.com/portal#/');
-  expect(getPortalInvitationUrl()).toBe('https://lobsterai.inner.youdao.com/portal#/invitation');
-  expect(getPortalCreditsResetActivityUrl()).toBe('https://lobsterai.inner.youdao.com/portal#/profile?activity=credits_reset');
+  expect(getPortalProfileUrl()).toBe('https://baiying.inner.youdao.com/portal#/profile');
+  expect(getPortalCreditsDetailUrl()).toBe('https://baiying.inner.youdao.com/portal#/profile/detail');
+  expect(getPortalRechargeUrl()).toBe('https://baiying.inner.youdao.com/portal#/');
+  expect(getPortalInvitationUrl()).toBe('https://baiying.inner.youdao.com/portal#/invitation');
+  expect(getPortalCreditsResetActivityUrl()).toBe('https://baiying.inner.youdao.com/portal#/profile?activity=credits_reset');
 });
 
 test('portal pricing url can include html share keyfrom', () => {
   mockTestMode(false);
 
   expect(getPortalPricingUrl(PortalPricingKeyfrom.HtmlShare)).toBe(
-    'https://lobsterai.youdao.com/portal#/pricing?keyfrom=html_share',
+    'https://baiying.youdao.com/portal#/pricing?keyfrom=html_share',
   );
 });
 
@@ -64,7 +64,7 @@ test('portal pricing url can carry a publishing attribution trace', () => {
     PortalPricingKeyfrom.SiteDeployment,
     { traceId: 'attempt-123' },
   )).toBe(
-    'https://lobsterai.youdao.com/portal#/pricing?keyfrom=site_deployment&trace_id=attempt-123',
+    'https://baiying.youdao.com/portal#/pricing?keyfrom=site_deployment&trace_id=attempt-123',
   );
 });
 
@@ -72,18 +72,18 @@ test('enterprise console urls use the selected enterprise context', () => {
   mockTestMode(false);
 
   expect(getEnterpriseMemberProfileUrl(1001)).toBe(
-    'https://lobsterai.youdao.com/portal#/enterprise/profile/1001',
+    'https://baiying.youdao.com/portal#/enterprise/profile/1001',
   );
   expect(getEnterpriseOverviewUrl(1001)).toBe(
-    'https://lobsterai.youdao.com/portal#/enterprise/console/1001/overview',
+    'https://baiying.youdao.com/portal#/enterprise/console/1001/overview',
   );
   expect(getEnterpriseUsageUrl(1001)).toBe(
-    'https://lobsterai.youdao.com/portal#/enterprise/console/1001/usage',
+    'https://baiying.youdao.com/portal#/enterprise/console/1001/usage',
   );
   expect(getEnterpriseBillingUrl(1001)).toBe(
-    'https://lobsterai.youdao.com/portal#/enterprise/console/1001/billing',
+    'https://baiying.youdao.com/portal#/enterprise/console/1001/billing',
   );
   expect(getEnterpriseRechargeUrl(1001)).toBe(
-    'https://lobsterai.youdao.com/portal#/enterprise/console/1001/recharge',
+    'https://baiying.youdao.com/portal#/enterprise/console/1001/recharge',
   );
 });

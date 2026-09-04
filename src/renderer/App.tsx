@@ -63,6 +63,7 @@ import AppUpdateModal from './components/update/AppUpdateModal';
 import WindowsAppTitleBar from './components/window/WindowsAppTitleBar';
 import { defaultConfig, getProviderDisplayName, ShortcutAction } from './config';
 import { selectIsEnterpriseAccount } from './features/enterpriseAccount/selectors';
+import { isLibraryCloudEnabled } from './features/libraryCloudFeature';
 import { LOGIN_FEATURE_DISABLED } from './features/loginFeature';
 import { SkinProvider } from './providers/SkinProvider';
 import type { ApiConfig } from './services/api';
@@ -787,7 +788,9 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleOpenCloudLibrary = (): void => {
       setLibraryNavigationRequest(current => ({
-        source: LibrarySourceFilter.Cloud,
+        source: isLibraryCloudEnabled()
+          ? LibrarySourceFilter.Cloud
+          : LibrarySourceFilter.Local,
         requestId: current.requestId + 1,
       }));
       setMainView('library');

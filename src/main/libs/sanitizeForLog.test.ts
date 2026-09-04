@@ -143,12 +143,12 @@ describe('serializeForLog', () => {
 describe('sanitizeUrlForLog', () => {
   test('removes query values and fragments from valid URLs', () => {
     const result = sanitizeUrlForLog(
-      'https://rlogs.youdao.com/rlog.php?action=lobsterai_app_started&log_Usid=user-1#result',
+      'https://rlogs.youdao.com/rlog.php?action=baiying_app_started&log_Usid=user-1#result',
     );
 
     expect(result).toBe('https://rlogs.youdao.com/rlog.php?[redacted]#[redacted]');
     expect(result).not.toContain('user-1');
-    expect(result).not.toContain('lobsterai_app_started');
+    expect(result).not.toContain('baiying_app_started');
   });
 
   test('returns a safe marker for invalid URLs', () => {
@@ -162,12 +162,12 @@ describe('sanitizeUrlForLog', () => {
 describe('isAnalyticsEndpointUrl', () => {
   test('matches the analyzer endpoint regardless of query or fragment', () => {
     expect(isAnalyticsEndpointUrl(LogReporterEndpoint.YoudaoAnalyzer)).toBe(true);
-    expect(isAnalyticsEndpointUrl(`${LogReporterEndpoint.YoudaoAnalyzer}?_npid=wisdom&action=lobsterai_app_started&uts=1`)).toBe(true);
+    expect(isAnalyticsEndpointUrl(`${LogReporterEndpoint.YoudaoAnalyzer}?_npid=wisdom&action=baiying_app_started&uts=1`)).toBe(true);
     expect(isAnalyticsEndpointUrl(`${LogReporterEndpoint.YoudaoAnalyzer}#x`)).toBe(true);
   });
 
   test('does not match other hosts, paths, or schemes', () => {
-    expect(isAnalyticsEndpointUrl('https://lobsterai-server.youdao.com/api/user/profile-summary?uuid=1')).toBe(false);
+    expect(isAnalyticsEndpointUrl('https://baiying-server.youdao.com/api/user/profile-summary?uuid=1')).toBe(false);
     expect(isAnalyticsEndpointUrl('https://rlogs.youdao.com/other.php')).toBe(false);
     expect(isAnalyticsEndpointUrl('http://rlogs.youdao.com/rlog.php')).toBe(false);
     expect(isAnalyticsEndpointUrl('https://rlogs.youdao.com.evil.example/rlog.php')).toBe(false);

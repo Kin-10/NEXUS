@@ -25,8 +25,8 @@ export const getUpdateCheckUrl = () => overmindCatalogUrl('update');
 export const getManualUpdateCheckUrl = () => overmindCatalogUrl('update-manual');
 
 export const getFallbackDownloadUrl = () => isTestModeEnabled()
-  ? 'https://lobsterai.inner.youdao.com/#/download-list'
-  : 'https://lobsterai.youdao.com/#/download-list';
+  ? 'https://baiying.inner.youdao.com/#/download-list'
+  : 'https://baiying.youdao.com/#/download-list';
 
 // Skill 商店
 export const getSkillStoreUrl = () => overmindCatalogUrl('skill-store');
@@ -44,8 +44,8 @@ export const setPortalBaseOverride = (base: string | null): void => {
   portalBaseOverride = typeof base === 'string' && base.trim() ? base.trim() : null;
 };
 
-const PORTAL_BASE_TEST = 'https://lobsterai.inner.youdao.com/portal#';
-const PORTAL_BASE_PROD = 'https://lobsterai.youdao.com/portal#';
+const PORTAL_BASE_TEST = 'https://baiying.inner.youdao.com/portal#';
+const PORTAL_BASE_PROD = 'https://baiying.youdao.com/portal#';
 
 const getPortalBase = () => {
   if (portalBaseOverride) return portalBaseOverride;

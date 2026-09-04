@@ -923,12 +923,12 @@ test('updateSession can patch model override without refreshing the session upda
 
   store.updateSession(
     sid,
-    { modelOverride: 'lobsterai-server/qwen3.6-plus-YoudaoInner' },
+    { modelOverride: 'baiying-server/qwen3.6-plus-YoudaoInner' },
     { touchUpdatedAt: false },
   );
 
   const session = store.getSession(sid);
-  expect(session?.modelOverride).toBe('lobsterai-server/qwen3.6-plus-YoudaoInner');
+  expect(session?.modelOverride).toBe('baiying-server/qwen3.6-plus-YoudaoInner');
   expect(session?.updatedAt).toBe(1000);
 });
 
@@ -940,7 +940,7 @@ test('create and update session persist the selected thinking level', () => {
     'local',
     [],
     'main',
-    'lobsterai-server/deepseek-v4-flash',
+    'baiying-server/deepseek-v4-flash',
     { thinkingLevel: 'high' },
   );
 

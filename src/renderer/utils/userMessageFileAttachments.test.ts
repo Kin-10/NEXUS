@@ -47,13 +47,13 @@ describe('passthrough (no attachment lines)', () => {
 describe('file attachment extraction', () => {
   test('zh file line appended after prompt', () => {
     const result = extractUserMessageFileAttachments(
-      '看看这个日志有什么问题\n\n输入文件: /Users/me/logs/lobsterai-logs-20260810.txt',
+      '看看这个日志有什么问题\n\n输入文件: /Users/me/logs/baiying-logs-20260810.txt',
     );
     expect(result.text).toBe('看看这个日志有什么问题');
     expect(result.attachments).toEqual([
       {
-        path: '/Users/me/logs/lobsterai-logs-20260810.txt',
-        name: 'lobsterai-logs-20260810.txt',
+        path: '/Users/me/logs/baiying-logs-20260810.txt',
+        name: 'baiying-logs-20260810.txt',
         isDirectory: false,
       },
     ]);

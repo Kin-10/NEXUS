@@ -259,7 +259,7 @@ const SteerQueueIcon: React.FC<React.SVGProps<SVGSVGElement>> = ({ className, ..
 );
 
 const getModelAnalyticsSource = (model: Model, selectorGroup: ModelSelectorChangeMeta['group']): string => {
-  if (model.isServerModel || model.providerKey === ProviderName.LobsteraiServer || selectorGroup === ModelSelectorGroup.Server) {
+  if (model.isServerModel || model.providerKey === ProviderName.BaiyingServer || selectorGroup === ModelSelectorGroup.Server) {
     return 'package';
   }
   return 'custom';
@@ -700,7 +700,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
       return ModelAccessPromptKind.AgenticNotReady;
     }
     if (
-      effectiveSelectedModel?.providerKey === ProviderName.LobsteraiServer
+      effectiveSelectedModel?.providerKey === ProviderName.BaiyingServer
       && effectiveSelectedModel.accessible === false
     ) {
       return isLoggedIn ? ModelAccessPromptKind.Subscribe : ModelAccessPromptKind.Login;
@@ -1923,7 +1923,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
     reportPromptControl('kit_toggle', {
       kitId,
       kitName: marketplaceKit ? resolveLocalizedText(marketplaceKit.name) : installedKit?.id ?? kitId,
-      kitSource: marketplaceKit ? 'lobsterai-kits' : 'installed',
+      kitSource: marketplaceKit ? 'baiying-kits' : 'installed',
       targetEnabled: willSelect,
       isInstalled: !!installedKit,
       skillCount: installedKit?.skills?.skillIds.length ?? marketplaceKit?.skills?.list.length,
@@ -1936,7 +1936,7 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
         action: LogReporterAction.ExpertKitSelected,
         kitId,
         kitName: marketplaceKit ? resolveLocalizedText(marketplaceKit.name) : undefined,
-        kitSource: marketplaceKit ? 'lobsterai-kits' : 'installed',
+        kitSource: marketplaceKit ? 'baiying-kits' : 'installed',
         isInstalled: !!installedKit,
         skillCount: installedKit?.skills?.skillIds.length ?? marketplaceKit?.skills?.list.length,
         mcpServerCount: installedKit?.mcpServers.length ?? marketplaceKit?.mcpServers?.length,

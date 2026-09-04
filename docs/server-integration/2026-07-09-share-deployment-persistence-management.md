@@ -458,8 +458,8 @@ Cache-Control: no-store
 
 同步下载支持两种服务端数据访问方式：
 
-1. `local_mount`：`lobsterai-server` 所在主机已经挂载同一个 NAS，直接读取本地挂载目录。
-2. `ephemeral_function`：每次操作创建一个挂载同一 NAS 的 veFaaS 临时函数，`lobsterai-server` 通过一次性 HMAC 密钥请求读取数据，操作后删除函数和 APIG 路由。测试和生产默认使用此方式。
+1. `local_mount`：`baiying-server` 所在主机已经挂载同一个 NAS，直接读取本地挂载目录。
+2. `ephemeral_function`：每次操作创建一个挂载同一 NAS 的 veFaaS 临时函数，`baiying-server` 通过一次性 HMAC 密钥请求读取数据，操作后删除函数和 APIG 路由。测试和生产默认使用此方式。
 
 FileNAS OpenAPI 只管理文件系统、挂载点、权限组和配额，不提供读取任意 NAS 文件内容的 API。因此不能通过 `DescribeFileSystems` 等管理 API 下载服务数据。
 
@@ -480,7 +480,7 @@ share-deployment.persistence.manager.cleanup-attempts=${SHARE_DEPLOYMENT_PERSIST
 
 无需配置常驻函数 URL 或固定密钥。服务端每次生成独立随机密钥，并把唯一允许访问的 `shareId` 放入临时函数包。包强制通过 `direct_zip` 上传，密钥不进入 TOS、properties、Overmind 或数据库。下载操作创建并销毁一个临时函数，复用用户服务的 VPC、子网、安全组、NAS 和 APIG 配置。
 
-函数服务自身挂载 NAS 不等于 `lobsterai-server` 已经挂载。临时函数创建或执行失败时，接口可能返回业务错误 JSON；客户端必须校验 HTTP 状态、业务码和 ZIP 文件头，不能将错误 JSON 保存为 `.zip`。
+函数服务自身挂载 NAS 不等于 `baiying-server` 已经挂载。临时函数创建或执行失败时，接口可能返回业务错误 JSON；客户端必须校验 HTTP 状态、业务码和 ZIP 文件头，不能将错误 JSON 保存为 `.zip`。
 
 客户端相关 IPC/HTTP 请求必须使用长超时、展示不确定进度，并在整个过程禁用重复操作。每次操作都由服务端在 `finally` 中清理 APIG route、upstream 和函数，失败时默认重试清理 3 次。
 
@@ -624,7 +624,7 @@ V1 不做用户自定义额度。后续可按套餐或后台配置下发。
 必须覆盖：
 
 1. OpenAPI smoke test：调用真实 veFaaS `ListFunctions`，验证 AK/SK、签名、区域和 OpenAPI endpoint。
-2. NAS 功能测试：用 `/Users/admin/lobsterai/project/brotato-clone` 打包部署，写入排行榜，通过真实临时函数下载 ZIP，并验证 `preserve` 与 `replace` 两种重新部署路径。低层管理器的清理/恢复能力可继续用于测试数据回填，但客户端不暴露入口。
+2. NAS 功能测试：用 `/Users/admin/baiying/project/brotato-clone` 打包部署，写入排行榜，通过真实临时函数下载 ZIP，并验证 `preserve` 与 `replace` 两种重新部署路径。低层管理器的清理/恢复能力可继续用于测试数据回填，但客户端不暴露入口。
 3. 上传路径测试：brotato 默认走 TOS 上传。direct zip 只能用于小包验证，因为 zip base64 后会膨胀，较大的 JSON body 可能触发 OpenAPI request parsing error。
 
 推荐命令：
@@ -633,12 +633,12 @@ V1 不做用户自定义额度。后续可按套餐或后台配置下发。
 # 真实 OpenAPI smoke test，不创建云资源。
 SHARE_DEPLOYMENT_VOLCENGINE_API_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.lobsterai.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
+./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
 
 # brotato-clone 端到端 NAS 功能测试，会创建临时函数并在结束后清理。
 SHARE_DEPLOYMENT_BROTATO_PERSISTENCE_CLOUD_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.lobsterai.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoAndManageNasDataThroughEphemeralFunctions --rerun-tasks
+./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoAndManageNasDataThroughEphemeralFunctions --rerun-tasks
 ```
 
 测试通过条件：
@@ -654,7 +654,7 @@ SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessK
 
 ## 验收标准
 
-1. 对 `/Users/admin/lobsterai/project/brotato-clone` 这类项目，部署前默认开启 `保留服务数据`。
+1. 对 `/Users/admin/baiying/project/brotato-clone` 这类项目，部署前默认开启 `保留服务数据`。
 2. 点击 `查看保留内容` 后能看到带目录图标的 `data/`，不显示额外说明文字。
 3. 用户取消 `data/` 后，manifest 不包含 `persistence` 配置。
 4. 用户选择 `data/` 后，部署 response 返回 `persistence.enabled=true`。

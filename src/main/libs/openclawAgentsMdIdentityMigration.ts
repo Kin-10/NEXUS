@@ -9,9 +9,9 @@ import {
 } from '../../shared/agent/constants';
 
 const AGENTS_MD_FILENAME = 'AGENTS.md';
-const LOBSTERAI_MIGRATIONS_DIR = path.join('.lobsterai', 'migrations');
+const BAIYING_MIGRATIONS_DIR = path.join('.baiying', 'migrations');
 const LEGACY_IDENTITY_TITLE = '## Identity（必须遵守）';
-const MANAGED_MARKER = '<!-- LobsterAI managed: do not edit below this line -->';
+const MANAGED_MARKER = '<!-- BaiYing managed: do not edit below this line -->';
 const MAX_LEGACY_IDENTITY_BLOCK_CHARS = 20_000;
 
 const TEMPLATE_ANCHORS = [
@@ -171,7 +171,7 @@ const buildBackupPath = (workspaceDir: string, originalContent: string, now: Dat
   const hash = crypto.createHash('sha256').update(originalContent).digest('hex').slice(0, 12);
   return path.join(
     workspaceDir,
-    LOBSTERAI_MIGRATIONS_DIR,
+    BAIYING_MIGRATIONS_DIR,
     `agents-md-before-legacy-identity-cleanup-${formatBackupTimestamp(now)}-${hash}.md`,
   );
 };

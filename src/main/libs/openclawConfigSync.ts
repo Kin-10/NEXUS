@@ -34,10 +34,10 @@ import {
   resolveModelRuntimeProfile,
 } from '../../shared/providers';
 import {
-  LOBSTERAI_REQUEST_OPTIONS_VERSION,
-  type LobsterAIRequestCapability,
-  supportsLobsterAIRequestOptionsV1,
-} from '../../shared/providers/lobsterAIRequestOptions';
+  BAIYING_REQUEST_OPTIONS_VERSION,
+  type BaiYingRequestCapability,
+  supportsBaiYingRequestOptionsV1,
+} from '../../shared/providers/baiYingRequestOptions';
 import type { ModelThinkingConfig } from '../../shared/providers/modelThinking';
 import type { Agent, CoworkConfig, CoworkExecutionMode } from '../coworkStore';
 import type { DiscordInstanceConfig, IMSettings, TelegramInstanceConfig } from '../im/types';
@@ -127,12 +127,12 @@ export function omitPluginIndexManagedKeys(plugins: unknown): Record<string, unk
  * Also used by the runtime adapter's client-side timeout watchdog.
  */
 export const OPENCLAW_AGENT_TIMEOUT_SECONDS = 3600;
-export const OPENCLAW_LOBSTERAI_MODEL_TIMEOUT_SECONDS = 330;
+export const OPENCLAW_BAIYING_MODEL_TIMEOUT_SECONDS = 330;
 export const OPENCLAW_HEARTBEAT_EVERY_ENABLED = '1h';
 export const OPENCLAW_HEARTBEAT_EVERY_DISABLED = '0m';
 const DINGTALK_OPENCLAW_CHANNEL = 'dingtalk-connector';
 const OPENCLAW_MEMORY_CORE_PLUGIN_ID = 'memory-core';
-const OPENCLAW_MODEL_COMPAT_PLUGIN_ID = 'lobsterai-model-compat';
+const OPENCLAW_MODEL_COMPAT_PLUGIN_ID = 'baiying-model-compat';
 
 const asConfigRecord = (value: unknown): Record<string, unknown> | undefined => (
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -355,10 +355,10 @@ const MANAGED_SKILL_ENTRY_OVERRIDES: Record<string, { enabled: boolean }> = {
   'feishu-cron-reminder': {
     enabled: false,
   },
-  // LobsterAI configures MCP servers via openclaw.json mcp.servers field.
+  // BaiYing configures MCP servers via openclaw.json mcp.servers field.
   // The bundled mcporter skill tries to discover MCP servers via its own CLI,
   // finds none, and produces confusing "no MCP servers" output. Disable it so
-  // users are routed through LobsterAI's MCP layer instead.
+  // users are routed through BaiYing's MCP layer instead.
   'mcporter': {
     enabled: false,
   },
@@ -387,10 +387,10 @@ const MANAGED_WEB_SEARCH_POLICY_PROMPT = [
   '- Do not use `web_fetch` to fetch Google/Bing search result pages as a search substitute; use `browser` or an available search skill instead.',
   '- If you need search discovery, dynamic pages, or interactive browsing, use the built-in `browser` tool.',
   '- For login-required, JavaScript-heavy, or anti-automation pages, use `browser` instead of `web_fetch`.',
-  '- Only use the LobsterAI `web-search` skill when local command execution is available. Native channel sessions may deny `exec`, so prefer `browser` or `web_fetch` there.',
+  '- Only use the BaiYing `web-search` skill when local command execution is available. Native channel sessions may deny `exec`, so prefer `browser` or `web_fetch` there.',
   '- Exception: the `imap-smtp-email` skill must always use `exec` to run its scripts, even in native channel sessions. Do not skip it because of exec restrictions.',
   '',
-  'Do not claim you searched the web unless you actually used `browser`, `web_fetch`, or the LobsterAI `web-search` skill.',
+  'Do not claim you searched the web unless you actually used `browser`, `web_fetch`, or the BaiYing `web-search` skill.',
 ].join('\n');
 
 const BUNDLED_BROWSER_PLUGIN_ID = 'browser';
@@ -398,9 +398,9 @@ const BUNDLED_BROWSER_PLUGIN_ID = 'browser';
 const MANAGED_BROWSER_POLICY_PROMPT = [
   '## Browser Policy',
   '',
-  'LobsterAI does not support sandbox browser execution in this version.',
+  'BaiYing does not support sandbox browser execution in this version.',
   '- For every `browser` tool call, set `target="host"` explicitly.',
-  '- Do not use `target="sandbox"` or `target="node"` unless a future LobsterAI version explicitly enables it.',
+  '- Do not use `target="sandbox"` or `target="node"` unless a future BaiYing version explicitly enables it.',
   '- If a browser call fails because the sandbox browser is unavailable, retry the same action with `target="host"`.',
 ].join('\n');
 
@@ -431,9 +431,9 @@ const MANAGED_EXEC_SAFETY_PROMPT = [
  * embedding in AGENTS.md so the model knows where to create new skills.
  *
  * Example outputs:
- *   macOS:   ~/Library/Application Support/LobsterAI/SKILLs
- *   Windows: ~/AppData/Roaming/LobsterAI/SKILLs
- *   Linux:   ~/.config/LobsterAI/SKILLs
+ *   macOS:   ~/Library/Application Support/BaiYing/SKILLs
+ *   Windows: ~/AppData/Roaming/BaiYing/SKILLs
+ *   Linux:   ~/.config/BaiYing/SKILLs
  */
 const resolveSkillCreationPath = (): string => {
   const skillsDir = path.join(app.getPath('userData'), 'SKILLs');
@@ -448,7 +448,7 @@ const resolveSkillCreationPath = (): string => {
 const buildManagedSkillCreationPrompt = (skillsDirPath: string): string => [
   '## Skill Creation',
   '',
-  'When the user asks you to create a new skill, you MUST place it under the LobsterAI skills directory:',
+  'When the user asks you to create a new skill, you MUST place it under the BaiYing skills directory:',
   '',
   `  ${skillsDirPath}/<skill-name>/SKILL.md`,
   '',
@@ -477,7 +477,7 @@ const MANAGED_DELIVERABLE_LINKS_PROMPT = [
 const MANAGED_MATH_FORMAT_PROMPT = [
   '## Math Formula Formatting',
   '',
-  'The LobsterAI app chat renders TeX formulas with KaTeX.',
+  'The BaiYing app chat renders TeX formulas with KaTeX.',
   '',
   '- In app chat sessions, write every mathematical formula or expression in TeX:',
   '  `$...$` inline, and `$$` on its own lines around display blocks.',
@@ -939,8 +939,8 @@ const resolveModelMaxTokensForOpenClaw = (options: {
 };
 
 const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
-  [ProviderName.LobsteraiServer]: {
-    providerId: OpenClawProviderId.LobsteraiServer,
+  [ProviderName.BaiyingServer]: {
+    providerId: OpenClawProviderId.BaiyingServer,
     resolveApi: ({ apiType, baseURL }) => mapApiTypeToOpenClawApi(apiType, undefined, baseURL),
     normalizeBaseUrl: url => {
       const proxyPort = getOpenClawTokenProxyPort();
@@ -1087,7 +1087,7 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
   },
 
   [ProviderName.Copilot]: {
-    providerId: OpenClawProviderId.LobsteraiCopilot,
+    providerId: OpenClawProviderId.BaiyingCopilot,
     resolveApi: () => OpenClawApiConst.OpenAICompletions as OpenClawTransportApi,
     normalizeBaseUrl: stripChatCompletionsSuffix,
     resolveRuntimeBaseUrl: () => {
@@ -1173,7 +1173,7 @@ export const buildProviderSelection = (options: {
     : options.modelId;
 
   const providerModelName = resolveModelDisplayName(sessionModelId, options.modelName);
-  const runtimeProfileSource = providerName === ProviderName.LobsteraiServer
+  const runtimeProfileSource = providerName === ProviderName.BaiyingServer
     ? ModelRuntimeProfileSource.Server
     : CUSTOM_PROVIDER_NAME_PATTERN.test(providerName)
       ? ModelRuntimeProfileSource.Custom
@@ -1266,8 +1266,8 @@ export const buildProviderSelection = (options: {
       api,
       ...(apiKey ? { apiKey } : {}),
       auth,
-      ...(descriptor.providerId === OpenClawProviderId.LobsteraiServer
-        ? { timeoutSeconds: OPENCLAW_LOBSTERAI_MODEL_TIMEOUT_SECONDS }
+      ...(descriptor.providerId === OpenClawProviderId.BaiyingServer
+        ? { timeoutSeconds: OPENCLAW_BAIYING_MODEL_TIMEOUT_SECONDS }
         : {}),
       ...(request ? { request } : {}),
       models: [
@@ -1319,8 +1319,8 @@ export type OpenClawProviderModelSource = {
 
 /**
  * Classifies an OpenClaw provider id (as reported in gateway error metadata)
- * back to the LobsterAI Settings entry it was generated from, so runtime
- * errors can tell the user whether the failing model is the LobsterAI plan,
+ * back to the BaiYing Settings entry it was generated from, so runtime
+ * errors can tell the user whether the failing model is the BaiYing plan,
  * a vendor coding plan, or their own custom provider.
  */
 export function resolveModelSourceForOpenClawProvider(
@@ -1329,10 +1329,10 @@ export function resolveModelSourceForOpenClawProvider(
   const providerId = openclawProviderId?.trim();
   if (!providerId) return undefined;
 
-  if (providerId === OpenClawProviderId.LobsteraiServer) {
+  if (providerId === OpenClawProviderId.BaiyingServer) {
     return {
-      source: CoworkErrorModelSource.LobsterAIPlan,
-      providerName: ProviderName.LobsteraiServer,
+      source: CoworkErrorModelSource.BaiYingPlan,
+      providerName: ProviderName.BaiyingServer,
     };
   }
 
@@ -1553,21 +1553,21 @@ const collectCompatibilityOwnerProfile = (
 };
 
 type OpenClawThinkingProfile = ModelThinkingConfig & {
-  requestOptionsVersion?: typeof LOBSTERAI_REQUEST_OPTIONS_VERSION;
+  requestOptionsVersion?: typeof BAIYING_REQUEST_OPTIONS_VERSION;
 };
 
 const collectThinkingProfile = (
   profiles: Record<string, OpenClawThinkingProfile>,
   selection: OpenClawProviderSelection,
   thinkingConfig: ModelThinkingConfig | undefined,
-  requestCapabilities?: readonly LobsterAIRequestCapability[],
+  requestCapabilities?: readonly BaiYingRequestCapability[],
 ): void => {
   if (!thinkingConfig) return;
   profiles[selection.primaryModel] = {
     options: thinkingConfig.options.map(option => ({ ...option })),
     defaultLevel: thinkingConfig.defaultLevel,
-    ...(supportsLobsterAIRequestOptionsV1(requestCapabilities)
-      ? { requestOptionsVersion: LOBSTERAI_REQUEST_OPTIONS_VERSION }
+    ...(supportsBaiYingRequestOptionsV1(requestCapabilities)
+      ? { requestOptionsVersion: BAIYING_REQUEST_OPTIONS_VERSION }
       : {}),
   };
 };
@@ -1920,7 +1920,7 @@ export class OpenClawConfigSync {
    * read against a "last known good" fingerprint.  One of the checks is
    * `hasConfigMeta` — if the previous good config had `meta` but the current
    * one doesn't, an anomaly is logged and the file content is persisted as a
-   * `.clobbered.<timestamp>` snapshot.  Because LobsterAI writes openclaw.json
+   * `.clobbered.<timestamp>` snapshot.  Because BaiYing writes openclaw.json
    * directly (bypassing OpenClaw's own `writeConfigFile` which calls
    * `stampConfigVersion`), we need to stamp `meta` ourselves.
    */
@@ -2091,7 +2091,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
         apiResolution.providerMetadata?.requestCapabilities,
       );
       primaryModel = providerSelection.primaryModel;
-      if (providerSelection.providerId === OpenClawProviderId.LobsteraiServer) {
+      if (providerSelection.providerId === OpenClawProviderId.BaiyingServer) {
         addExplicitContextCacheDefault(perModelCustomDefaults, providerSelection, {
           modelId,
         });
@@ -2168,7 +2168,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
 
       const proxyPort = getOpenClawTokenProxyPort();
       if (proxyPort) {
-        const providerId = OpenClawProviderId.LobsteraiServer;
+        const providerId = OpenClawProviderId.BaiyingServer;
 
         if (serverModels.length > 0 || !allProvidersMap[providerId]) {
           const firstServerModelId = serverModels[0]?.modelId || modelId;
@@ -2177,7 +2177,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
             baseURL: `http://127.0.0.1:${proxyPort}/v1`,
             modelId: firstServerModelId,
             apiType: normalizeServerApiType(serverModels[0]?.apiFormat),
-            providerName: ProviderName.LobsteraiServer,
+            providerName: ProviderName.BaiyingServer,
             supportsImage: serverModels[0]?.supportsImage,
             supportsVideo: serverModels[0]?.supportsVideo,
             supportsThinking: serverModels[0]?.supportsThinking,
@@ -2194,15 +2194,15 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
             serverModels[0]?.thinkingConfig,
             serverModels[0]?.requestCapabilities,
           );
-          const lobsteraiProviderConfig =
+          const baiyingProviderConfig =
             allProvidersMap[providerId] ?? {
               ...firstServerSel.providerConfig,
               models: [] as typeof firstServerSel.providerConfig.models,
             };
-          allProvidersMap[providerId] = lobsteraiProviderConfig;
+          allProvidersMap[providerId] = baiyingProviderConfig;
 
           if (serverModels.length === 0) {
-            upsertProviderModel(lobsteraiProviderConfig, firstServerSel.providerConfig.models[0]);
+            upsertProviderModel(baiyingProviderConfig, firstServerSel.providerConfig.models[0]);
           } else {
             for (const sm of serverModels) {
               const serverApiType = normalizeServerApiType(sm.apiFormat);
@@ -2211,7 +2211,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
                 baseURL: `http://127.0.0.1:${proxyPort}/v1`,
                 modelId: sm.modelId,
                 apiType: serverApiType,
-                providerName: ProviderName.LobsteraiServer,
+                providerName: ProviderName.BaiyingServer,
                 supportsImage: sm.supportsImage,
                 supportsVideo: sm.supportsVideo,
                 supportsThinking: sm.supportsThinking,
@@ -2233,7 +2233,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
                 provider: sm.provider,
                 explicitContextCache: sm.explicitContextCache,
               });
-              upsertProviderModel(lobsteraiProviderConfig, serverSel.providerConfig.models[0]);
+              upsertProviderModel(baiyingProviderConfig, serverSel.providerConfig.models[0]);
             }
           }
         }
@@ -2605,7 +2605,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
               ...(p.config && Object.keys(p.config).length > 0 ? { config: p.config } : {}),
             }]),
           ),
-          // Disable acpx (ACP agent runtime) — LobsterAI does not use ACP and
+          // Disable acpx (ACP agent runtime) — BaiYing does not use ACP and
           // the embedded probe adds ~11s to gateway startup while it waits for
           // a process that always fails.  See openclaw/openclaw#62588.
           'acpx': { enabled: false },
@@ -2913,7 +2913,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
         clientSecret: `\${${secretEnvVar}}`,
         // v3.5.x schema: dmPolicy/groupPolicy/allowFrom are valid; sessionTimeout/
         // separateSessionByConversation/groupSessionScope/sharedMemoryAcrossConversations/
-        // gatewayBaseUrl were LobsterAI-specific and are not in the plugin schema.
+        // gatewayBaseUrl were BaiYing-specific and are not in the plugin schema.
         dmPolicy: inst.dmPolicy || 'open',
         allowFrom: (() => {
           const ids = inst.allowFrom?.length ? [...inst.allowFrom] : [];
@@ -3501,7 +3501,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
   }
 
   /**
-   * Ensures exec-approvals.json under the LobsterAI-managed openclaw home has
+   * Ensures exec-approvals.json under the BaiYing-managed openclaw home has
    * security=full + ask=off so the gateway never triggers approval-pending
    * for any command. The path must match the OPENCLAW_HOME env var passed to
    * the gateway process so both sides read/write the same file.
@@ -3642,7 +3642,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
           }
         }
 
-        if (!/^agent:[^:]+:lobsterai:/.test(sessionKey)) {
+        if (!/^agent:[^:]+:baiying:/.test(sessionKey)) {
           continue;
         }
 
@@ -3705,13 +3705,13 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
   }
 
   /**
-   * Resolve the LobsterAI SKILLs installation directory for OpenClaw's
+   * Resolve the BaiYing SKILLs installation directory for OpenClaw's
    * `skills.load.extraDirs` configuration.
    *
    * Cross-platform paths (via Electron app.getPath('userData')):
-   *   macOS:   ~/Library/Application Support/LobsterAI/SKILLs
-   *   Windows: %APPDATA%/LobsterAI/SKILLs
-   *   Linux:   ~/.config/LobsterAI/SKILLs
+   *   macOS:   ~/Library/Application Support/BaiYing/SKILLs
+   *   Windows: %APPDATA%/BaiYing/SKILLs
+   *   Linux:   ~/.config/BaiYing/SKILLs
    */
   private resolveSkillsExtraDirs(): string[] {
     const userDataSkillsDir = path.join(app.getPath('userData'), 'SKILLs');
@@ -3734,8 +3734,8 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
   }
 
   /**
-   * Build per-skill `enabled` overrides from the LobsterAI SkillManager state,
-   * so that skills disabled in the LobsterAI UI are also hidden from OpenClaw.
+   * Build per-skill `enabled` overrides from the BaiYing SkillManager state,
+   * so that skills disabled in the BaiYing UI are also hidden from OpenClaw.
    *
    * Entries must be keyed by the skill's frontmatter `name`, not the
    * directory-derived `id`: OpenClaw resolves these overrides through
@@ -3762,10 +3762,10 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
    * Sync AGENTS.md to the OpenClaw workspace directory.
    * Embeds the skills routing prompt and system prompt so that OpenClaw's
    * native channel connectors (DingTalk, Feishu, etc.) can discover and
-   * invoke LobsterAI skills.
+   * invoke BaiYing skills.
    */
   private syncAgentsMd(workspaceDir: string, coworkConfig: CoworkConfig): string | undefined {
-    const MARKER = '<!-- LobsterAI managed: do not edit below this line -->';
+    const MARKER = '<!-- BaiYing managed: do not edit below this line -->';
 
     try {
       ensureDir(workspaceDir);

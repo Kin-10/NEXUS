@@ -31,11 +31,11 @@ describe('OpenClaw extension manifests', () => {
     expect(readContractTools('ask-user-question')).toEqual(['AskUserQuestion']);
   });
 
-  test('declares LobsterAI media generation and skin agent tool contracts', () => {
+  test('declares BaiYing media generation and skin agent tool contracts', () => {
     expect(readContractTools('lobster-media-generation')).toEqual([
-      'lobsterai_image_generate',
-      'lobsterai_video_generate',
-      'lobsterai_skin_manage',
+      'baiying_image_generate',
+      'baiying_video_generate',
+      'baiying_skin_manage',
     ]);
   });
 
@@ -43,12 +43,12 @@ describe('OpenClaw extension manifests', () => {
     expect(readPackageOpenClawExtensions('mcp-bridge')).toEqual(['./index.ts']);
     expect(readPackageOpenClawExtensions('ask-user-question')).toEqual(['./index.ts']);
     expect(readPackageOpenClawExtensions('lobster-media-generation')).toEqual(['./index.ts']);
-    expect(readPackageOpenClawExtensions('lobsterai-model-compat')).toEqual(['./index.ts']);
+    expect(readPackageOpenClawExtensions('baiying-model-compat')).toEqual(['./index.ts']);
   });
 
-  test('declares a strict allowlisted model-profile config for LobsterAI compatibility', () => {
-    const manifest = readManifest('lobsterai-model-compat');
-    expect(manifest.providers).toEqual(['lobsterai-model-compat']);
+  test('declares a strict allowlisted model-profile config for BaiYing compatibility', () => {
+    const manifest = readManifest('baiying-model-compat');
+    expect(manifest.providers).toEqual(['baiying-model-compat']);
     expect(manifest.activation).toBeUndefined();
     expect(manifest.configSchema).toEqual({
       type: 'object',

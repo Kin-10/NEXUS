@@ -2,31 +2,31 @@
 
 > 状态：Implemented（客户端与 OpenClaw runtime 已完成；套餐服务端门禁和真实密钥 E2E 为发版前置）
 >
-> 适用范围：LobsterAI 自定义模型、内置 Moonshot Provider、套餐模型与 OpenClaw runtime
+> 适用范围：BaiYing 自定义模型、内置 Moonshot Provider、套餐模型与 OpenClaw runtime
 >
-> 目标版本：本次 LobsterAI 发版
+> 目标版本：本次 BaiYing 发版
 
 ## 1. 概述
 
 ### 1.1 问题背景
 
-LobsterAI 当前版本为 `2026.7.17`，固定使用 OpenClaw `v2026.6.1`。这一版本早于 OpenClaw 对 Kimi K3 的原生适配，当前代码和运行配置还存在以下问题：
+BaiYing 当前版本为 `2026.7.17`，固定使用 OpenClaw `v2026.6.1`。这一版本早于 OpenClaw 对 Kimi K3 的原生适配，当前代码和运行配置还存在以下问题：
 
 1. 内置 Moonshot 模型目录只有 Kimi K2.6 / K2.5，没有 Kimi K3。
-2. 用户可以手工添加 `kimi-k3`，但 LobsterAI 只能向 OpenClaw 写出通用模型字段，无法表达 K3 官方要求的 `thinkingLevelMap` 和 `compat`。
+2. 用户可以手工添加 `kimi-k3`，但 BaiYing 只能向 OpenClaw 写出通用模型字段，无法表达 K3 官方要求的 `thinkingLevelMap` 和 `compat`。
 3. 自定义参数 `customParams` 会进入请求体 `extra_body`；它不能替代 OpenClaw transport metadata，也不应被用来粘贴官方 `compat` 配置。
-4. OpenClaw 新版的原生 K3 wrapper 只对 `moonshot/kimi-k3` 生效，自定义 Provider 和 `lobsterai-server/<套餐模型 ID>` 不会自动命中。
+4. OpenClaw 新版的原生 K3 wrapper 只对 `moonshot/kimi-k3` 生效，自定义 Provider 和 `baiying-server/<套餐模型 ID>` 不会自动命中。
 5. 套餐模型虽然由服务端返回 `provider`、`apiFormat`、图片和思考能力等元数据，但没有受控的模型兼容档案、工具调用能力或 Agent 上线状态。
 6. 当前运行适配器只特殊处理 `toolUse` 和 `error`。K3 现场运行达到 `stopReason=length`、`output=8192` 后，仍可能被标记为完成。
 
 现场轨迹同时证明问题不是“OpenClaw 完全不认识 K3 工具调用”：
 
 - 直连 `moonshot/kimi-k3` 时，旧 runtime 曾成功解析并执行一个结构化 `read` 工具调用，但续轮在 8192 token 处截断，没有继续写文件。
-- 套餐路径 `lobsterai-server/kimi-k3-YoudaoInner` 加载了 105 个工具，但最终没有任何结构化工具事件，只输出了声称“已落盘”的普通文本。
+- 套餐路径 `baiying-server/kimi-k3-YoudaoInner` 加载了 105 个工具，但最终没有任何结构化工具事件，只输出了声称“已落盘”的普通文本。
 
 因此，本次支持不能只是在模型列表中新增一个 ID，也不能只升级 OpenClaw。需要同时补齐：
 
-1. LobsterAI 模型元数据与配置同步；
+1. BaiYing 模型元数据与配置同步；
 2. OpenClaw K3 请求、流式响应和多轮回放；
 3. 自定义 Provider 与套餐 Provider 的兼容路由；
 4. 截断、流异常和套餐灰度的失败保护。
@@ -45,12 +45,12 @@ OpenClaw 在 2026 年 7 月合并了以下关键修复：
 
 当前 `v2026.6.1` 不包含这些修复。最新版 `v2026.7.2-beta.3` 已包含它们，但截至本文创建时还不是稳定版。
 
-#### B. LobsterAI Provider 身份与兼容档案缺口
+#### B. BaiYing Provider 身份与兼容档案缺口
 
-OpenClaw 的原生 K3 逻辑按 `provider=moonshot` 和 `model=kimi-k3` 匹配。LobsterAI 套餐模型必须继续使用：
+OpenClaw 的原生 K3 逻辑按 `provider=moonshot` 和 `model=kimi-k3` 匹配。BaiYing 套餐模型必须继续使用：
 
 ```text
-lobsterai-server/<服务端原始 modelId>
+baiying-server/<服务端原始 modelId>
 ```
 
 用户自定义 Provider 必须继续使用：
@@ -67,12 +67,12 @@ custom_N/<用户原始 modelId>
 
 1. 内置 Moonshot Provider 默认提供 `kimi-k3`，并按 Kimi 官方 OpenClaw 配置运行。
 2. 用户在任一内置或自定义 Provider 中配置 K3 时，可以获得完整的 K3 transport 与工具调用兼容。
-3. LobsterAI 套餐 K3 保持 `lobsterai-server/<原始 modelId>`，同时应用与直连一致的 K3 协议规则。
+3. BaiYing 套餐 K3 保持 `baiying-server/<原始 modelId>`，同时应用与直连一致的 K3 协议规则。
 4. 自定义 API Key、套餐 Token、Provider Base URL 和模型 ID 始终保持各自路由，不发生隐式切换。
 5. 工具调用后的 `reasoning_content`、`tool_calls` 和 `tool_call_id` 能正确保存并回放。
 6. `stopReason=length`、异常 SSE EOF 和缺失终止包不得显示为任务成功。
 7. 套餐 K3 通过 `agenticReady` 进行服务端灰度和紧急关闭。
-8. 不影响 `lobsterai-server` 下 GPT、Claude、Qwen、GLM 等非 K3 模型。
+8. 不影响 `baiying-server` 下 GPT、Claude、Qwen、GLM 等非 K3 模型。
 9. 新增和修改的 TypeScript 文件通过 changed-file ESLint、目标 Vitest、Electron 编译与打包验证。
 
 ### 1.4 非目标
@@ -88,7 +88,7 @@ custom_N/<用户原始 modelId>
 7. 模型设置页面整体重做。
 8. 根据模型自然语言判断“是否撒谎说已落盘”。
 9. Provider 间自动 failover。
-10. 允许用户或 LobsterAI 服务端远程注入任意 OpenClaw `compat` JSON。
+10. 允许用户或 BaiYing 服务端远程注入任意 OpenClaw `compat` JSON。
 
 ## 2. 核心设计决策
 
@@ -100,11 +100,11 @@ custom_N/<用户原始 modelId>
 |---|---|---|
 | 内置 Provider（含 Moonshot） | `<原 providerId>/<原始 modelId>` | 规范化后精确 `kimi-k3` 自动解析 |
 | 用户自定义 Provider | `custom_N/<原始 modelId>` | 仅规范化后精确 `kimi-k3` 自动解析 |
-| LobsterAI 套餐 | `lobsterai-server/<服务端原始 modelId>` | 仅接受服务端下发的受控枚举 |
+| BaiYing 套餐 | `baiying-server/<服务端原始 modelId>` | 仅接受服务端下发的受控枚举 |
 
 禁止：
 
-- 把 `custom_N` 或 `lobsterai-server` 重命名为 `moonshot`；
+- 把 `custom_N` 或 `baiying-server` 重命名为 `moonshot`；
 - 把套餐模型 ID 改成 `kimi-k3`；
 - 根据 `modelId.includes('kimi-k3')` 模糊匹配套餐模型；
 - 在用户 API Key 与套餐 Token 之间隐式切路；
@@ -187,13 +187,13 @@ Tag ancestry 已核对：`v2026.7.2-beta.3` 包含 `#109202` 的 landed commit
 新增本地 OpenClaw extension：
 
 ```text
-lobsterai-model-compat
+baiying-model-compat
 ```
 
 职责：
 
-1. 按完整 `provider/model` 精确读取 LobsterAI 生成的受控 profile 映射。
-2. 注册受控 API owner `lobsterai-model-compat`，并委托真实的 model-level
+1. 按完整 `provider/model` 精确读取 BaiYing 生成的受控 profile 映射。
+2. 注册受控 API owner `baiying-model-compat`，并委托真实的 model-level
    transport。
 3. 仅对映射为 `moonshot-kimi-k3` 的模型应用 K3 wrapper 和 replay policy。
 4. 对同一 Provider 下其他模型完全 passthrough。
@@ -218,7 +218,7 @@ lobsterai-model-compat
 - **And** 使用官方 `https://api.moonshot.cn/v1` OpenAI Chat Completions 路由
 - **And** 未启用 Kimi Coding Plan
 - **When** 用户在模型列表中选择 Kimi K3
-- **Then** LobsterAI 使用 `moonshot/kimi-k3`
+- **Then** BaiYing 使用 `moonshot/kimi-k3`
 - **And** 生成完整 K3 profile
 - **And** 使用用户自己的 Moonshot API Key
 - **And** 可以完成真实工具调用和多轮回放
@@ -226,7 +226,7 @@ lobsterai-model-compat
 ### 场景 2：已有用户升级后不出现重复 K3
 
 - **Given** 用户已经手工添加 `kimi-k3`、`Kimi_K3` 或 `kimi.k3`
-- **When** LobsterAI 执行本次模型目录迁移
+- **When** BaiYing 执行本次模型目录迁移
 - **Then** 不再添加第二个等价 K3
 - **And** 保留用户原有名称、排序、自定义参数和选择状态
 - **And** 为该模型解析正确的 K3 profile
@@ -244,7 +244,7 @@ lobsterai-model-compat
 
 - **Given** 用户代理把 K3 命名为 `my-kimi-prod`
 - **When** 保存并使用该模型
-- **Then** LobsterAI 按普通 OpenAI-compatible 模型处理
+- **Then** BaiYing 按普通 OpenAI-compatible 模型处理
 - **And** 不提供手动强制启用 K3 profile 的入口
 - **And** 同 Provider 下其他模型保持原行为
 
@@ -255,7 +255,7 @@ lobsterai-model-compat
 - **And** `supportsToolCalling=true`
 - **And** `agenticReady=true`
 - **When** 用户选择套餐 K3
-- **Then** 模型引用保持 `lobsterai-server/<服务端原始 modelId>`
+- **Then** 模型引用保持 `baiying-server/<服务端原始 modelId>`
 - **And** 请求继续经过套餐 Token Proxy
 - **And** K3 兼容插件应用协议适配
 - **And** 不影响其他套餐模型
@@ -280,7 +280,7 @@ lobsterai-model-compat
 
 - **Given** K3 返回部分文本或 thinking
 - **And** `stopReason=length`
-- **When** LobsterAI 收到最终事件
+- **When** BaiYing 收到最终事件
 - **Then** 保留已有部分文本和已完成工具结果
 - **And** 不显示“任务已完成”
 - **And** 会话进入可恢复的不完整状态
@@ -336,7 +336,7 @@ trim -> lowercase -> 删除非字母数字字符
 其中：
 
 - `supportsToolCalling` 表示供应商声明的能力；
-- `agenticReady` 表示 LobsterAI 已完成真实端到端验证；
+- `agenticReady` 表示 BaiYing 已完成真实端到端验证；
 - 两者不能合并为同一个字段。
 
 ### FR-4：内置 Moonshot 目录与迁移
@@ -427,10 +427,10 @@ agents.defaults.models.<ref>.params.extra_body
 
 OpenClaw `v2026.6.1` 的 TypeScript model type 虽然已有
 `thinkingLevelMap`，严格 Zod `ModelDefinitionSchema` 尚未接受该字段；仅修改
-LobsterAI 输出会导致 Gateway 拒绝配置。本次版本 patch 必须同时补齐：
+BaiYing 输出会导致 Gateway 拒绝配置。本次版本 patch 必须同时补齐：
 
 1. `thinkingLevelMap` 的配置 Schema；
-2. `lobsterai-model-compat` 的 `ModelApi` 枚举与 Schema；
+2. `baiying-model-compat` 的 `ModelApi` 枚举与 Schema；
 3. config parse、public schema 和 Gateway startup 测试。
 
 生成配置在构建测试中通过不等于可发布；打包后的 Gateway 必须真实加载这份
@@ -438,13 +438,13 @@ LobsterAI 输出会导致 Gateway 拒绝配置。本次版本 patch 必须同时
 
 ### FR-8：兼容插件必须按精确模型守卫
 
-`lobsterai-model-compat` 使用完整模型引用映射：
+`baiying-model-compat` 使用完整模型引用映射：
 
 ```json
 {
   "modelProfiles": {
     "custom_0/my-kimi-prod": "moonshot-kimi-k3",
-    "lobsterai-server/kimi-k3-YoudaoInner": "moonshot-kimi-k3"
+    "baiying-server/kimi-k3-YoudaoInner": "moonshot-kimi-k3"
   }
 }
 ```
@@ -507,7 +507,7 @@ LobsterAI 输出会导致 Gateway 拒绝配置。本次版本 patch 必须同时
 
 新增集中终止原因常量并处理：
 
-| 终止原因 | LobsterAI 行为 |
+| 终止原因 | BaiYing 行为 |
 |---|---|
 | 正常 stop / 完整结束 | `completed` |
 | `toolUse` / `tool_use` | 保持 `running`，等待工具及续轮 |
@@ -623,7 +623,7 @@ updateServerModelMetadata()
           └─ metadata 变化触发 config sync
           │
           ▼
-lobsterai-server provider + modelProfiles
+baiying-server provider + modelProfiles
 ```
 
 ### 5.3 内置 Moonshot K3 与配置迁移
@@ -689,12 +689,12 @@ UI 行为：
 
 ```ts
 export const OpenClawApiOwner = {
-  LobsterAIModelCompat: 'lobsterai-model-compat',
+  BaiYingModelCompat: 'baiying-model-compat',
 } as const;
 
 type OpenClawProviderApi =
   | OpenClawBuiltInProviderApi
-  | typeof OpenClawApiOwner.LobsterAIModelCompat;
+  | typeof OpenClawApiOwner.BaiYingModelCompat;
 
 type OpenClawModelCompat = {
   maxTokensField?: 'max_tokens';
@@ -707,7 +707,7 @@ type OpenClawModelCompat = {
 type OpenClawThinkingLevelMap = Record<string, string | null>;
 ```
 
-`OpenClawApiOwner.LobsterAIModelCompat` 必须同时存在于 LobsterAI 类型和当前
+`OpenClawApiOwner.BaiYingModelCompat` 必须同时存在于 BaiYing 类型和当前
 OpenClaw runtime 的 `MODEL_APIS` / Zod Schema 中，并由契约测试保证两侧一致。
 不能只用 TypeScript 类型断言绕过 runtime 校验。
 
@@ -764,9 +764,9 @@ OpenClaw runtime 的 `MODEL_APIS` / Zod Schema 中，并由契约测试保证两
 {
   "models": {
     "providers": {
-      "lobsterai-server": {
+      "baiying-server": {
         "baseUrl": "http://127.0.0.1:<proxy-port>/v1",
-        "api": "lobsterai-model-compat",
+        "api": "baiying-model-compat",
         "models": [{
           "id": "kimi-k3-YoudaoInner",
           "name": "Kimi K3",
@@ -804,11 +804,11 @@ OpenClaw runtime 的 `MODEL_APIS` / Zod Schema 中，并由契约测试保证两
   },
   "plugins": {
     "entries": {
-      "lobsterai-model-compat": {
+      "baiying-model-compat": {
         "enabled": true,
         "config": {
           "modelProfiles": {
-            "lobsterai-server/kimi-k3-YoudaoInner": "moonshot-kimi-k3"
+            "baiying-server/kimi-k3-YoudaoInner": "moonshot-kimi-k3"
           }
         }
       }
@@ -819,11 +819,11 @@ OpenClaw runtime 的 `MODEL_APIS` / Zod Schema 中，并由契约测试保证两
 
 当一个自定义或套餐 Provider 同时包含 K3 和其他模型时：
 
-1. Provider 层 `api` 可以使用 `lobsterai-model-compat` 作为插件 owner。
+1. Provider 层 `api` 可以使用 `baiying-model-compat` 作为插件 owner。
 2. 每个 model 层继续保留真实 transport `api`。
 3. 插件只修改 `modelProfiles` 中精确命中的模型。
 4. 非 K3 模型的最终请求和回放必须与改动前一致。
-5. LobsterAI 本地类型只加入该受控 owner 常量，不能把
+5. BaiYing 本地类型只加入该受控 owner 常量，不能把
    `OpenClawProviderApi` 放宽为任意字符串。
 
 Provider merge 使用与输入顺序无关的确定性规则：
@@ -839,12 +839,12 @@ Provider merge 使用与输入顺序无关的确定性规则：
 
 `plugins.allow` 同步加入该本地扩展，且保留现有 allowlist 语义。
 
-### 5.7 `lobsterai-model-compat` 本地扩展
+### 5.7 `baiying-model-compat` 本地扩展
 
 新增目录：
 
 ```text
-openclaw-extensions/lobsterai-model-compat/
+openclaw-extensions/baiying-model-compat/
 ├── index.ts
 ├── openclaw.plugin.json
 └── package.json
@@ -862,9 +862,9 @@ manifest：
 
 runtime：
 
-1. 注册 ID 为 `lobsterai-model-compat` 的 API owner。
+1. 注册 ID 为 `baiying-model-compat` 的 API owner。
 2. owner 根据 model-level `api` 委托真实 transport，禁止递归委托自身。
-3. 为 `lobsterai-server` 提供 hook alias。
+3. 为 `baiying-server` 提供 hook alias。
 4. 为配置中使用本插件作为 `api` owner 的 `custom_N` 提供同样 hook。
 5. 从插件配置建立不可变精确映射。
 6. 对 K3 调用上游共享 wrapper 和 replay policy。
@@ -881,7 +881,7 @@ scripts/patches/v2026.6.1/
 ├── openclaw-kimi-k3-support.patch
 ├── openclaw-openai-compatible-replay-errors.patch
 ├── openclaw-repeated-tool-call-id.patch
-└── openclaw-lobsterai-model-compat-api.patch
+└── openclaw-baiying-model-compat-api.patch
 ```
 
 要求：
@@ -889,7 +889,7 @@ scripts/patches/v2026.6.1/
 1. 语义对齐上游已合并 PR，不盲目复制冲突代码。
 2. `openclaw-kimi-k3-support.patch` 必须包含 K3 wrapper、replay、官方 profile
    所需字段及 `thinkingLevelMap` Zod Schema；不能只加入模型目录。
-3. `openclaw-lobsterai-model-compat-api.patch` 只加入受控 API owner、必要的
+3. `openclaw-baiying-model-compat-api.patch` 只加入受控 API owner、必要的
    plugin-sdk 导出和配置校验，不放宽为任意 API 字符串。
 4. 每个 patch 有对应的 patch decision / behavior test。
 5. OpenClaw targeted tests 至少覆盖：
@@ -900,7 +900,7 @@ scripts/patches/v2026.6.1/
 6. `apply-openclaw-patches.cjs` 可重复执行。
 7. sibling OpenClaw checkout 中不能保留未转成 patch 的手工修改。
 8. 升级到包含修复的稳定版本时删除已上游化 patch，并保留
-   LobsterAI-specific API owner patch，直到上游提供等价的动态插件 API
+   BaiYing-specific API owner patch，直到上游提供等价的动态插件 API
    Schema。
 
 尚未合并的 `#110138` 不作为必选依赖。只有真实测试证明 K3 因 `anyOf` / `oneOf` 等 Schema 返回明确错误时，才增加 K3 profile 限定的最小规范化，并满足：
@@ -916,7 +916,7 @@ scripts/patches/v2026.6.1/
 
 - 套餐鉴权和刷新；
 - 目标 URL 路由；
-- 向 LobsterAI 套餐服务附加客户端版本和
+- 向 BaiYing 套餐服务附加客户端版本和
   `kimi-k3-agentic-v1` capability header；
 - 请求和流式响应透明转发；
 - 现有 SSE 终包与异常 EOF 检查；
@@ -1019,14 +1019,14 @@ capability header 由本地固定常量生成，不从 OpenClaw 请求或用户
 
 ### 7.3 本地 OpenClaw 扩展与 Patch
 
-- `openclaw-extensions/lobsterai-model-compat/index.ts`（新增）
-- `openclaw-extensions/lobsterai-model-compat/openclaw.plugin.json`（新增）
-- `openclaw-extensions/lobsterai-model-compat/package.json`（新增）
-- `tests/openclaw-extensions/lobsterai-model-compat/`（新增）
+- `openclaw-extensions/baiying-model-compat/index.ts`（新增）
+- `openclaw-extensions/baiying-model-compat/openclaw.plugin.json`（新增）
+- `openclaw-extensions/baiying-model-compat/package.json`（新增）
+- `tests/openclaw-extensions/baiying-model-compat/`（新增）
 - `scripts/patches/<openclaw.version>/openclaw-kimi-k3-support.patch`（按版本决定）
 - `scripts/patches/<openclaw.version>/openclaw-openai-compatible-replay-errors.patch`（按版本决定）
 - `scripts/patches/<openclaw.version>/openclaw-repeated-tool-call-id.patch`（按版本决定）
-- `scripts/patches/<openclaw.version>/openclaw-lobsterai-model-compat-api.patch`（按版本决定）
+- `scripts/patches/<openclaw.version>/openclaw-baiying-model-compat-api.patch`（按版本决定）
 - `src/main/libs/openclawPatches/kimiK3PatchDecisions.test.ts`（新增）
 
 ### 7.4 服务端契约
@@ -1124,7 +1124,7 @@ capability header 由本地固定常量生成，不从 OpenClaw 请求或用户
 1. `moonshot/kimi-k3` 完整配置。
 2. `custom_0/kimi-k3` 保持 Provider/model ID。
 3. `custom_0/<alias>` 不产生 profile 映射。
-4. `lobsterai-server/<套餐 ID>` 保持原始 ID 和 loopback Token Proxy。
+4. `baiying-server/<套餐 ID>` 保持原始 ID 和 loopback Token Proxy。
 5. 套餐 K3 和普通套餐模型共存。
 6. 自定义 K3 与套餐 K3 同时存在且不串 Base URL/API Key。
 7. `agents.defaults.models` 完整 allowlist 保持现有行为。
@@ -1211,7 +1211,7 @@ OpenClaw patch 自带的 targeted tests 也必须通过。
 3. `moonshot/kimi-k3` 使用用户 Moonshot Key 完成真实文件创建、修改和回读。
 4. `custom_N/kimi-k3` 使用用户自定义 Key/Base URL 完成相同任务。
 5. 自定义别名不应用 K3 profile，模型编辑框不存在手动兼容模式。
-6. 套餐 K3 使用 `lobsterai-server/<原始 modelId>` 完成相同任务。
+6. 套餐 K3 使用 `baiying-server/<原始 modelId>` 完成相同任务。
 7. 自定义和套餐路径并存时不串 API Key、Token、Base URL 或模型引用。
 8. 三条路径均正确回放 `reasoning_content + tool_calls + tool_call_id`。
 9. 单工具和约 105 工具场景均产生结构化工具调用。
@@ -1260,7 +1260,7 @@ OpenClaw patch 自带的 targeted tests 也必须通过。
 ### 11.6 OpenClaw 严格 Schema
 
 `v2026.6.1` 的 runtime type 与严格 Zod Schema 不完全一致，且 `ModelApi` 是
-固定枚举。若只修改 LobsterAI 配置生成，Gateway 会在启动阶段拒绝配置。因此
+固定枚举。若只修改 BaiYing 配置生成，Gateway 会在启动阶段拒绝配置。因此
 “打包 Gateway 真实加载并 ready”是硬性门禁，不能用 TypeScript 编译或配置
 快照测试替代。
 

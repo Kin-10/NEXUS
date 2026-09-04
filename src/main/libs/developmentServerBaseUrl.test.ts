@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { resolveDevelopmentServerBaseUrl } from './developmentServerBaseUrl';
 
-const defaultBaseUrl = 'https://lobsterai-server.inner.youdao.com';
+const defaultBaseUrl = 'https://baiying-server.inner.youdao.com';
 
 describe('developmentServerBaseUrl', () => {
   test('uses a literal loopback server with an explicit port in development', () => {

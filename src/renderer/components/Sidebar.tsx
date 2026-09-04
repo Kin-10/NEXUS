@@ -784,12 +784,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="draggable sidebar-header-drag flex h-[76px] shrink-0 flex-col items-center justify-center gap-1">
             <img
               src="logo.svg"
-              alt="LobsterAI"
+              alt="BaiYing"
               draggable={false}
               className="h-8 w-8 rounded-xl object-contain"
             />
             <span className="max-w-[52px] truncate text-center text-[9px] font-semibold leading-3 text-foreground">
-              LobsterAI
+              BaiYing
             </span>
           </div>
           <div className="non-draggable flex min-h-0 flex-1 flex-col items-center gap-2 py-2">

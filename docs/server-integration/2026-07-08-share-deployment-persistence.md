@@ -110,7 +110,7 @@ The server includes gated Volcengine tests:
 
 - `SHARE_DEPLOYMENT_VOLCENGINE_API_TEST=true` runs a real `ListFunctions` API smoke test.
 - `SHARE_DEPLOYMENT_PERSISTENCE_CLOUD_INTEGRATION_TEST=true` creates a minimal persistent veFaaS function with NAS/VPC, verifies HTTP access, and deletes it unless `SHARE_DEPLOYMENT_CLOUD_TEST_KEEP_FUNCTION=true`.
-- `SHARE_DEPLOYMENT_BROTATO_PERSISTENCE_CLOUD_TEST=true` packages `/Users/admin/lobsterai/project/brotato-clone`, uploads through TOS by default, creates a persistent veFaaS function, writes a leaderboard entry, redeploys a second function with the same share data root, and verifies the second function can read the persisted leaderboard from NAS.
+- `SHARE_DEPLOYMENT_BROTATO_PERSISTENCE_CLOUD_TEST=true` packages `/Users/admin/baiying/project/brotato-clone`, uploads through TOS by default, creates a persistent veFaaS function, writes a leaderboard entry, redeploys a second function with the same share data root, and verifies the second function can read the persisted leaderboard from NAS.
 
 Credentials must be provided through environment variables, not checked into code:
 
@@ -131,12 +131,12 @@ Recommended local commands:
 # Real Volcengine OpenAPI smoke test. No cloud resource is created.
 SHARE_DEPLOYMENT_VOLCENGINE_API_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.lobsterai.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
+./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
 
 # End-to-end NAS functional test with brotato-clone.
 SHARE_DEPLOYMENT_BROTATO_PERSISTENCE_CLOUD_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.lobsterai.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoProjectWithNasPersistenceAndRedeployKeepsLeaderboard --rerun-tasks
+./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoProjectWithNasPersistenceAndRedeployKeepsLeaderboard --rerun-tasks
 ```
 
 Use TOS upload for the brotato test unless the package is known to be small enough for direct zip JSON upload. A 6 MiB zip becomes roughly 8 MiB after base64 encoding and may hit OpenAPI request parsing limits.

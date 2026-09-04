@@ -2,7 +2,7 @@
 
 ## Change Summary
 
-`lobsterai-server` 将桌面客户端可见的产品口径由“企业版 / Enterprise”统一为“团队版 / Team”。本次不修改认证、额度、媒体权益或企业账号上下文的协议，只调整终端展示值和会透传给用户的业务提示。
+`baiying-server` 将桌面客户端可见的产品口径由“企业版 / Enterprise”统一为“团队版 / Team”。本次不修改认证、额度、媒体权益或企业账号上下文的协议，只调整终端展示值和会透传给用户的业务提示。
 
 ## Endpoint Details
 
@@ -41,11 +41,11 @@
 
 ## Auth Requirements
 
-认证方式不变。桌面客户端继续使用 JWT Bearer Token；账号上下文仍通过现有 Enterprise Account IPC 和 `X-LobsterAI-Enterprise-Id` 请求头传递。
+认证方式不变。桌面客户端继续使用 JWT Bearer Token；账号上下文仍通过现有 Enterprise Account IPC 和 `X-BaiYing-Enterprise-Id` 请求头传递。
 
 ## Notes & Caveats
 
 - 新旧 Server 都可被当前客户端识别；旧 Server 仍可能返回 `企业版`，新 Server 返回 `团队版`。
 - 不得根据中文或英文消息判断额度、成员身份或媒体权益，继续使用错误码、reason 和既有枚举。
 - 建议先发布客户端兼容版本，再发布 Server 展示值，降低版本交叉期间旧品牌暴露的概率。
-- `lobsterai-admin` 和服务端内部技术域仍使用 `enterprise`，不在本次品牌替换范围内。
+- `baiying-admin` 和服务端内部技术域仍使用 `enterprise`，不在本次品牌替换范围内。

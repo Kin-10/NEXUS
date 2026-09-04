@@ -3,14 +3,14 @@
 > 创建日期：2026-07-21\
 > 最近更新：2026-08-26（页面访问排行与 favicon 统计纠偏）\
 > 状态：纠偏代码与修复脚本已完成；测试库已修复，待服务端发布与生产数据修复\
-> 涉及仓库：`LobsterAI`、`lobsterai-server`\
-> 产品入口：LobsterAI 左侧栏「站点」
+> 涉及仓库：`BaiYing`、`baiying-server`\
+> 产品入口：BaiYing 左侧栏「站点」
 
 ## 1. 概述
 
 ### 1.1 背景
 
-LobsterAI 已经能够从 Artifact 面板把本地服务部署为动态 Node 服务或静态站点，也已有分享访问控制、服务状态、治理和基础访问统计能力。但是这些面向普通用户的能力分散在 Artifact 分享弹窗中，缺少一个统一入口来回答以下问题：
+BaiYing 已经能够从 Artifact 面板把本地服务部署为动态 Node 服务或静态站点，也已有分享访问控制、服务状态、治理和基础访问统计能力。但是这些面向普通用户的能力分散在 Artifact 分享弹窗中，缺少一个统一入口来回答以下问题：
 
 1. 我部署过哪些站点？
 2. 站点当前能否访问，部署是否正常？
@@ -19,7 +19,7 @@ LobsterAI 已经能够从 Artifact 面板把本地服务部署为动态 Node 服
 5. 最近有多少页面浏览量（PV）和独立访客（UV）？哪些页面访问最多？
 6. 当前套餐还能同时上线多少个站点，达到上限后如何安全腾出名额？
 
-本功能在 LobsterAI 左侧栏增加「站点」入口，提供空态创建引导、站点列表、站点详情、访问设置和访问分析。整体交互参考需求附图，但视觉实现必须沿用当前 LobsterAI 的管理页框架、主题变量、侧栏折叠行为和中英文国际化体系。
+本功能在 BaiYing 左侧栏增加「站点」入口，提供空态创建引导、站点列表、站点详情、访问设置和访问分析。整体交互参考需求附图，但视觉实现必须沿用当前 BaiYing 的管理页框架、主题变量、侧栏折叠行为和中英文国际化体系。
 
 ### 1.2 代码与测试库现状核对
 
@@ -90,7 +90,7 @@ HTML、图片、SVG、Markdown、Mermaid、Office/PDF 等普通 Artifact 分享�
 
 ### 1.4 目标
 
-1. 在 LobsterAI 左侧栏提供稳定的「站点」入口。
+1. 在 BaiYing 左侧栏提供稳定的「站点」入口。
 2. 展示当前用户的动态服务和静态站点，每个站点只显示一条，不把历史部署版本重复列出。
 3. 清晰区分访问状态、部署状态和访问方式。
 4. 支持修改站点名称、访问方式、停止/恢复访问，以及在停止后永久删除站点。
@@ -112,7 +112,7 @@ HTML、图片、SVG、Markdown、Mermaid、Office/PDF 等普通 Artifact 分享�
 | SPA 客户端路由埋点           | 首期统计服务端实际收到并成功返回 HTML 的文档请求；纯前端路由切换不额外计 PV                              |
 | 私有成员/组织 ACL            | 首期仍为公开访问或分享码访问                                                                             |
 | 自动生成站点截图             | 首期所有站点统一使用默认服务图标，不根据站点名称、类型或 `siteId` 生成不同占位图；后续再评估安全截图服务 |
-| 管理员后台改造               | 当前版本不修改 `lobsterai-admin`，也不新增管理员站点分析页面或接口                                       |
+| 管理员后台改造               | 当前版本不修改 `baiying-admin`，也不新增管理员站点分析页面或接口                                       |
 
 ## 2. 用户与产品场景
 
@@ -126,7 +126,7 @@ HTML、图片、SVG、Markdown、Mermaid、Office/PDF 等普通 Artifact 分享�
 
 **Given** 用户在站点空态或页面头部。  
 **When** 用户点击「活动邀请函」。  
-**Then** LobsterAI 创建一个新 Cowork 任务，切回对话页，将本地化后的活动邀请函建站提示词填入输入框并聚焦；不自动发送消息。
+**Then** BaiYing 创建一个新 Cowork 任务，切回对话页，将本地化后的活动邀请函建站提示词填入输入框并聚焦；不自动发送消息。
 
 ### 场景 3：查看所有站点与状态
 
@@ -195,7 +195,7 @@ HTML、图片、SVG、Markdown、Mermaid、Office/PDF 等普通 Artifact 分享�
 - `/favicon.ico` 和 `/_lobster_share/*` 等保留资源或平台内部路径；
 - 分享码输入页和验证接口；
 - 管理员预览；
-- 健康检查和 LobsterAI 内部路径；
+- 健康检查和 BaiYing 内部路径；
 - `HEAD`、写请求和失败响应；
 - 已识别的搜索引擎/监控机器人；
 - 站点关闭页、部署中页、失败页等平台状态页。
@@ -503,10 +503,10 @@ export const SiteStatus = {
 
 ```mermaid
 flowchart LR
-  U["LobsterAI 用户"] --> V["SitesView"]
+  U["BaiYing 用户"] --> V["SitesView"]
   V --> IPC["Site IPC / preload"]
   IPC --> MC["主进程 siteClient\n携带 Electron JWT"]
-  MC --> API["lobsterai-server /api/sites"]
+  MC --> API["baiying-server /api/sites"]
 
   API --> SS["SiteService"]
   SS --> HS["html_shares\n稳定站点与访问控制"]
@@ -1202,20 +1202,20 @@ siteQuotaConfigUnavailable
 建议新增模块：
 
 ```text
-src/main/java/com/youdao/lobsterai/web/controller/SiteController.java
-src/main/java/com/youdao/lobsterai/service/site/SiteService.java
-src/main/java/com/youdao/lobsterai/service/site/SiteQuotaService.java
-src/main/java/com/youdao/lobsterai/service/site/SiteQuotaReservationCleanupJob.java
-src/main/java/com/youdao/lobsterai/service/site/SiteAnalyticsService.java
-src/main/java/com/youdao/lobsterai/service/site/SiteAnalyticsAsyncService.java
-src/main/java/com/youdao/lobsterai/service/site/SitePageViewClassifier.java
-src/main/java/com/youdao/lobsterai/mapper/SiteMapper.java
-src/main/java/com/youdao/lobsterai/mapper/SiteQuotaMapper.java
-src/main/java/com/youdao/lobsterai/mapper/SiteAnalyticsMapper.java
+src/main/java/com/youdao/baiying/web/controller/SiteController.java
+src/main/java/com/youdao/baiying/service/site/SiteService.java
+src/main/java/com/youdao/baiying/service/site/SiteQuotaService.java
+src/main/java/com/youdao/baiying/service/site/SiteQuotaReservationCleanupJob.java
+src/main/java/com/youdao/baiying/service/site/SiteAnalyticsService.java
+src/main/java/com/youdao/baiying/service/site/SiteAnalyticsAsyncService.java
+src/main/java/com/youdao/baiying/service/site/SitePageViewClassifier.java
+src/main/java/com/youdao/baiying/mapper/SiteMapper.java
+src/main/java/com/youdao/baiying/mapper/SiteQuotaMapper.java
+src/main/java/com/youdao/baiying/mapper/SiteAnalyticsMapper.java
 src/main/resources/mapper/SiteMapper.xml
 src/main/resources/mapper/SiteQuotaMapper.xml
 src/main/resources/mapper/SiteAnalyticsMapper.xml
-src/main/java/com/youdao/lobsterai/entity/dto/site/*
+src/main/java/com/youdao/baiying/entity/dto/site/*
 ```
 
 现有大文件只做边界接入：
@@ -1523,7 +1523,7 @@ normalized_path = '/favicon.ico' 的剩余行数 = 0
 
 ## 15. 涉及文件
 
-### 15.1 LobsterAI
+### 15.1 BaiYing
 
 | 文件/目录                                                          | 变更                                                                                                       |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -1544,7 +1544,7 @@ normalized_path = '/favicon.ico' 的剩余行数 = 0
 | `src/main/preload.ts`                                              | 暴露窄接口                                                                                                 |
 | `src/renderer/types/electron.d.ts`                                 | preload 类型                                                                                               |
 
-### 15.2 lobsterai-server
+### 15.2 baiying-server
 
 | 文件/目录                                          | 变更                                                         |
 | -------------------------------------------------- | ------------------------------------------------------------ |
@@ -1577,7 +1577,7 @@ normalized_path = '/favicon.ico' 的剩余行数 = 0
 服务端完成新 API 后，按服务器仓库要求在：
 
 ```text
-LobsterAI/docs/server-integration/2026-07-22-sites-management-analytics-api.md
+BaiYing/docs/server-integration/2026-07-22-sites-management-analytics-api.md
 ```
 
 生成 Electron 集成说明。

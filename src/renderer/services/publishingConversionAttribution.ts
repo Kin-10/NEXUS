@@ -16,9 +16,9 @@ export const PublishingSubscriptionObservationConfidence = {
 } as const;
 
 const PUBLISHING_CONVERSION_ATTRIBUTION_STORAGE_KEY =
-  'lobsterai_publishing_conversion_attribution_v2';
+  'baiying_publishing_conversion_attribution_v2';
 const LEGACY_PUBLISHING_CONVERSION_ATTRIBUTION_STORAGE_KEY =
-  'lobsterai_publishing_conversion_attribution_v1';
+  'baiying_publishing_conversion_attribution_v1';
 const PUBLISHING_CONVERSION_ATTRIBUTION_WINDOW_MS = 7 * 24 * 60 * 60 * 1_000;
 
 export interface PublishingConversionAttributionInput {

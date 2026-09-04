@@ -2,7 +2,7 @@
 
 > 状态：Implemented
 >
-> 适用范围：LobsterAI Electron 未打包开发态
+> 适用范围：BaiYing Electron 未打包开发态
 
 ## 1. 概述
 
@@ -12,7 +12,7 @@
 
 ### 1.2 目标
 
-1. 使用唯一的 `LOBSTER_SERVER_BASE_URL` 覆盖全部 LobsterAI server API。
+1. 使用唯一的 `LOBSTER_SERVER_BASE_URL` 覆盖全部 BaiYing server API。
 2. 只允许受信任的本机开发服务作为目标。
 3. 打包版本始终使用生产配置，不受环境变量注入影响。
 4. 不改变任何生产请求路径和默认 endpoint。

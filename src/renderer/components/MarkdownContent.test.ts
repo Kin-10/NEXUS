@@ -165,8 +165,8 @@ test('latex math renders through katex in markdown output', () => {
 });
 
 test('kit links are treated as safe internal links', () => {
-  expect(safeUrlTransform('kit://design@lobsterai-kits')).toBe('kit://design@lobsterai-kits');
-  expect(isInternalHref('kit://design@lobsterai-kits')).toBe(true);
+  expect(safeUrlTransform('kit://design@baiying-kits')).toBe('kit://design@baiying-kits');
+  expect(isInternalHref('kit://design@baiying-kits')).toBe(true);
 });
 
 test('unsafe markdown protocols are still stripped', () => {

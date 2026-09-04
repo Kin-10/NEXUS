@@ -4,7 +4,7 @@
 >
 > 最近更新：2026-08-26
 >
-> 涉及仓库：`LobsterAI`、`lobsterai-server`、`lobsterai-admin`
+> 涉及仓库：`BaiYing`、`baiying-server`、`baiying-admin`
 >
 > 数据库兼容：MySQL 5.7
 >
@@ -23,8 +23,8 @@
 
 ## 发布顺序
 
-1. 先发布包含云端列表、分享 owner analytics、永久删除接口、deleted 查询隔离和 lineage 修复的 `lobsterai-server`；旧 `DELETE /api/html-shares/{shareId}` 必须继续表示停止分享；
-2. 发布 `lobsterai-admin`，确认默认列表不显示 deleted，显式“已删除”筛选只能查看最小审计信息；
+1. 先发布包含云端列表、分享 owner analytics、永久删除接口、deleted 查询隔离和 lineage 修复的 `baiying-server`；旧 `DELETE /api/html-shares/{shareId}` 必须继续表示停止分享；
+2. 发布 `baiying-admin`，确认默认列表不显示 deleted，显式“已删除”筛选只能查看最小审计信息；
 3. 在测试环境使用个人账号和企业账号分别校验 owner 隔离、游标、站点状态、分享分析和永久删除数据库语义；
 4. 确认仓库外 NOS 消费者，或另行实现兼容 MySQL 5.7 的可靠消费者，并验证真实对象删除、重试、积压年龄和告警；该步骤未完成时不得正式开放永久删除入口；
 5. 发布带资料库入口的 Electron 客户端；旧客户端继续使用现有分享与站点接口，不受影响；

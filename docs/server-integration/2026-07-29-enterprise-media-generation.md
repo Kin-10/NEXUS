@@ -4,7 +4,7 @@
 
 ## Change Summary
 
-`lobsterai-server` 的图片、视频生成链路现在识别 JWT 中绑定的企业账号上下文。有效企业的普通成员和超级管理员都拥有媒体生成权益；任务提交前预占成员月度额度和企业积分池，成功后按实际消耗结算，明确失败后释放预占。
+`baiying-server` 的图片、视频生成链路现在识别 JWT 中绑定的企业账号上下文。有效企业的普通成员和超级管理员都拥有媒体生成权益；任务提交前预占成员月度额度和企业积分池，成功后按实际消耗结算，明确失败后释放预占。
 
 本次契约的关键变化：
 
@@ -142,8 +142,8 @@
 Authorization: Bearer <accessToken>
 Content-Type: application/json
 Idempotency-Key: <UUID>
-X-LobsterAI-Account-Mode: enterprise
-X-LobsterAI-Enterprise-Id: 1001
+X-BaiYing-Account-Mode: enterprise
+X-BaiYing-Enterprise-Id: 1001
 ```
 
 请求体保持原结构，不增加 `enterpriseId`：
@@ -233,7 +233,7 @@ X-LobsterAI-Enterprise-Id: 1001
 
 - 生成、任务、取消和额度接口使用 Electron JWT Bearer 认证。
 - `accountMode=enterprise` 和 `enterpriseId` 必须来自服务端签名的 access token；refresh token 换发后必须保持同一账号上下文。
-- `X-LobsterAI-Account-Mode`、`X-LobsterAI-Enterprise-Id` 只用于上下文传递和一致性检查，不能覆盖 token，也不能切换扣费企业。
+- `X-BaiYing-Account-Mode`、`X-BaiYing-Enterprise-Id` 只用于上下文传递和一致性检查，不能覆盖 token，也不能切换扣费企业。
 - 请求体、query string 和普通 header 中不得新增可选择 `enterpriseId` 或 `memberId` 的参数。
 - 普通成员和 `super_admin` 使用相同媒体权益与计费链路。
 

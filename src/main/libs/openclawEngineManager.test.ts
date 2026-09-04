@@ -51,7 +51,7 @@ describe('buildOpenClawGatewayExecArgv', () => {
 describe('isOpenClawConfigStartupFailure', () => {
   test('matches OpenClaw config validation failures', () => {
     expect(isOpenClawConfigStartupFailure([
-      '[stderr] Error: Invalid config at /Users/test/Library/Application Support/LobsterAI/openclaw/state/openclaw.json.',
+      '[stderr] Error: Invalid config at /Users/test/Library/Application Support/BaiYing/openclaw/state/openclaw.json.',
       '[stderr] - models.providers.openai.api: invalid config: unsupported value',
     ].join('\n'))).toBe(true);
   });

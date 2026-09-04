@@ -6,7 +6,7 @@
 >
 > 分类：功能
 >
-> 适用范围：LobsterAI 桌面端 Cowork 主会话详情页
+> 适用范围：BaiYing 桌面端 Cowork 主会话详情页
 >
 > 视觉基准：用户提供的 Codex 桌面端当前任务搜索截图；搜索浮层内部布局与视觉层级以该截图为准
 
@@ -14,7 +14,7 @@
 
 ### 1.1 问题/背景
 
-LobsterAI 当前把 `CommandOrControl+F` 配置为全局“搜索任务”快捷键。用户触发后，
+BaiYing 当前把 `CommandOrControl+F` 配置为全局“搜索任务”快捷键。用户触发后，
 `App.tsx` 派发 `CoworkUiEvent.ShortcutSearch`，`Sidebar.tsx` 响应该事件并打开
 `CoworkSearchModal`，用于跨会话搜索历史任务。
 
@@ -251,7 +251,7 @@ interface CoworkSession {
 #### 4.1.1 视觉还原原则
 
 用户提供的 Codex 搜索效果是本功能的 UI source of truth。实现时不得改成普通标题栏输入框、
-单行搜索条、居中弹窗或 LobsterAI 现有“搜索任务”胶囊样式。允许根据 LobsterAI 主题 token 做
+单行搜索条、居中弹窗或 BaiYing 现有“搜索任务”胶囊样式。允许根据 BaiYing 主题 token 做
 明暗主题适配，但以下结构、相对位置和视觉层级必须保持：
 
 1. 整体是贴近窗口右上角的独立两行浮层卡片，而不是撑高整条会话标题栏；
@@ -286,7 +286,7 @@ interface CoworkSession {
 
 #### 4.1.2 截图对应关系
 
-| Codex 截图中的元素 | LobsterAI 实现要求 |
+| Codex 截图中的元素 | BaiYing 实现要求 |
 | --- | --- |
 | 右上角两行浮层 | 锚定 Cowork 会话标题栏右侧，替换 ArtifactPanel 标题栏操作区 |
 | 左侧放大镜 | 使用项目现有同风格线性搜索图标，尺寸约 14–16px |

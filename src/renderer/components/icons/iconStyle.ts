@@ -1,6 +1,6 @@
 import type { IconProps, IconWeight } from '@/components/icons/iconParkCompat';
 
-/** Shared Lucide styling for LobsterAI chrome icons. */
+/** Shared Lucide styling for BaiYing chrome icons. */
 export const IconWeightRegular: IconWeight = 'regular';
 export const IconWeightFill: IconWeight = 'fill';
 

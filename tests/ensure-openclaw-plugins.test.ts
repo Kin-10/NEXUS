@@ -95,7 +95,7 @@ describe('ensure-openclaw-plugins', () => {
   });
 
   test('passes a spaced npm pack destination as one argument without a shell', () => {
-    const outputDir = path.join(os.tmpdir(), 'Lobster AI plugin staging');
+    const outputDir = path.join(os.tmpdir(), 'BaiYing plugin staging');
     const invocation = buildNpmPackInvocation(
       '@scope/openclaw-plugin@1.2.3',
       'https://registry.example.test',

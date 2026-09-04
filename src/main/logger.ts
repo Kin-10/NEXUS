@@ -3,9 +3,9 @@
  * Intercepts console.* methods and writes to file + console simultaneously.
  *
  * Log file locations:
- *   macOS:   ~/Library/Logs/LobsterAI/main-YYYY-MM-DD.log
- *   Windows: %USERPROFILE%\AppData\Roaming\LobsterAI\logs\main-YYYY-MM-DD.log
- *   Linux:   ~/.config/LobsterAI/logs/main-YYYY-MM-DD.log
+ *   macOS:   ~/Library/Logs/BaiYing/main-YYYY-MM-DD.log
+ *   Windows: %USERPROFILE%\AppData\Roaming\BaiYing\logs\main-YYYY-MM-DD.log
+ *   Linux:   ~/.config/BaiYing/logs/main-YYYY-MM-DD.log
  *
  * Rotation policy:
  *   - Daily log files (one file per calendar day)
@@ -112,7 +112,7 @@ export function initLogger(): void {
 
   // Log startup marker
   log.info('='.repeat(60));
-  log.info(`LobsterAI started (${process.platform} ${process.arch}), logLevel=${mainLogLevel}`);
+  log.info(`BaiYing started (${process.platform} ${process.arch}), logLevel=${mainLogLevel}`);
   log.info('='.repeat(60));
 }
 

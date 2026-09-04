@@ -106,7 +106,7 @@ vi.mock('./openclawLocalExtensions', () => ({
   findThirdPartyExtensionsDir: () => null,
   hasBundledOpenClawExtension: (id: string) => (
     id !== 'qwen-portal-auth'
-    && (id !== 'lobsterai-model-compat' || mockRuntimeState.modelCompatPluginAvailable)
+    && (id !== 'baiying-model-compat' || mockRuntimeState.modelCompatPluginAvailable)
   ),
   hasRuntimeBundledOpenClawExtension: (id: string) => id === 'xai',
   resolveOpenClawExtensionPluginId: (id: string) => {
@@ -227,7 +227,7 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(config.skills.entries).not.toHaveProperty('remotion');
   });
 
-  test('writes OpenClaw config fields required by LobsterAI patches', async () => {
+  test('writes OpenClaw config fields required by BaiYing patches', async () => {
     const legacyWorkingDirectory = path.join(tmpDir, 'legacy-working-directory');
     const mainAgentWorkingDirectory = path.join(tmpDir, 'main-agent-working-directory');
 
@@ -265,7 +265,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       ],
     });
 
-    const result = sync.sync('lobsterai-patch-dependent-fields');
+    const result = sync.sync('baiying-patch-dependent-fields');
     expect(result.ok).toBe(true);
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -738,7 +738,7 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(fs.existsSync(path.join(writerWorkspace, 'USER.md'))).toBe(false);
   });
 
-  test('merges all server models into existing lobsterai provider and updates image input', async () => {
+  test('merges all server models into existing baiying provider and updates image input', async () => {
     mockRuntimeState.proxyPort = 56646;
     mockRuntimeState.serverModels = [
       {
@@ -801,13 +801,13 @@ describe('OpenClawConfigSync runtime config output', () => {
     ];
     mockRuntimeState.rawApiConfig = {
       config: {
-        baseURL: 'https://lobsterai-server.youdao.com/api/proxy/v1',
+        baseURL: 'https://baiying-server.youdao.com/api/proxy/v1',
         apiKey: 'access-token',
         model: 'qwen3.5-plus-YoudaoInner',
         apiType: 'openai',
       },
       providerMetadata: {
-        providerName: 'lobsterai-server',
+        providerName: 'baiying-server',
         codingPlanEnabled: false,
         supportsImage: false,
         modelName: 'Qwen3.5 Plus',
@@ -856,7 +856,7 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(result.ok).toBe(true);
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    const provider = config.models.providers['lobsterai-server'];
+    const provider = config.models.providers['baiying-server'];
     expect(provider.baseUrl).toBe('http://127.0.0.1:56646/v1');
     expect(provider.apiKey).toBe('${LOBSTER_PROXY_TOKEN}');
     expect(JSON.stringify(config)).not.toContain('LOBSTER_APIKEY_SERVER');
@@ -907,31 +907,31 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(JSON.stringify(provider.models)).not.toContain('cacheControlFormat');
     expect(JSON.stringify(provider.models)).not.toContain('supportsLongCacheRetention');
     expect(config.agents.defaults.models).toEqual(expect.objectContaining({
-      'lobsterai-server/qwen3.5-plus-YoudaoInner': {
+      'baiying-server/qwen3.5-plus-YoudaoInner': {
         params: {
           cacheRetention: 'short',
           contextCacheProvider: 'dashscope',
           contextCacheMode: 'explicit',
         },
       },
-      'lobsterai-server/qwen3.6-plus-YoudaoInner': {
+      'baiying-server/qwen3.6-plus-YoudaoInner': {
         params: {
           cacheRetention: 'short',
           contextCacheProvider: 'dashscope',
           contextCacheMode: 'explicit',
         },
       },
-      'lobsterai-server/claude-sonnet-4-6-YoudaoInner': {
+      'baiying-server/claude-sonnet-4-6-YoudaoInner': {
         params: {
           cacheRetention: 'short',
         },
       },
-      'lobsterai-server/claude-opus-4-YoudaoInner': {
+      'baiying-server/claude-opus-4-YoudaoInner': {
         params: {
           cacheRetention: 'short',
         },
       },
-      'lobsterai-server/claude-sonnet-4-6': {
+      'baiying-server/claude-sonnet-4-6': {
         params: {
           cacheRetention: 'short',
           contextCacheProvider: 'anthropic-compatible',
@@ -946,13 +946,13 @@ describe('OpenClawConfigSync runtime config output', () => {
     mockRuntimeState.serverModels = [];
     mockRuntimeState.rawApiConfig = {
       config: {
-        baseURL: 'https://lobsterai-server.youdao.com/api/proxy/v1',
+        baseURL: 'https://baiying-server.youdao.com/api/proxy/v1',
         apiKey: 'access-token',
         model: 'claude-sonnet-4-6',
         apiType: 'openai',
       },
       providerMetadata: {
-        providerName: 'lobsterai-server',
+        providerName: 'baiying-server',
         codingPlanEnabled: false,
         supportsImage: true,
         supportsThinking: true,
@@ -966,14 +966,14 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(result.ok).toBe(true);
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    expect(config.models.providers['lobsterai-server'].models).toEqual(expect.arrayContaining([
+    expect(config.models.providers['baiying-server'].models).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: 'claude-sonnet-4-6',
         api: 'openai-completions',
       }),
     ]));
     expect(config.agents.defaults.models).toEqual(expect.objectContaining({
-      'lobsterai-server/claude-sonnet-4-6': {
+      'baiying-server/claude-sonnet-4-6': {
         params: {
           cacheRetention: 'short',
           contextCacheProvider: 'anthropic-compatible',
@@ -1217,15 +1217,15 @@ describe('OpenClawConfigSync runtime config output', () => {
         },
       },
       'deepseek/deepseek-v4-pro': {},
-      'lobsterai-server/MiniMax-M2.7-YoudaoInner': {},
-      'lobsterai-server/kimi-k2.6-inhouse-ZhiYun': {},
+      'baiying-server/MiniMax-M2.7-YoudaoInner': {},
+      'baiying-server/kimi-k2.6-inhouse-ZhiYun': {},
     }));
     expect(Object.keys(modelDefaults)).toEqual(expect.arrayContaining([
       'deepseek/deepseek-v4-flash',
       'deepseek/deepseek-v4-pro',
       'custom_0/custom-thinking-model',
-      'lobsterai-server/MiniMax-M2.7-YoudaoInner',
-      'lobsterai-server/kimi-k2.6-inhouse-ZhiYun',
+      'baiying-server/MiniMax-M2.7-YoudaoInner',
+      'baiying-server/kimi-k2.6-inhouse-ZhiYun',
     ]));
   });
 
@@ -1295,14 +1295,14 @@ describe('OpenClawConfigSync runtime config output', () => {
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     const customProvider = config.models.providers.custom_0;
-    const serverProvider = config.models.providers['lobsterai-server'];
+    const serverProvider = config.models.providers['baiying-server'];
     const customK3 = customProvider.models.find((model: { id: string }) =>
       model.id === 'kimi-k3');
     const serverK3 = serverProvider.models.find((model: { id: string }) =>
       model.id === 'kimi-k3-package');
 
-    expect(customProvider.api).toBe('lobsterai-model-compat');
-    expect(serverProvider.api).toBe('lobsterai-model-compat');
+    expect(customProvider.api).toBe('baiying-model-compat');
+    expect(serverProvider.api).toBe('baiying-model-compat');
     expect(customProvider.models).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: 'plain-model', api: 'openai-completions' }),
       expect.objectContaining({ id: 'kimi-k3', api: 'openai-completions' }),
@@ -1350,16 +1350,16 @@ describe('OpenClawConfigSync runtime config output', () => {
         },
       },
     });
-    expect(config.plugins.entries['lobsterai-model-compat']).toEqual({
+    expect(config.plugins.entries['baiying-model-compat']).toEqual({
       enabled: true,
       config: {
         modelProfiles: {
           'custom_0/kimi-k3': 'moonshot-kimi-k3',
-          'lobsterai-server/kimi-k3-package': 'moonshot-kimi-k3',
+          'baiying-server/kimi-k3-package': 'moonshot-kimi-k3',
         },
       },
     });
-    expect(config.plugins.allow).toContain('lobsterai-model-compat');
+    expect(config.plugins.allow).toContain('baiying-model-compat');
 
     const unchangedSync = sync.sync('kimi-k3-compat-unchanged');
     expect(unchangedSync.ok).toBe(true);
@@ -1387,14 +1387,14 @@ describe('OpenClawConfigSync runtime config output', () => {
       models: {
         providers: {
           custom_0: {
-            api: 'lobsterai-model-compat',
+            api: 'baiying-model-compat',
             models: [{ id: 'plain-model', api: 'openai-completions' }],
           },
         },
       },
       plugins: {
         entries: {
-          'lobsterai-model-compat': {
+          'baiying-model-compat': {
             enabled: true,
             config: {
               modelProfiles: {
@@ -1412,7 +1412,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       ...compatConfig,
       plugins: {
         entries: {
-          'lobsterai-model-compat': {
+          'baiying-model-compat': {
             enabled: true,
             config: {
               modelProfiles: {
@@ -1428,7 +1428,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       models: {
         providers: {
           custom_0: {
-            api: 'lobsterai-model-compat',
+            api: 'baiying-model-compat',
             models: [
               { id: 'another-plain-model', api: 'openai-completions' },
               { id: 'plain-model', api: 'openai-completions' },
@@ -1441,12 +1441,12 @@ describe('OpenClawConfigSync runtime config output', () => {
       ...compatConfig,
       plugins: {
         entries: {
-          'lobsterai-model-compat': {
+          'baiying-model-compat': {
             enabled: true,
             config: {
-              modelProfiles: compatConfig.plugins.entries['lobsterai-model-compat'].config.modelProfiles,
+              modelProfiles: compatConfig.plugins.entries['baiying-model-compat'].config.modelProfiles,
               thinkingProfiles: {
-                'lobsterai-server/deepseek-v4-flash': {
+                'baiying-server/deepseek-v4-flash': {
                   options: [
                     { level: 'off', openclawLevel: 'off' },
                     { level: 'high', openclawLevel: 'high' },
@@ -1493,7 +1493,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       rejectedModelRefs: [],
     });
     for (const providers of [forward, reverse]) {
-      expect(providers.custom_0.api).toBe('lobsterai-model-compat');
+      expect(providers.custom_0.api).toBe('baiying-model-compat');
       expect(Object.fromEntries(
         providers.custom_0.models.map(model => [model.id, model.api]),
       )).toEqual({
@@ -1540,7 +1540,7 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(sync.sync('ordinary-package-api-fallback')).toMatchObject({ ok: true });
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    expect(config.models.providers['lobsterai-server'].models).toContainEqual(
+    expect(config.models.providers['baiying-server'].models).toContainEqual(
       expect.objectContaining({
         id: 'ordinary-package-model',
         api: 'openai-completions',
@@ -1563,15 +1563,15 @@ describe('OpenClawConfigSync runtime config output', () => {
         ],
         defaultLevel: 'high',
       },
-      requestCapabilities: ['lobsterai-options-v1'],
+      requestCapabilities: ['baiying-options-v1'],
     }];
 
     const sync = await createSync();
     expect(sync.sync('server-thinking-profile')).toMatchObject({ ok: true });
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    expect(config.models.providers['lobsterai-server'].api).toBe('openai-completions');
-    expect(config.models.providers['lobsterai-server'].models[0]).toEqual(
+    expect(config.models.providers['baiying-server'].api).toBe('openai-completions');
+    expect(config.models.providers['baiying-server'].models[0]).toEqual(
       expect.objectContaining({
         thinkingLevelMap: {
           off: 'off',
@@ -1587,11 +1587,11 @@ describe('OpenClawConfigSync runtime config output', () => {
         }),
       }),
     );
-    expect(config.plugins.entries['lobsterai-model-compat']).toEqual({
+    expect(config.plugins.entries['baiying-model-compat']).toEqual({
       enabled: true,
       config: {
         thinkingProfiles: {
-          'lobsterai-server/deepseek-v4-flash': {
+          'baiying-server/deepseek-v4-flash': {
             options: [
               { level: 'off', openclawLevel: 'off' },
               { level: 'high', openclawLevel: 'high' },
@@ -1603,7 +1603,7 @@ describe('OpenClawConfigSync runtime config output', () => {
         },
       },
     });
-    expect(config.plugins.allow).toContain('lobsterai-model-compat');
+    expect(config.plugins.allow).toContain('baiying-model-compat');
   });
 
   test('keeps legacy thinking transport when the server does not advertise request options', async () => {
@@ -1628,8 +1628,8 @@ describe('OpenClawConfigSync runtime config output', () => {
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     expect(
-      config.plugins.entries['lobsterai-model-compat']
-        .config.thinkingProfiles['lobsterai-server/deepseek-v4-flash'],
+      config.plugins.entries['baiying-model-compat']
+        .config.thinkingProfiles['baiying-server/deepseek-v4-flash'],
     ).toEqual({
       options: [
         { level: 'off', openclawLevel: 'off' },
@@ -1670,7 +1670,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       ok: false,
       changed: false,
     });
-    expect(result.error).toContain('lobsterai-model-compat');
+    expect(result.error).toContain('baiying-model-compat');
     expect(fs.existsSync(configPath)).toBe(false);
   });
 
@@ -1707,7 +1707,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       agents: {
         defaults: {
           models: {
-            'lobsterai-server/MiniMax-M2.7-YoudaoInner': {},
+            'baiying-server/MiniMax-M2.7-YoudaoInner': {},
           },
         },
       },
@@ -2807,7 +2807,7 @@ describe('OpenClawConfigSync runtime config output', () => {
 
     const agentsMdPath = path.join(stateDir, 'workspace-main', 'AGENTS.md');
     const agentsMd = fs.readFileSync(agentsMdPath, 'utf8');
-    expect(agentsMd).toContain('LobsterAI does not support sandbox browser execution in this version.');
+    expect(agentsMd).toContain('BaiYing does not support sandbox browser execution in this version.');
     expect(agentsMd).toContain('For every `browser` tool call, set `target="host"` explicitly.');
   });
 
@@ -2884,7 +2884,7 @@ describe('OpenClawConfigSync runtime config output', () => {
           timeoutSeconds: 25,
           maxRedirects: 4,
           maxChars: 12000,
-          userAgent: 'LobsterAI Test',
+          userAgent: 'BaiYing Test',
           readability: false,
           allowRfc2544BenchmarkRange: true,
         },
@@ -2939,7 +2939,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       timeoutSeconds: 25,
       maxRedirects: 4,
       maxChars: 12000,
-      userAgent: 'LobsterAI Test',
+      userAgent: 'BaiYing Test',
       ssrfPolicy: { allowRfc2544BenchmarkRange: true },
     });
     expect(config.tools.web.fetch.useEnvProxy).toBeUndefined();
@@ -3000,11 +3000,11 @@ describe('resolveModelSourceForOpenClawProvider', () => {
     mockRuntimeState.providerSourceEntries = [];
   });
 
-  test('classifies the LobsterAI plan without any Settings entry', async () => {
+  test('classifies the BaiYing plan without any Settings entry', async () => {
     const { resolveModelSourceForOpenClawProvider } = await import('./openclawConfigSync');
-    expect(resolveModelSourceForOpenClawProvider('lobsterai-server')).toEqual({
-      source: 'lobsterai-plan',
-      providerName: ProviderName.LobsteraiServer,
+    expect(resolveModelSourceForOpenClawProvider('baiying-server')).toEqual({
+      source: 'baiying-plan',
+      providerName: ProviderName.BaiyingServer,
     });
   });
 

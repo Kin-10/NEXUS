@@ -2,11 +2,11 @@
 
 ## 范围
 
-本期只涉及 LobsterAI Electron 客户端和 `lobsterai-server`，不涉及管理员后台。客户端通过主进程携带现有 Electron Bearer JWT 调用接口，Renderer 不接触或持久化 JWT。
+本期只涉及 BaiYing Electron 客户端和 `baiying-server`，不涉及管理员后台。客户端通过主进程携带现有 Electron Bearer JWT 调用接口，Renderer 不接触或持久化 JWT。
 
 ## 发布顺序
 
-1. 在目标数据库依次执行 `lobsterai-server/sql/V61__site_access_analytics.sql` 和 `V62__site_subscription_quota.sql`。
+1. 在目标数据库依次执行 `baiying-server/sql/V61__site_access_analytics.sql` 和 `V62__site_subscription_quota.sql`。
 2. 校验当前环境四档 `site.quota.plan-limits.*` 配置，并确认配额锁与预留表存在。
 3. 发布包含 `/api/sites`、配额预检和部署最终校验的服务端。
 4. 验证服务端功能开关、站点 Host 流量采集及配额并发行为。

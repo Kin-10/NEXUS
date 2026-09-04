@@ -6,7 +6,7 @@ appears stale.
 
 ## Instruction Scope
 
-This root `AGENTS.md` is repository-level guidance for LobsterAI. Codex may also
+This root `AGENTS.md` is repository-level guidance for BaiYing. Codex may also
 load more specific `AGENTS.md` or `AGENTS.override.md` files from subdirectories
 when the current working directory is inside those subtrees. More specific
 instructions override broader ones.
@@ -17,16 +17,16 @@ historical context and verify against the current source.
 
 ## Project Snapshot
 
-LobsterAI is an Electron + React desktop application. Its core user-facing
+BaiYing is an Electron + React desktop application. Its core user-facing
 product is a desktop agent experience that can work with local projects,
 files, browser previews, IM channels, skills, MCP servers, scheduled tasks,
 and rich artifacts.
 
 ### Cowork vs OpenClaw
 
-`Cowork` is LobsterAI's product/session layer. The name is historical: it
+`Cowork` is BaiYing's product/session layer. The name is historical: it
 started as a Claude Code-like in-house coding assistant, but in the current
-codebase it means the LobsterAI layer that owns sessions, messages,
+codebase it means the BaiYing layer that owns sessions, messages,
 permissions, UI state, local persistence, context usage, artifacts, and IPC
 contracts.
 
@@ -173,15 +173,15 @@ Main integration points:
 
 ### Patch Policy
 
-When changing OpenClaw-related behavior, first look for a LobsterAI-side
+When changing OpenClaw-related behavior, first look for a BaiYing-side
 integration point: adapter code, config sync, plugin configuration, runtime
 packaging, UI handling, or local data-layer handling. Prefer changing
-LobsterAI when the behavior is product-specific or can be expressed cleanly at
+BaiYing when the behavior is product-specific or can be expressed cleanly at
 the integration boundary.
 
 Use version-scoped OpenClaw patches only when the required behavior is inside
-OpenClaw and there is no clean LobsterAI-side hook. Do not avoid a patch by
-adding brittle or contorted LobsterAI workarounds.
+OpenClaw and there is no clean BaiYing-side hook. Do not avoid a patch by
+adding brittle or contorted BaiYing workarounds.
 
 Patches live under `scripts/patches/<openclaw.version>/` and are applied by
 `npm run openclaw:patch`. Do not leave manual edits in the sibling OpenClaw
@@ -200,7 +200,7 @@ Key modules:
 - `src/main/libs/openclawEngineManager.ts`: manages the bundled OpenClaw
   gateway process, state directory, config path, ports, tokens, gateway logs,
   restart/repair behavior, and runtime readiness.
-- `src/main/libs/openclawConfigSync.ts`: renders LobsterAI state into
+- `src/main/libs/openclawConfigSync.ts`: renders BaiYing state into
   OpenClaw config: providers/models, agents, IM bindings, plugins, MCP servers,
   skills extra dirs, sandbox mode, and managed workspace `AGENTS.md` sections.
 - `src/main/libs/agentEngine/openclawRuntimeAdapter.ts`: translates between
@@ -271,7 +271,7 @@ Useful shared areas:
 
 ## Data Model
 
-SQLite lives in Electron `app.getPath('userData')` as `lobsterai.sqlite`.
+SQLite lives in Electron `app.getPath('userData')` as `baiying.sqlite`.
 
 Important tables:
 - `kv`: app-wide JSON values, including auth/config flags.
@@ -305,10 +305,10 @@ Migrations are mostly ad-hoc `PRAGMA table_info()` checks in
 OpenClaw runtime state is under Electron `userData/openclaw`.
 
 Important paths:
-- `%APPDATA%/LobsterAI/openclaw/state/openclaw.json` on Windows: generated
+- `%APPDATA%/BaiYing/openclaw/state/openclaw.json` on Windows: generated
   OpenClaw config.
-- `%APPDATA%/LobsterAI/openclaw/state/workspace-main`: main agent workspace.
-- `%APPDATA%/LobsterAI/openclaw/state/workspace-{agentId}`: non-main agent
+- `%APPDATA%/BaiYing/openclaw/state/workspace-main`: main agent workspace.
+- `%APPDATA%/BaiYing/openclaw/state/workspace-{agentId}`: non-main agent
   workspaces.
 
 The main workspace path is resolved by `getMainAgentWorkspacePath()`.
@@ -316,7 +316,7 @@ Non-main agent workspaces follow OpenClaw's state-dir fallback and are synced by
 `openclawConfigSync.ts`.
 
 Workspace files include:
-- `AGENTS.md`: OpenClaw workspace instructions with a LobsterAI-managed section.
+- `AGENTS.md`: OpenClaw workspace instructions with a BaiYing-managed section.
 - `MEMORY.md`: durable memory facts.
 - `memory/YYYY-MM-DD.md`: daily notes.
 - `USER.md`: user profile/context.
@@ -332,15 +332,15 @@ Main process logging uses `electron-log` via `src/main/logger.ts`, which
 intercepts `console.*`.
 
 Main logs:
-- Windows: `%APPDATA%/LobsterAI/logs/main-YYYY-MM-DD.log`
-- macOS: `~/Library/Logs/LobsterAI/main-YYYY-MM-DD.log`
-- Linux: `~/.config/LobsterAI/logs/main-YYYY-MM-DD.log`
+- Windows: `%APPDATA%/BaiYing/logs/main-YYYY-MM-DD.log`
+- macOS: `~/Library/Logs/BaiYing/main-YYYY-MM-DD.log`
+- Linux: `~/.config/BaiYing/logs/main-YYYY-MM-DD.log`
 
 Main log retention is 7 days. Max file size is 80 MB; overflow rotates to
 `.old.log`.
 
 OpenClaw gateway capture logs:
-- Windows: `%APPDATA%/LobsterAI/openclaw/logs/gateway-YYYY-MM-DD.log`
+- Windows: `%APPDATA%/BaiYing/openclaw/logs/gateway-YYYY-MM-DD.log`
 - Retention is 3 days.
 
 OpenClaw's own daily logs may also exist in a temp directory. On Windows,

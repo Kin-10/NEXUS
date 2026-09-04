@@ -1,4 +1,4 @@
-# LobsterAI 生图生视频托管工具设计文档
+# BaiYing 生图生视频托管工具设计文档
 
 > 模型生成视频的服务端 NOS 持久化、历史任务恢复和客户端分享能力，见
 > [模型生成视频分享设计](../artifacts/2026-09-01-generated-video-share-design.md)。
@@ -7,39 +7,39 @@
 
 ### 1.1 背景
 
-LobsterAI 需要为订阅用户提供内置的图片生成、视频生成功能：
+BaiYing 需要为订阅用户提供内置的图片生成、视频生成功能：
 
 - 订阅用户按套餐获得固定次数的图片生成额度、固定时长的视频生成额度
 - 加油包用户仅补充对话额度，不提供图片生成、视频生成权益
-- 模型供应商、模型参数、计费策略、异步任务、数据看板均由 `lobsterai-server` 统一承载
-- LobsterAI 客户端需要在对话输入框下方提供类似 Lovart 的模型选择能力，允许用户明确选择 Image / Video / Auto 以及具体生成模型
+- 模型供应商、模型参数、计费策略、异步任务、数据看板均由 `baiying-server` 统一承载
+- BaiYing 客户端需要在对话输入框下方提供类似 Lovart 的模型选择能力，允许用户明确选择 Image / Video / Auto 以及具体生成模型
 - 该能力不能破坏用户已有的生成图片、生成视频 skill
 
-OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包含成熟的参数语义、异步任务、媒体结果回传、模型能力描述等契约。但 LobsterAI 的产品需求更强调登录用户、订阅权益、积分扣减、后台看板和服务端统一供应商路由。
+OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包含成熟的参数语义、异步任务、媒体结果回传、模型能力描述等契约。但 BaiYing 的产品需求更强调登录用户、订阅权益、积分扣减、后台看板和服务端统一供应商路由。
 
 因此本设计采用：
 
-**新建 LobsterAI 托管工具，但复用 OpenClaw 原生 media generation 语义。**
+**新建 BaiYing 托管工具，但复用 OpenClaw 原生 media generation 语义。**
 
-即客户端新增 `lobster_image_generate` / `lobster_video_generate` 两个 LobsterAI 管理的内置工具，工具名称明确表达它们走 `lobsterai-server`，但参数、action、返回结构和运行语义尽量与 OpenClaw 原生 `image_generate` / `video_generate` 对齐。
+即客户端新增 `lobster_image_generate` / `lobster_video_generate` 两个 BaiYing 管理的内置工具，工具名称明确表达它们走 `baiying-server`，但参数、action、返回结构和运行语义尽量与 OpenClaw 原生 `image_generate` / `video_generate` 对齐。
 
 ### 1.2 核心定义
 
-“新建 LobsterAI 托管 tool，但复用 OpenClaw 原生语义”指：
+“新建 BaiYing 托管 tool，但复用 OpenClaw 原生语义”指：
 
-- **tool 名称归 LobsterAI**：使用 `lobster_image_generate` / `lobster_video_generate`，明确走 LobsterAI 登录态和计费系统
+- **tool 名称归 BaiYing**：使用 `lobster_image_generate` / `lobster_video_generate`，明确走 BaiYing 登录态和计费系统
 - **参数语义复用 OpenClaw**：沿用 `prompt`、`images`、`videos`、`durationSeconds`、`resolution`、`aspectRatio`、`action=list|generate|status` 等字段
 - **模型路由归 server**：客户端不直接接阿里百炼、火山、MiniMax、Kling、Vidu 等供应商
-- **异步和计费归 server**：额度冻结、扣费、失败退款、任务状态、资产存储、数据看板均由 `lobsterai-server` 负责
-- **UI 选择决定工具暴露**：用户在输入框明确选择 Image / Video / 模型后，当前 turn 只暴露或强约束对应 LobsterAI tool，避免模型在 OpenClaw 原生工具和 LobsterAI 工具之间摇摆
-- **保持未来迁移空间**：如果后续决定把 `lobsterai-server` 注册为 OpenClaw 原生 media provider，由于 schema 和语义已经对齐，迁移成本较低
+- **异步和计费归 server**：额度冻结、扣费、失败退款、任务状态、资产存储、数据看板均由 `baiying-server` 负责
+- **UI 选择决定工具暴露**：用户在输入框明确选择 Image / Video / 模型后，当前 turn 只暴露或强约束对应 BaiYing tool，避免模型在 OpenClaw 原生工具和 BaiYing 工具之间摇摆
+- **保持未来迁移空间**：如果后续决定把 `baiying-server` 注册为 OpenClaw 原生 media provider，由于 schema 和语义已经对齐，迁移成本较低
 
 ### 1.3 目标
 
-1. 在 LobsterAI 客户端内置 `lobster_image_generate` / `lobster_video_generate` 工具
-2. 工具调用统一带上当前用户的 access token 请求 `lobsterai-server`
+1. 在 BaiYing 客户端内置 `lobster_image_generate` / `lobster_video_generate` 工具
+2. 工具调用统一带上当前用户的 access token 请求 `baiying-server`
 3. 对话框下方提供 Image / Video / Auto 的模型选择 UI
-4. 用户选择生成模型后，agent 当前 turn 使用对应 LobsterAI 托管工具
+4. 用户选择生成模型后，agent 当前 turn 使用对应 BaiYing 托管工具
 5. 服务端统一负责模型供应商、参数策略、异步任务、计费、配额、看板数据
 6. 生图、生视频仅作为订阅会员权益开放，不支持加油包抵扣
 7. 不影响现有 OpenClaw 原生工具和用户已有 skill
@@ -58,7 +58,7 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 
 **Given** 用户打开 Cowork 对话输入框  
 **When** 用户点击模型选择器，选择 Image tab 下的某个图片模型，并输入“生成一张海边龙虾吉祥物海报”  
-**Then** 当前 turn 中 agent 调用 `lobster_image_generate`，工具带 access token 调用 `lobsterai-server`，server 完成生成、扣费并返回图片资产，客户端在会话中展示生成结果
+**Then** 当前 turn 中 agent 调用 `lobster_image_generate`，工具带 access token 调用 `baiying-server`，server 完成生成、扣费并返回图片资产，客户端在会话中展示生成结果
 
 ### 场景 2: 选择视频模型生成视频
 
@@ -70,13 +70,13 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 
 **Given** 用户启用模型选择器中的 Auto  
 **When** 用户输入“把这张图变成一个 10 秒的视频”并附带图片  
-**Then** 客户端根据输入和服务端默认策略选择合适的 LobsterAI 视频模型，agent 当前 turn 使用 `lobster_video_generate`
+**Then** 客户端根据输入和服务端默认策略选择合适的 BaiYing 视频模型，agent 当前 turn 使用 `lobster_video_generate`
 
 ### 场景 4: 普通聊天不触发媒体扣费
 
 **Given** 用户未选择 Image / Video 模型，当前是普通聊天模型  
 **When** 用户发送常规编程问题  
-**Then** 当前 turn 不主动暴露 LobsterAI media tool，避免误触发生成和扣费
+**Then** 当前 turn 不主动暴露 BaiYing media tool，避免误触发生成和扣费
 
 ### 场景 5: 额度不足
 
@@ -99,8 +99,8 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 ### 场景 6: 不影响已有 skill
 
 **Given** 用户已有某个 skill 会使用 OpenClaw 原生 `image_generate`  
-**When** 用户没有选择 LobsterAI Image / Video 模型，而是通过 skill 明确触发原生生成能力  
-**Then** 原有 skill 行为不被破坏；只有选择 LobsterAI 托管模型的 turn 才对工具做 gating
+**When** 用户没有选择 BaiYing Image / Video 模型，而是通过 skill 明确触发原生生成能力  
+**Then** 原有 skill 行为不被破坏；只有选择 BaiYing 托管模型的 turn 才对工具做 gating
 
 ### 场景 7: 使用 @ 快速引用已上传媒体
 
@@ -110,7 +110,7 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 
 ## 3. 功能需求
 
-### FR-1: LobsterAI 图片生成工具
+### FR-1: BaiYing 图片生成工具
 
 新增内置工具 `lobster_image_generate`。
 
@@ -142,7 +142,7 @@ type LobsterImageGenerateInput = {
 };
 ```
 
-### FR-2: LobsterAI 视频生成工具
+### FR-2: BaiYing 视频生成工具
 
 新增内置工具 `lobster_video_generate`。
 
@@ -182,7 +182,7 @@ type LobsterVideoGenerateInput = {
 
 ### FR-3: 服务端模型列表
 
-`lobsterai-server` 返回图片、视频模型列表和能力元数据。
+`baiying-server` 返回图片、视频模型列表和能力元数据。
 
 模型元数据至少包含：
 
@@ -219,8 +219,8 @@ type LobsterVideoGenerateInput = {
 |---------|----------|
 | Image 模型 | 开放 `lobster_image_generate`，隐藏或 deny 原生 `image_generate` |
 | Video 模型 | 开放 `lobster_video_generate`，隐藏或 deny 原生 `video_generate` |
-| Auto | 根据输入/附件/server 默认策略开放对应 LobsterAI tool |
-| 普通聊天 | 不主动暴露 LobsterAI media tool |
+| Auto | 根据输入/附件/server 默认策略开放对应 BaiYing tool |
+| 普通聊天 | 不主动暴露 BaiYing media tool |
 
 工具 gating 必须尽量在工具层或 OpenClaw 配置层完成，不能只依赖 prompt 文案。
 
@@ -423,7 +423,7 @@ flowchart LR
   Renderer --> Main["Main IPC / CoworkEngineRouter"]
   Main --> Gateway["OpenClaw Gateway"]
   Gateway --> Tool["lobster_image_generate / lobster_video_generate"]
-  Tool --> Server["lobsterai-server"]
+  Tool --> Server["baiying-server"]
   Server --> Provider["Aliyun / Volcengine / MiniMax / Kling / Vidu"]
   Server --> Billing["Quota / Billing / Dashboard"]
   Tool --> Main
@@ -438,7 +438,7 @@ flowchart LR
 | Renderer | 模型选择 UI、选择状态持久化、发送 turn metadata、展示结果 |
 | Main | token 获取和刷新、OpenClaw config/tool gating、任务映射、quota 刷新 |
 | OpenClaw tool | 暴露 agent 可调用工具，转换参数，调用 server |
-| lobsterai-server | 模型路由、供应商调用、异步任务、计费、额度、资产存储、看板 |
+| baiying-server | 模型路由、供应商调用、异步任务、计费、额度、资产存储、看板 |
 
 ### 4.2 OpenClaw 插件形态
 
@@ -471,7 +471,7 @@ openclaw-extensions/lobster-media-generation/
 
 设计上尽量复用现有 `mcp-bridge` / `ask-user-question` 模式：
 
-- OpenClaw 插件只负责注册工具和把参数 POST 回 LobsterAI main process
+- OpenClaw 插件只负责注册工具和把参数 POST 回 BaiYing main process
 - 真正的 token 处理和 server 调用放在 main process
 - 避免 access token 进入 OpenClaw 配置文件
 
@@ -607,9 +607,9 @@ Content-Type: application/json
   },
   "idempotencyKey": "session_turn_prompt_hash",
   "clientContext": {
-    "app": "lobsterai-desktop",
+    "app": "baiying-desktop",
     "coworkSessionId": "session_xxx",
-    "openclawSessionKey": "agent:main:lobsterai:xxx"
+    "openclawSessionKey": "agent:main:baiying:xxx"
   }
 }
 ```
@@ -727,14 +727,14 @@ Charged video seconds: 5
 server 返回远程 URL 后，客户端有两种选择：
 
 1. 直接展示远程 URL 媒体
-2. 下载到 OpenClaw/LobsterAI media 目录，再以本地 file path 形式展示
+2. 下载到 OpenClaw/BaiYing media 目录，再以本地 file path 形式展示
 
 第一阶段建议：
 
 - 图片：优先下载到本地 media 目录，方便 artifact/markdown 图片预览和离线历史查看
 - 视频：可先保留远程 URL + 本地缓存下载，避免大文件阻塞 tool 返回
 
-本地缓存目录建议放在 OpenClaw state media 或 LobsterAI userData media 子目录，避免写入工作区污染项目文件。
+本地缓存目录建议放在 OpenClaw state media 或 BaiYing userData media 子目录，避免写入工作区污染项目文件。
 
 ### 4.7 输入框模型选择状态
 
@@ -745,7 +745,7 @@ type MediaGenerationSelection = {
   mode: 'auto' | 'image' | 'video' | 'none';
   modelId?: string;
   modelName?: string;
-  source: 'lobsterai-server';
+  source: 'baiying-server';
   mediaReferences?: MediaAttachmentRef[];
 };
 ```
@@ -757,7 +757,7 @@ type MediaGenerationSelection = {
   mediaGenerationSelection: {
     mode: 'video',
     modelId: 'doubao-seedance-2-0-260128',
-    source: 'lobsterai-server'
+    source: 'baiying-server'
   }
 }
 ```
@@ -783,7 +783,7 @@ main process 将该 metadata 用于：
 - `lobster_image_generate` / `lobster_video_generate` 作为插件常驻注册
 - 插件 tool execute 阶段检查 main process 当前 turn media selection
 - 如果当前 turn 未选择对应 mode，返回 `isError=true` 且提示工具不可用于当前 turn
-- 同时在 prompt 中明确：“当用户选择 LobsterAI Image/Video 模型时，必须使用 lobster_* 工具”
+- 同时在 prompt 中明确：“当用户选择 BaiYing Image/Video 模型时，必须使用 lobster_* 工具”
 
 后续优化为真正的 turn 级工具可见性控制。
 
@@ -792,9 +792,9 @@ main process 将该 metadata 用于：
 兼容原则：
 
 - 不全局禁用 OpenClaw 原生 `image_generate` / `video_generate`
-- 只在用户明确选择 LobsterAI Image / Video 模型的 turn 中限制原生工具
+- 只在用户明确选择 BaiYing Image / Video 模型的 turn 中限制原生工具
 - 现有 skill 如果显式依赖原生工具，在普通聊天或 skill 自身流程中仍可运行
-- LobsterAI 托管工具的 schema 与原生工具相近，skill 后续迁移只需替换工具名或通过 adapter 映射
+- BaiYing 托管工具的 schema 与原生工具相近，skill 后续迁移只需替换工具名或通过 adapter 映射
 
 ### 4.10 服务端权益和计费策略建议
 
@@ -820,7 +820,7 @@ main process 将该 metadata 用于：
 
 ### 4.11 数据看板
 
-`lobsterai-server` 在每次任务生命周期变化时记录：
+`baiying-server` 在每次任务生命周期变化时记录：
 
 - 用户 ID
 - 订阅计划
@@ -857,7 +857,7 @@ admin 后台基于这些数据做流量、成本、收入和失败率看板。
 | 图片/视频 URL 下载失败 | 保留远程 URL 展示，记录 warn，不阻塞任务完成 |
 | 用户关闭应用后任务完成 | 下次启动通过 task 状态同步恢复并回填会话，或在任务中心展示 |
 | IM 场景触发媒体生成 | 第一阶段只支持桌面 Cowork；IM 支持需单独设计鉴权和投递策略 |
-| 原生 OpenClaw tool 同时存在 | 只在 LobsterAI 模型选择 turn 做 gating，不全局禁用 |
+| 原生 OpenClaw tool 同时存在 | 只在 BaiYing 模型选择 turn 做 gating，不全局禁用 |
 | 用户输入不存在的引用，如 `@图片9` | 发送前提示引用不存在，阻止发送或要求删除无效 token |
 | 用户删除附件但 prompt 中仍有引用 token | 自动删除对应 token，或标红提示失效引用 |
 | 同名文件或重复上传 | UI 编号按上传顺序生成，引用绑定 fileId，不依赖文件名 |
@@ -868,7 +868,7 @@ admin 后台基于这些数据做流量、成本、收入和失败率看板。
 
 | 文件 | 操作 |
 |------|------|
-| `openclaw-extensions/lobster-media-generation/openclaw.plugin.json` | 新建，声明 LobsterAI media generation 插件 |
+| `openclaw-extensions/lobster-media-generation/openclaw.plugin.json` | 新建，声明 BaiYing media generation 插件 |
 | `openclaw-extensions/lobster-media-generation/index.ts` | 新建，注册 `lobster_image_generate` / `lobster_video_generate` |
 | `openclaw-extensions/lobster-media-generation/package.json` | 新建，插件包配置 |
 | `src/main/libs/openclawConfigSync.ts` | 修改，启用插件并注入 callback config |
@@ -890,7 +890,7 @@ admin 后台基于这些数据做流量、成本、收入和失败率看板。
 
 ### Phase 1: Server contract 和工具骨架
 
-1. 与 `lobsterai-server` 对齐 `/api/media/models`、`/api/media/entitlement`、`/api/media/generations`、status、cancel API
+1. 与 `baiying-server` 对齐 `/api/media/models`、`/api/media/entitlement`、`/api/media/generations`、status、cancel API
 2. 新建 `lobster-media-generation` OpenClaw extension
 3. 注册两个工具，schema 对齐 OpenClaw 原生语义
 4. main process 增加 callback route，完成 token 鉴权和 server 调用
@@ -925,7 +925,7 @@ admin 后台基于这些数据做流量、成本、收入和失败率看板。
 1. 输入框模型选择器可以显示 server 返回的图片和视频模型
 2. 用户选择图片模型后，当前 turn 调用 `lobster_image_generate`
 3. 用户选择视频模型后，当前 turn 调用 `lobster_video_generate`
-4. 普通聊天 turn 不主动触发 LobsterAI media tool
+4. 普通聊天 turn 不主动触发 BaiYing media tool
 5. 工具请求携带 access token，且 token 不出现在日志、消息和 tool result 中
 6. 额度不足时生成失败且提示清晰，quota 自动刷新
 7. 视频任务创建后显示 queued/running 状态，完成后回填视频结果

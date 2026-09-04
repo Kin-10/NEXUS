@@ -72,8 +72,8 @@ describe('Windows installer hardening contracts', () => {
     const initLog = init.indexOf('phase=custom-init-start');
 
     expect(installerInclude).toContain('Var lobsterSilentSource');
-    expect(init).toContain('$%LOBSTERAI_CHANNEL_BUILD%');
-    expect(init).toContain('$%LOBSTERAI_SILENT_ON_DOUBLE_CLICK%');
+    expect(init).toContain('$%BAIYING_CHANNEL_BUILD%');
+    expect(init).toContain('$%BAIYING_SILENT_ON_DOUBLE_CLICK%');
     expect(init).toContain('StrCpy $lobsterSilentSource "argv"');
     expect(init).toContain('StrCpy $lobsterSilentSource "build-flag"');
     expect(init).toContain('${If} ${isUpdated}');
@@ -87,7 +87,7 @@ describe('Windows installer hardening contracts', () => {
     // installs with their own progress experience, so the installer may not
     // own any window and every dialog needs a silent default.
     expect(installerInclude).not.toContain('Banner::');
-    expect(installerInclude).not.toContain('LOBSTERAI_HIDE_SILENT_BANNER');
+    expect(installerInclude).not.toContain('BAIYING_HIDE_SILENT_BANNER');
 
     const messageBoxLines = installerInclude
       .split('\n')
@@ -173,7 +173,7 @@ describe('Windows installer hardening contracts', () => {
     expect(installerInclude).toContain('!macro customAfterUninstallOldVersions');
     expect(installerInclude).toContain('point=post-old-uninstaller');
     expect(installerInclude).toContain(
-      String.raw`$$target = $$env:LOBSTERAI_INSTALL_ROOT;`,
+      String.raw`$$target = $$env:BAIYING_INSTALL_ROOT;`,
     );
     expect(installerInclude).toContain('before_count=');
     expect(installerInclude).toContain('remove=');
@@ -497,14 +497,14 @@ describe('Windows installer hardening contracts', () => {
 
   test('reuses an uploaded web payload without appending another block map', () => {
     expect(differentialUpdateInfoBuilder).toContain(
-      'process.env.LOBSTERAI_REUSE_NSIS_WEB_PACKAGE === "1"',
+      'process.env.BAIYING_REUSE_NSIS_WEB_PACKAGE === "1"',
     );
     expect(differentialUpdateInfoBuilder).toContain('footer.readUInt32BE(0)');
     expect(differentialUpdateInfoBuilder).toContain(
       '"reusing existing embedded block map"',
     );
     expect(differentialUpdateInfoBuilder).toContain('hash_1.hashFile)(file)');
-    expect(appBuilderPatch).toContain('LOBSTERAI_REUSE_NSIS_WEB_PACKAGE');
+    expect(appBuilderPatch).toContain('BAIYING_REUSE_NSIS_WEB_PACKAGE');
   });
 
   test('terminates the attempt after rename verification rollback', () => {
@@ -533,7 +533,7 @@ describe('Windows installer hardening contracts', () => {
     const preflight = check.indexOf('!insertmacro DetectFreshOrPossibleExisting');
     const sourceProbe = check.indexOf('phase=legacy-skills-source-preflight');
     const resolver = check.indexOf('!insertmacro ResolveTrustedPowerShell');
-    const stop = check.indexOf('!insertmacro stopLobsterAIProcesses');
+    const stop = check.indexOf('!insertmacro stopBaiYingProcesses');
     const backup = check.indexOf('phase=skill-backup-complete');
 
     expect(preflight).toBeGreaterThan(-1);
@@ -552,7 +552,7 @@ describe('Windows installer hardening contracts', () => {
   });
 
   test('re-kills processes on every stop round and logs survivors on failure', () => {
-    const start = installerInclude.indexOf('!macro stopLobsterAIProcesses');
+    const start = installerInclude.indexOf('!macro stopBaiYingProcesses');
     const end = installerInclude.indexOf('!macroend', start);
     const stopMacro = installerInclude.slice(start, end);
 
@@ -572,17 +572,17 @@ describe('Windows installer hardening contracts', () => {
 
     // Survivor dump runs only on the exit-3 verdict, receives its inputs via
     // the child environment, and always clears them afterwards.
-    expect(stopMacro).toContain('StrCmp $R2 "3" 0 StopLobsterAIProcessesLog');
+    expect(stopMacro).toContain('StrCmp $R2 "3" 0 StopBaiYingProcessesLog');
     expect(stopMacro).toContain(
-      String.raw`SetEnvironmentVariable(t "LOBSTERAI_STOP_LOG_PATH", t "$APPDATA\LobsterAI\install-timing.log")`,
+      String.raw`SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "$APPDATA\BaiYing\install-timing.log")`,
     );
     expect(stopMacro).toContain(
-      'SetEnvironmentVariable(t "LOBSTERAI_STOP_ATTEMPT_ID", t "$lobsterInstallerAttemptId")',
+      'SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "$lobsterInstallerAttemptId")',
     );
-    expect(stopMacro).toContain('SetEnvironmentVariable(t "LOBSTERAI_STOP_LOG_PATH", t "")');
-    expect(stopMacro).toContain('SetEnvironmentVariable(t "LOBSTERAI_STOP_ATTEMPT_ID", t "")');
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "")');
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "")');
     expect(stopMacro).toContain(
-      'phase=process-stop-survivor attempt_id=$$env:LOBSTERAI_STOP_ATTEMPT_ID',
+      'phase=process-stop-survivor attempt_id=$$env:BAIYING_STOP_ATTEMPT_ID',
     );
     expect(stopMacro).toContain('name=$$($$p.ProcessName) pid=$$($$p.Id) path=$$fp');
     expect(stopMacro).toContain('phase=process-stop-survivors-logged');
@@ -710,7 +710,7 @@ describe('Windows installer hardening contracts', () => {
   });
 
   test('uses typed helper outcomes and a marker-backed ten-minute watchdog', () => {
-    const watchdogStart = installerInclude.indexOf('LOBSTERAI_WATCHDOG_MARKER_PATH');
+    const watchdogStart = installerInclude.indexOf('BAIYING_WATCHDOG_MARKER_PATH');
     const watchdogEnd = installerInclude.indexOf('TarExtractVerify:', watchdogStart);
     const watchdog = installerInclude.slice(watchdogStart, watchdogEnd);
 
@@ -721,11 +721,11 @@ describe('Windows installer hardening contracts', () => {
     expect(watchdog).toContain('WaitForExit(30000)');
     expect(watchdog).toContain('"process-timeout"');
     expect(watchdog).toContain('"process-termination-failed"');
-    expect(watchdog).toContain('LOBSTERAI_WATCHDOG_TIMEOUT');
-    expect(watchdog).toContain('LOBSTERAI_WATCHDOG_TERMINATION_FAILED');
+    expect(watchdog).toContain('BAIYING_WATCHDOG_TIMEOUT');
+    expect(watchdog).toContain('BAIYING_WATCHDOG_TERMINATION_FAILED');
     expect(watchdog).toContain('function Write-LobsterWatchdogMarker');
     expect(watchdog).toContain(
-      'LOBSTERAI_WATCHDOG_MARKER_WRITE_FAILED:',
+      'BAIYING_WATCHDOG_MARKER_WRITE_FAILED:',
     );
     expect(
       watchdog.match(/Set-Content -LiteralPath \$\$marker/g),
@@ -782,7 +782,7 @@ describe('Windows installer hardening contracts', () => {
     const preLaunchDelete = installerInclude.indexOf(sentinelDelete);
     expect(preLaunchDelete).toBeGreaterThan(-1);
     expect(preLaunchDelete).toBeLessThan(
-      installerInclude.indexOf('LOBSTERAI_WATCHDOG_MARKER_PATH'),
+      installerInclude.indexOf('BAIYING_WATCHDOG_MARKER_PATH'),
     );
     expect(
       installerInclude.match(/Delete "\$INSTDIR\\resources\\\.unpack-cfmind-ok"/g),
@@ -848,7 +848,7 @@ describe('Windows installer hardening contracts', () => {
     const restoreEnd = installerInclude.indexOf('SkipSkillRestore:', restoreStart);
     const restore = installerInclude.slice(restoreStart, restoreEnd);
     expect(restore).toContain(
-      'IfFileExists "$APPDATA\\LobsterAI\\skills-backup\\$lobsterInstallerAttemptId\\backup-manifest.json" SkillRestoreAttemptBackupReady',
+      'IfFileExists "$APPDATA\\BaiYing\\skills-backup\\$lobsterInstallerAttemptId\\backup-manifest.json" SkillRestoreAttemptBackupReady',
     );
     expect(restore).toContain('"legacy-restore-backup-missing"');
     expect(restore).toContain('Write-Output (\\"name-conflict:\\"');
@@ -893,7 +893,7 @@ describe('Windows installer hardening contracts', () => {
   test('re-checks the attempt manifest after a verified backup before replacing the old install', () => {
     const backupComplete = installerInclude.indexOf('phase=skill-backup-complete');
     const postcheck = installerInclude.indexOf(
-      'IfFileExists "$APPDATA\\LobsterAI\\skills-backup\\$lobsterInstallerAttemptId\\backup-manifest.json" SkillBackupValidated',
+      'IfFileExists "$APPDATA\\BaiYing\\skills-backup\\$lobsterInstallerAttemptId\\backup-manifest.json" SkillBackupValidated',
     );
     const postcheckLog = installerInclude.indexOf(
       'phase=skill-backup-manifest-postcheck-missing',
@@ -941,7 +941,7 @@ describe('Windows installer hardening contracts', () => {
     expect(degraded).toContain('action=continue-with-attempt-backup-preserved');
     expect(degraded).toContain('action=continue-no-backup-found');
     expect(degraded).toContain(
-      'The recovery backup was preserved at $APPDATA\\LobsterAI\\skills-backup\\$lobsterInstallerAttemptId',
+      'The recovery backup was preserved at $APPDATA\\BaiYing\\skills-backup\\$lobsterInstallerAttemptId',
     );
     expect(degraded).not.toContain('was not deleted');
   });
@@ -959,11 +959,11 @@ describe('Windows installer hardening contracts', () => {
       init.indexOf('FileOpen $9'),
     );
     expect(init).toContain(
-      'FileOpen $9 "$APPDATA\\LobsterAI\\install-timing.log" a',
+      'FileOpen $9 "$APPDATA\\BaiYing\\install-timing.log" a',
     );
     expect(init).toContain('FileSeek $9 0 END');
     expect(init).not.toContain(
-      'FileOpen $9 "$APPDATA\\LobsterAI\\install-timing.log" w',
+      'FileOpen $9 "$APPDATA\\BaiYing\\install-timing.log" w',
     );
     expect(init).toContain('StrCpy $lobsterInvocationSource "unknown"');
     expect(init).toContain('${If} ${isUpdated}');

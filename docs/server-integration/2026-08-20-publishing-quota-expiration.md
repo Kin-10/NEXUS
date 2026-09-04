@@ -6,16 +6,16 @@
 
 ## 涉及项目
 
-- 客户端：`LobsterAI`
-- 服务端：`lobsterai-server`
-- `lobsterai-portal`、`lobsterai-admin`：本期不改
+- 客户端：`BaiYing`
+- 服务端：`baiying-server`
+- `baiying-portal`、`baiying-admin`：本期不改
 
 ## 数据库变更
 
 上线前执行服务端迁移：
 
 ```text
-lobsterai-server/sql/V77__publishing_quota_expiration.sql
+baiying-server/sql/V77__publishing_quota_expiration.sql
 ```
 
 迁移只给 `html_shares` 增加可空字段 `access_expires_at DATETIME NULL`，兼容 MySQL 5.7，不增加外键。`NULL` 表示按订阅/团队权益判断；非空表示固定公开访问截止时间。

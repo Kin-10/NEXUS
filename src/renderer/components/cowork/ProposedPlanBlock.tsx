@@ -63,7 +63,7 @@ const ProposedPlanBlock: React.FC<ProposedPlanBlockProps> = ({
       objectUrl = URL.createObjectURL(blob);
       anchor = document.createElement('a');
       anchor.href = objectUrl;
-      anchor.download = `lobsterai-plan-${new Date().toISOString().slice(0, 10)}.md`;
+      anchor.download = `baiying-plan-${new Date().toISOString().slice(0, 10)}.md`;
       document.body.appendChild(anchor);
       anchor.click();
       setIsDownloaded(true);

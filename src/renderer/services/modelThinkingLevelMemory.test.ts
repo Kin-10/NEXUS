@@ -1,4 +1,4 @@
-import { LobsterAIRequestCapability } from '@shared/providers/lobsterAIRequestOptions';
+import { BaiYingRequestCapability } from '@shared/providers/baiYingRequestOptions';
 import { ModelThinkingLevel, OpenClawThinkingLevel } from '@shared/providers/modelThinking';
 import { afterEach, beforeEach, expect, test } from 'vitest';
 
@@ -9,15 +9,15 @@ import {
   resolveThinkingLevelForModel,
 } from './modelThinkingLevelMemory';
 
-const STORAGE_KEY = 'lobsterai.model-thinking-levels';
-const PRO_KEY = 'lobsterai-server::deepseek-v4-pro';
-const FLASH_KEY = 'lobsterai-server::deepseek-v4-flash';
+const STORAGE_KEY = 'baiying.model-thinking-levels';
+const PRO_KEY = 'baiying-server::deepseek-v4-pro';
+const FLASH_KEY = 'baiying-server::deepseek-v4-flash';
 
 const PRO_MODEL = {
   id: 'deepseek-v4-pro',
-  providerKey: 'lobsterai-server',
+  providerKey: 'baiying-server',
   isServerModel: true,
-  requestCapabilities: [LobsterAIRequestCapability.OptionsV1],
+  requestCapabilities: [BaiYingRequestCapability.OptionsV1],
   thinkingConfig: {
     options: [
       { level: ModelThinkingLevel.High, openclawLevel: OpenClawThinkingLevel.High },

@@ -4,24 +4,24 @@ import { describe, expect, test } from 'vitest';
 import { EnterpriseQuotaReason } from '../../../shared/enterpriseAccount/constants';
 import {
   resolveBlockingEnterpriseQuotaReason,
-  usesLobsterAIServerQuota,
+  usesBaiYingServerQuota,
 } from './modelQuotaGate';
 
 const quotaReason = EnterpriseQuotaReason.MemberMonthlyQuotaExhausted;
 
-describe('usesLobsterAIServerQuota', () => {
+describe('usesBaiYingServerQuota', () => {
   test('identifies server models by flag or provider key', () => {
-    expect(usesLobsterAIServerQuota({
+    expect(usesBaiYingServerQuota({
       providerKey: ProviderName.OpenAI,
       isServerModel: true,
     })).toBe(true);
-    expect(usesLobsterAIServerQuota({
-      providerKey: ProviderName.LobsteraiServer,
+    expect(usesBaiYingServerQuota({
+      providerKey: ProviderName.BaiyingServer,
     })).toBe(true);
   });
 
   test('identifies a user-configured model as independent from server quota', () => {
-    expect(usesLobsterAIServerQuota({
+    expect(usesBaiYingServerQuota({
       providerKey: ProviderName.Qwen,
       isServerModel: false,
     })).toBe(false);
@@ -29,9 +29,9 @@ describe('usesLobsterAIServerQuota', () => {
 });
 
 describe('resolveBlockingEnterpriseQuotaReason', () => {
-  test('keeps the quota gate for LobsterAI server models', () => {
+  test('keeps the quota gate for BaiYing server models', () => {
     expect(resolveBlockingEnterpriseQuotaReason(quotaReason, {
-      providerKey: ProviderName.LobsteraiServer,
+      providerKey: ProviderName.BaiyingServer,
       isServerModel: true,
     })).toBe(quotaReason);
   });
@@ -49,7 +49,7 @@ describe('resolveBlockingEnterpriseQuotaReason', () => {
 
   test('does not gate any model when enterprise quota is available', () => {
     expect(resolveBlockingEnterpriseQuotaReason(null, {
-      providerKey: ProviderName.LobsteraiServer,
+      providerKey: ProviderName.BaiyingServer,
       isServerModel: true,
     })).toBeNull();
   });

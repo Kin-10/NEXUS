@@ -12,22 +12,22 @@ import { __openAICompatProxyTestUtils, isAllowedProxyHost } from './coworkOpenAI
 
 const testUtils = __openAICompatProxyTestUtils;
 
-test('refreshes LobsterAI credentials only for HTTP 401', () => {
-  expect(testUtils.shouldRefreshProxyToken(401, ProviderName.LobsteraiServer)).toBe(true);
-  expect(testUtils.shouldRefreshProxyToken(403, ProviderName.LobsteraiServer)).toBe(false);
+test('refreshes BaiYing credentials only for HTTP 401', () => {
+  expect(testUtils.shouldRefreshProxyToken(401, ProviderName.BaiyingServer)).toBe(true);
+  expect(testUtils.shouldRefreshProxyToken(403, ProviderName.BaiyingServer)).toBe(false);
   expect(testUtils.shouldRefreshProxyToken(403, ProviderName.Copilot)).toBe(true);
 });
 
-test('maps only transient LobsterAI refresh failures to temporary service errors', () => {
-  expect(testUtils.isTemporaryLobsterAIAuthRefreshFailure(
-    ProviderName.LobsteraiServer,
+test('maps only transient BaiYing refresh failures to temporary service errors', () => {
+  expect(testUtils.isTemporaryBaiYingAuthRefreshFailure(
+    ProviderName.BaiyingServer,
     { outcome: AuthRefreshOutcome.TransientFailure },
   )).toBe(true);
-  expect(testUtils.isTemporaryLobsterAIAuthRefreshFailure(
-    ProviderName.LobsteraiServer,
+  expect(testUtils.isTemporaryBaiYingAuthRefreshFailure(
+    ProviderName.BaiyingServer,
     { outcome: AuthRefreshOutcome.TerminalFailure },
   )).toBe(false);
-  expect(testUtils.isTemporaryLobsterAIAuthRefreshFailure(
+  expect(testUtils.isTemporaryBaiYingAuthRefreshFailure(
     ProviderName.Copilot,
     { outcome: AuthRefreshOutcome.TransientFailure },
   )).toBe(false);

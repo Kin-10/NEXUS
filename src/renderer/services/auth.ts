@@ -11,7 +11,7 @@ import {
 import { EnterpriseAccountMode } from '@shared/enterpriseAccount/constants';
 import {
   type ModelThinkingConfig,
-  parseLobsterAIRequestCapabilities,
+  parseBaiYingRequestCapabilities,
   parseModelThinkingConfig,
   ProviderName,
 } from '@shared/providers';
@@ -197,7 +197,7 @@ export function mapPricingCatalogTextModelsToServerModels(
     const modelName = readString(model.modelName) || modelId;
     const provider = readString(model.providerLabel)
       || readString(model.provider)
-      || 'LobsterAI';
+      || 'BaiYing';
     const contextWindow = readPositiveNumber(model.contextWindow);
     const costMultiplier = readPositiveNumber(model.costMultiplier);
     const thinkingConfig = model.supportsThinking === true
@@ -208,7 +208,7 @@ export function mapPricingCatalogTextModelsToServerModels(
       id: modelId,
       name: modelName,
       provider,
-      providerKey: ProviderName.LobsteraiServer,
+      providerKey: ProviderName.BaiyingServer,
       isServerModel: true,
       supportsImage: model.supportsImage === true,
       supportsThinking: model.supportsThinking === true,
@@ -237,12 +237,12 @@ export function mapAvailableServerModelsToModels(
     const thinkingConfig = model.supportsThinking === true
       ? parseModelThinkingConfig(model.thinkingConfig)
       : undefined;
-    const requestCapabilities = parseLobsterAIRequestCapabilities(model.requestCapabilities);
+    const requestCapabilities = parseBaiYingRequestCapabilities(model.requestCapabilities);
     return {
       id: model.modelId,
       name: model.modelName,
       provider: model.provider,
-      providerKey: ProviderName.LobsteraiServer,
+      providerKey: ProviderName.BaiyingServer,
       isServerModel: true,
       serverApiFormat: model.apiFormat,
       runtimeProfile: model.runtimeProfile,
@@ -879,7 +879,7 @@ class AuthService {
     const cleanup = this.applyLoggedOutState(true);
     const toastKey = event.reason === AuthSessionChangeReason.EnterpriseMembershipRevoked
       ? 'coworkErrorEnterpriseMembershipRevoked'
-      : 'coworkErrorLobsterAILoginExpired';
+      : 'coworkErrorBaiYingLoginExpired';
     window.dispatchEvent(new CustomEvent('app:showToast', {
       detail: i18nService.t(toastKey),
     }));

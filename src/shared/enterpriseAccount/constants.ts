@@ -65,8 +65,8 @@ export const EnterpriseAccountStoreKey = {
 } as const;
 
 export const EnterpriseAccountRequestHeader = {
-  AccountMode: 'X-LobsterAI-Account-Mode',
-  EnterpriseId: 'X-LobsterAI-Enterprise-Id',
+  AccountMode: 'X-BaiYing-Account-Mode',
+  EnterpriseId: 'X-BaiYing-Enterprise-Id',
 } as const;
 
 export const EnterpriseQuotaMessageMetadataKey = {

@@ -104,7 +104,7 @@ export class McpBridgeServer {
 
   /**
    * Register a callback for media generation tool requests.
-   * The callback should call lobsterai-server and return the result.
+   * The callback should call baiying-server and return the result.
    */
   onMediaGeneration(callback: (request: MediaGenerationRequest) => Promise<MediaGenerationResponse>): void {
     this.onMediaGenerationCallback = callback;
@@ -274,7 +274,7 @@ export class McpBridgeServer {
 
         this.pendingAskUser.set(requestId, { requestId, resolve, timer });
 
-        // Notify LobsterAI to show the modal
+        // Notify BaiYing to show the modal
         if (this.onAskUserCallback) {
           this.onAskUserCallback({
             requestId,

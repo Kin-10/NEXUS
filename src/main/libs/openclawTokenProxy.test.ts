@@ -20,10 +20,10 @@ beforeEach(() => {
   consumeRecentOpenClawTokenProxyQuotaError();
 });
 
-test('refreshes LobsterAI credentials for 401 but not 403', () => {
-  expect(testUtils.shouldRefreshLobsterAIToken(401)).toBe(true);
-  expect(testUtils.shouldRefreshLobsterAIToken(200)).toBe(false);
-  expect(testUtils.shouldRefreshLobsterAIToken(403)).toBe(false);
+test('refreshes BaiYing credentials for 401 but not 403', () => {
+  expect(testUtils.shouldRefreshBaiYingToken(401)).toBe(true);
+  expect(testUtils.shouldRefreshBaiYingToken(200)).toBe(false);
+  expect(testUtils.shouldRefreshBaiYingToken(403)).toBe(false);
 });
 
 test('turns only transient refresh failures into temporary service errors', () => {
@@ -87,7 +87,7 @@ function flushStreamEvents(): Promise<void> {
   return new Promise((resolve) => setImmediate(resolve));
 }
 
-test('extracts LobsterAI monthly quota error from proxy SSE packet', () => {
+test('extracts BaiYing monthly quota error from proxy SSE packet', () => {
   const packet = [
     'event: error',
     'data: {"type":"error","error":{"type":"proxy_error","message":"本月积分已用完","code":40202}}',
@@ -108,7 +108,7 @@ test('extracts enterprise quota error from unified non-stream response', () => {
   });
 });
 
-test('ignores generic HTTP 402 without LobsterAI quota code or message', () => {
+test('ignores generic HTTP 402 without BaiYing quota code or message', () => {
   const packet = [
     'event: error',
     'data: {"error":{"message":"Request failed with status 402"}}',
@@ -382,22 +382,22 @@ test('adds fixed capability, client version, and enterprise context headers with
     {
       accept: 'text/event-stream',
       'content-type': 'application/json',
-      'x-lobsterai-client-capabilities': 'attacker-controlled',
-      'x-lobsterai-client-version': '0.0.0',
+      'x-baiying-client-capabilities': 'attacker-controlled',
+      'x-baiying-client-version': '0.0.0',
     },
     '2026.7.23',
     {
-      'X-LobsterAI-Account-Mode': 'enterprise',
-      'X-LobsterAI-Enterprise-Id': '1001',
+      'X-BaiYing-Account-Mode': 'enterprise',
+      'X-BaiYing-Enterprise-Id': '1001',
     },
   )).toEqual({
     Authorization: 'Bearer access-token',
     Accept: 'text/event-stream',
     'Content-Type': 'application/json',
-    'X-LobsterAI-Client-Capabilities': 'kimi-k3-agentic-v1,thinking-level-control-v1',
-    'X-LobsterAI-Client-Version': '2026.7.23',
-    'X-LobsterAI-Account-Mode': 'enterprise',
-    'X-LobsterAI-Enterprise-Id': '1001',
+    'X-BaiYing-Client-Capabilities': 'kimi-k3-agentic-v1,thinking-level-control-v1',
+    'X-BaiYing-Client-Version': '2026.7.23',
+    'X-BaiYing-Account-Mode': 'enterprise',
+    'X-BaiYing-Enterprise-Id': '1001',
   });
 });
 

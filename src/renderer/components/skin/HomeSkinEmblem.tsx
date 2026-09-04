@@ -19,7 +19,7 @@ const HomeSkinEmblem: React.FC<HomeSkinEmblemProps> = ({ className }) => {
   return (
     <img
       src={shouldUseSkinAsset ? assetUrl ?? 'logo.svg' : 'logo.svg'}
-      alt="LobsterAI"
+      alt="BaiYing"
       draggable={false}
       onError={() => {
         if (assetUrl) setFailedUrl(assetUrl);

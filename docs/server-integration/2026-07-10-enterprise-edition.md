@@ -1,16 +1,16 @@
-# LobsterAI 企业账号集成说明
+# BaiYing 企业账号集成说明
 
 日期：2026-07-10
 
 ## Change Summary
 
-`lobsterai-server` 新增企业账号上下文。Portal 完成个人版/企业版及具体企业选择后，签发的最终 `authCode`、access token 和 refresh token 绑定所选 `accountMode` 与 `enterpriseId`。Electron 不再重复身份选择，只消费服务端签发的最终身份。
+`baiying-server` 新增企业账号上下文。Portal 完成个人版/企业版及具体企业选择后，签发的最终 `authCode`、access token 和 refresh token 绑定所选 `accountMode` 与 `enterpriseId`。Electron 不再重复身份选择，只消费服务端签发的最终身份。
 
 本次客户端集成包括：
 
 - 登录交换、登录恢复和额度刷新时同步企业账号上下文。
 - 本地持久化当前企业、角色、权限、成员额度和企业积分池。
-- 所有服务端认证请求及 LobsterAI 模型代理请求携带当前已绑定账号上下文头。
+- 所有服务端认证请求及 BaiYing 模型代理请求携带当前已绑定账号上下文头。
 - 企业超级管理员和普通成员使用不同账号菜单；个人账号保持现有菜单。
 - 企业账号菜单展示当前成员的剩余/月度额度；普通成员标记为“企业身份”。
 - 同一账号加入多个企业时，菜单列出全部企业；“进入”只打开对应企业网页，不切换当前客户端 token 身份。
@@ -27,8 +27,8 @@
 - Headers:
   - `Authorization: Bearer <accessToken>`
   - `Accept: application/json`
-  - `X-LobsterAI-Account-Mode: enterprise`（已有持久化上下文时携带）
-  - `X-LobsterAI-Enterprise-Id: <enterpriseId>`（已有持久化上下文时携带）
+  - `X-BaiYing-Account-Mode: enterprise`（已有持久化上下文时携带）
+  - `X-BaiYing-Enterprise-Id: <enterpriseId>`（已有持久化上下文时携带）
 
 成功响应：
 
@@ -84,7 +84,7 @@ refresh token 必须保留原 `accountMode` 和 `enterpriseId`；客户端在刷
 
 ### 企业模型调用
 
-LobsterAI 服务端模型仍通过：
+BaiYing 服务端模型仍通过：
 
 - `POST /api/proxy/v1/chat/completions`
 - 其他 `/api/proxy/v1/*` 兼容端点
@@ -124,7 +124,7 @@ LobsterAI 服务端模型仍通过：
 
 ## Frontend Action Items
 
-已在 LobsterAI 客户端实现：
+已在 BaiYing 客户端实现：
 
 1. 使用 `src/shared/enterpriseAccount/` 维护跨主进程/渲染进程契约。
 2. 使用 `src/main/enterpriseAccount/` 持久化和刷新账号上下文。
@@ -149,7 +149,7 @@ LobsterAI 服务端模型仍通过：
 
 ## Notes & Caveats
 
-- 新任务页使用 LobsterAI 服务端模型时，根据 `/api/enterprise/context.quotaStatus` 预先展示额度卡片并禁用提交，不显示中断横线；用户自配模型不消耗企业额度，因此不受该状态限制。任务执行收到 `41606`、`41607` 或 `41608` 后展示中断横线与额度卡片。
+- 新任务页使用 BaiYing 服务端模型时，根据 `/api/enterprise/context.quotaStatus` 预先展示额度卡片并禁用提交，不显示中断横线；用户自配模型不消耗企业额度，因此不受该状态限制。任务执行收到 `41606`、`41607` 或 `41608` 后展示中断横线与额度卡片。
 - 个人账号保留原个人额度、充值、邀请活动和账号菜单逻辑。
 - 企业账号不请求个人 `profile-summary`，避免将个人积分明细误显示为企业额度。
 - 服务端应先上线企业上下文、token 绑定、模型可见性和结构化额度错误，再发布客户端。

@@ -56,8 +56,8 @@ const resolveDevServerOverride = (): string | undefined => {
  */
 export const getServerApiBaseUrl = (): string => {
   const defaultBaseUrl = isTestModeEnabled()
-    ? 'https://lobsterai-server.inner.youdao.com'
-    : 'https://lobsterai-server.youdao.com';
+    ? 'https://baiying-server.inner.youdao.com'
+    : 'https://baiying-server.youdao.com';
   const serverBaseUrl = resolveDevelopmentServerBaseUrl({
     defaultBaseUrl,
     developmentOverride: resolveDevServerOverride(),
@@ -123,8 +123,8 @@ export const getManualUpdateCheckUrl = (): string => overmindPath('update-manual
 
 export const getFallbackDownloadUrl = (): string => (
   isTestModeEnabled()
-    ? 'https://lobsterai.inner.youdao.com/#/download-list'
-    : 'https://lobsterai.youdao.com/#/download-list'
+    ? 'https://baiying.inner.youdao.com/#/download-list'
+    : 'https://baiying.youdao.com/#/download-list'
 );
 
 export const getSkillStoreUrl = (): string => overmindPath('skill-store');
@@ -139,8 +139,8 @@ export const getMcpMarketplaceUrl = (): string => overmindPath('mcp-marketplace'
  */
 export const getPortalBaseUrl = (): string => {
   const defaultBaseUrl = isTestModeEnabled()
-    ? 'https://lobsterai.inner.youdao.com/portal#'
-    : 'https://lobsterai.youdao.com/portal#';
+    ? 'https://baiying.inner.youdao.com/portal#'
+    : 'https://baiying.youdao.com/portal#';
   const preferred = readEnvWithLegacy('BAIYING_PORTAL_BASE_URL', 'LOBSTER_PORTAL_BASE_URL')
     || readEnvWithLegacy('BAIYING_SERVER_BASE_URL', 'LOBSTER_SERVER_BASE_URL')
     || (isUnpackagedDevelopment() ? LOCAL_BAIYING_BASE_URL : undefined);
@@ -148,12 +148,12 @@ export const getPortalBaseUrl = (): string => {
 
   try {
     const origin = resolveDevelopmentServerBaseUrl({
-      defaultBaseUrl: 'https://lobsterai.youdao.com',
+      defaultBaseUrl: 'https://baiying.youdao.com',
       developmentOverride: preferred,
       isDev: process.env.NODE_ENV === 'development',
       isPackaged: app.isPackaged,
     });
-    if (origin === 'https://lobsterai.youdao.com') return defaultBaseUrl;
+    if (origin === 'https://baiying.youdao.com') return defaultBaseUrl;
     return `${origin}/portal#`;
   } catch (error) {
     console.warn('[Endpoints] invalid Portal development override, using default:', error);

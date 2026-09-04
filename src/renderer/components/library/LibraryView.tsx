@@ -42,6 +42,7 @@ import type {
   LibrarySessionRef,
   LocalArtifactItem,
 } from '../../../shared/library/types';
+import { isLibraryCloudEnabled } from '../../features/libraryCloudFeature';
 import { loadDetectedFileArtifact } from '../../services/artifactDetection';
 import { copyTextToClipboard } from '../../services/clipboard';
 import { i18nService } from '../../services/i18n';
@@ -206,8 +207,14 @@ const CATEGORY_FILTERS = [
 
 const SOURCE_FILTERS = [
   LibrarySourceFilter.Local,
-  LibrarySourceFilter.Cloud,
+  ...(isLibraryCloudEnabled() ? [LibrarySourceFilter.Cloud] as const : []),
 ] as const;
+
+const resolveLibrarySource = (value: LibrarySourceFilter): LibrarySourceFilter => (
+  isLibraryCloudEnabled() || value !== LibrarySourceFilter.Cloud
+    ? value
+    : LibrarySourceFilter.Local
+);
 
 const getLibrarySessionKey = (item: LibraryItem): string => {
   if (item.itemKind === LibraryItemKind.LocalArtifact) {
@@ -361,7 +368,9 @@ const LibraryViewContent: React.FC<LibraryViewProps> = ({
   ));
   const favoriteOwnerScope = ownerAccountKey ?? undefined;
   const [analyticsPageViewId] = useState(createLibraryAnalyticsPageViewId);
-  const [source, setSource] = useState<LibrarySourceFilter>(requestedSource);
+  const [source, setSource] = useState<LibrarySourceFilter>(
+    resolveLibrarySource(requestedSource),
+  );
   const [category, setCategory] = useState<LibraryCategory>(LibraryCategory.All);
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -622,17 +631,18 @@ const LibraryViewContent: React.FC<LibraryViewProps> = ({
   }, []);
 
   const handleSourceChange = (nextSource: LibrarySourceFilter): void => {
-    if (nextSource === source) return;
+    const resolvedSource = resolveLibrarySource(nextSource);
+    if (resolvedSource === source) return;
     reportLibraryAction(analyticsContext, {
       actionType: LibraryAnalyticsActionType.SourceChange,
       control: LibraryAnalyticsControl.Source,
-      targetValue: nextSource,
+      targetValue: resolvedSource,
     });
     setActiveItem(undefined);
     setCategory(LibraryCategory.All);
     setKeywordInput('');
     setKeyword('');
-    setSource(nextSource);
+    setSource(resolvedSource);
     scrollContainerRef.current?.scrollTo({ top: 0 });
   };
 
@@ -683,7 +693,7 @@ const LibraryViewContent: React.FC<LibraryViewProps> = ({
     setCategory(LibraryCategory.All);
     setKeywordInput('');
     setKeyword('');
-    setSource(requestedSource);
+    setSource(resolveLibrarySource(requestedSource));
     scrollContainerRef.current?.scrollTo({ top: 0 });
   }, [navigationRequestId, requestedSource]);
 

@@ -178,8 +178,8 @@ describe('enterprise account context refresh', () => {
     expect(result).toEqual({ success: true, context });
     expect(getPersistedEnterpriseAccountContext(store)).toEqual(context);
     expect(buildEnterpriseAccountRequestHeaders(context)).toEqual({
-      'X-LobsterAI-Account-Mode': EnterpriseAccountMode.Enterprise,
-      'X-LobsterAI-Enterprise-Id': '1001',
+      'X-BaiYing-Account-Mode': EnterpriseAccountMode.Enterprise,
+      'X-BaiYing-Enterprise-Id': '1001',
     });
   });
 

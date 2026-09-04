@@ -1,14 +1,14 @@
-const LEGACY_LOBSTERAI_SESSION_PREFIX = 'lobsterai:';
+const LEGACY_BAIYING_SESSION_PREFIX = 'baiying:';
 const AGENT_SESSION_PREFIX = 'agent:';
-const LOBSTERAI_SESSION_MARKER = 'lobsterai';
+const BAIYING_SESSION_MARKER = 'baiying';
 const SUBAGENT_SESSION_MARKER = 'subagent';
 
 export function isAskUserQuestionCandidateSessionKey(sessionKey: string | undefined | null): boolean {
   const raw = (sessionKey ?? '').trim();
   if (!raw) return false;
 
-  if (raw.startsWith(LEGACY_LOBSTERAI_SESSION_PREFIX)) {
-    return raw.slice(LEGACY_LOBSTERAI_SESSION_PREFIX.length).trim().length > 0;
+  if (raw.startsWith(LEGACY_BAIYING_SESSION_PREFIX)) {
+    return raw.slice(LEGACY_BAIYING_SESSION_PREFIX.length).trim().length > 0;
   }
 
   if (!raw.startsWith(AGENT_SESSION_PREFIX)) {
@@ -27,5 +27,5 @@ export function isAskUserQuestionCandidateSessionKey(sessionKey: string | undefi
     return false;
   }
 
-  return source === LOBSTERAI_SESSION_MARKER || source === SUBAGENT_SESSION_MARKER;
+  return source === BAIYING_SESSION_MARKER || source === SUBAGENT_SESSION_MARKER;
 }

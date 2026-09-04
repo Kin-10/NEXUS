@@ -34,7 +34,7 @@ export type LogEventParams = Record<string, LogParamValue> & {
 };
 
 const logCommons = {
-  _npid: LogReporterProduct.LobsterAI,
+  _npid: LogReporterProduct.BaiYing,
   _ncat: LogReporterCategory.Actions,
 } as const;
 
@@ -325,8 +325,8 @@ export const reportYdAnalyzer = async (params: LogEventParams): Promise<boolean>
     return false;
   }
 
-  if (!params.action.startsWith(LogReporterActionPrefix.LobsterAI)) {
-    writeReporterLog('warn', 'skipped an event without the LobsterAI action prefix');
+  if (!params.action.startsWith(LogReporterActionPrefix.BaiYing)) {
+    writeReporterLog('warn', 'skipped an event without the BaiYing action prefix');
     return false;
   }
 

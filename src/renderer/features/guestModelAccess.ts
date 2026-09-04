@@ -3,7 +3,7 @@ import type { Model } from '../store/slices/modelSlice';
 
 /**
  * Guest (logged-out) users may only use OpenAI-compatible custom providers
- * (`custom_0` … `custom_N`). Built-in vendors and LobsterAI plan models require login.
+ * (`custom_0` … `custom_N`). Built-in vendors and BaiYing plan models require login.
  */
 export function isCustomProviderModel(
   model: Pick<Model, 'providerKey'> | null | undefined,
