@@ -183,6 +183,7 @@ import {
   type ConversationTurn,
   COWORK_DETAIL_CONTENT_CLASS,
   COWORK_DETAIL_GUTTER_CLASS,
+  getStreamingActivityProgressPercent,
   getStreamingActivityStatusText,
   getTurnMessageIds,
   MEDIA_TOKEN_DISPLAY_RE,
@@ -1337,7 +1338,7 @@ class ArtifactPanelErrorBoundary extends React.Component<
   }
 }
 
-const MODEL_RESPONSE_WAITING_TICK_MS = 500;
+const MODEL_RESPONSE_WAITING_TICK_MS = 200;
 
 // Streaming activity bar shown between messages and input
 const StreamingActivityBar: React.FC<{ messages: CoworkMessage[]; isContextMaintenance?: boolean }> = ({
@@ -1346,8 +1347,8 @@ const StreamingActivityBar: React.FC<{ messages: CoworkMessage[]; isContextMaint
 }) => {
   const [elapsedMs, setElapsedMs] = useState(0);
   const waitEpochKey = useMemo(() => {
-    const last = messages[messages.length - 1];
-    return `${isContextMaintenance ? 'ctx' : 'run'}:${last?.id ?? 'none'}:${last?.type ?? 'none'}`;
+    const lastUser = [...messages].reverse().find((message) => message.type === 'user');
+    return `${isContextMaintenance ? 'ctx' : 'run'}:${lastUser?.id ?? 'none'}`;
   }, [isContextMaintenance, messages]);
 
   useEffect(() => {
@@ -1358,6 +1359,12 @@ const StreamingActivityBar: React.FC<{ messages: CoworkMessage[]; isContextMaint
     }, MODEL_RESPONSE_WAITING_TICK_MS);
     return () => window.clearInterval(intervalId);
   }, [waitEpochKey]);
+
+  const progressPercent = getStreamingActivityProgressPercent(
+    messages,
+    isContextMaintenance,
+    elapsedMs,
+  );
 
   const statusText = getStreamingActivityStatusText(
     messages,
@@ -1376,7 +1383,19 @@ const StreamingActivityBar: React.FC<{ messages: CoworkMessage[]; isContextMaint
   return (
     <div className={`shrink-0 animate-fade-in ${COWORK_DETAIL_GUTTER_CLASS}`}>
       <div className={COWORK_DETAIL_CONTENT_CLASS}>
-        <div className="streaming-bar streaming-bar--pulse" />
+        <div
+          className="streaming-bar streaming-bar--live"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progressPercent)}
+          aria-label={statusText || undefined}
+        >
+          <div
+            className="streaming-bar__fill"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
         {showStatusText && statusText && (
           <div className="flex items-center gap-2 py-1">
             <span className="cowork-waiting-pulse cowork-waiting-pulse--sm" aria-hidden="true" />

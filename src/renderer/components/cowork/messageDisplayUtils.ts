@@ -496,6 +496,78 @@ export const getStreamingActivityStatusText = (
   return getCoworkWorkingStageText(elapsedMs);
 };
 
+/** Soft ceiling while a run is still in flight (bar unmounts at completion). */
+export const STREAMING_ACTIVITY_PROGRESS_CAP = 92;
+
+const getActiveStreamingTurnMessages = (messages: CoworkMessage[]): CoworkMessage[] => {
+  let lastUserIndex = -1;
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index].type === 'user') {
+      lastUserIndex = index;
+      break;
+    }
+  }
+  return lastUserIndex >= 0 ? messages.slice(lastUserIndex + 1) : messages;
+};
+
+const clampStreamingProgress = (value: number): number => {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(STREAMING_ACTIVITY_PROGRESS_CAP, value));
+};
+
+/**
+ * Determinate-looking progress for the session busy bar.
+ * Driven by elapsed wait stages plus live turn signals (tools / streamed text),
+ * asymptotic so it never claims 100% before the run finishes.
+ */
+export const getStreamingActivityProgressPercent = (
+  messages: CoworkMessage[],
+  isContextMaintenance = false,
+  elapsedMs = 0,
+): number => {
+  const safeElapsed = Number.isFinite(elapsedMs) ? Math.max(0, elapsedMs) : 0;
+  const elapsedSeconds = safeElapsed / 1000;
+
+  if (isContextMaintenance) {
+    return clampStreamingProgress(14 + 56 * (1 - Math.exp(-elapsedSeconds / 16)));
+  }
+
+  const stage = getCoworkWorkingStageIndex(safeElapsed);
+  let progress = 6 + stage * 7;
+  progress += 16 * (1 - Math.exp(-elapsedSeconds / 22));
+
+  const turnMessages = getActiveStreamingTurnMessages(messages);
+  let toolUses = 0;
+  let toolResults = 0;
+  let assistantChars = 0;
+  let thinkingChars = 0;
+
+  for (const message of turnMessages) {
+    if (message.type === 'tool_use') {
+      toolUses += 1;
+      continue;
+    }
+    if (message.type === 'tool_result') {
+      toolResults += 1;
+      continue;
+    }
+    if (message.type === 'assistant') {
+      const text = typeof message.content === 'string' ? message.content : '';
+      if (message.metadata?.isThinking === true) {
+        thinkingChars += text.length;
+      } else {
+        assistantChars += text.length;
+      }
+    }
+  }
+
+  progress += Math.min(28, toolUses * 7 + toolResults * 5);
+  progress += Math.min(22, Math.log10(1 + assistantChars) * 7.5);
+  progress += Math.min(8, Math.log10(1 + thinkingChars) * 4);
+
+  return clampStreamingProgress(progress);
+};
+
 export const formatElapsedDuration = (elapsedMs: number): string => {
   const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
   if (totalSeconds < 60) {

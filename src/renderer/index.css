@@ -811,6 +811,59 @@ select::-ms-expand {
   box-shadow: 0 0 6px var(--lobster-primary-muted);
 }
 
+/* BaiYing logo blues/reds — brand-fixed, not theme primary */
+.streaming-bar--live {
+  --streaming-logo-blue-deep: #0f5da7;
+  --streaming-logo-blue: #2f7ac8;
+  --streaming-logo-red: #ff3b35;
+  height: 3px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--streaming-logo-blue) 14%, transparent);
+}
+
+.streaming-bar--live::before {
+  content: none;
+  animation: none;
+}
+
+.streaming-bar__fill {
+  position: relative;
+  height: 100%;
+  min-width: 2%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--streaming-logo-blue-deep) 0%,
+    var(--streaming-logo-blue) 48%,
+    var(--streaming-logo-red) 100%
+  );
+  box-shadow: 0 0 8px color-mix(in srgb, var(--streaming-logo-blue) 45%, transparent);
+  transition: width 280ms ease-out;
+  will-change: width;
+}
+
+.streaming-bar__fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 42%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: streaming-fill-sheen 1.35s linear infinite;
+}
+
+@keyframes streaming-fill-sheen {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(280%); }
+}
+
 @keyframes streaming-slide {
   0% { left: -40%; }
   100% { left: 100%; }
@@ -1024,6 +1077,7 @@ select::-ms-expand {
 
   .streaming-bar::before,
   .streaming-bar--pulse,
+  .streaming-bar__fill::after,
   .cowork-waiting-pulse {
     animation: none !important;
   }
@@ -1035,6 +1089,10 @@ select::-ms-expand {
 
   .streaming-bar--pulse {
     opacity: 0.85;
+  }
+
+  .streaming-bar__fill {
+    transition: none;
   }
 }
 

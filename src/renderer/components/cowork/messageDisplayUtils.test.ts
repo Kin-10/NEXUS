@@ -18,6 +18,7 @@ import {
   getActivityStepDisplay,
   getCoworkWorkingStageIndex,
   getCoworkWorkingStageText,
+  getStreamingActivityProgressPercent,
   getStreamingActivityStatusText,
   getToolResultCollapsedDisplay,
   getToolResultDisplay,
@@ -27,6 +28,7 @@ import {
   getTurnMessageIds,
   getTurnStartTimestamp,
   isActivityConsolidatedItem,
+  STREAMING_ACTIVITY_PROGRESS_CAP,
   STRUCTURED_TEXT_FORMAT_MAX_CHARS,
   TOOL_RESULT_COLLAPSED_FULL_DISPLAY_MAX_CHARS,
   turnHasSelfIndicatingActivity,
@@ -245,6 +247,84 @@ test('cowork working stage index advances with elapsed wait time', () => {
   expect(getCoworkWorkingStageIndex(10_000)).toBe(3);
   expect(getCoworkWorkingStageIndex(20_000)).toBe(4);
   expect(getCoworkWorkingStageText(20_000)).toBe('事情比预想复杂一点，我继续盯着…');
+});
+
+test('streaming activity progress advances with elapsed time and live turn signals', () => {
+  const baseline = getStreamingActivityProgressPercent([], false, 0);
+  const later = getStreamingActivityProgressPercent([], false, 8_000);
+  expect(baseline).toBeGreaterThan(0);
+  expect(later).toBeGreaterThan(baseline);
+  expect(later).toBeLessThanOrEqual(STREAMING_ACTIVITY_PROGRESS_CAP);
+
+  const withTools = getStreamingActivityProgressPercent([{
+    id: 'user-1',
+    type: 'user',
+    content: 'go',
+    timestamp: 1,
+  }, {
+    id: 'tool-1',
+    type: 'tool_use',
+    content: '',
+    timestamp: 2,
+    metadata: {
+      toolUseId: 'tool-use-1',
+      toolName: 'exec_command',
+    },
+  }, {
+    id: 'assistant-1',
+    type: 'assistant',
+    content: 'a'.repeat(400),
+    timestamp: 3,
+  }], false, 2_000);
+
+  expect(withTools).toBeGreaterThan(later);
+  expect(withTools).toBeLessThanOrEqual(STREAMING_ACTIVITY_PROGRESS_CAP);
+});
+
+test('streaming activity progress ignores prior turns when scoring the active run', () => {
+  const priorHeavy: CoworkMessage[] = [{
+    id: 'user-old',
+    type: 'user',
+    content: 'old',
+    timestamp: 1,
+  }, {
+    id: 'tool-old',
+    type: 'tool_use',
+    content: '',
+    timestamp: 2,
+    metadata: { toolUseId: 'old-tool', toolName: 'exec_command' },
+  }, {
+    id: 'result-old',
+    type: 'tool_result',
+    content: 'done',
+    timestamp: 3,
+    metadata: { toolUseId: 'old-tool' },
+  }, {
+    id: 'assistant-old',
+    type: 'assistant',
+    content: 'x'.repeat(5_000),
+    timestamp: 4,
+  }, {
+    id: 'user-new',
+    type: 'user',
+    content: 'new',
+    timestamp: 5,
+  }];
+
+  const fresh = getStreamingActivityProgressPercent([{
+    id: 'user-new',
+    type: 'user',
+    content: 'new',
+    timestamp: 5,
+  }], false, 500);
+
+  expect(getStreamingActivityProgressPercent(priorHeavy, false, 500)).toBeCloseTo(fresh, 0);
+});
+
+test('context maintenance progress stays below the soft cap', () => {
+  const progress = getStreamingActivityProgressPercent([], true, 60_000);
+  expect(progress).toBeGreaterThan(40);
+  expect(progress).toBeLessThanOrEqual(STREAMING_ACTIVITY_PROGRESS_CAP);
 });
 
 test('streaming thinking block counts as self-indicating activity', () => {
