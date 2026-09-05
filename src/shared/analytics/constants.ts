@@ -67,6 +67,9 @@ export const LogReporterAction = {
   PublishingDialogExposure: 'baiying_publishing_dialog_exposure',
   PublishingEntryAction: 'baiying_publishing_entry_action',
   PublishingOperationResult: 'baiying_publishing_operation_result',
+  PublishingRecoveryCtaAction: 'baiying_publishing_recovery_cta_action',
+  PublishingRecoveryCtaExposure: 'baiying_publishing_recovery_cta_exposure',
+  PublishingRecoveryResult: 'baiying_publishing_recovery_result',
   PublishingSubscriptionObserved: 'baiying_publishing_subscription_observed',
   PublishShareResult: 'baiying_publish_share_result',
   PublishCopyShareLink: 'baiying_publish_copy_share_link',
@@ -87,6 +90,36 @@ export const LogReporterAction = {
   TaskSearchAction: 'baiying_task_search_action',
   UsageAnalyticsEnabled: 'baiying_usage_analytics_enabled',
 } as const;
+
+export const PublishingRecoveryAnalyticsInteractionType = {
+  RecoveryCta: 'recovery_cta',
+} as const;
+
+export type PublishingRecoveryAnalyticsInteractionType =
+  typeof PublishingRecoveryAnalyticsInteractionType[
+    keyof typeof PublishingRecoveryAnalyticsInteractionType
+  ];
+
+export const PublishingRecoveryAnalyticsSurface = {
+  TaskFileShareDialog: 'task_file_share_dialog',
+  TaskSiteDeploymentDialog: 'task_site_deployment_dialog',
+  LibraryCloudList: 'library_cloud_list',
+  LibraryFileDetail: 'library_file_detail',
+  LibrarySiteDetail: 'library_site_detail',
+} as const;
+
+export type PublishingRecoveryAnalyticsSurface =
+  typeof PublishingRecoveryAnalyticsSurface[keyof typeof PublishingRecoveryAnalyticsSurface];
+
+export const PublishingRecoveryAnalyticsOutcome = {
+  Restored: 'restored',
+  RedeployReady: 'redeploy_ready',
+  RetryExhausted: 'retry_exhausted',
+  ResourceUnavailable: 'resource_unavailable',
+} as const;
+
+export type PublishingRecoveryAnalyticsOutcome =
+  typeof PublishingRecoveryAnalyticsOutcome[keyof typeof PublishingRecoveryAnalyticsOutcome];
 
 export type LogEventAction = `${typeof LogReporterActionPrefix.BaiYing}${string}`;
 

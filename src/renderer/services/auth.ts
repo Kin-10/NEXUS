@@ -49,6 +49,10 @@ import {
   clearPendingPublishingConversionAttribution,
   reportPendingPublishingSubscriptionObserved,
 } from './publishingConversionAttribution';
+import {
+  consumePublishingSubscriptionRecoveryFocusRefresh,
+  observePublishingSubscriptionRecoveryAuthSnapshot,
+} from './publishingSubscriptionRecovery';
 
 interface AuthStateRefreshResult {
   isLoggedIn: boolean;
@@ -340,7 +344,17 @@ class AuthService {
       quota: quota ?? null,
       ownerAccountKey,
     }));
-    void reportPendingPublishingSubscriptionObserved(quota?.subscriptionStatus);
+    const publishingRecoveryAuthSnapshot = {
+      ownerAccountKey,
+      accountMode: quota?.accountMode
+        ?? user.accountMode
+        ?? (isEnterpriseAccount
+          ? EnterpriseAccountMode.Enterprise
+          : EnterpriseAccountMode.Personal),
+      subscriptionStatus: quota?.subscriptionStatus,
+    };
+    void reportPendingPublishingSubscriptionObserved(publishingRecoveryAuthSnapshot);
+    observePublishingSubscriptionRecoveryAuthSnapshot(publishingRecoveryAuthSnapshot);
     const context = applyEnterpriseAccountContext(enterpriseContext);
     this.scheduleEnterpriseQuotaBoundary(context);
     if (context) {
@@ -350,6 +364,12 @@ class AuthService {
 
   private clearAuthenticatedAccountState(): void {
     this.clearEnterpriseQuotaBoundaryTimer();
+    clearPendingPublishingConversionAttribution();
+    observePublishingSubscriptionRecoveryAuthSnapshot({
+      ownerAccountKey: null,
+      accountMode: null,
+      subscriptionStatus: null,
+    });
     store.dispatch(setLoggedOut());
     applyEnterpriseAccountContext(null);
     store.dispatch(clearServerModels());
@@ -457,12 +477,20 @@ class AuthService {
     this.unsubWindowState = window.electron.window.onStateChanged((state) => {
       if (state.isFocused && store.getState().auth.isLoggedIn) {
         const now = Date.now();
+        const forcePublishingRecoveryRefresh =
+          consumePublishingSubscriptionRecoveryFocusRefresh(
+            store.getState().auth.ownerAccountKey,
+          );
         const enterpriseContext = store.getState().enterpriseAccount.context;
         const periodEnd = enterpriseContext?.memberQuota.periodEndExclusive
           ? Date.parse(enterpriseContext.memberQuota.periodEndExclusive)
           : Number.NaN;
         const quotaBoundaryReached = Number.isFinite(periodEnd) && now >= periodEnd;
-        if (quotaBoundaryReached || now - this.lastRefreshTime > 30_000) {
+        if (
+          forcePublishingRecoveryRefresh
+          || quotaBoundaryReached
+          || now - this.lastRefreshTime > 30_000
+        ) {
           this.lastRefreshTime = now;
           void this.checkQuota();
         }
@@ -710,7 +738,15 @@ class AuthService {
       if (result.success) {
         if (result.quota) {
           store.dispatch(updateQuota(result.quota));
-          void reportPendingPublishingSubscriptionObserved(result.quota.subscriptionStatus);
+          const publishingRecoveryAuthSnapshot = {
+            ownerAccountKey: currentAuthState.ownerAccountKey,
+            accountMode: result.quota.accountMode
+              ?? currentAuthState.user?.accountMode
+              ?? EnterpriseAccountMode.Personal,
+            subscriptionStatus: result.quota.subscriptionStatus,
+          };
+          void reportPendingPublishingSubscriptionObserved(publishingRecoveryAuthSnapshot);
+          observePublishingSubscriptionRecoveryAuthSnapshot(publishingRecoveryAuthSnapshot);
         }
         if (result.enterpriseContext !== undefined) {
           const context = applyEnterpriseAccountContext(result.enterpriseContext);
@@ -887,6 +923,12 @@ class AuthService {
   }
 
   private async applyLoggedOutState(expired: boolean): Promise<void> {
+    clearPendingPublishingConversionAttribution();
+    observePublishingSubscriptionRecoveryAuthSnapshot({
+      ownerAccountKey: null,
+      accountMode: null,
+      subscriptionStatus: null,
+    });
     const targetStatus = expired
       ? AuthSessionStatus.Expired
       : AuthSessionStatus.Unauthenticated;

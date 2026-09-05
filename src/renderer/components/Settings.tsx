@@ -37,6 +37,7 @@ import { i18nService, LanguageType } from '../services/i18n';
 import { imService } from '../services/im';
 import { LogReporterAction, reportYdAnalyzer } from '../services/logReporter';
 import { clearPendingPublishingConversionAttribution } from '../services/publishingConversionAttribution';
+import { clearPublishingSubscriptionRecoveryAnalytics } from '../services/publishingSubscriptionRecovery';
 import { formatShortcutForDisplay, getShortcutConflictSignature, isTextEditingSafeShortcut, matchesShortcut } from '../services/shortcuts';
 import {
   type ThemeDefaultChangedDetail,
@@ -1640,7 +1641,9 @@ const Settings: React.FC<SettingsProps> = ({
         reportAboutAction('check_update', 'update_found');
       }
 
-      if (result.state.info) {
+      // A download already running in the background reports its progress on
+      // this button; opening the update dialog on top of it only adds noise.
+      if (result.state.info && result.state.status !== AppUpdateStatus.Downloading) {
         onUpdateFound?.(result.state.info);
       }
     } catch {
@@ -3454,6 +3457,7 @@ const Settings: React.FC<SettingsProps> = ({
 
       if (!usageAnalyticsEnabled) {
         clearPendingPublishingConversionAttribution();
+        clearPublishingSubscriptionRecoveryAnalytics();
       }
 
       if (previousArtifactAutoPreviewEnabled !== artifactAutoPreviewEnabled) {

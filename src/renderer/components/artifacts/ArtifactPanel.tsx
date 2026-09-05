@@ -1,4 +1,6 @@
+import { PublishingRecoveryAnalyticsSurface } from '@shared/analytics/constants';
 import { ArtifactBrowserPartition } from '@shared/artifactPreview/constants';
+import { AuthSubscriptionStatus } from '@shared/auth/constants';
 import {
   BrowserAnnotationGuestChannel,
   BrowserAnnotationGuestCommandType,
@@ -29,6 +31,7 @@ import type { LocalWebService } from '@shared/localWebServices/constants';
 import {
   type PublishingQuotaErrorData,
   PublishingResourceKind,
+  PublishingSubscriptionRecoveryMode,
 } from '@shared/publishing/constants';
 import {
   ShareDeploymentCandidateSource,
@@ -71,6 +74,12 @@ import {
   readLocalServiceProjectDirectoryCandidate as readNodeDeploymentProjectDirectoryCandidate,
   writeLocalServiceProjectDirectory as writeNodeDeploymentProjectDirectory,
 } from '@/services/localServiceProjectDirectoryCache';
+import {
+  armPublishingSubscriptionRecovery,
+  PublishingSubscriptionRecoveryRefreshOutcome,
+  registerPublishingSubscriptionRecoveryTarget,
+  resolvePublishingSubscriptionRecoveryRefreshOutcome,
+} from '@/services/publishingSubscriptionRecovery';
 import { normalizeShellFilePath } from '@/services/shellAppsCache';
 import type { RootState } from '@/store';
 import {
@@ -171,6 +180,7 @@ import {
   createPublishingAnalyticsAttempt,
   createPublishingAnalyticsDialog,
   createPublishingAnalyticsOperationId,
+  createPublishingRecoveryAnalyticsContextFromAttempt,
   getPublishingErrorCategory,
   PublishingAnalyticsActionType,
   type PublishingAnalyticsAttemptContext,
@@ -186,9 +196,14 @@ import {
   reportPublishingCopyDeployLink,
   reportPublishingEntryAction,
   reportPublishingOperationResult,
+  reportPublishingRecoveryCtaAction,
+  reportPublishingRecoveryCtaExposure,
   updatePublishingAnalyticsAttempt,
 } from './publishingAnalytics';
 import PublishingQuotaLimitDialog from './PublishingQuotaLimitDialog';
+import { getPublishingRecoveryFooterActions } from './publishingRecoveryFooterModel';
+import PublishingSubscriptionRecoveryButton from './PublishingSubscriptionRecoveryButton';
+import { shouldShowPublishingSubscriptionRecovery } from './publishingSubscriptionRecoveryPolicy';
 import PublishingTrialNoticeDialog from './PublishingTrialNoticeDialog';
 import { shouldShowPublishingTrialNotice } from './publishingTrialNoticePolicy';
 import {
@@ -201,6 +216,7 @@ import {
   type OfficePreviewZoomControlsConfig,
 } from './renderers/OfficePreviewActionsContext';
 import { OfficeZoomControls } from './renderers/OfficeZoomControls';
+import { usePublishingRecoveryExposureLifecycle } from './usePublishingRecoveryExposureLifecycle';
 
 const t = (key: string) => i18nService.t(key);
 
@@ -310,6 +326,7 @@ interface HtmlShareDialogState {
   targetStatus?: HtmlShareConfigurableStatus;
   disabledSource?: HtmlShareDisabledSourceValue | null;
   accessExpiresAt?: string | null;
+  subscriptionRecoveryMode?: PublishingSubscriptionRecoveryMode;
   statusError?: string;
   contentUpdateStatus?: HtmlShareContentUpdateStatus;
 }
@@ -323,6 +340,7 @@ interface ExistingHtmlShareInfo {
   status?: HtmlShareStatusValue;
   disabledSource?: HtmlShareDisabledSourceValue | null;
   accessExpiresAt?: string | null;
+  subscriptionRecoveryMode?: PublishingSubscriptionRecoveryMode;
 }
 
 interface HtmlShareLookupState {
@@ -419,6 +437,7 @@ function getExistingHtmlShareInfo(
     status?: HtmlShareStatusValue;
     disabledSource?: HtmlShareDisabledSourceValue | null;
     accessExpiresAt?: string | null;
+    subscriptionRecoveryMode?: PublishingSubscriptionRecoveryMode;
   } | null | undefined,
 ): ExistingHtmlShareInfo | null {
   if (!share?.shareId || !share.url) return null;
@@ -430,8 +449,37 @@ function getExistingHtmlShareInfo(
     shareCodeUnavailable: share.shareCodeUnavailable,
     status: share.status,
     disabledSource: share.disabledSource,
-    accessExpiresAt: share.accessExpiresAt,
+    ...(Object.prototype.hasOwnProperty.call(share, 'accessExpiresAt')
+      ? { accessExpiresAt: share.accessExpiresAt }
+      : {}),
+    subscriptionRecoveryMode: share.subscriptionRecoveryMode,
   };
+}
+
+function resolveAccessExpiresAt(
+  value: { accessExpiresAt?: string | null } | null | undefined,
+  fallback?: string | null,
+): string | null | undefined {
+  return value && Object.prototype.hasOwnProperty.call(value, 'accessExpiresAt')
+    ? value.accessExpiresAt
+    : fallback;
+}
+
+function canRedeployExpiredSubscriptionDeployment(
+  deployment: ShareDeploymentRecord | null | undefined,
+  subscriptionStatus?: string | null,
+  now = Date.now(),
+): boolean {
+  if (
+    !deployment?.expiresAt
+    || deployment.subscriptionRecoveryMode
+      !== PublishingSubscriptionRecoveryMode.RedeployRequired
+    || subscriptionStatus !== AuthSubscriptionStatus.Active
+  ) {
+    return false;
+  }
+  const expiresAt = Date.parse(deployment.expiresAt);
+  return Number.isFinite(expiresAt) && expiresAt <= now;
 }
 
 function getConfigurableHtmlShareStatus(
@@ -710,6 +758,7 @@ interface ArtifactPanelProps {
   onOpenHtmlFileInBrowser?: (artifact: Artifact) => void;
   onAddSelectedText?: (snippet: CoworkSelectedTextSnippet) => void;
   selectedTextEnabled?: boolean;
+  agentBrowserPanel?: React.ReactNode;
   subagentPanel?: React.ReactNode;
   userAttachmentPanel?: React.ReactNode;
   onAnnotationSend?: () => void;
@@ -799,6 +848,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
   onOpenHtmlFileInBrowser,
   onAddSelectedText,
   selectedTextEnabled = false,
+  agentBrowserPanel,
   subagentPanel,
   userAttachmentPanel,
   onAnnotationSend,
@@ -871,6 +921,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
   const htmlShareCopyStatusTimerRef = useRef<number | undefined>(undefined);
   const nodeDeploymentLookupDialogTimerRef = useRef<number | undefined>(undefined);
   const nodeDeploymentLookupRef = useRef<NodeDeploymentLookupState | null>(nodeDeploymentLookup);
+  const nodeDeploymentDialogRef = useRef<NodeDeploymentDialogState | null>(nodeDeploymentDialog);
   const nodeDeploymentAnalysisRunIdRef = useRef(0);
   const nodeDeploymentActionRunIdRef = useRef(0);
   const nodeDeploymentAccessRunIdRef = useRef(0);
@@ -896,6 +947,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
   onLocalServiceDeploymentRequestConsumedRef.current =
     onLocalServiceDeploymentRequestConsumed;
   nodeDeploymentLookupRef.current = nodeDeploymentLookup;
+  nodeDeploymentDialogRef.current = nodeDeploymentDialog;
 
   const completeLocalServiceDeploymentRequest = useCallback(() => {
     const requestId = localServiceDeploymentRequest?.requestId;
@@ -3066,7 +3118,11 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
     }
     if (
       snapshot.deployment &&
-      isLocalServiceDeploymentPermissionLocked(snapshot.deployment.disabledSource)
+      isLocalServiceDeploymentPermissionLocked(snapshot.deployment.disabledSource) &&
+      !canRedeployExpiredSubscriptionDeployment(
+        snapshot.deployment,
+        authState.quota?.subscriptionStatus,
+      )
     ) {
       return;
     }
@@ -3096,6 +3152,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
       };
     });
   }, [
+    authState.quota?.subscriptionStatus,
     isNodeDeploymentAccessUpdating,
     isNodeDeploymentBusy,
     isNodeDeploymentLookupPending,
@@ -3539,8 +3596,14 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
       currentDialog.accessMode,
       currentDialog.targetShareStatus,
     );
-    const permissionSubmitAction = getLocalServiceDeploymentPermissionSubmitAction(
+    const permissionDeployment = canRedeployExpiredSubscriptionDeployment(
       currentDialog.deployment,
+      authState.quota?.subscriptionStatus,
+    ) && currentDialog.deployment
+      ? { ...currentDialog.deployment, disabledSource: null }
+      : currentDialog.deployment;
+    const permissionSubmitAction = getLocalServiceDeploymentPermissionSubmitAction(
+      permissionDeployment,
       selectedPermission,
     );
     if (
@@ -3822,6 +3885,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
       }
     }
   }, [
+    authState.quota?.subscriptionStatus,
     isNodeDeploymentBusy,
     isNodeDeploymentAccessUpdating,
     fetchSiteDeploymentQuota,
@@ -4274,7 +4338,9 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
           status: resultStatus,
           targetStatus: resultStatus,
           disabledSource: result.disabledSource ?? undefined,
-          accessExpiresAt: result.accessExpiresAt ?? previous.accessExpiresAt,
+          accessExpiresAt: resolveAccessExpiresAt(result, previous.accessExpiresAt),
+          subscriptionRecoveryMode: result.subscriptionRecoveryMode
+            ?? previous.subscriptionRecoveryMode,
           statusError: undefined,
           contentUpdateStatus: allowActiveLimitRestore
             ? undefined
@@ -4361,7 +4427,9 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
         shareCodeUnavailable: result.shareCodeUnavailable,
         status: result.status ?? htmlShareDialog.status,
         disabledSource: result.disabledSource ?? htmlShareDialog.disabledSource,
-        accessExpiresAt: result.accessExpiresAt ?? htmlShareDialog.accessExpiresAt,
+        accessExpiresAt: resolveAccessExpiresAt(result, htmlShareDialog.accessExpiresAt),
+        subscriptionRecoveryMode: result.subscriptionRecoveryMode
+          ?? htmlShareDialog.subscriptionRecoveryMode,
       };
       rememberHtmlShare(request.lookupKey, refreshedShare);
       setHtmlShareDialog(previous => {
@@ -4383,7 +4451,9 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
           status: refreshedShare.status,
           targetStatus: getConfigurableHtmlShareStatus(refreshedShare.status),
           disabledSource: refreshedShare.disabledSource ?? undefined,
-          accessExpiresAt: refreshedShare.accessExpiresAt ?? previous.accessExpiresAt,
+          accessExpiresAt: resolveAccessExpiresAt(refreshedShare, previous.accessExpiresAt),
+          subscriptionRecoveryMode: refreshedShare.subscriptionRecoveryMode
+            ?? previous.subscriptionRecoveryMode,
           statusError: undefined,
         };
       });
@@ -4499,8 +4569,13 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
           refreshedShare?.shareCodeUnavailable ?? result.shareCodeUnavailable,
         status: resultStatus,
         disabledSource: refreshedShare?.disabledSource ?? result.disabledSource,
-        accessExpiresAt:
-          refreshedShare?.accessExpiresAt ?? result.accessExpiresAt ?? htmlShareDialog.accessExpiresAt,
+        accessExpiresAt: resolveAccessExpiresAt(
+          refreshedShare,
+          resolveAccessExpiresAt(result, htmlShareDialog.accessExpiresAt),
+        ),
+        subscriptionRecoveryMode: refreshedShare?.subscriptionRecoveryMode
+          ?? result.subscriptionRecoveryMode
+          ?? htmlShareDialog.subscriptionRecoveryMode,
       };
       if (request) {
         rememberHtmlShare(request.lookupKey, refreshedResult);
@@ -4526,7 +4601,9 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
           status: resultStatus,
           targetStatus: resultStatus,
           disabledSource: refreshedResult.disabledSource ?? undefined,
-          accessExpiresAt: refreshedResult.accessExpiresAt ?? previous.accessExpiresAt,
+          accessExpiresAt: resolveAccessExpiresAt(refreshedResult, previous.accessExpiresAt),
+          subscriptionRecoveryMode: refreshedResult.subscriptionRecoveryMode
+            ?? previous.subscriptionRecoveryMode,
           statusError: undefined,
         };
       });
@@ -4757,6 +4834,106 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
   const isNodeDeploymentShareDisabled =
     nodeDeploymentTrialStatus.isExpired
     || isLocalServiceDeploymentStopped(nodeDeploymentShareStatus, nodeDeployment?.status);
+  const nodeDeploymentRecoveryMode = nodeDeployment?.subscriptionRecoveryMode;
+  const nodeDeploymentRecoveryResourceKey = nodeDeployment?.shareId
+    ?? nodeDeployment?.deploymentId;
+  const nodeDeploymentAnalyticsAttempt = publishingAnalyticsAttemptRef.current;
+  const nodeDeploymentRecoveryAnalyticsContext = useMemo(() => {
+    if (
+      !nodeDeploymentAnalyticsAttempt
+      || !authState.ownerAccountKey
+      || !nodeDeploymentRecoveryResourceKey
+      || (
+        nodeDeploymentRecoveryMode !== PublishingSubscriptionRecoveryMode.Automatic
+        && nodeDeploymentRecoveryMode !== PublishingSubscriptionRecoveryMode.RedeployRequired
+      )
+    ) {
+      return null;
+    }
+    return createPublishingRecoveryAnalyticsContextFromAttempt(
+      nodeDeploymentAnalyticsAttempt,
+      {
+        ownerAccountKey: authState.ownerAccountKey,
+        resourceKey: nodeDeploymentRecoveryResourceKey,
+        recoverySurface: PublishingRecoveryAnalyticsSurface.TaskSiteDeploymentDialog,
+        subscriptionRecoveryMode: nodeDeploymentRecoveryMode,
+      },
+    );
+  }, [
+    authState.ownerAccountKey,
+    nodeDeploymentAnalyticsAttempt,
+    nodeDeploymentRecoveryMode,
+    nodeDeploymentRecoveryResourceKey,
+  ]);
+  const showNodeDeploymentSubscriptionRecovery = Boolean(
+    nodeDeploymentRecoveryAnalyticsContext
+    && shouldShowPublishingSubscriptionRecovery({
+      ownerAccountKey: authState.ownerAccountKey,
+      subscriptionStatus: authState.quota?.subscriptionStatus,
+      recoveryMode: nodeDeploymentRecoveryMode,
+      isExpired: nodeDeploymentTrialStatus.isExpired,
+      isAvailable: !isNodeDeploymentShareDisabled,
+    }),
+  );
+  usePublishingRecoveryExposureLifecycle(
+    nodeDeploymentRecoveryAnalyticsContext,
+    showNodeDeploymentSubscriptionRecovery,
+  );
+  const isNodeDeploymentSubscriptionRedeployReady = Boolean(
+    nodeDeploymentTrialStatus.isExpired
+    && nodeDeploymentRecoveryMode === PublishingSubscriptionRecoveryMode.RedeployRequired
+    && authState.quota?.subscriptionStatus === AuthSubscriptionStatus.Active,
+  );
+  const nodeDeploymentPermissionModel = isNodeDeploymentSubscriptionRedeployReady
+    && nodeDeployment
+    ? { ...nodeDeployment, disabledSource: null }
+    : nodeDeployment;
+  useEffect(() => {
+    if (!nodeDeploymentRecoveryAnalyticsContext || !nodeDeployment?.deploymentId) {
+      return undefined;
+    }
+    const deploymentId = nodeDeployment.deploymentId;
+    const recoveryMode = nodeDeploymentRecoveryAnalyticsContext.subscriptionRecoveryMode;
+    return registerPublishingSubscriptionRecoveryTarget({
+      ownerAccountKey: nodeDeploymentRecoveryAnalyticsContext.ownerAccountKey,
+      resourceKind: PublishingResourceKind.Site,
+      resourceKey: nodeDeploymentRecoveryAnalyticsContext.resourceKey,
+      recoveryMode,
+      traceId: nodeDeploymentRecoveryAnalyticsContext.attemptId,
+      refresh: async () => {
+        const result = await window.electron?.shareDeployment?.get(deploymentId);
+        if (!result?.success) {
+          return PublishingSubscriptionRecoveryRefreshOutcome.Pending;
+        }
+        if (!result.deployment) {
+          return PublishingSubscriptionRecoveryRefreshOutcome.ResourceUnavailable;
+        }
+        const refreshedDeployment = result.deployment;
+        const outcome = resolvePublishingSubscriptionRecoveryRefreshOutcome({
+          expectedMode: recoveryMode,
+          currentMode: refreshedDeployment.subscriptionRecoveryMode,
+          isRestored: refreshedDeployment.status === ShareDeploymentStatus.Live
+            && refreshedDeployment.shareStatus === HtmlShareStatus.Live
+            && refreshedDeployment.expiresAt === null,
+        });
+        if (nodeDeploymentDialogRef.current?.deployment?.deploymentId === deploymentId) {
+          setNodeDeploymentDialog(previous => previous?.deployment?.deploymentId === deploymentId
+            ? {
+                ...previous,
+                deployment: { ...previous.deployment, ...refreshedDeployment },
+                ...(outcome === PublishingSubscriptionRecoveryRefreshOutcome.RedeployReady
+                  ? {
+                      accessMode: refreshedDeployment.accessMode,
+                      targetShareStatus: HtmlShareStatus.Live,
+                    }
+                  : {}),
+              }
+            : previous);
+        }
+        return outcome;
+      },
+    });
+  }, [nodeDeployment?.deploymentId, nodeDeploymentRecoveryAnalyticsContext]);
   const isDynamicNodeDeployment = Boolean(
     nodeDeployment && nodeDeployment.deploymentKind !== ShareDeploymentKind.StaticSite,
   );
@@ -4765,12 +4942,12 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
     nodeDeploymentDialog?.targetShareStatus,
   );
   const isNodeDeploymentPermissionDirty = isLocalServiceDeploymentPermissionDirty(
-    nodeDeployment,
+    nodeDeploymentPermissionModel,
     nodeDeploymentSelectedPermission,
   );
   const nodeDeploymentPermissionSubmitAction =
     getLocalServiceDeploymentPermissionSubmitAction(
-      nodeDeployment,
+      nodeDeploymentPermissionModel,
       nodeDeploymentSelectedPermission,
     );
   const isNodeDeploymentRedeployRequired = Boolean(
@@ -4798,7 +4975,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
     isNodeDeploymentPendingOperation || !isNodeDeploymentAnalysisReady,
   );
   const isNodeDeploymentPermissionUpdateDisabled = Boolean(
-    nodeDeploymentTrialStatus.isExpired ||
+    (nodeDeploymentTrialStatus.isExpired && !isNodeDeploymentSubscriptionRedeployReady) ||
       isNodeDeploymentAccessUpdating ||
       isNodeDeploymentLookupPending ||
       isNodeDeploymentPending(nodeDeployment?.status) ||
@@ -4806,7 +4983,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
         (nodeDeploymentDialog?.phase !== NodeDeploymentPhase.Analyzing || !nodeDeployment)),
   );
   const isNodeDeploymentPermissionSubmitDisabled = Boolean(
-    nodeDeploymentTrialStatus.isExpired ||
+    (nodeDeploymentTrialStatus.isExpired && !isNodeDeploymentSubscriptionRedeployReady) ||
       nodeDeploymentPermissionSubmitAction !==
       LocalServiceDeploymentPermissionSubmitAction.UpdatePermission ||
       isNodeDeploymentBusy ||
@@ -4821,7 +4998,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
       nodeDeploymentSelectedPermission === LocalServiceDeploymentPermission.Stopped,
   );
   const isNodeDeploymentSubmitDisabled = Boolean(
-    nodeDeploymentTrialStatus.isExpired ||
+    (nodeDeploymentTrialStatus.isExpired && !isNodeDeploymentSubscriptionRedeployReady) ||
       !isNodeDeploymentEditorDialog ||
       isNodeDeploymentPendingOperation ||
       nodeDeploymentDialog?.phase === NodeDeploymentPhase.Live ||
@@ -4833,18 +5010,45 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
       !nodeDeploymentDialog?.port?.trim() ||
       nodeDeploymentAnalysis?.blockers.length,
   );
-  const isNodeDeploymentPermissionLocked = nodeDeploymentTrialStatus.isExpired
-    || isLocalServiceDeploymentPermissionLocked(nodeDeployment?.disabledSource);
+  const isNodeDeploymentPermissionLocked = (
+    nodeDeploymentTrialStatus.isExpired && !isNodeDeploymentSubscriptionRedeployReady
+  )
+    || isLocalServiceDeploymentPermissionLocked(nodeDeploymentPermissionModel?.disabledSource);
   const canCopyNodeDeploymentLink = canCopyLocalServiceDeploymentLink(
     nodeDeployment,
     isNodeDeploymentPendingOperation || isNodeDeploymentPermissionDirty,
   );
+  const nodeDeploymentFooterActions = getPublishingRecoveryFooterActions({
+    showRecovery: showNodeDeploymentSubscriptionRecovery,
+    canCopy: canCopyNodeDeploymentLink,
+    showCopyInStandardFooter: canCopyNodeDeploymentLink,
+  });
+  const nodeDeploymentCopyActionClassName =
+    nodeDeploymentFooterActions.showRecovery || isNodeDeploymentRedeployRequired
+      ? 'border border-border bg-background text-secondary hover:bg-surface hover:text-foreground'
+      : 'bg-primary text-primary-foreground hover:bg-primary/90';
   const nodeDeploymentCopyButtonLabel =
     htmlShareCopyStatus === HtmlShareCopyStatus.Failed
       ? t('copyFailed')
       : htmlShareCopyStatus === HtmlShareCopyStatus.Copied
         ? t('copied')
         : t('htmlShareCopyLink');
+  const openNodeDeploymentRecoverySubscriptionPage = (): void => {
+    if (!nodeDeploymentRecoveryAnalyticsContext) return;
+    reportPublishingRecoveryCtaAction(nodeDeploymentRecoveryAnalyticsContext);
+    armPublishingSubscriptionRecovery({
+      ownerAccountKey: nodeDeploymentRecoveryAnalyticsContext.ownerAccountKey,
+      resourceKind: PublishingResourceKind.Site,
+      resourceKey: nodeDeploymentRecoveryAnalyticsContext.resourceKey,
+      recoveryMode: nodeDeploymentRecoveryAnalyticsContext.subscriptionRecoveryMode,
+      traceId: nodeDeploymentRecoveryAnalyticsContext.attemptId,
+    });
+    void window.electron?.shell?.openExternal(
+      getPortalPricingUrl(PortalPricingKeyfrom.SiteDeployment, {
+        traceId: nodeDeploymentRecoveryAnalyticsContext.attemptId,
+      }),
+    );
+  };
   const nodeDeploymentSubmitLabel = (() => {
     switch (nodeDeploymentDialog?.phase) {
       case NodeDeploymentPhase.Checking:
@@ -5219,6 +5423,8 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
             annotationSendCount={annotationSendCount}
             onAnnotationSend={onAnnotationSend}
           />
+        ) : activeSpecialTab === ArtifactSpecialTab.AgentBrowser && agentBrowserPanel ? (
+          agentBrowserPanel
         ) : activeSpecialTab === ArtifactSpecialTab.Subagents && subagentPanel ? (
           subagentPanel
         ) : activeSpecialTab === ArtifactSpecialTab.UserAttachment && userAttachmentPanel ? (
@@ -5646,6 +5852,7 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                                 name="node-deployment-permission"
                                 value={option.value}
                                 checked={nodeDeploymentTrialStatus.isExpired
+                                  && !isNodeDeploymentSubscriptionRedeployReady
                                   ? option.value === LocalServiceDeploymentPermission.Stopped
                                   : nodeDeploymentSelectedPermission === option.value}
                                 disabled={isDisabled}
@@ -5975,46 +6182,50 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
 
               {isNodeDeploymentEditorDialog && (
                 <div className="shrink-0 flex flex-wrap items-center justify-end gap-3 border-t border-border px-6 py-4 animate-fade-in motion-reduce:animate-none">
-                  <button
-                    type="button"
-                    onClick={() => void submitNodeDeployment()}
-                    disabled={isNodeDeploymentSubmitDisabled}
-                    className={`inline-flex h-10 min-w-[132px] items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-                      nodeDeployment && !isNodeDeploymentRedeployRequired
-                        ? 'border border-border bg-background text-secondary hover:bg-surface hover:text-foreground'
-                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    }`}
-                  >
-                    {showNodeDeploymentSubmitSpinner && (
-                      <ArrowsClockwise
-                        className="h-4 w-4 motion-safe:animate-spin"
-                        aria-hidden="true"
-                      />
-                    )}
-                    {nodeDeploymentSubmitLabel}
-                  </button>
-                  {nodeDeploymentPermissionSubmitAction ===
-                    LocalServiceDeploymentPermissionSubmitAction.UpdatePermission && (
+                  {nodeDeploymentFooterActions.showStandardActions && (
                     <button
                       type="button"
-                      onClick={() => void submitNodeDeploymentPermissionChange()}
-                      disabled={isNodeDeploymentPermissionSubmitDisabled}
-                      className="inline-flex h-10 min-w-[132px] items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      onClick={() => void submitNodeDeployment()}
+                      disabled={isNodeDeploymentSubmitDisabled}
+                      className={`inline-flex h-10 min-w-[132px] items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                        nodeDeployment && !isNodeDeploymentRedeployRequired
+                          ? 'border border-border bg-background text-secondary hover:bg-surface hover:text-foreground'
+                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      }`}
                     >
-                      {isNodeDeploymentAccessUpdating && (
+                      {showNodeDeploymentSubmitSpinner && (
                         <ArrowsClockwise
                           className="h-4 w-4 motion-safe:animate-spin"
                           aria-hidden="true"
                         />
                       )}
-                      {isNodeDeploymentAccessUpdating
-                        ? t('nodeDeploymentPermissionUpdating')
-                        : t('nodeDeploymentUpdatePermissionAction')}
+                      {nodeDeploymentSubmitLabel}
                     </button>
                   )}
-                  {canCopyNodeDeploymentLink && nodeDeployment && (
+                  {nodeDeploymentFooterActions.showStandardActions
+                    && nodeDeploymentPermissionSubmitAction ===
+                    LocalServiceDeploymentPermissionSubmitAction.UpdatePermission && (
+                      <button
+                        type="button"
+                        onClick={() => void submitNodeDeploymentPermissionChange()}
+                        disabled={isNodeDeploymentPermissionSubmitDisabled}
+                        className="inline-flex h-10 min-w-[132px] items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isNodeDeploymentAccessUpdating && (
+                          <ArrowsClockwise
+                            className="h-4 w-4 motion-safe:animate-spin"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {isNodeDeploymentAccessUpdating
+                          ? t('nodeDeploymentPermissionUpdating')
+                          : t('nodeDeploymentUpdatePermissionAction')}
+                      </button>
+                    )}
+                  {nodeDeploymentFooterActions.showCopy && nodeDeployment && (
                     <button
                       type="button"
+                      disabled={nodeDeploymentFooterActions.isCopyDisabled}
                       onClick={() =>
                         handleCopyShareLink(
                           nodeDeployment.url,
@@ -6024,14 +6235,21 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
                           nodeDeployment,
                         )
                       }
-                      className={`inline-flex h-10 min-w-[112px] items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors ${
-                        isNodeDeploymentRedeployRequired
-                          ? 'border border-border bg-background text-secondary hover:bg-surface hover:text-foreground'
-                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      }`}
+                      className={`inline-flex h-10 min-w-[112px] items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${nodeDeploymentCopyActionClassName}`}
                     >
                       {nodeDeploymentCopyButtonLabel}
                     </button>
+                  )}
+                  {nodeDeploymentFooterActions.showRecovery
+                    && nodeDeploymentRecoveryAnalyticsContext && (
+                    <PublishingSubscriptionRecoveryButton
+                      recoveryMode={nodeDeploymentRecoveryAnalyticsContext.subscriptionRecoveryMode}
+                      exposureKey={nodeDeploymentRecoveryAnalyticsContext.exposureId}
+                      onExposure={() => reportPublishingRecoveryCtaExposure(
+                        nodeDeploymentRecoveryAnalyticsContext,
+                      )}
+                      onClick={openNodeDeploymentRecoverySubscriptionPage}
+                    />
                   )}
                 </div>
               )}

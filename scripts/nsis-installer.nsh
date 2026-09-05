@@ -27,6 +27,9 @@ Var lobsterResolvedToolSource
 Var lobsterTrustedPowerShellPath
 Var lobsterTrustedPowerShellStatus
 Var lobsterTrustedPowerShellSource
+Var lobsterHiddenExecExitCode
+Var lobsterHiddenExecOutput
+Var lobsterHiddenExecLaunchError
 
 !ifndef BUILD_UNINSTALLER
   ; Cross-hook state used by the update fast path and the electron-builder
@@ -89,8 +92,8 @@ Var lobsterTrustedPowerShellSource
 ; -- Legacy Skills backup helper exit-code protocol --
 ; The PowerShell backup helper reports its outcome ONLY through these process
 ; exit codes. stdout is diagnostic text for the logs and must never drive
-; control flow: nsExec::ExecToStack returns output with the helper's trailing
-; CRLF attached, so an exact stdout comparison silently fails (this once
+; control flow: LobsterExecHiddenToStack returns output with the helper's
+; trailing CRLF attached, so an exact stdout comparison silently fails (this once
 ; misclassified "no user skills" as "backup succeeded" and produced a spurious
 ; legacy-restore-backup-missing degraded install).
 !define LOBSTER_SKILL_BACKUP_EXIT_VERIFIED "0"
@@ -261,6 +264,188 @@ FunctionEnd
   StrCpy $lobsterTrustedTarSource $lobsterResolvedToolSource
 !macroend
 
+; -- Hidden helper-process launcher --
+; Every external helper (PowerShell, tar) is started through this one
+; function. nsExec creates its child with CREATE_NEW_CONSOLE + SW_HIDE and
+; NSIS Exec with a plain console: on Windows 11 with Windows Terminal as the
+; default terminal the "hidden" console can still flash a terminal window,
+; and the plain console always shows one until PowerShell hides it itself
+; (field feedback 2026-09-02, dictbind bundle: users watched PowerShell pop
+; up and vanish during the install and took the installer for malware).
+; CREATE_NO_WINDOW (0x08000000) creates the child without any console window,
+; so neither conhost nor Windows Terminal ever has something to show.
+;
+; In: stack = command line (below), mode (top): "wait" or "detach".
+; Out: $lobsterHiddenExecExitCode = numeric exit code, or "error" when the
+;      process could not be created (Win32 error in
+;      $lobsterHiddenExecLaunchError); $lobsterHiddenExecOutput = combined
+;      stdout+stderr text in wait mode (bounded, trailing CRLF preserved
+;      exactly as nsExec::ExecToStack delivered it), or a launch-failed note.
+;      "detach" returns right after creation, inherits no handles and reports
+;      "0"/"error" only. The error flag is cleared on return; the Detached
+;      macro re-raises it for launch failures (Exec contract).
+; Every register is preserved; results travel through the variables so the
+; macros below can reproduce the exact nsExec stack contracts.
+!ifdef BUILD_UNINSTALLER
+Function un.lobsterExecHiddenProcess
+!else
+Function lobsterExecHiddenProcess
+!endif
+  Exch $1
+  Exch
+  Exch $0
+  Push $2
+  Push $3
+  Push $4
+  Push $5
+  Push $6
+  Push $7
+  Push $8
+  Push $9
+
+  StrCpy $lobsterHiddenExecExitCode "error"
+  StrCpy $lobsterHiddenExecOutput ""
+  StrCpy $lobsterHiddenExecLaunchError "0"
+  StrCpy $2 0
+  StrCpy $3 0
+  StrCpy $9 ""
+  StrCmp $1 "wait" 0 LobsterHiddenExecStartupInfo
+
+  ; Capture file for stdout+stderr; stdin comes from NUL so a helper that
+  ; unexpectedly prompts fails instead of blocking on a console that does
+  ; not exist. Both handles are inheritable.
+  InitPluginsDir
+  System::Call 'kernel32::GetTickCount() i .r4'
+  StrCpy $9 "$PLUGINSDIR\lobster-helper-$4.out"
+  System::Call '*(i 12, p 0, i 1) p .r5'
+  System::Call 'kernel32::CreateFileW(w "NUL", i 0x80000000, i 3, p r5, i 3, i 0, p 0) p .r2'
+  System::Call 'kernel32::CreateFileW(w r9, i 0x40000000, i 3, p r5, i 2, i 0x80, p 0) p .r3'
+  System::Free $5
+  IntCmp $2 -1 LobsterHiddenExecCaptureUnavailable
+  IntCmp $3 -1 LobsterHiddenExecCaptureUnavailable
+  Goto LobsterHiddenExecStartupInfo
+
+  LobsterHiddenExecCaptureUnavailable:
+  ; Run without redirection rather than failing the operation: output is
+  ; diagnostics only, the exit code stays authoritative.
+  IntCmp $2 -1 +2
+    System::Call 'kernel32::CloseHandle(p r2)'
+  IntCmp $3 -1 +2
+    System::Call 'kernel32::CloseHandle(p r3)'
+  StrCpy $2 0
+  StrCpy $3 0
+  Delete $9
+  StrCpy $9 ""
+
+  LobsterHiddenExecStartupInfo:
+  ; STARTF_USESHOWWINDOW (1) with wShowWindow = SW_HIDE (0), plus
+  ; STARTF_USESTDHANDLES (0x100; 257 in total) when capturing.
+  StrCpy $6 1
+  StrCpy $5 0
+  StrCmp $9 "" +3
+    StrCpy $6 257
+    StrCpy $5 1
+  ; STARTUPINFOW, 32-bit layout (68 bytes): cb, lpReserved, lpDesktop,
+  ; lpTitle, dwX, dwY, dwXSize, dwYSize, dwXCountChars, dwYCountChars,
+  ; dwFillAttribute, dwFlags, wShowWindow+cbReserved2 (one zero DWORD),
+  ; lpReserved2, hStdInput, hStdOutput, hStdError.
+  System::Call '*(i 68, p 0, p 0, p 0, i 0, i 0, i 0, i 0, i 0, i 0, i 0, i r6, i 0, p 0, p r2, p r3, p r3) p .r7'
+  ; PROCESS_INFORMATION (16 bytes): hProcess, hThread, dwProcessId, dwThreadId.
+  System::Call '*(p 0, p 0, i 0, i 0) p .r8'
+  ; CreateProcessW(NULL, cmd, NULL, NULL, bInheritHandles, CREATE_NO_WINDOW,
+  ; inherit environment, inherit current directory, &si, &pi)
+  System::Call 'kernel32::CreateProcessW(p 0, w r0, p 0, p 0, i r5, i 0x08000000, p 0, p 0, p r7, p r8) i .r4 ?e'
+  Pop $lobsterHiddenExecLaunchError
+  IntCmp $4 0 LobsterHiddenExecCreateFailed
+  System::Call '*$8(p .r4, p .r5, i, i)'
+  System::Call 'kernel32::CloseHandle(p r5)'
+  StrCmp $1 "wait" 0 LobsterHiddenExecDetachedStarted
+  System::Call 'kernel32::WaitForSingleObject(p r4, i -1)'
+  System::Call 'kernel32::GetExitCodeProcess(p r4, *i .r5) i .r6'
+  System::Call 'kernel32::CloseHandle(p r4)'
+  IntCmp $6 0 LobsterHiddenExecCollect
+  StrCpy $lobsterHiddenExecExitCode $5
+  Goto LobsterHiddenExecCollect
+
+  LobsterHiddenExecDetachedStarted:
+  System::Call 'kernel32::CloseHandle(p r4)'
+  StrCpy $lobsterHiddenExecExitCode "0"
+  Goto LobsterHiddenExecCollect
+
+  LobsterHiddenExecCreateFailed:
+  StrCpy $lobsterHiddenExecOutput "launch-failed win32_error=$lobsterHiddenExecLaunchError"
+
+  LobsterHiddenExecCollect:
+  System::Free $7
+  System::Free $8
+  IntCmp $2 0 +2
+    System::Call 'kernel32::CloseHandle(p r2)'
+  IntCmp $3 0 +2
+    System::Call 'kernel32::CloseHandle(p r3)'
+  StrCmp $9 "" LobsterHiddenExecDone
+  StrCmp $lobsterHiddenExecExitCode "error" LobsterHiddenExecDeleteCapture
+  ClearErrors
+  FileOpen $4 $9 r
+  IfErrors LobsterHiddenExecDeleteCapture
+  LobsterHiddenExecReadLoop:
+    ClearErrors
+    FileRead $4 $5
+    IfErrors LobsterHiddenExecReadDone
+    StrLen $6 $lobsterHiddenExecOutput
+    IntCmp $6 4096 LobsterHiddenExecReadDone 0 LobsterHiddenExecReadDone
+    StrCpy $lobsterHiddenExecOutput "$lobsterHiddenExecOutput$5"
+    Goto LobsterHiddenExecReadLoop
+  LobsterHiddenExecReadDone:
+  FileClose $4
+  LobsterHiddenExecDeleteCapture:
+  Delete $9
+
+  LobsterHiddenExecDone:
+  ClearErrors
+  Pop $9
+  Pop $8
+  Pop $7
+  Pop $6
+  Pop $5
+  Pop $4
+  Pop $3
+  Pop $2
+  Pop $0
+  Pop $1
+FunctionEnd
+
+!macro LobsterExecHidden MODE
+  Push "${MODE}"
+  !ifdef BUILD_UNINSTALLER
+    Call un.lobsterExecHiddenProcess
+  !else
+    Call lobsterExecHiddenProcess
+  !endif
+!macroend
+
+; nsExec::ExecToStack replacement. The caller pushes the command line first;
+; afterwards the stack holds the exit code on top and the output below it.
+!macro LobsterExecHiddenToStack
+  !insertmacro LobsterExecHidden "wait"
+  Push $lobsterHiddenExecOutput
+  Push $lobsterHiddenExecExitCode
+!macroend
+
+; nsExec::ExecToLog replacement: exit code only (the details pane this
+; installer never shows was the only consumer of the output).
+!macro LobsterExecHiddenExitCode
+  !insertmacro LobsterExecHidden "wait"
+  Push $lobsterHiddenExecExitCode
+!macroend
+
+; Exec replacement: fire and forget; the error flag is set when the process
+; could not be created.
+!macro LobsterExecHiddenDetached
+  !insertmacro LobsterExecHidden "detach"
+  StrCmp $lobsterHiddenExecExitCode "error" 0 +2
+    SetErrors
+!macroend
+
 !macro customHeader
   !ifndef BUILD_UNINSTALLER
     ; The custom include can be parsed before electron-builder's asynchronous
@@ -275,6 +460,16 @@ FunctionEnd
   ; Request admin privileges for script execution (tar extract, etc.)
   ; This does NOT change the default install path -- just ensures UAC elevation.
   RequestExecutionLevel admin
+
+  ; Declare the installer (and the uninstaller stub it writes) DPI-aware.
+  ; electron-builder's template leaves the NSIS manifest without a dpiAware
+  ; element, so on 125%-200% displays Windows renders the whole wizard at
+  ; 96 DPI and bitmap-scales it up: the title-bar icon, the header icon and
+  ; every label come out blurry. With the declaration the dialog is laid out
+  ; at the native DPI and the icons are loaded at their true size from
+  ; build/icons/win/icon.ico (16/24/32/48/64/128/256). MUI2 stretches the
+  ; welcome/finish sidebar bitmap to the scaled control, so layout is kept.
+  ManifestDPIAware true
 
   ; Keep only the progress bar visible. The details box stays hidden and
   ; NSIS/electron-builder retains the default status text behavior.
@@ -322,10 +517,10 @@ FunctionEnd
   ; reaches.
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_ROOT", t "$INSTDIR")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_SELF_PID", t "$lobsterCurrentProcessPid")i'
-  nsExec::ExecToLog '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
-    $$root = $$env:LOBSTERAI_STOP_ROOT;\
+  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    $$root = $$env:BAIYING_STOP_ROOT;\
     if ($$root -and -not $$root.EndsWith([char]92)) { $$root = $$root + [char]92 };\
-    $$selfPid = $$env:LOBSTERAI_STOP_SELF_PID;\
+    $$selfPid = $$env:BAIYING_STOP_SELF_PID;\
     $$sweep = $$root -and $$root.Length -gt 3;\
     for ($$i = 0; $$i -lt 30; $$i++) {\
       $$procs = @();\
@@ -337,6 +532,7 @@ FunctionEnd
       Start-Sleep -Milliseconds 500;\
     };\
     exit 3"'
+  !insertmacro LobsterExecHiddenExitCode
   Pop $0
   StrCpy $R2 $0
   StrCpy $lobsterTargetProcessesStopStatus "numeric-exit-code"
@@ -353,11 +549,11 @@ FunctionEnd
   ; re-check time; 0 means the blockers died right after the verdict.
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "$APPDATA\BaiYing\install-timing.log")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "$lobsterInstallerAttemptId")i'
-  nsExec::ExecToLog '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
     $$ts = Get-Date -Format \"yyyy-MM-dd HH:mm:ss\";\
-    $$root = $$env:LOBSTERAI_STOP_ROOT;\
+    $$root = $$env:BAIYING_STOP_ROOT;\
     if ($$root -and -not $$root.EndsWith([char]92)) { $$root = $$root + [char]92 };\
-    $$selfPid = $$env:LOBSTERAI_STOP_SELF_PID;\
+    $$selfPid = $$env:BAIYING_STOP_SELF_PID;\
     $$sweep = $$root -and $$root.Length -gt 3;\
     $$procs = @();\
     $$procs += Get-Process -Name BaiYing -ErrorAction SilentlyContinue;\
@@ -369,6 +565,7 @@ FunctionEnd
       Add-Content -LiteralPath $$env:BAIYING_STOP_LOG_PATH -Value \"$$ts phase=process-stop-survivor attempt_id=$$env:BAIYING_STOP_ATTEMPT_ID name=$$($$p.ProcessName) pid=$$($$p.Id) path=$$fp\" -ErrorAction SilentlyContinue;\
     };\
     exit $$procs.Count"'
+  !insertmacro LobsterExecHiddenExitCode
   Pop $1
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "")i'
@@ -474,36 +671,49 @@ FunctionEnd
     ; Enumerate its contents instead of using IfFileExists with a wildcard:
     ; wildcard directory-existence checks misclassify that empty directory as
     ; an old install. Only a real child entry is existing evidence.
-    ClearErrors
-    FindFirst $4 $5 "$INSTDIR\*"
-    IfErrors LobsterInstallPreflightFindFirstFailed
+    ;
+    ; The enumeration runs through the System plug-in so the Win32 error that
+    ; ends it is captured in the same call (?e). The previous NSIS FindNext
+    ; followed by a separate GetLastError read a stale value (plug-in loading
+    ; sits in between), never saw ERROR_NO_MORE_FILES and therefore never
+    ; classified any install as fresh (field logs: 46 of 46 preflights
+    ; possible-existing, fresh machines included).
+    ; WIN32_FIND_DATAW: dwFileAttributes, 3x FILETIME, nFileSizeHigh/Low,
+    ; dwReserved0/1, cFileName[260], cAlternateFileName[14].
+    System::Call '*(i, l, l, l, i, i, i, i, &w260, &w14) p .r6'
+    System::Call 'kernel32::FindFirstFileW(w "$INSTDIR\*", p r6) p .r4 ?e'
+    Pop $5
+    IntCmp $4 -1 LobsterInstallPreflightFindFirstFailed
     LobsterInstallPreflightEntryLoop:
+      System::Call '*$6(i, l, l, l, i, i, i, i, &w260 .r5, &w14)'
       StrCmp $5 "." LobsterInstallPreflightNextEntry
       StrCmp $5 ".." LobsterInstallPreflightNextEntry
-      FindClose $4
+      System::Call 'kernel32::FindClose(p r4)'
       Goto LobsterInstallPreflightDone
     LobsterInstallPreflightNextEntry:
-      ClearErrors
-      FindNext $4 $5
-      IfErrors LobsterInstallPreflightFindNextFailed
+      System::Call 'kernel32::FindNextFileW(p r4, p r6) i .r0 ?e'
+      Pop $5
+      IntCmp $0 0 LobsterInstallPreflightFindNextFailed
       Goto LobsterInstallPreflightEntryLoop
 
     LobsterInstallPreflightFindNextFailed:
-      System::Call 'kernel32::GetLastError()i .r6'
-      FindClose $4
-      IntCmp $6 18 LobsterInstallPreflightFresh
+      System::Call 'kernel32::FindClose(p r4)'
+      IntCmp $5 18 LobsterInstallPreflightFresh
       Goto LobsterInstallPreflightDone
 
     LobsterInstallPreflightFindFirstFailed:
-      System::Call 'kernel32::GetLastError()i .r6'
-      IntCmp $6 2 LobsterInstallPreflightFresh
-      IntCmp $6 18 LobsterInstallPreflightFresh
+      ; ERROR_FILE_NOT_FOUND / ERROR_PATH_NOT_FOUND: the directory does not
+      ; exist at all; ERROR_NO_MORE_FILES: it exists and is empty.
+      IntCmp $5 2 LobsterInstallPreflightFresh
+      IntCmp $5 3 LobsterInstallPreflightFresh
+      IntCmp $5 18 LobsterInstallPreflightFresh
       Goto LobsterInstallPreflightDone
 
     LobsterInstallPreflightFresh:
     StrCpy $lobsterInstallScenario "fresh-install"
 
     LobsterInstallPreflightDone:
+    System::Free $6
     Pop $6
     Pop $5
     Pop $4
@@ -661,7 +871,7 @@ FunctionEnd
     IfFileExists "$INSTDIR\.lobsterai-staging" 0 LobsterStagingRelocateCreateFailed
     StrCpy $appPackageStagingDir "$INSTDIR\.lobsterai-staging"
     DetailPrint "[Installer] Staging installation payload on the install drive"
-    FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+    FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
     FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$3 mode=install-dir free_mb=$5 needed_mb=$6 plugins_drive=$4 plugins_free_mb=$2 plugins_needed_mb=$1 staging=$appPackageStagingDir$\r$\n"
@@ -672,7 +882,7 @@ FunctionEnd
     ; Could not create the relocated staging directory. Keep the default so
     ; behavior matches previous installers; payload validation still stops a
     ; truncated staging tree afterwards.
-    FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+    FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
     FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$4 mode=plugins-dir result=relocate-create-failed free_mb=$2 needed_mb=$1$\r$\n"
@@ -682,7 +892,7 @@ FunctionEnd
     LobsterStagingQueryFailed:
     ; Never turn a failed probe into an install blocker. Extraction plus the
     ; staged-payload validation remain the authority on success.
-    FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+    FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
     FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$4 mode=plugins-dir result=query-failed free_mb=$2 needed_mb=$1$\r$\n"
@@ -690,18 +900,18 @@ FunctionEnd
     Goto LobsterStagingSelected
 
     LobsterStagingNoRoom:
-    FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+    FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
     FileWrite $9 "$8 phase=staging-preflight-insufficient attempt_id=$lobsterInstallerAttemptId plugins_drive=$4 plugins_free_mb=$2 staging_needed_mb=$1 install_drive=$3 install_free_mb=$5 install_needed_mb=$6 action=abort-install$\r$\n"
     FileClose $9
     !insertmacro customBeforeInstallerQuit "staging-space-insufficient"
-    MessageBox MB_OK|MB_ICONEXCLAMATION "${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+4E0D}${U+8DB3}${U+FF0C}${U+65E0}${U+6CD5}${U+5B89}${U+88C5} LobsterAI${U+3002}${U+8BF7}${U+6E05}${U+7406}${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+540E}${U+91CD}${U+8BD5}${U+3002}$\r$\n$\r$\nThere is not enough free disk space to install LobsterAI: drive $4 has $2 MB free but staging the installation needs about $1 MB, and installing to drive $3 would need about $6 MB free there. Free up disk space and run the installer again. Details: $APPDATA\LobsterAI\install-timing.log" /SD IDOK
+    MessageBox MB_OK|MB_ICONEXCLAMATION "${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+4E0D}${U+8DB3}${U+FF0C}${U+65E0}${U+6CD5}${U+5B89}${U+88C5} BaiYing${U+3002}${U+8BF7}${U+6E05}${U+7406}${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+540E}${U+91CD}${U+8BD5}${U+3002}$\r$\n$\r$\nThere is not enough free disk space to install BaiYing: drive $4 has $2 MB free but staging the installation needs about $1 MB, and installing to drive $3 would need about $6 MB free there. Free up disk space and run the installer again. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     SetErrorLevel 2
     Quit
 
     LobsterStagingDefaultOk:
-    FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+    FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
     FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$4 mode=plugins-dir free_mb=$2 needed_mb=$1$\r$\n"
@@ -730,7 +940,7 @@ FunctionEnd
     StrCmp $appPackageStagingDir "" LobsterStagingCleanupDone
     StrCmp $appPackageStagingDir "$PLUGINSDIR" LobsterStagingCleanupDone
     RMDir /r "$appPackageStagingDir"
-    FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+    FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
     FileWrite $9 "$8 phase=staging-relocated-cleanup attempt_id=$lobsterInstallerAttemptId staging=$appPackageStagingDir$\r$\n"
@@ -799,13 +1009,13 @@ FunctionEnd
 
     ${If} $1 == "ok"
     ${OrIf} $1 == "size-query-failed"
-      FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+      FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
       FileWrite $9 "$8 phase=payload-staging-validated attempt_id=$lobsterInstallerAttemptId mode=${MODE} result=$1 root=$0 tar_bytes=$2 expected_bytes=$3$\r$\n"
       FileClose $9
     ${Else}
-      FileOpen $9 "$APPDATA\LobsterAI\install-timing.log" a
+      FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
       FileWrite $9 "$8 phase=payload-staging-validation-failed attempt_id=$lobsterInstallerAttemptId mode=${MODE} reason=$1 root=$0 found_bytes=$2 expected_bytes=$3 action=abort-install$\r$\n"
@@ -813,7 +1023,7 @@ FunctionEnd
       ; Never commit a partial app: restore the previous installation first,
       ; then report. /SD keeps silent (/S) installs from blocking on the box.
       !insertmacro customBeforeInstallerQuit "payload-staging-validation-failed"
-      MessageBox MB_OK|MB_ICONEXCLAMATION "${U+5B89}${U+88C5}${U+5305}${U+6570}${U+636E}${U+4E0D}${U+5B8C}${U+6574}${U+FF1A}${U+53EF}${U+80FD}${U+662F}${U+4E34}${U+65F6}${U+76EE}${U+5F55}${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+4E0D}${U+8DB3}${U+6216}${U+5B89}${U+88C5}${U+5305}${U+4E0B}${U+8F7D}${U+4E0D}${U+5B8C}${U+6574}${U+3002}${U+8BF7}${U+6E05}${U+7406}${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+540E}${U+91CD}${U+8BD5}${U+FF0C}${U+6216}${U+91CD}${U+65B0}${U+4E0B}${U+8F7D}${U+5B89}${U+88C5}${U+5305}${U+3002}$\r$\n$\r$\nThe LobsterAI installation stopped because the unpacked installer data is incomplete ($1). This usually means the drive holding the temporary directory ran out of space during extraction, or the installer download was truncated. Free up disk space on the temp drive or download the installer again. No partial application was committed. Details: $APPDATA\LobsterAI\install-timing.log" /SD IDOK
+      MessageBox MB_OK|MB_ICONEXCLAMATION "${U+5B89}${U+88C5}${U+5305}${U+6570}${U+636E}${U+4E0D}${U+5B8C}${U+6574}${U+FF1A}${U+53EF}${U+80FD}${U+662F}${U+4E34}${U+65F6}${U+76EE}${U+5F55}${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+4E0D}${U+8DB3}${U+6216}${U+5B89}${U+88C5}${U+5305}${U+4E0B}${U+8F7D}${U+4E0D}${U+5B8C}${U+6574}${U+3002}${U+8BF7}${U+6E05}${U+7406}${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+540E}${U+91CD}${U+8BD5}${U+FF0C}${U+6216}${U+91CD}${U+65B0}${U+4E0B}${U+8F7D}${U+5B89}${U+88C5}${U+5305}${U+3002}$\r$\n$\r$\nThe BaiYing installation stopped because the unpacked installer data is incomplete ($1). This usually means the drive holding the temporary directory ran out of space during extraction, or the installer download was truncated. Free up disk space on the temp drive or download the installer again. No partial application was committed. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       SetErrorLevel 2
       Quit
     ${EndIf}
@@ -971,7 +1181,8 @@ FunctionEnd
       ; exclusion protecting the restored application indefinitely.
       StrCmp $lobsterTrustedPowerShellPath "" LobsterRollbackDefenderCleanupDone
       System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_TARGET", t "$lobsterOldInstallOriginalPath")i'
-      nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { Remove-MpPreference -ExclusionPath $$env:BAIYING_DEFENDER_TARGET -ErrorAction SilentlyContinue } catch {}"'
+      Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { Remove-MpPreference -ExclusionPath $$env:BAIYING_DEFENDER_TARGET -ErrorAction SilentlyContinue } catch {}"'
+      !insertmacro LobsterExecHiddenToStack
       Pop $0
       Pop $1
       System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_TARGET", t "")i'
@@ -980,12 +1191,14 @@ FunctionEnd
       ; The displaced tree is never needed after a verified restore. Pass its
       ; exact path through the child environment instead of interpolating it
       ; into cmd/PowerShell code: custom install directories may contain shell
-      ; metacharacters. Exec is deliberately non-blocking.
+      ; metacharacters. The detached launch is deliberately non-blocking and,
+      ; unlike NSIS Exec, creates no console window.
       StrCmp $2 "true" 0 LobsterRollbackLog
       System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_FAILED_CLEANUP_PATH", t "$lobsterOldInstallFailedPath")i'
       ClearErrors
       StrCmp $lobsterTrustedPowerShellPath "" LobsterRollbackFailedTreeCleanupDone
-      Exec '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -WindowStyle Hidden -Command "Remove-Item -LiteralPath $$env:BAIYING_FAILED_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
+      Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "Remove-Item -LiteralPath $$env:BAIYING_FAILED_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
+      !insertmacro LobsterExecHiddenDetached
       LobsterRollbackFailedTreeCleanupDone:
       System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_FAILED_CLEANUP_PATH", t "")i'
       Goto LobsterRollbackLog
@@ -1220,7 +1433,7 @@ FunctionEnd
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_BACKUP_ROOT", t "$APPDATA\BaiYing\skills-backup")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ATTEMPT_ID", t "$lobsterInstallerAttemptId")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_OLD_VERSION", t "$4")i'
-    nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$ErrorActionPreference = \"Stop\";\
       $$src       = $$env:BAIYING_SKILL_SOURCE;\
       $$root      = $$env:BAIYING_SKILL_BACKUP_ROOT;\
@@ -1307,6 +1520,7 @@ FunctionEnd
         Write-Output \"legacy-backup-copy-failed\";\
         exit ${LOBSTER_SKILL_BACKUP_EXIT_COPY_FAILED}\
       }"'
+    !insertmacro LobsterExecHiddenToStack
     Pop $0
     Pop $1
     StrCpy $R2 $0
@@ -1324,7 +1538,7 @@ FunctionEnd
       FileClose $R0
     BackupSkipCloseLog:
     ; Status is derived from the helper exit code alone. stdout ($1) is
-    ; logged above for diagnosis only: ExecToStack keeps the helper's
+    ; logged above for diagnosis only: the launcher keeps the helper's
     ; trailing CRLF, so an exact text match here silently fails. Unknown
     ; exit codes keep the fail-closed copy-failed default.
     StrCpy $lobsterLegacySkillsStatus "legacy-backup-copy-failed"
@@ -1675,23 +1889,25 @@ FunctionEnd
 
     CreateDirectory "$INSTDIR"
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-    nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$target = $$env:BAIYING_INSTALL_ROOT;\
       try { $$beforePaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$before = if ($$beforePaths -contains $$target) { \"present\" } else { \"absent\" } } catch { $$before = \"query-failed\" };\
       try { Add-MpPreference -ExclusionPath $$target -ErrorAction Stop; $$add = \"added\" } catch { $$add = \"skipped:\" + $$_.Exception.Message.Trim() };\
       try { $$afterPaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$after = if ($$afterPaths -contains $$target) { \"present\" } else { \"absent\" } } catch { $$after = \"query-failed\" };\
       Write-Output (\"before=\" + $$before + \" add=\" + $$add + \" after=\" + $$after)"'
+    !insertmacro LobsterExecHiddenToStack
     Goto DefenderPostUninstallCommandDone
 
     DefenderPostUninstallQueryOnly:
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-    nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$root = $$env:BAIYING_INSTALL_ROOT;\
       $$targets = @($$root, (Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\SKILLs\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\app.asar\"), (Join-Path $$root \"resources\win-resources.tar\"));\
       try { $$beforePaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$before = @($$targets | Where-Object { $$beforePaths -contains $$_ }).Count } catch { $$before = \"query-failed\" };\
       try { Remove-MpPreference -ExclusionPath $$targets -ErrorAction Stop; $$remove = \"requested\" } catch { $$remove = \"failed:\" + $$_.Exception.Message.Trim() };\
       try { $$afterPaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$after = @($$targets | Where-Object { $$afterPaths -contains $$_ }).Count } catch { $$after = \"query-failed\" };\
       Write-Output (\"before_count=\" + $$before + \" add=disabled remove=\" + $$remove + \" after_count=\" + $$after)"'
+    !insertmacro LobsterExecHiddenToStack
 
     DefenderPostUninstallCommandDone:
     Pop $0
@@ -2095,13 +2311,14 @@ FunctionEnd
   FileWrite $2 "$8 phase=tar-extract-start attempt_id=$lobsterInstallerAttemptId extractor=system-tar helper=$lobsterTrustedTarPath tar=$INSTDIR\resources\win-resources.tar dest=$INSTDIR\resources$\r$\n"
   FileClose $2
   System::Call 'kernel32::GetTickCount()i .r7'
-  ; ExecToStack instead of ExecToLog: bsdtar reports its fatal reason only on
-  ; stderr ("Truncated tar archive detected while reading data" in the
-  ; 2026-08-25 field case), and the details pane this installer never shows
-  ; was the only place ExecToLog delivered it. The exit code contract below
+  ; The output is captured: bsdtar reports its fatal reason only on stderr
+  ; ("Truncated tar archive detected while reading data" in the 2026-08-25
+  ; field case), and the details pane this installer never shows was the
+  ; only place the old ExecToLog delivered it. The exit code contract below
   ; is unchanged; on success tar -xf prints nothing and the output is
   ; discarded.
-  nsExec::ExecToStack '"$lobsterTrustedTarPath" -xf "$INSTDIR\resources\win-resources.tar" -C "$INSTDIR\resources"'
+  Push '"$lobsterTrustedTarPath" -xf "$INSTDIR\resources\win-resources.tar" -C "$INSTDIR\resources"'
+  !insertmacro LobsterExecHiddenToStack
   Pop $0
   Pop $R6
   StrCpy $R2 $0
@@ -2121,7 +2338,7 @@ FunctionEnd
     Push $R6
     Call lobsterBuildSingleLineTail
     Pop $R6
-    FileOpen $2 "$APPDATA\LobsterAI\install-timing.log" a
+    FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
     FileWrite $2 "$8 phase=tar-extract-output attempt_id=$lobsterInstallerAttemptId extractor=system-tar exit=$R2 text=$R6$\r$\n"
@@ -2161,7 +2378,7 @@ FunctionEnd
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_ARCHIVE", t "$INSTDIR\resources\win-resources.tar")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_DESTINATION", t "$INSTDIR\resources")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_LOG", t "$APPDATA\BaiYing\install-timing.log")i'
-  nsExec::ExecToLog '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
     $$ErrorActionPreference = \"Stop\";\
     $$marker = $$env:BAIYING_WATCHDOG_MARKER_PATH;\
     function Write-LobsterWatchdogMarker {\
@@ -2212,6 +2429,7 @@ FunctionEnd
     Write-LobsterWatchdogMarker \"process-timeout\";\
     Write-Output \"BAIYING_WATCHDOG_TIMEOUT\";\
     exit 124"'
+  !insertmacro LobsterExecHiddenExitCode
   Pop $0
   StrCpy $R2 $0
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_WATCHDOG_MARKER_PATH", t "")i'
@@ -2243,7 +2461,7 @@ FunctionEnd
   FileWrite $2 "$8 phase=tar-extract-exit attempt_id=$lobsterInstallerAttemptId extractor=electron raw_marker=$R4 exit=$R2 elapsed_ms=$5$\r$\n"
   FileClose $2
 
-  ; "error" = nsExec couldn't start PowerShell (check before IntCmp, which
+  ; "error" = the launcher couldn't start PowerShell (check before IntCmp, which
   ; converts non-numeric strings to 0 and would misidentify "error" as success)
   StrCmp $R2 "error" TarExtractProcessFailed
   StrCmp $R2 "helper-not-found" TarExtractProcessFailed
@@ -2417,7 +2635,7 @@ FunctionEnd
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_BACKUP_ROOT", t "$APPDATA\BaiYing\skills-backup")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_DESTINATION", t "$INSTDIR\resources\SKILLs")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ATTEMPT_ID", t "$lobsterInstallerAttemptId")i'
-    nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$ErrorActionPreference = \"Stop\";\
       $$attempt   = $$env:BAIYING_INSTALL_ATTEMPT_ID;\
       $$root      = $$env:BAIYING_SKILL_BACKUP_ROOT;\
@@ -2481,6 +2699,7 @@ FunctionEnd
       } catch {\
         exit 1\
       }"'
+    !insertmacro LobsterExecHiddenToStack
     Pop $0
     Pop $1
     StrCpy $R2 $0
@@ -2580,61 +2799,54 @@ FunctionEnd
   ; extraction it is intentionally kept alongside win-resources.tar.
 
   ; -- Rebalance Defender exclusions now that extraction is done --
-  ; Unconditionally remove the install-scope whole-directory entry (also the
-  ; leftover of an interrupted install -- the entry path is always $INSTDIR,
-  ; so this step self-heals it) and the SKILLs entry older installers added.
-  !insertmacro ResolveTrustedPowerShell
-  StrCmp $lobsterTrustedPowerShellPath "" DefenderTrimHelperMissing
-  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-  nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { $$root = $$env:BAIYING_INSTALL_ROOT; $$targets = @($$root, (Join-Path $$root \"resources\SKILLs\")); Remove-MpPreference -ExclusionPath $$targets -ErrorAction SilentlyContinue; Write-Output \"removed\" } catch { Write-Output (\"failed: \" + $$_.Exception.Message) }"'
-  Pop $0
-  Pop $1
-  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "")i'
-  Goto DefenderTrimLog
-  DefenderTrimHelperMissing:
-  StrCpy $0 "helper-not-found"
-  StrCpy $1 "skipped:trusted-powershell-unavailable"
-  DefenderTrimLog:
-  FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
-  FileSeek $2 0 END
-  !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=defender-exclusion-trim-complete attempt_id=$lobsterInstallerAttemptId exit=$0 output=$1$\r$\n"
-  FileClose $2
-
-  ; Re-add the permanent entries; skipped entirely when the
-  ; /NoDefenderExclusion opt-out is present -- the removals above are not.
+  ; One helper launch does both halves. First, unconditionally remove the
+  ; install-scope whole-directory entry (also the leftover of an interrupted
+  ; install -- the entry path is always $INSTDIR, so this step self-heals it)
+  ; and the SKILLs entry older installers added. Then, unless the
+  ; /NoDefenderExclusion opt-out is present (the removals never are), re-add
+  ; the permanent entries.
   ;
-  ; Besides the three runtime trees, this PRE-PROVISIONS the two biggest
-  ; single files of the NEXT upgrade: win-resources.tar and app.asar. Field
-  ; finding (EICAR-verified on a machine where install-time exclusions never
-  ; worked): Defender applies newly added exclusions asynchronously, minutes
-  ; later -- entries added mid-install protect nothing, while entries that
-  ; have been sitting since the previous install are fully honored. Risk:
-  ; the tar path points at a file that only exists during an install, and
-  ; app.asar is the same trust class as the already-excluded
-  ; app.asar.unpacked. SKILLs stays scannable (user-writable,
-  ; agent-executed).
+  ; Besides the three runtime trees, the permanent set PRE-PROVISIONS the two
+  ; biggest single files of the NEXT upgrade: win-resources.tar and app.asar.
+  ; Field finding (EICAR-verified on a machine where install-time exclusions
+  ; never worked): Defender applies newly added exclusions asynchronously,
+  ; minutes later -- entries added mid-install protect nothing, while entries
+  ; that have been sitting since the previous install are fully honored.
+  ; Risk: the tar path points at a file that only exists during an install,
+  ; and app.asar is the same trust class as the already-excluded
+  ; app.asar.unpacked. SKILLs stays scannable (user-writable, agent-executed).
+  !insertmacro ResolveTrustedPowerShell
+  StrCpy $R7 "1"
   ${GetParameters} $R9
   ClearErrors
   ${GetOptions} $R9 "/NoDefenderExclusion" $R8
-  IfErrors 0 DefenderPermanentAddSkipped
-  StrCmp $lobsterTrustedPowerShellPath "" DefenderPermanentAddHelperMissing
+  IfErrors +2
+    StrCpy $R7 "0"
+  StrCmp $lobsterTrustedPowerShellPath "" DefenderRebalanceHelperMissing
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-  nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { $$root = $$env:BAIYING_INSTALL_ROOT; $$targets = @((Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\app.asar\"), (Join-Path $$root \"resources\win-resources.tar\")); Add-MpPreference -ExclusionPath $$targets -ErrorAction Stop; Write-Output \"added\" } catch { Write-Output (\"skipped: \" + $$_.Exception.Message) }"'
+  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_ADD_PERMANENT", t "$R7")i'
+  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    $$root = $$env:BAIYING_INSTALL_ROOT;\
+    try { $$trimTargets = @($$root, (Join-Path $$root \"resources\SKILLs\")); Remove-MpPreference -ExclusionPath $$trimTargets -ErrorAction SilentlyContinue; $$trim = \"removed\" } catch { $$trim = \"failed:\" + $$_.Exception.Message.Trim() };\
+    if ($$env:BAIYING_DEFENDER_ADD_PERMANENT -ne \"1\") { $$permanent = \"skipped:opt-out\" } else {\
+      try { $$addTargets = @((Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\app.asar\"), (Join-Path $$root \"resources\win-resources.tar\")); Add-MpPreference -ExclusionPath $$addTargets -ErrorAction Stop; $$permanent = \"added\" } catch { $$permanent = \"skipped:\" + $$_.Exception.Message.Trim() }\
+    };\
+    Write-Output (\"trim=\" + $$trim + \" permanent=\" + $$permanent)"'
+  !insertmacro LobsterExecHiddenToStack
   Pop $0
   Pop $1
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "")i'
-  Goto DefenderPermanentAddLog
-  DefenderPermanentAddHelperMissing:
+  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_ADD_PERMANENT", t "")i'
+  Goto DefenderRebalanceLog
+  DefenderRebalanceHelperMissing:
   StrCpy $0 "helper-not-found"
   StrCpy $1 "skipped:trusted-powershell-unavailable"
-  DefenderPermanentAddLog:
+  DefenderRebalanceLog:
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=defender-exclusion-permanent-complete attempt_id=$lobsterInstallerAttemptId exit=$0 output=$1$\r$\n"
+  FileWrite $2 "$8 phase=defender-exclusion-rebalance-complete attempt_id=$lobsterInstallerAttemptId permanent_requested=$R7 exit=$0 output=$1$\r$\n"
   FileClose $2
-  DefenderPermanentAddSkipped:
 
   ; Validate every scenario before electron-builder writes new registration
   ; or shortcuts. The archive and unpack script are diagnostic recovery
@@ -2715,14 +2927,16 @@ FunctionEnd
   ; validated commit may schedule deletion, and only for this run's exact
   ; backup path. Older interrupted backups remain untouched for recovery.
   ; Pass the path through the environment to avoid shell interpretation of a
-  ; user-selected install directory. Exec is asynchronous, so this phase is
+  ; user-selected install directory. The detached launch is asynchronous (and,
+  ; unlike NSIS Exec, creates no console window), so this phase is
   ; "scheduled", not complete.
   ${If} $lobsterOldInstallRenameStatus == "committed"
     StrCpy $0 "success"
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_OLD_CLEANUP_PATH", t "$lobsterOldInstallBackupPath")i'
     ClearErrors
     StrCmp $lobsterTrustedPowerShellPath "" OldInstallCleanupHelperMissing
-    Exec '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -WindowStyle Hidden -Command "Remove-Item -LiteralPath $$env:BAIYING_OLD_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
+    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "Remove-Item -LiteralPath $$env:BAIYING_OLD_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
+    !insertmacro LobsterExecHiddenDetached
     IfErrors 0 +2
       StrCpy $0 "launch-failed"
     Goto OldInstallCleanupDispatchDone
@@ -2775,7 +2989,8 @@ FunctionEnd
   !insertmacro ResolveTrustedPowerShell
   StrCmp $lobsterTrustedPowerShellPath "" DefenderUninstallCleanupDone
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-  nsExec::ExecToStack '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { $$root = $$env:BAIYING_INSTALL_ROOT; $$targets = @($$root, (Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\SKILLs\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\win-resources.tar\"), (Join-Path $$root \"resources\app.asar\")); Remove-MpPreference -ExclusionPath $$targets -ErrorAction SilentlyContinue } catch {}"'
+  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { $$root = $$env:BAIYING_INSTALL_ROOT; $$targets = @($$root, (Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\SKILLs\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\win-resources.tar\"), (Join-Path $$root \"resources\app.asar\")); Remove-MpPreference -ExclusionPath $$targets -ErrorAction SilentlyContinue } catch {}"'
+  !insertmacro LobsterExecHiddenToStack
   Pop $0
   Pop $1
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "")i'
