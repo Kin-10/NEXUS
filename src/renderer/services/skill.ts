@@ -519,13 +519,19 @@ class SkillService {
     return this.skillIcons.get(skillId);
   }
 
-  getLocalizedSkillDescription(skillId: string, skillName: string, fallback: string): string {
+  getLocalizedSkillDescription(
+    skillId: string,
+    skillName: string,
+    fallback: string,
+    descriptionZh?: string,
+  ): string {
     const localDesc = this.localSkillDescriptions.get(skillName) ?? this.localSkillDescriptions.get(skillId);
     if (localDesc != null) return resolveLocalizedText(localDesc);
     const marketDesc = this.marketplaceSkillDescriptions.get(skillId);
     if (marketDesc != null) return resolveLocalizedText(marketDesc);
     const kitDesc = this.installedKitSkillDescriptions.get(skillId);
     if (kitDesc != null) return resolveLocalizedText(kitDesc);
+    if (descriptionZh && i18nService.getLanguage() === 'zh') return descriptionZh;
     return fallback;
   }
 }

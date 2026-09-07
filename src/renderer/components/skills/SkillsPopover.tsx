@@ -49,8 +49,8 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
   // skills always list before the built-in ones.
   const matchesQuery = (s: Skill) => {
     const query = searchQuery.toLowerCase();
-    const description = shouldUseFallbackDescription
-      ? skillService.getLocalizedSkillDescription(s.id, s.name, s.description)
+    const description = (s.descriptionZh || shouldUseFallbackDescription)
+      ? skillService.getLocalizedSkillDescription(s.id, s.name, s.description, s.descriptionZh)
       : '';
     return s.name.toLowerCase().includes(query) || description.toLowerCase().includes(query);
   };
@@ -145,8 +145,8 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
 
   const renderSkillItem = (skill: Skill) => {
     const isActive = activeSkillIds.includes(skill.id);
-    const description = shouldUseFallbackDescription
-      ? skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description)
+    const description = (skill.descriptionZh || shouldUseFallbackDescription)
+      ? skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description, skill.descriptionZh)
       : '';
     const displayName = skillService.getLocalizedSkillName(skill.id, skill.name);
     return (
@@ -163,8 +163,9 @@ const SkillsPopover: React.FC<SkillsPopoverProps> = ({
       >
         <SkillIconTile
           icon={skillService.getSkillIcon(skill.id)}
+          label={displayName}
           className={asSubmenu ? 'mt-[2px] h-[22px] w-[22px] rounded-md' : 'mt-0.5 h-7 w-7 rounded-lg'}
-          iconClassName={asSubmenu ? 'h-[13px] w-[13px]' : 'h-4 w-4'}
+          iconClassName={asSubmenu ? 'text-[10px] font-semibold' : 'text-xs font-semibold'}
         />
         <div className="flex-1 min-w-0">
           <div className={asSubmenu ? 'flex min-w-0 items-center gap-1.5' : 'flex items-center gap-2'}>

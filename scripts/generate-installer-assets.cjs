@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
+/**
+ * Generates the NSIS installer welcome bitmap (630×352).
+ * Visual language matches the in-app startup loading screen:
+ * soft brand wash, colorful orbit ribbons, centered mascot/icon, flat CTA.
+ */
+
 const fs = require('fs');
 const path = require('path');
 
@@ -14,6 +20,12 @@ const outputPreviewPng = path.join(outputDir, 'welcome.png');
 
 const WIDTH = 630;
 const HEIGHT = 352;
+
+/** Brand primary — keep BaiYing tokens, not the skill purple palette. */
+const PRIMARY = '#FF004D';
+const PRIMARY_SOFT = 'rgba(255, 0, 77, 0.08)';
+const INK = '#1A1D23';
+const MUTED = '#6B7280';
 
 function registerFontIfPresent(filePath, family) {
   if (!fs.existsSync(filePath)) return;
@@ -43,13 +55,6 @@ function fillRoundRect(ctx, x, y, width, height, radius, fillStyle) {
   roundRect(ctx, x, y, width, height, radius);
   ctx.fillStyle = fillStyle;
   ctx.fill();
-}
-
-function strokeRoundRect(ctx, x, y, width, height, radius, strokeStyle, lineWidth = 1) {
-  roundRect(ctx, x, y, width, height, radius);
-  ctx.strokeStyle = strokeStyle;
-  ctx.lineWidth = lineWidth;
-  ctx.stroke();
 }
 
 function writeBmp(canvas, filePath) {
@@ -89,132 +94,152 @@ function writeBmp(canvas, filePath) {
   fs.writeFileSync(filePath, buffer);
 }
 
-function drawBox(ctx, centerX, centerY) {
-  const boxY = centerY + 16;
-  const boxWidth = 120;
-  const half = boxWidth / 2;
-
-  ctx.save();
-  ctx.shadowColor = 'rgba(225, 108, 60, 0.16)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 10;
-
-  ctx.beginPath();
-  ctx.moveTo(centerX - half, boxY - 8);
-  ctx.lineTo(centerX, boxY + 26);
-  ctx.lineTo(centerX + half, boxY - 8);
-  ctx.lineTo(centerX, boxY - 39);
-  ctx.closePath();
-  ctx.fillStyle = '#F2C991';
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(centerX - half, boxY - 8);
-  ctx.lineTo(centerX - 22, boxY - 28);
-  ctx.lineTo(centerX, boxY - 39);
-  ctx.lineTo(centerX - 10, boxY - 4);
-  ctx.closePath();
-  ctx.fillStyle = '#F8D9A8';
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(centerX + half, boxY - 8);
-  ctx.lineTo(centerX + 22, boxY - 28);
-  ctx.lineTo(centerX, boxY - 39);
-  ctx.lineTo(centerX + 10, boxY - 4);
-  ctx.closePath();
-  ctx.fillStyle = '#FFE3B6';
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(centerX - 50, boxY - 1);
-  ctx.lineTo(centerX - 8, boxY + 22);
-  ctx.lineTo(centerX - 1, boxY - 4);
-  ctx.lineTo(centerX - 31, boxY - 23);
-  ctx.closePath();
-  ctx.fillStyle = '#EEC37F';
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(centerX + 50, boxY - 1);
-  ctx.lineTo(centerX + 8, boxY + 22);
-  ctx.lineTo(centerX + 1, boxY - 4);
-  ctx.lineTo(centerX + 31, boxY - 23);
-  ctx.closePath();
-  ctx.fillStyle = '#F7D497';
-  ctx.fill();
-
-  ctx.restore();
+/** Hue wheel helper — same feel as startup orbit ribbons. */
+function wheel(hue, s = 0.55, l = 0.62) {
+  const h = ((hue % 360) + 360) % 360;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r;
+  let g;
+  let b;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const hex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
 }
 
-function drawDownloadBadge(ctx, centerX, centerY) {
+/**
+ * Draw a frozen “loading animation” frame: elliptical colorful arcs
+ * wrapping a center mark — mirrors CoworkStartupMascot orbit ribbons.
+ */
+function drawOrbitRibbons(ctx, cx, cy, radius) {
+  const rings = [
+    { a: 1.15, tilt: 0.55, phase: 0.15, sweep: 2.4, hue: 12, width: 7 },
+    { a: 1.28, tilt: -0.4, phase: 1.2, sweep: 2.1, hue: 165, width: 6 },
+    { a: 1.38, tilt: 0.85, phase: 2.4, sweep: 1.9, hue: 265, width: 5.5 },
+    { a: 1.22, tilt: -0.95, phase: 3.5, sweep: 2.0, hue: 45, width: 5 },
+  ];
+
+  for (const ring of rings) {
+    const rx = radius * ring.a;
+    const ry = radius * ring.a * 0.42;
+    const start = ring.phase;
+    const end = ring.phase + ring.sweep;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(ring.tilt);
+    ctx.lineCap = 'round';
+    ctx.lineWidth = ring.width;
+    ctx.globalAlpha = 0.88;
+
+    const steps = 36;
+    for (let i = 0; i < steps; i += 1) {
+      const t0 = start + ((end - start) * i) / steps;
+      const t1 = start + ((end - start) * (i + 1)) / steps;
+      const hue = ring.hue + (i / steps) * 70;
+      ctx.strokeStyle = wheel(hue);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx, ry, 0, t0, t1);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawBotFace(ctx, cx, cy, scale) {
+  // Soft body disc
   ctx.save();
-  ctx.shadowColor = 'rgba(236, 87, 54, 0.2)';
-  ctx.shadowBlur = 8;
   ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
-  ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 38 * scale, 0, Math.PI * 2);
   ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = '#F4D0BE';
-  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = 'rgba(26, 29, 35, 0.08)';
+  ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.strokeStyle = '#F15A36';
-  ctx.lineWidth = 3;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+
+  // Face silhouette hint (rounded capsule)
+  ctx.fillStyle = INK;
   ctx.beginPath();
-  ctx.moveTo(centerX, centerY - 6);
-  ctx.lineTo(centerX, centerY + 5);
-  ctx.moveTo(centerX - 5, centerY + 1);
-  ctx.lineTo(centerX, centerY + 6);
-  ctx.lineTo(centerX + 5, centerY + 1);
-  ctx.stroke();
+  ctx.ellipse(cx, cy + 2 * scale, 28 * scale, 26 * scale, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes — slightly open, friendly
+  ctx.fillStyle = '#FFFFFF';
+  const eyeY = cy - 2 * scale;
+  ctx.beginPath();
+  ctx.ellipse(cx - 10 * scale, eyeY, 5.2 * scale, 6.2 * scale, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx + 11 * scale, eyeY, 5 * scale, 6 * scale, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
 function drawTitle(ctx) {
-  const prefix = '点击按钮安装 ';
-  const product = 'BaiYing';
+  const prefix = '安装 ';
+  const product = '百应';
   ctx.save();
-  ctx.font = '700 28px "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif';
-  ctx.fillStyle = '#050505';
+  ctx.font = '700 30px "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif';
   ctx.textBaseline = 'middle';
 
   const prefixWidth = ctx.measureText(prefix).width;
   const productWidth = ctx.measureText(product).width;
   const startX = (WIDTH - prefixWidth - productWidth) / 2;
-  const y = 172;
+  const y = 188;
 
+  ctx.fillStyle = INK;
   ctx.fillText(prefix, startX, y);
+  ctx.fillStyle = PRIMARY;
   ctx.fillText(product, startX + prefixWidth, y);
 
-  ctx.strokeStyle = '#FF6B65';
-  ctx.lineWidth = 2.4;
+  // Accent underline under product name (flat, no heavy decoration)
+  ctx.strokeStyle = PRIMARY;
+  ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(startX + prefixWidth + 3, y + 17);
-  ctx.bezierCurveTo(
-    startX + prefixWidth + 26,
-    y + 20,
-    startX + prefixWidth + productWidth - 20,
-    y + 12,
-    startX + prefixWidth + productWidth,
-    y + 16,
-  );
+  ctx.moveTo(startX + prefixWidth + 2, y + 16);
+  ctx.lineTo(startX + prefixWidth + productWidth - 2, y + 16);
   ctx.stroke();
   ctx.restore();
 }
 
+function drawSubtitle(ctx) {
+  ctx.save();
+  ctx.font = '400 13px "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif';
+  ctx.fillStyle = MUTED;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('你的全场景办公 Agent · 安装后即可开始协作', WIDTH / 2, 218);
+  ctx.restore();
+}
+
 function drawInstallButton(ctx) {
-  const x = (WIDTH - 138) / 2;
-  const y = 218;
-  fillRoundRect(ctx, x, y, 138, 40, 21, '#050505');
+  const w = 148;
+  const h = 42;
+  const x = (WIDTH - w) / 2;
+  const y = 242;
+  fillRoundRect(ctx, x, y, w, h, 21, PRIMARY);
   ctx.font = '700 15px "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif';
   ctx.fillStyle = '#FFFFFF';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('一键安装', WIDTH / 2, y + 20);
+  ctx.fillText('一键安装', WIDTH / 2, y + h / 2);
+}
+
+function drawProgressHint(ctx) {
+  // Mini shimmer bar — echoes the loading page progress strip
+  const barW = 160;
+  const barH = 4;
+  const x = (WIDTH - barW) / 2;
+  const y = 300;
+  fillRoundRect(ctx, x, y, barW, barH, 2, 'rgba(255, 0, 77, 0.14)');
+  fillRoundRect(ctx, x, y, barW * 0.42, barH, 2, PRIMARY);
 }
 
 async function drawWelcomeImage() {
@@ -223,52 +248,50 @@ async function drawWelcomeImage() {
 
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
-  gradient.addColorStop(0, '#FFF1EA');
-  gradient.addColorStop(0.52, '#FFF8F3');
-  gradient.addColorStop(1, '#FFFFFF');
-  ctx.fillStyle = gradient;
+
+  // Flat light canvas + soft brand wash (same family as EngineStartupOverlay)
+  ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  const glow = ctx.createRadialGradient(65, 0, 10, 65, 0, 130);
-  glow.addColorStop(0, 'rgba(255, 118, 76, 0.18)');
-  glow.addColorStop(1, 'rgba(255, 118, 76, 0)');
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, 230, 130);
+  const wash = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+  wash.addColorStop(0, 'rgba(255, 0, 77, 0.07)');
+  wash.addColorStop(0.45, 'rgba(255, 0, 77, 0.02)');
+  wash.addColorStop(1, 'rgba(255, 0, 77, 0)');
+  ctx.fillStyle = wash;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  const coolGlow = ctx.createRadialGradient(510, 105, 20, 510, 105, 310);
-  coolGlow.addColorStop(0, 'rgba(255, 221, 184, 0.24)');
-  coolGlow.addColorStop(1, 'rgba(255, 221, 184, 0)');
-  ctx.fillStyle = coolGlow;
-  ctx.fillRect(240, 0, 390, 270);
+  const softGlow = ctx.createRadialGradient(WIDTH / 2, 96, 20, WIDTH / 2, 96, 160);
+  softGlow.addColorStop(0, PRIMARY_SOFT);
+  softGlow.addColorStop(1, 'rgba(255, 0, 77, 0)');
+  ctx.fillStyle = softGlow;
+  ctx.fillRect(WIDTH / 2 - 180, 0, 360, 220);
 
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.82)';
-  ctx.lineWidth = 1.4;
-  for (const radius of [44, 63, 84]) {
-    ctx.beginPath();
-    ctx.arc(WIDTH / 2, 92, radius, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  drawBox(ctx, WIDTH / 2, 92);
+  const heroX = WIDTH / 2;
+  const heroY = 98;
+  drawOrbitRibbons(ctx, heroX, heroY, 52);
 
   if (fs.existsSync(sourceIcon)) {
     const icon = await loadImage(sourceIcon);
     ctx.save();
-    ctx.shadowColor = 'rgba(224, 76, 52, 0.16)';
-    ctx.shadowBlur = 12;
-    fillRoundRect(ctx, WIDTH / 2 - 35, 42, 70, 70, 18, '#FFFFFF');
-    strokeRoundRect(ctx, WIDTH / 2 - 35, 42, 70, 70, 18, 'rgba(241, 207, 190, 0.7)');
+    fillRoundRect(ctx, heroX - 36, heroY - 36, 72, 72, 20, '#FFFFFF');
+    ctx.beginPath();
+    roundRect(ctx, heroX - 36, heroY - 36, 72, 72, 20);
     ctx.clip();
-    ctx.drawImage(icon, WIDTH / 2 - 31, 46, 62, 62);
+    ctx.drawImage(icon, heroX - 32, heroY - 32, 64, 64);
     ctx.restore();
+    // Thin flat ring
+    ctx.strokeStyle = 'rgba(26, 29, 35, 0.08)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, heroX - 36, heroY - 36, 72, 72, 20);
+    ctx.stroke();
+  } else {
+    drawBotFace(ctx, heroX, heroY, 1);
   }
 
-  drawDownloadBadge(ctx, WIDTH / 2, 129);
   drawTitle(ctx);
+  drawSubtitle(ctx);
   drawInstallButton(ctx);
+  drawProgressHint(ctx);
 
   return canvas;
 }
@@ -279,6 +302,7 @@ async function main() {
   writeBmp(canvas, outputBmp);
   fs.writeFileSync(outputPreviewPng, canvas.toBuffer('image/png'));
   console.log(`Generated installer assets: ${path.relative(projectRoot, outputBmp)}`);
+  console.log(`Preview PNG: ${path.relative(projectRoot, outputPreviewPng)}`);
 }
 
 module.exports = {
@@ -286,7 +310,7 @@ module.exports = {
 };
 
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   });

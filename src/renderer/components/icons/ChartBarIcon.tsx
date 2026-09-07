@@ -2,10 +2,10 @@ import React from 'react';
 
 import { ChartBar } from '@/components/icons/iconParkCompat';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const ChartBarIcon: React.FC<AppIconProps> = ({ className }) => (
-  <ChartBar className={className} {...defaultIconProps} />
+  <ChartBar className={className} {...iconParkOutlineProps} />
 );
 
 export default ChartBarIcon;

@@ -23,10 +23,12 @@ import {
 import { defaultConfig, getCustomProviderDefaultName, getProviderDisplayName, isCustomProvider } from '../../config';
 import { getProviderIcon } from '../../providers/uiRegistry';
 import { i18nService } from '../../services/i18n';
+import { MANAGEMENT_META_TEXT, MANAGEMENT_TITLE_TEXT } from '../common/managementTypography';
 import EditIcon from '../icons/EditIcon';
 import PlusCircleIcon from '../icons/PlusCircleIcon';
 import { GitHubCopilotIcon } from '../icons/providers';
 import TrashIcon from '../icons/TrashIcon';
+import { CAPABILITIES_CARD_CLASS } from '../skillsAndConnectors/capabilitiesChrome';
 import {
   CUSTOM_PROVIDER_KEYS,
   getEffectiveApiFormat,
@@ -764,21 +766,30 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                 return (
                   <div
                     key={provider}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleProviderChange(providerKey)}
-                    className={`group flex items-center p-2 rounded-xl cursor-pointer transition-colors ${
+                    onKeyDown={(e) => {
+                      if (e.target !== e.currentTarget) return;
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleProviderChange(providerKey);
+                      }
+                    }}
+                    className={`group flex cursor-pointer items-center rounded-xl border p-3 transition-colors duration-200 ${
                       activeProvider === provider
-                        ? 'bg-primary-muted border border-primary shadow-subtle'
-                        : 'bg-surface hover:bg-surface-raised border border-transparent'
+                        ? 'border-primary/50 bg-primary-muted'
+                        : 'border-border bg-surface hover:border-primary/40 hover:bg-surface-raised/50'
                     }`}
                   >
-                    <div className="flex flex-1 items-center min-w-0">
-                      <div className="mr-2 flex h-7 w-7 items-center justify-center shrink-0">
+                    <div className="flex min-w-0 flex-1 items-center">
+                      <div className="mr-2.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-surface-raised text-foreground">
                         <span className="text-foreground">
                           {getProviderIcon(provider)}
                         </span>
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className={`text-sm font-medium truncate ${
+                      <div className="flex min-w-0 flex-col">
+                        <span className={`truncate text-sm font-medium ${
                           activeProvider === provider
                             ? 'text-primary'
                             : 'text-foreground'
@@ -786,17 +797,17 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                           {displayLabel}
                         </span>
                         {isCustom && (
-                          <span className="text-[9px] leading-tight mt-0.5 text-primary">
+                          <span className="mt-0.5 text-[10px] font-medium leading-tight text-primary">
                             {i18nService.t('customBadge')}
                           </span>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center ml-2 gap-1">
+                    <div className="ml-2 flex items-center gap-1">
                       {isCustom && (
                         <button
                           type="button"
-                          className="p-1 rounded-lg opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-secondary hover:text-red-500 hover:bg-red-500/10 dark:hover:text-red-400 dark:hover:bg-red-400/10 transition-all"
+                          className="cursor-pointer rounded-lg p-1 text-secondary opacity-0 transition-all duration-200 hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100 focus-visible:opacity-100 dark:hover:bg-red-400/10 dark:hover:text-red-400"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteCustomProvider(providerKey);
@@ -809,7 +820,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                       <div
                         key={attentionNonce === null ? undefined : `provider-toggle-attention-${attentionNonce}`}
                         title={!canToggleProvider ? getProviderAuthRequirementHint(providerKey, config) : undefined}
-                        className={`w-7 h-4 rounded-full flex items-center transition-colors ${
+                        className={`flex h-4 w-7 items-center rounded-full transition-colors duration-200 ${
                           effectiveEnabled ? 'bg-primary' : 'bg-gray-400 dark:bg-gray-600'
                         } ${
                           canToggleProvider ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
@@ -824,7 +835,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                         }}
                       >
                         <div
-                          className={`w-3 h-3 rounded-full bg-white shadow-md transform transition-transform ${
+                          className={`h-3 w-3 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
                             effectiveEnabled ? 'translate-x-3.5' : 'translate-x-0.5'
                           }`}
                         />
@@ -843,7 +854,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
               <button
                 type="button"
                 onClick={handleAddCustomProvider}
-                className="w-full flex items-center justify-center p-2 rounded-xl border border-dashed border-claude-border dark:border-claude-darkBorder text-claude-secondaryText dark:text-claude-darkSecondaryText hover:border-claude-accent hover:text-claude-accent transition-colors text-sm"
+                className="flex w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-border p-3 text-sm text-secondary transition-colors duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
               >
                 {i18nService.t('addCustomProvider')}
               </button>
@@ -2081,7 +2092,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
               )}
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-xs font-medium text-foreground">
                     {i18nService.t('availableModels')}
                     {(providers[activeProvider].models?.length ?? 0) > 0 && (
@@ -2093,79 +2104,109 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                   <button
                     type="button"
                     onClick={handleAddModel}
-                    className="inline-flex items-center text-xs text-primary hover:text-primary-hover"
+                    className="inline-flex cursor-pointer items-center text-xs font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
                   >
-                    <PlusCircleIcon className="h-3.5 w-3.5 mr-1" />
+                    <PlusCircleIcon className="mr-1 h-3.5 w-3.5" />
                     {i18nService.t('addModel')}
                   </button>
                 </div>
 
-                {/* Models List */}
-                <div className="space-y-1.5">
-                  {(providers[activeProvider].models ?? []).map(model => (
-                    <div
-                      key={model.id}
-                      className="bg-surface p-2 rounded-xl border-border border transition-colors hover:border-primary group"
-                    >
-                      <div className="flex items-center justify-between gap-2 min-w-0">
-                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                          <div className="w-1.5 h-1.5 shrink-0 rounded-full bg-green-400"></div>
-                          <div className="min-w-0">
-                            <div className="text-foreground font-medium text-[11px] truncate">{model.name}</div>
-                            <div className="text-[10px] text-secondary truncate">{model.id}</div>
+                {/* Model card grid — flat directory cards */}
+                {(providers[activeProvider].models?.length ?? 0) > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {(providers[activeProvider].models ?? []).map(model => {
+                      const openEdit = () => handleEditModel(
+                        model.id,
+                        model.name,
+                        model.supportsImage,
+                        model.supportsThinking,
+                        model.contextWindow,
+                        model.customParams,
+                      );
+                      return (
+                        <div
+                          key={model.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={openEdit}
+                          onKeyDown={(e) => {
+                            if (e.target !== e.currentTarget) return;
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              openEdit();
+                            }
+                          }}
+                          className={CAPABILITIES_CARD_CLASS}
+                        >
+                          <div className="mb-2 flex items-start gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className={`truncate font-semibold leading-snug text-foreground ${MANAGEMENT_TITLE_TEXT}`}>
+                                {model.name}
+                              </div>
+                              <div className="mt-0.5 truncate font-mono text-[11px] text-secondary">
+                                {model.id}
+                              </div>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEdit();
+                                }}
+                                className="cursor-pointer rounded-lg p-1 text-secondary transition-colors duration-200 hover:bg-primary/10 hover:text-primary"
+                                title={i18nService.t('edit')}
+                              >
+                                <EditIcon className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteModel(model.id);
+                                }}
+                                className="cursor-pointer rounded-lg p-1 text-secondary transition-colors duration-200 hover:bg-red-500/10 hover:text-red-500"
+                                title={i18nService.t('delete')}
+                              >
+                                <TrashIcon className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className={`mt-auto flex flex-wrap items-center gap-1.5 ${MANAGEMENT_META_TEXT}`}>
+                            {model.supportsImage && (
+                              <span className="rounded-md bg-primary-muted px-1.5 py-0.5 font-medium text-primary">
+                                {i18nService.t('imageInput')}
+                              </span>
+                            )}
+                            {model.supportsThinking && (
+                              <span className="rounded-md bg-primary-muted px-1.5 py-0.5 font-medium text-primary">
+                                {i18nService.t('thinkingOutput')}
+                              </span>
+                            )}
+                            {typeof model.contextWindow === 'number' && model.contextWindow > 0 && (
+                              <span className="rounded-md bg-surface-raised px-1.5 py-0.5 font-medium text-secondary">
+                                {formatContextWindow(model.contextWindow)}
+                              </span>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center shrink-0 space-x-1">
-                          {model.supportsImage && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-muted text-primary">
-                              {i18nService.t('imageInput')}
-                            </span>
-                          )}
-                          {model.supportsThinking && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-muted text-primary">
-                              {i18nService.t('thinkingOutput')}
-                            </span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleEditModel(
-                              model.id,
-                              model.name,
-                              model.supportsImage,
-                              model.supportsThinking,
-                              model.contextWindow,
-                              model.customParams,
-                            )}
-                            className="p-0.5 text-secondary hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <EditIcon className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteModel(model.id)}
-                            className="p-0.5 text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <TrashIcon className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {(!providers[activeProvider].models || providers[activeProvider].models.length === 0) && (
-                    <div className="bg-surface p-2.5 rounded-xl border border-border-subtle text-center">
-                      <p className="text-[11px] text-secondary">{i18nService.t('noModelsAvailable')}</p>
-                      <button
-                        type="button"
-                        onClick={handleAddModel}
-                        className="mt-1.5 inline-flex items-center text-[11px] font-medium text-primary hover:text-primary-hover"
-                      >
-                        <PlusCircleIcon className="h-3 w-3 mr-1" />
-                        {i18nService.t('addFirstModel')}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border bg-surface/40 px-4 py-8 text-center">
+                    <p className="text-xs text-secondary">{i18nService.t('noModelsAvailable')}</p>
+                    <button
+                      type="button"
+                      onClick={handleAddModel}
+                      className="mt-2 inline-flex cursor-pointer items-center text-xs font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
+                    >
+                      <PlusCircleIcon className="mr-1 h-3.5 w-3.5" />
+                      {i18nService.t('addFirstModel')}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

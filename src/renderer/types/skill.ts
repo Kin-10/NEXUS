@@ -3,6 +3,8 @@ export interface Skill {
   id: string;
   name: string;
   description: string;
+  /** Optional Chinese UI blurb from SKILL.md `description_zh` / `descriptionZh`. */
+  descriptionZh?: string;
   enabled: boolean;       // Whether visible in popover
   isOfficial: boolean;    // "官方" badge
   isBuiltIn: boolean;     // Bundled with app, cannot be deleted

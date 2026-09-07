@@ -11,6 +11,7 @@ import { buildGoalSettingMessageMetadata } from '../../../common/goalCommandDisp
 import { buildSessionTitleFromInput } from '../../../common/sessionTitle';
 import { buildCoworkImageAttachmentPreviews } from '../../../shared/cowork/imageAttachments';
 import type { CoworkSelectedTextSnippet } from '../../../shared/cowork/selectedText';
+import { SkinAssetSlot } from '../../../shared/skin/constants';
 import startupCreditEntryGiftUrl from '../../assets/startup-credit-entry-gift.svg';
 import { EnterpriseQuotaPrompt } from '../../features/enterpriseAccount/components/EnterpriseQuotaPrompt';
 import { refreshEnterpriseAccountContext } from '../../features/enterpriseAccount/context';
@@ -22,6 +23,7 @@ import {
   selectEnterpriseAccountContext,
   selectIsEnterpriseAccount,
 } from '../../features/enterpriseAccount/selectors';
+import { useSkinAsset } from '../../providers/SkinProvider';
 import { agentService } from '../../services/agent';
 import { coworkService } from '../../services/cowork';
 import { buildCoworkCapabilitySelection } from '../../services/coworkCapabilitySelection';
@@ -67,8 +69,10 @@ import {
 } from '../startupCreditCampaignBridge';
 import { resolveModelThinkingLevel, useAgentSelectedModel } from './agentModelSelection';
 import { CoworkUiEvent } from './constants';
+import CoworkHomeInteractiveLogo from './CoworkHomeInteractiveLogo';
 import CoworkPromptInput, { type CoworkPromptInputRef } from './CoworkPromptInput';
 import CoworkSessionDetail from './CoworkSessionDetail';
+import HomeLogoOrbitRibbons from './HomeLogoOrbitRibbons';
 import { reportPromptTemplateAction } from './promptAnalytics';
 import { buildCoworkContinuationSystemPrompt, buildCoworkSystemPrompt } from './skillSystemPrompt';
 
@@ -82,8 +86,9 @@ const logCoworkViewModel = (message: string): void => {
 };
 
 const HOME_INTRO_LOGO_SPIN_DURATION_MS = 1180;
-const HOME_INTRO_COPY_DELAY_MS = 1120;
-const HOME_INTRO_SUBTITLE_DELAY_MS = 1320;
+/** After home comet (~0.6s): copy lands as the head finishes regrowing. */
+const HOME_INTRO_COPY_DELAY_MS = 550;
+const HOME_INTRO_SUBTITLE_DELAY_MS = 700;
 
 export interface CoworkViewProps {
   onRequestAppSettings?: (options?: SettingsOpenOptions) => void;
@@ -185,6 +190,8 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const [homeIntroRunId, setHomeIntroRunId] = useState(0);
   const [isHomeIntroCopyVisible, setIsHomeIntroCopyVisible] = useState(false);
   const homeIntroLogoRef = useRef<HTMLDivElement>(null);
+  const homeEmblemSkinUrl = useSkinAsset(SkinAssetSlot.HomeEmblem);
+  const useInteractiveHomeLogo = !homeEmblemSkinUrl;
   const wasHomeVisibleRef = useRef(false);
   const currentAgentWorkingDirectory = currentAgent?.workingDirectory?.trim() || config.workingDirectory || '';
   const currentAgentSelectedModel = useAgentSelectedModel(currentAgentId, currentAgent?.model ?? '');
@@ -229,7 +236,47 @@ const CoworkView: React.FC<CoworkViewProps> = ({
       setIsHomeIntroCopyVisible(true);
     }, HOME_INTRO_COPY_DELAY_MS);
 
-    const logoAnimation = logoElement?.animate(
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Interactive logo: soft appear only — ribbons are painted by HomeLogoOrbitRibbons.
+    if (useInteractiveHomeLogo) {
+      if (!logoElement || reduceMotion) {
+        return () => {
+          window.clearTimeout(copyTimer);
+        };
+      }
+      // Opacity only — comet owns scale (collapse → trail → regrow).
+      const logoAnimation = logoElement.animate(
+        [
+          {
+            opacity: 0,
+            filter: 'drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08))',
+          },
+          {
+            opacity: 1,
+            filter: 'drop-shadow(0 12px 20px rgba(0, 0, 0, 0.1))',
+          },
+        ],
+        {
+          duration: 280,
+          easing: 'cubic-bezier(0.18, 0.88, 0.26, 1)',
+          fill: 'both',
+        },
+      );
+      return () => {
+        window.clearTimeout(copyTimer);
+        logoAnimation.cancel();
+      };
+    }
+
+    // Skin emblem: keep the legacy spin intro.
+    if (reduceMotion || !logoElement) {
+      return () => {
+        window.clearTimeout(copyTimer);
+      };
+    }
+
+    const logoAnimation = logoElement.animate(
       [
         {
           opacity: 0,
@@ -259,9 +306,9 @@ const CoworkView: React.FC<CoworkViewProps> = ({
 
     return () => {
       window.clearTimeout(copyTimer);
-      logoAnimation?.cancel();
+      logoAnimation.cancel();
     };
-  }, [homeIntroRunId, shouldPresentConversation]);
+  }, [homeIntroRunId, shouldPresentConversation, useInteractiveHomeLogo]);
 
   useEffect(() => {
     if (!isHomeView || !hasEnterpriseAccount) return;
@@ -1002,130 +1049,153 @@ const CoworkView: React.FC<CoworkViewProps> = ({
           {/* Header */}
           {homeHeader}
 
-          {/* Main content */}
-          <div className="relative z-10 min-h-0 flex-1 overflow-hidden bg-background">
-            <div
-              className="absolute left-1/2 top-[47%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
-              style={{ width: 'min(640px, calc(100% - 48px))' }}
-            >
+          {/* Main content — minimal single-column home composition */}
+          <div className="relative z-10 flex min-h-0 flex-1 flex-col bg-background">
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-5 py-8 sm:px-8">
               <div
-                key={homeIntroRunId}
-                data-skin-home-copy="true"
-                className="w-full text-center"
+                className="flex w-full max-w-[42rem] flex-col items-center"
               >
                 <div
-                  ref={homeIntroLogoRef}
-                  className="cowork-home-windmill-logo mx-auto mb-5 h-16 w-16"
+                  key={homeIntroRunId}
+                  data-skin-home-copy="true"
+                  className="flex w-full flex-col items-center text-center"
                 >
-                  <HomeSkinEmblem
-                    className="h-full w-full select-none object-contain"
+                  <div className="relative mb-6 h-28 w-28 overflow-visible sm:h-32 sm:w-32">
+                    {useInteractiveHomeLogo ? (
+                      <HomeLogoOrbitRibbons key={`orbit-${homeIntroRunId}`}>
+                        <div
+                          ref={homeIntroLogoRef}
+                          className="cowork-home-windmill-logo h-full w-full"
+                        >
+                          <CoworkHomeInteractiveLogo
+                            key={homeIntroRunId}
+                            className="h-full w-full select-none"
+                            interactive
+                            aria-label="百应"
+                          />
+                        </div>
+                      </HomeLogoOrbitRibbons>
+                    ) : (
+                      <div
+                        ref={homeIntroLogoRef}
+                        className="cowork-home-windmill-logo h-full w-full"
+                      >
+                        <HomeSkinEmblem
+                          className="h-full w-full select-none object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <h1
+                    className={[
+                      'cowork-home-intro-copy max-w-[22ch] text-[1.75rem] font-semibold leading-[1.2] tracking-tight text-foreground sm:max-w-none sm:text-[2rem]',
+                      isHomeIntroCopyVisible ? 'cowork-home-intro-copy-visible' : undefined,
+                    ].filter(Boolean).join(' ')}
+                  >
+                    {homeHeroTitlePrefix}
+                    <span
+                      key={currentAgentId}
+                      className="relative inline-block px-0.5 pb-[0.2em]"
+                    >
+                      {currentAgentDisplayName}
+                      <svg
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-x-[-3%] bottom-0 h-[0.48em] w-[106%] overflow-visible text-red-500"
+                        viewBox="0 0 120 12"
+                        preserveAspectRatio="none"
+                      >
+                        <path
+                          d="M1.8 7.2c9.6-3.4 18.4 2.8 29.6.4 9.8-2.1 16.2-4.6 27.4-1.2 10.4 3.2 17.8-2.4 28.2-3.1 8.6-.6 18.4 2.4 30.8 4.6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.35"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="cowork-hand-underline"
+                        />
+                        <path
+                          d="M3.4 8.1c12.8-1.8 24.6 1.6 37.8.1 12.4-1.4 22.8-3.2 35.6.8 7.8 2.4 16.2-.6 26.8-1.8"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          opacity="0.32"
+                          className="cowork-hand-underline-soft"
+                        />
+                      </svg>
+                    </span>
+                    {homeHeroTitleSuffix}
+                  </h1>
+
+                  <p
+                    className={[
+                      'cowork-home-intro-copy mt-3 max-w-[28rem] text-[15px] font-normal leading-6 text-secondary sm:text-base',
+                      isHomeIntroCopyVisible ? 'cowork-home-intro-copy-visible' : undefined,
+                    ].filter(Boolean).join(' ')}
+                    style={{ transitionDelay: `${HOME_INTRO_SUBTITLE_DELAY_MS - HOME_INTRO_COPY_DELAY_MS}ms` }}
+                  >
+                    {i18nService.t('coworkHomeHeroSubtitle')}
+                  </p>
+                </div>
+
+                {/* Primary action: prompt */}
+                <div
+                  className="relative z-30 mt-10 w-full animate-fade-in-up"
+                  style={{ animationDelay: '180ms', animationFillMode: 'both' }}
+                >
+                  <CoworkPromptInput
+                    ref={promptInputRef}
+                    onSubmit={handleStartSession}
+                    onStop={handleStopSession}
+                    isStreaming={isStreaming}
+                    disabled={!isEngineReady}
+                    submitDisabled={Boolean(blockingHomeQuotaReason)}
+                    placeholder={i18nService.t('coworkPlaceholder')}
+                    size="large"
+                    workingDirectory={currentAgentWorkingDirectory}
+                    onWorkingDirectoryChange={async (dir: string) => {
+                      await agentService.updateAgent(currentAgentId, { workingDirectory: dir });
+                    }}
+                    showFolderSelector={true}
+                    showModelSelector={true}
+                    showAgentSelector={true}
+                    onManageSkills={() => onShowSkills?.()}
+                    onManageKits={() => onShowKits?.()}
+                    onGoalCommand={handleStartGoalSession}
+                  />
+                  <EnterpriseQuotaPrompt
+                    reason={blockingHomeQuotaReason}
+                    surface="home"
                   />
                 </div>
-                <h2
-                  className={[
-                    'cowork-home-intro-copy text-[28px] font-semibold leading-[1.18] tracking-normal text-foreground',
-                    isHomeIntroCopyVisible ? 'cowork-home-intro-copy-visible' : undefined,
-                  ].filter(Boolean).join(' ')}
+
+                {/* Secondary: quick actions */}
+                <div
+                  className="relative z-0 mt-7 flex w-full flex-col items-center animate-fade-in-up"
+                  style={{ animationDelay: '260ms', animationFillMode: 'both' }}
                 >
-                  {homeHeroTitlePrefix}
-                  <span
-                    key={currentAgentId}
-                    className="relative inline-block px-0.5 pb-[0.2em]"
-                  >
-                    {currentAgentDisplayName}
-                    <svg
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-[-3%] bottom-0 h-[0.48em] w-[106%] overflow-visible text-red-500"
-                      viewBox="0 0 120 12"
-                      preserveAspectRatio="none"
-                    >
-                      <path
-                        d="M1.8 7.2c9.6-3.4 18.4 2.8 29.6.4 9.8-2.1 16.2-4.6 27.4-1.2 10.4 3.2 17.8-2.4 28.2-3.1 8.6-.6 18.4 2.4 30.8 4.6"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.35"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="cowork-hand-underline"
+                  <QuickActionBar
+                    actions={quickActions}
+                    selectedActionId={selectedActionId}
+                    onActionSelect={handleActionSelect}
+                  />
+                  {selectedAction && (
+                    <div className="mt-4 w-full">
+                      <PromptPanel
+                        action={selectedAction}
+                        onPromptSelect={handleQuickActionPromptSelect}
+                        onClose={handleQuickActionDeselect}
                       />
-                      <path
-                        d="M3.4 8.1c12.8-1.8 24.6 1.6 37.8.1 12.4-1.4 22.8-3.2 35.6.8 7.8 2.4 16.2-.6 26.8-1.8"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        opacity="0.32"
-                        className="cowork-hand-underline-soft"
-                      />
-                    </svg>
-                  </span>
-                  {homeHeroTitleSuffix}
-                </h2>
-                <p
-                  className={[
-                    'cowork-home-intro-copy mt-3 text-[16px] font-normal leading-6 text-secondary',
-                    isHomeIntroCopyVisible ? 'cowork-home-intro-copy-visible' : undefined,
-                  ].filter(Boolean).join(' ')}
-                  style={{ transitionDelay: `${HOME_INTRO_SUBTITLE_DELAY_MS - HOME_INTRO_COPY_DELAY_MS}ms` }}
-                >
-                  {i18nService.t('coworkHomeHeroSubtitle')}
-                </p>
+                    </div>
+                  )}
+                  <CreditsResetCampaignFloat />
+                </div>
               </div>
+            </div>
 
-              {/* Prompt Input Area - Large version with folder selector */}
-              <div
-                className="relative z-30 mt-9 w-full animate-fade-in-up"
-                style={{ animationDelay: '180ms', animationFillMode: 'both' }}
-              >
-                <CoworkPromptInput
-                  ref={promptInputRef}
-                  onSubmit={handleStartSession}
-                  onStop={handleStopSession}
-                  isStreaming={isStreaming}
-                  disabled={!isEngineReady}
-                  submitDisabled={Boolean(blockingHomeQuotaReason)}
-                  placeholder={i18nService.t('coworkPlaceholder')}
-                  size="large"
-                  workingDirectory={currentAgentWorkingDirectory}
-                  onWorkingDirectoryChange={async (dir: string) => {
-                    await agentService.updateAgent(currentAgentId, { workingDirectory: dir });
-                  }}
-                  showFolderSelector={true}
-                  showModelSelector={true}
-                  showAgentSelector={true}
-                  onManageSkills={() => onShowSkills?.()}
-                  onManageKits={() => onShowKits?.()}
-                  onGoalCommand={handleStartGoalSession}
-                />
-                <EnterpriseQuotaPrompt
-                  reason={blockingHomeQuotaReason}
-                  surface="home"
-                />
-              </div>
-
-              <div
-                className="relative z-0 mt-8 flex w-full flex-col items-center animate-fade-in-up"
-                style={{ animationDelay: '260ms', animationFillMode: 'both' }}
-              >
-                <QuickActionBar
-                  actions={quickActions}
-                  selectedActionId={selectedActionId}
-                  onActionSelect={handleActionSelect}
-                />
-                {selectedAction && (
-                  <div className="mt-4 w-full">
-                    <PromptPanel
-                      action={selectedAction}
-                      onPromptSelect={handleQuickActionPromptSelect}
-                      onClose={handleQuickActionDeselect}
-                    />
-                  </div>
-                )}
-                <CreditsResetCampaignFloat />
-              </div>            </div>
-
-            <div className="pointer-events-none absolute bottom-4 left-0 right-0 text-center text-[14px] text-muted">
+            <div className="shrink-0 px-5 pb-4 pt-1 text-center text-[13px] leading-5 text-muted sm:pb-5">
               {i18nService.t('aiGeneratedDisclaimer')}
             </div>
           </div>

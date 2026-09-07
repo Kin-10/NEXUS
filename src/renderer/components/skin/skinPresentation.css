@@ -118,6 +118,7 @@
   box-shadow: inset 2px 0 var(--lobster-skin-accent);
 }
 
+[data-skin-presentation="immersive_shell"] [data-skin-home-copy] h1,
 [data-skin-presentation="immersive_shell"] [data-skin-home-copy] h2 {
   color: var(--lobster-skin-foreground) !important;
   text-shadow: 0 1px 10px color-mix(in srgb, var(--lobster-skin-canvas) 72%, transparent);
@@ -129,8 +130,8 @@
 
 [data-skin-presentation="immersive_shell"] [data-skin-quick-actions] button,
 [data-skin-presentation="immersive_shell"] [data-skin-prompt-panel] button {
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--lobster-skin-canvas) 28%, transparent);
-  backdrop-filter: blur(8px) saturate(1.04);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .skin-ambient-effects span {

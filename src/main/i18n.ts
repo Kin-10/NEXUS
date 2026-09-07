@@ -8,7 +8,7 @@
  * Usage:
  *   import { t, setLanguage } from './i18n';
  *   setLanguage('en');
- *   const label = t('trayShowWindow'); // "Open BaiYing"
+ *   const label = t('trayShowWindow'); // "Open 百应"
  *   const msg = t('imMissingCredentials', { fields: 'appId, appSecret' });
  */
 
@@ -21,10 +21,10 @@ const translations: Record<LanguageType, Record<string, string>> = {
     dshPlanProviderName: '套餐',
 
     // Tray menu
-    trayShowWindow: '打开 BaiYing',
+    trayShowWindow: '打开 百应',
     trayNewTask: '新建任务',
     trayViewCompletedTask: '查看完成的任务',
-    trayCompletedTaskTooltip: 'BaiYing - {count} 个任务已完成',
+    trayCompletedTaskTooltip: '百应 - {count} 个任务已完成',
     traySettings: '设置',
     trayQuit: '退出',
 
@@ -89,7 +89,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
 
     // Cowork error messages (shared with renderer via classifyErrorKey)
     coworkErrorAuthInvalid: 'API 密钥无效或已过期，请检查配置。',
-    coworkErrorBaiYingLoginExpired: '登录状态已过期，请重新登录后继续使用 BaiYing 套餐模型。',
+    coworkErrorBaiYingLoginExpired: '登录状态已过期，请重新登录后继续使用百应套餐模型。',
     coworkErrorOAuthInvalid: 'OAuth 授权已失效或权限不足，请重新授权后重试。',
     coworkErrorModelAccessDenied: '当前账号无权访问该模型，请切换模型或检查服务商账号权限。',
     coworkErrorQuotaExhausted:
@@ -105,7 +105,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
       '本次消息过大，请减少附件、压缩图片或拆分提交。（单次整体需小于 30MB）',
     coworkErrorCouldNotProcessPdf: '无法处理 PDF 文件。',
     coworkErrorModelNotFound: '请求的模型不存在或不可用。',
-    coworkGatewaySessionSyncTimeout: 'OpenClaw 引擎响应缓慢，消息尚未发送。请等待 1~2 分钟后重新发送；若频繁出现，请检查系统内存与磁盘占用，并将 BaiYing 加入杀毒软件白名单。',
+    coworkGatewaySessionSyncTimeout: 'OpenClaw 引擎响应缓慢，消息尚未发送。请等待 1~2 分钟后重新发送；若频繁出现，请检查系统内存与磁盘占用，并将 百应 加入杀毒软件白名单。',
     coworkErrorTranscriptOversized: '该任务的历史记录过大。为保护 AI 引擎，本次消息未发送；请新建任务继续，原任务记录仍会保留。',
     coworkErrorGatewayHeapOutOfMemory: '本地 AI 引擎内存不足并已自动重启。当前任务可能过大，请等待恢复后在新任务中继续。',
     coworkErrorGatewayDisconnected: 'AI 引擎连接中断，请重试。',
@@ -174,13 +174,13 @@ const translations: Record<LanguageType, Record<string, string>> = {
     enterpriseMediaQuotaUnavailable: '当前团队的媒体生成额度暂不可用。',
 
     // Data migration dialogs
-    dataMigrationBackupDialogTitle: '备份 BaiYing 数据',
-    dataMigrationRestoreDialogTitle: '导入 BaiYing 数据备份',
-    dataMigrationBackupArchiveFilter: 'BaiYing 备份包',
+    dataMigrationBackupDialogTitle: '备份 百应 数据',
+    dataMigrationRestoreDialogTitle: '导入 百应 数据备份',
+    dataMigrationBackupArchiveFilter: '百应 备份包',
     dataMigrationAllFilesFilter: '所有文件',
     dataMigrationBackupBlockedByActiveWorkloads:
       '当前有正在运行的 Agent 或定时任务，请停止或等待任务完成后再备份。',
-    dataMigrationRestoreProgressTitle: '正在导入 BaiYing 数据',
+    dataMigrationRestoreProgressTitle: '正在导入 百应 数据',
     dataMigrationRestoreProgressDesc: '正在恢复备份并校验数据，完成后应用会自动重启。',
     dataMigrationRestoreProgressWarning: '请不要关闭应用或重启电脑，否则可能中断本次数据迁移。',
 
@@ -375,10 +375,10 @@ const translations: Record<LanguageType, Record<string, string>> = {
     dshPlanProviderName: 'Plan',
 
     // Tray menu
-    trayShowWindow: 'Open BaiYing',
+    trayShowWindow: 'Open 百应',
     trayNewTask: 'New Task',
     trayViewCompletedTask: 'View Completed Task',
-    trayCompletedTaskTooltip: 'BaiYing - {count} completed task(s)',
+    trayCompletedTaskTooltip: '百应 - {count} completed task(s)',
     traySettings: 'Settings',
     trayQuit: 'Quit',
 
@@ -454,7 +454,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     // Cowork error messages
     coworkErrorAuthInvalid: 'Invalid or expired API key. Please check your configuration.',
     coworkErrorBaiYingLoginExpired:
-      'Your login session has expired. Sign in again to continue using BaiYing plan models.',
+      'Your login session has expired. Sign in again to continue using 百应 plan models.',
     coworkErrorOAuthInvalid: 'OAuth authorization is invalid or missing required access. Re-authenticate and try again.',
     coworkErrorModelAccessDenied: 'This account is not allowed to access the selected model. Switch models or check provider account permissions.',
     coworkErrorQuotaExhausted:
@@ -470,7 +470,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
       'This message is too large. Reduce attachments, compress images, or split it up. (Keep each message under about 30 MB.)',
     coworkErrorCouldNotProcessPdf: 'Unable to process the PDF file.',
     coworkErrorModelNotFound: 'The requested model does not exist or is unavailable.',
-    coworkGatewaySessionSyncTimeout: 'The OpenClaw engine is responding slowly and your message has not been sent. Please wait a minute or two and resend. If this happens frequently, check system memory and disk usage, and add BaiYing to your antivirus allowlist.',
+    coworkGatewaySessionSyncTimeout: 'The OpenClaw engine is responding slowly and your message has not been sent. Please wait a minute or two and resend. If this happens frequently, check system memory and disk usage, and add 百应 to your antivirus allowlist.',
     coworkErrorTranscriptOversized: 'This task history is too large. The message was not sent to protect the AI engine. Continue in a new task; the original task will be preserved.',
     coworkErrorGatewayHeapOutOfMemory: 'The local AI engine ran out of memory and is restarting automatically. This task may be too large; wait for recovery and continue in a new task.',
     coworkErrorGatewayDisconnected: 'AI engine connection lost. Please retry.',
@@ -547,15 +547,15 @@ const translations: Record<LanguageType, Record<string, string>> = {
     enterpriseMediaQuotaUnavailable: 'Media generation quota is unavailable for this team.',
 
     // Data migration dialogs
-    dataMigrationBackupDialogTitle: 'Back Up BaiYing Data',
-    dataMigrationRestoreDialogTitle: 'Import BaiYing Data Backup',
-    dataMigrationBackupArchiveFilter: 'BaiYing Backup',
+    dataMigrationBackupDialogTitle: 'Back Up 百应 Data',
+    dataMigrationRestoreDialogTitle: 'Import 百应 Data Backup',
+    dataMigrationBackupArchiveFilter: '百应 Backup',
     dataMigrationAllFilesFilter: 'All Files',
     dataMigrationBackupBlockedByActiveWorkloads:
       'An agent or scheduled task is still running. Stop it or wait for it to finish before backing up.',
-    dataMigrationRestoreProgressTitle: 'Importing BaiYing data',
+    dataMigrationRestoreProgressTitle: 'Importing 百应 data',
     dataMigrationRestoreProgressDesc:
-      'Restoring the backup and validating data. BaiYing will restart automatically when finished.',
+      'Restoring the backup and validating data. 百应 will restart automatically when finished.',
     dataMigrationRestoreProgressWarning:
       'Do not close the app or restart the computer, or the migration may be interrupted.',
 

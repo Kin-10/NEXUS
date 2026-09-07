@@ -41,7 +41,7 @@ export function buildComputerUseMarketplaceKit(): Record<string, unknown> {
     name: ComputerUseKitMetadata.Name,
     description: ComputerUseKitMetadata.Description,
     icon: COMPUTER_USE_KIT_ICON_URL,
-    author: 'BaiYing',
+    author: '百应',
     version: ComputerUseRuntime.Version,
     tryAsking: [
       {

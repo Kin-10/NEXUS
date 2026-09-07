@@ -42,6 +42,7 @@ import {
   FileDown as LFileDown,
   FileText as LFileText,
   Flag as LFlag,
+  FlaskConical as LFlaskConical,
   Folder as LFolder,
   FolderOpen as LFolderOpen,
   FolderPlus as LFolderPlus,
@@ -51,10 +52,13 @@ import {
   Image as LImage,
   Info as LInfo,
   Key as LKey,
+  Keyboard as LKeyboard,
   LayoutGrid as LLayoutGrid,
+  Library as LLibrary,
   Lightbulb as LLightbulb,
   Link as LLink,
   ListChecks as LListChecks,
+  ListFilter as LListFilter,
   LoaderCircle as LLoaderCircle,
   Lock as LLock,
   type LucideIcon,
@@ -66,8 +70,10 @@ import {
   Mic as LMicrophone,
   Minus as LMinus,
   Moon as LMoon,
+  MoonStar as LMoonStar,
   Newspaper as LNewspaper,
   NotebookPen as LNotebookPen,
+  Palette as LPalette,
   PanelLeftClose as LPanelLeftClose,
   PanelLeftOpen as LPanelLeftOpen,
   Paperclip as LPaperclip,
@@ -90,6 +96,7 @@ import {
   Share2 as LShare2,
   ShieldCheck as LShieldCheck,
   Shrink as LShrink,
+  SlidersHorizontal as LSlidersHorizontal,
   Smartphone as LSmartphone,
   Sparkles as LSparkles,
   Square as LSquare,
@@ -210,6 +217,7 @@ export const Cpu = createIcon(LCpu);
 export const Cube = createIcon(LBox);
 export const DeviceMobile = createIcon(LSmartphone);
 export const Moon = createIcon(LMoon);
+export const MoonStar = createIcon(LMoonStar);
 export const DotsThree = createIcon(LEllipsis);
 export const DotsThreeVertical = createIcon(LEllipsisVertical);
 export const DownloadSimple = createIcon(LDownload);
@@ -220,6 +228,7 @@ export const File = createIcon(LFile);
 export const FileArrowDown = createIcon(LFileDown);
 export const FileText = createIcon(LFileText);
 export const Flag = createIcon(LFlag);
+export const Flask = createIcon(LFlaskConical);
 export const Folder = createIcon(LFolder);
 export const FolderOpen = createIcon(LFolderOpen);
 export const FolderPlus = createIcon(LFolderPlus);
@@ -230,9 +239,12 @@ export const GraduationCap = createIcon(LGraduationCap);
 export const Image = createIcon(LImage);
 export const Info = createIcon(LInfo);
 export const Key = createIcon(LKey);
+export const Keyboard = createIcon(LKeyboard);
+export const Library = createIcon(LLibrary);
 export const Lightbulb = createIcon(LLightbulb);
 export const Link = createIcon(LLink);
 export const ListChecks = createIcon(LListChecks);
+export const ListFilter = createIcon(LListFilter);
 export const Lock = createIcon(LLock);
 export const MagnifyingGlass = createIcon(LSearch);
 export const MenuFold = createIcon(LPanelLeftClose);
@@ -245,6 +257,7 @@ export const Newspaper = createIcon(LNewspaper);
 export const NotePencil = createIcon(LNotebookPen);
 export const PaperPlaneTilt = createIcon(LSendHorizontal);
 export const Paperclip = createIcon(LPaperclip);
+export const Palette = createIcon(LPalette);
 export const Path = createIcon(LWaypoints);
 export const PauseCircle = createIcon(LPauseCircle);
 export const PencilSimple = createIcon(LPencil);
@@ -266,8 +279,10 @@ export const RocketLaunch = createIcon(LRocket);
 export const Schedule = createIcon(LCalendarClock);
 export const Search = createIcon(LSearch);
 export const SettingConfig = createIcon(LSettings);
+export const SettingTwo = createIcon(LSettings);
 export const ShareNetwork = createIcon(LShare2);
 export const ShieldCheck = createIcon(LShieldCheck);
+export const Sliders = createIcon(LSlidersHorizontal);
 export const Sparkle = createIcon(LSparkles);
 export const SpeakerHigh = createIcon(LVolume2);
 export const Stop = createIcon(LSquare);

@@ -1,10 +1,19 @@
 import React from 'react';
 
-import { Puzzle } from './iconParkCompat';
-import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
+import { type AppIconProps } from './iconStyle';
 
+/** Skills / capabilities rail icon — filled glyph, inherits chrome color via currentColor. */
 const SkillIcon: React.FC<AppIconProps> = ({ className }) => (
-  <Puzzle className={className} {...iconParkOutlineProps} />
+  <svg
+    className={className}
+    viewBox="0 0 1024 1024"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden
+  >
+    <path d="M674.624 398.4l-167.36 97.28-164.416-93.632a27.52 27.52 0 0 0-27.072 0 27.072 27.072 0 0 0-13.056 22.528 26.624 26.624 0 0 0 13.504 22.528L483.84 542.976v216.064a26.88 26.88 0 1 0 53.696 0V542.336l163.264-95.424a28.224 28.224 0 1 0-26.176-48.512z" />
+    <path d="M820.544 297.408L549.888 139.52a79.872 79.872 0 0 0-82.56 0L198.784 297.408a82.112 82.112 0 0 0-39.232 70.336v335.36a81.216 81.216 0 0 0 41.088 70.592L471.232 928a79.616 79.616 0 0 0 79.616 0l270.656-154.24a81.28 81.28 0 0 0 40.96-70.656v-335.36a82.112 82.112 0 0 0-40.064-70.4h-1.856z m-12.8 405.952a27.776 27.776 0 0 1-13.568 22.528l-270.656 154.24a25.728 25.728 0 0 1-26.624 0L227.2 726.848a26.624 26.624 0 0 1-13.504-22.528V367.744a26.88 26.88 0 0 1 12.16-22.528l270.72-157.888a26.88 26.88 0 0 1 27.264 0l270.656 157.888a27.072 27.072 0 0 1 13.312 22.528v335.616z" />
+  </svg>
 );
 
 export default SkillIcon;

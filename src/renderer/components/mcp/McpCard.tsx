@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { MANAGEMENT_META_TEXT, MANAGEMENT_TITLE_TEXT } from '../common/managementTypography';
-import ConnectorIcon from '../icons/ConnectorIcon';
+import { getNameAbbreviation } from '../common/nameAbbreviation';
+import { CAPABILITIES_CARD_CLASS } from '../skillsAndConnectors/capabilitiesChrome';
 
 /**
  * Description with line-clamp-2 that reveals the full text in a popover above
@@ -47,21 +48,23 @@ const ClampedText: React.FC<{ text: string; className?: string }> = ({ text, cla
 };
 
 interface McpIconTileProps {
-  /** Icon URL from marketplace data. Falls back to the default connector glyph. */
+  /** Icon URL from marketplace data. Falls back to a name abbreviation when absent. */
   icon?: string;
+  /** Display name used for the abbreviation fallback. */
+  label?: string;
   className?: string;
   iconClassName?: string;
 }
 
 /**
- * Icon shown for an MCP entry: the marketplace image when there is one, and
- * otherwise the connector glyph on a muted tile, so the name stays the thing
- * you read first.
+ * Icon shown for an MCP entry: the marketplace image when there is one,
+ * otherwise a two-character abbreviation of the connector name.
  */
 export const McpIconTile: React.FC<McpIconTileProps> = ({
   icon,
+  label,
   className = 'h-10 w-10 rounded-[10px]',
-  iconClassName = 'h-5 w-5',
+  iconClassName = 'text-sm font-semibold',
 }) => {
   const [imageFailed, setImageFailed] = useState(false);
   const normalizedIcon = icon?.trim();
@@ -78,12 +81,15 @@ export const McpIconTile: React.FC<McpIconTileProps> = ({
     );
   }
 
+  const abbreviation = getNameAbbreviation(label || '');
+
   return (
     <span
       aria-hidden="true"
-      className={`${className} inline-flex shrink-0 items-center justify-center bg-primary-muted text-primary`}
+      title={label}
+      className={`${className} inline-flex shrink-0 items-center justify-center bg-primary-muted text-primary ${iconClassName}`}
     >
-      <ConnectorIcon className={iconClassName} />
+      {abbreviation}
     </span>
   );
 };
@@ -125,12 +131,10 @@ const McpCard: React.FC<McpCardProps> = ({
         onOpenDetail();
       }
     })}
-    className={`group flex flex-col rounded-2xl border border-border bg-surface p-4 shadow-subtle transition-all hover:border-primary/50 hover:shadow-card focus-within:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-      onOpenDetail ? 'cursor-pointer' : ''
-    }`}
+    className={`${CAPABILITIES_CARD_CLASS} ${onOpenDetail ? '' : 'cursor-default'}`}
   >
     <div className="mb-3 flex items-center gap-2.5">
-      <McpIconTile icon={icon} />
+      <McpIconTile icon={icon} label={title} />
       <div className={`min-w-0 flex-1 truncate ${MANAGEMENT_TITLE_TEXT} font-semibold leading-snug text-foreground`}>
         {title}
       </div>

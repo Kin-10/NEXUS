@@ -79,7 +79,7 @@ const SIDEBAR_COLLAPSE_TRANSITION_MS = 200;
 const SIDEBAR_LOGIN_PROMO_TIP_DURATION_MS = 5000;
 const SIDEBAR_LOGIN_PROMO_TIP_FADE_MS = 220;
 
-const SidebarPromoStar: React.FC<{ className?: string; idPrefix: string }> = ({
+const _SidebarPromoStar: React.FC<{ className?: string; idPrefix: string }> = ({
   className,
   idPrefix,
 }) => (
@@ -155,11 +155,13 @@ const SidebarNewFeatureBadge = {
   KitsVersion: '2026-06-05',
 } as const;
 const railButtonClassName =
-  'non-draggable relative inline-flex h-[56px] w-[50px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-foreground transition-colors hover:bg-surface-raised';
+  'non-draggable group relative inline-flex h-[56px] w-[50px] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl px-1 text-secondary transition-colors duration-200 hover:bg-surface-raised hover:text-foreground';
 const activeRailButtonClassName =
-  `${railButtonClassName} bg-surface-raised text-foreground shadow-none hover:bg-surface-raised`;
-const railIconClassName = 'h-5 w-5 shrink-0';
-const railLabelClassName = 'line-clamp-2 w-full text-center text-[11px] font-semibold leading-[13px]';
+  `${railButtonClassName} bg-primary-muted text-primary hover:bg-primary-muted hover:text-primary`;
+const railIconClassName = 'h-[18px] w-[18px] shrink-0';
+const railIconWellClassName =
+  'inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200';
+const railLabelClassName = 'line-clamp-2 w-full text-center text-[11px] font-medium leading-[13px]';
 
 type SidebarAnalyticsSource = 'home_sidebar' | 'home_agent_sidebar';
 
@@ -289,7 +291,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [isSidebarBannerVisible, setIsSidebarBannerVisible] = useState(false);
   const [showKitsNewBadge, setShowKitsNewBadge] = useState(false);
   const [showLoginPromoTip, setShowLoginPromoTip] = useState(true);
-  const [isLoginPromoTipFading, setIsLoginPromoTipFading] = useState(false);
+  const [_isLoginPromoTipFading, setIsLoginPromoTipFading] = useState(false);
   const isResizingRef = useRef(false);
   const resizeStartXRef = useRef(0);
   const resizeStartWidthRef = useRef(DEFAULT_CONTEXT_PANEL_WIDTH);
@@ -762,7 +764,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       aria-current={options.active ? 'page' : undefined}
       title={label}
     >
-      {icon}
+      <span
+        className={`${railIconWellClassName} ${
+          options.active
+            ? 'bg-primary/12 text-primary'
+            : 'text-secondary group-hover:text-foreground'
+        }`}
+      >
+        {icon}
+      </span>
       <span className={railLabelClassName}>{label}</span>
       {options.badge}
     </button>
@@ -784,12 +794,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="draggable sidebar-header-drag flex h-[76px] shrink-0 flex-col items-center justify-center gap-1">
             <img
               src="logo.svg"
-              alt="BaiYing"
+              alt="百应"
               draggable={false}
               className="h-8 w-8 rounded-xl object-contain"
             />
             <span className="max-w-[52px] truncate text-center text-[9px] font-semibold leading-3 text-foreground">
-              BaiYing
+              百应
             </span>
           </div>
           <div className="non-draggable flex min-h-0 flex-1 flex-col items-center gap-2 py-2">

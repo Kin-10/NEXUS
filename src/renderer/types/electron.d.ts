@@ -389,6 +389,7 @@ interface Skill {
   id: string;
   name: string;
   description: string;
+  descriptionZh?: string;
   enabled: boolean;
   isOfficial: boolean;
   isBuiltIn: boolean;

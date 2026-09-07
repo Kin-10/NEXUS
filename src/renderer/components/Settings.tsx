@@ -1,4 +1,4 @@
-import { ArchiveBoxIcon, ArrowPathIcon, ArrowPathRoundedSquareIcon, ChatBubbleLeftIcon, CheckCircleIcon, CpuChipIcon, CubeIcon, EnvelopeIcon, ExclamationTriangleIcon, GlobeAltIcon, InformationCircleIcon, MagnifyingGlassIcon, SignalIcon, SunIcon, TrashIcon, WrenchScrewdriverIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArchiveBoxIcon, ArrowPathIcon, ArrowPathRoundedSquareIcon, CheckCircleIcon, CpuChipIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, SignalIcon, TrashIcon, WrenchScrewdriverIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -63,10 +63,7 @@ import DreamingSettingsSection from './cowork/DreamingSettingsSection';
 import EmbeddingSettingsSection from './cowork/EmbeddingSettingsSection';
 import ImagePreviewModal from './cowork/ImagePreviewModal';
 import ErrorMessage from './ErrorMessage';
-import BrainIcon from './icons/BrainIcon';
 import EditIcon from './icons/EditIcon';
-import MessageCopyIcon from './icons/MessageCopyIcon';
-import PlugIcon from './icons/PlugIcon';
 import PlusCircleIcon from './icons/PlusCircleIcon';
 import IMSettings from './im/IMSettings';
 import PluginsSettings, { type PluginPendingChanges, type PluginsSettingsHandle } from './plugins/PluginsSettings';
@@ -97,12 +94,34 @@ import {
 } from './settings/modelProviderUtils';
 import ModelSettingsSection, { DeleteProviderConfirmDialog, ModelEditorDialog } from './settings/ModelSettingsSection';
 import { resolveSettingsEscapeAction, SettingsEscapeAction } from './settings/settingsEscape';
+import SettingsLayout, { type SettingsLayoutGroup } from './settings/SettingsLayout';
+import {
+  SettingsNavAboutIcon,
+  SettingsNavAgentEngineIcon,
+  SettingsNavAppearanceIcon,
+  SettingsNavBrowserIcon,
+  SettingsNavDreamingIcon,
+  SettingsNavEmailIcon,
+  SettingsNavGeneralIcon,
+  SettingsNavImIcon,
+  SettingsNavMemoryIcon,
+  SettingsNavModelIcon,
+  SettingsNavPluginsIcon,
+  SettingsNavShortcutsIcon,
+} from './settings/settingsNavIcons';
 import EmailSkillConfig from './skills/EmailSkillConfig';
 import SkinPresentationScope from './skin/SkinPresentationScope';
-import SkinSettingsSection from './skin/SkinSettingsSection';
 import ThemedSelect from './ui/ThemedSelect';
 
 type TabType = 'general' | 'appearance' | 'coworkAgentEngine' | 'model' | 'browserWebAccess' | 'coworkMemory' | 'coworkDreaming' | 'shortcuts' | 'im' | 'email' | 'plugins' | 'about';
+
+const SETTINGS_WIDE_CONTENT_TABS = new Set<TabType>([
+  'model',
+  'im',
+  'plugins',
+  'browserWebAccess',
+  'email',
+]);
 
 const waitForNextPaint = (): Promise<void> => new Promise(resolve => {
   window.requestAnimationFrame(() => {
@@ -860,41 +879,6 @@ const getShortcutCommandText = (
     .replace('{tab}', command.tabLabelKey ? i18nService.t(command.tabLabelKey) : '');
 };
 
-const SettingsSlidersIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M14 17H5" />
-    <path d="M19 7h-9" />
-    <circle cx="17" cy="17" r="3" />
-    <circle cx="7" cy="7" r="3" />
-  </svg>
-);
-
-const DreamingTabIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    width="34"
-    height="34"
-    viewBox="0 0 34 34"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    aria-hidden="true"
-  >
-    <path
-      d="M27.9219 21.9648L29.014 22.4621L29.8552 20.6145L27.831 20.7683L27.9219 21.9648ZM16.0762 5.03516L17.1683 5.53234L18.0095 3.68449L15.9851 3.83862L16.0762 5.03516ZM27.9219 21.9648L26.8297 21.4676C25.1281 25.205 21.3674 27.8 17 27.8V29V30.2C22.3442 30.2 26.9378 27.0221 29.014 22.4621L27.9219 21.9648ZM17 29V27.8C11.0353 27.8 6.2 22.9647 6.2 17H5H3.8C3.8 24.2902 9.70984 30.2 17 30.2V29ZM5 17H6.2C6.2 11.3157 10.5923 6.65614 16.1673 6.23169L16.0762 5.03516L15.9851 3.83862C9.16855 4.35759 3.8 10.0512 3.8 17H5ZM16.0762 5.03516L14.984 4.53798C14.2262 6.20275 13.8 8.052 13.8 10H15H16.2C16.2 8.40537 16.5483 6.8944 17.1683 5.53234L16.0762 5.03516ZM15 10H13.8C13.8 17.2902 19.7098 23.2 27 23.2V22V20.8C21.0353 20.8 16.2 15.9647 16.2 10H15ZM27 22V23.2C27.3413 23.2 27.679 23.1868 28.0128 23.1614L27.9219 21.9648L27.831 20.7683C27.5562 20.7892 27.2791 20.8 27 20.8V22Z"
-      fill="currentColor"
-    />
-  </svg>
-);
-
 export type SettingsOpenOptions = {
   initialTab?: TabType;
   notice?: string;
@@ -904,7 +888,6 @@ export type SettingsOpenOptions = {
 
 interface SettingsProps extends SettingsOpenOptions {
   onClose: () => void;
-  onStartAiSkin?: (text: string, kitId: string) => void;
   initialTabRequestId?: number;
   onUpdateFound?: (info: AppUpdateInfo) => void;
   enterpriseConfig?: {
@@ -963,7 +946,7 @@ interface ProvidersImportPayload {
   providers?: Record<string, ProvidersImportEntry>;
 }
 
-const ABOUT_CONTACT_EMAIL = 'baiying.project@rd.netease.com';
+const ABOUT_CONTACT_EMAIL = 'zhibao.he@skhb.com';
 
 // MiniMax Portal OAuth constants
 const MINIMAX_OAUTH_CLIENT_ID = '78257093-7e40-4613-99e0-527b14b39113';
@@ -1268,8 +1251,8 @@ const SettingsSwitch: React.FC<{
       void onClick();
     }}
     disabled={disabled}
-    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
-      disabled ? 'opacity-50 cursor-not-allowed' : ''
+    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200 ${
+      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
     } ${
       checked
         ? 'bg-primary'
@@ -1316,11 +1299,11 @@ const SettingsGroup: React.FC<{
   children: React.ReactNode;
   footer?: React.ReactNode;
 }> = ({ title, children, footer }) => (
-  <section className="space-y-2.5">
-    <h4 className="px-1 text-xs font-semibold uppercase tracking-wider text-secondary">
+  <section className="space-y-2">
+    <h4 className="px-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-secondary">
       {title}
     </h4>
-    <div className="divide-y divide-border rounded-xl border border-border bg-surface">
+    <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
       {children}
     </div>
     {footer}
@@ -1329,7 +1312,7 @@ const SettingsGroup: React.FC<{
 
 // A single padded row inside a SettingsGroup card.
 const SettingsRow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="px-4 py-3.5">{children}</div>
+  <div className="px-4 py-3.5 sm:px-5">{children}</div>
 );
 
 const SettingsNumberInputRow: React.FC<{
@@ -1373,7 +1356,6 @@ const SettingsNumberInputRow: React.FC<{
 
 const Settings: React.FC<SettingsProps> = ({
   onClose,
-  onStartAiSkin,
   initialTab,
   initialTabRequestId,
   notice,
@@ -1386,11 +1368,11 @@ const Settings: React.FC<SettingsProps> = ({
   const {
     activeSkin,
     isAppearanceChanging,
-    selectThemeById,
     selectThemeMode,
   } = useSkin();
   // 状态
   const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'general');
+  const [navQuery, setNavQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [themeId, setThemeId] = useState<string>(themeService.getDefaultThemeId());
   const [uiFontSize, setUiFontSize] = useState<number>(FontPreferences.UiFontSizeDefault);
@@ -1509,7 +1491,6 @@ const Settings: React.FC<SettingsProps> = ({
   const [footerFadeVisible, setFooterFadeVisible] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
   const emailCopiedTimerRef = useRef<number | null>(null);
-  const openClawGatewayCopiedTimerRef = useRef<number | null>(null);
   const updateCheckTimerRef = useRef<number | null>(null);
 
   // 快捷键设置
@@ -1761,7 +1742,6 @@ const Settings: React.FC<SettingsProps> = ({
   const [showOpenClawRepairConfirm, setShowOpenClawRepairConfirm] = useState<boolean>(false);
   const [isRepairingOpenClaw, setIsRepairingOpenClaw] = useState<boolean>(false);
   const [openClawRepairResult, setOpenClawRepairResult] = useState<OpenClawGatewayRepairResult | null>(null);
-  const [openClawGatewayCopied, setOpenClawGatewayCopied] = useState<boolean>(false);
   const [isBackingUpOpenClawData, setIsBackingUpOpenClawData] = useState<boolean>(false);
   const [isRestoringOpenClawData, setIsRestoringOpenClawData] = useState<boolean>(false);
   const [openClawDataBackupResult, setOpenClawDataBackupResult] = useState<{ path: string; sizeBytes?: number } | null>(null);
@@ -1892,9 +1872,6 @@ const Settings: React.FC<SettingsProps> = ({
   useEffect(() => () => {
     if (emailCopiedTimerRef.current != null) {
       window.clearTimeout(emailCopiedTimerRef.current);
-    }
-    if (openClawGatewayCopiedTimerRef.current != null) {
-      window.clearTimeout(openClawGatewayCopiedTimerRef.current);
     }
     if (updateCheckTimerRef.current != null) {
       window.clearTimeout(updateCheckTimerRef.current);
@@ -2893,26 +2870,6 @@ const Settings: React.FC<SettingsProps> = ({
   }, [openClawEngineStatus?.phase]);
 
   const OpenClawStatusIcon = openClawStatusTone.Icon;
-  const openClawGatewayHttpUrl = openClawEngineStatus?.gatewayHttpUrl?.trim() || null;
-
-  const handleCopyOpenClawGatewayUrl = useCallback(async () => {
-    if (!openClawGatewayHttpUrl) return;
-    const copied = await copyTextToClipboard(openClawGatewayHttpUrl);
-    if (!copied) return;
-
-    setOpenClawGatewayCopied(true);
-    if (openClawGatewayCopiedTimerRef.current != null) {
-      window.clearTimeout(openClawGatewayCopiedTimerRef.current);
-    }
-    openClawGatewayCopiedTimerRef.current = window.setTimeout(() => {
-      setOpenClawGatewayCopied(false);
-      openClawGatewayCopiedTimerRef.current = null;
-    }, 1200);
-  }, [openClawGatewayHttpUrl]);
-
-  useEffect(() => {
-    setOpenClawGatewayCopied(false);
-  }, [openClawGatewayHttpUrl]);
 
   const resolveOpenClawStatusText = (status: OpenClawEngineStatus | null): string => {
     if (!status) {
@@ -2937,7 +2894,12 @@ const Settings: React.FC<SettingsProps> = ({
   };
 
   const resolveOpenClawStatusDescription = (status: OpenClawEngineStatus | null): string => {
-    return status?.gatewayHttpUrl || i18nService.t('coworkOpenClawInstallHint');
+    // Do not surface gatewayHttpUrl / loopback address in settings.
+    if (status?.phase === OpenClawEnginePhase.Error) {
+      const message = status.message?.trim();
+      if (message) return message;
+    }
+    return i18nService.t('coworkOpenClawInstallHint');
   };
 
   const resolveOpenClawRepairMessage = (result: OpenClawGatewayRepairResult): string => {
@@ -4518,31 +4480,75 @@ const Settings: React.FC<SettingsProps> = ({
     }
   };
 
-  // 渲染标签页
-  const sidebarTabs: { key: TabType; label: string; icon: React.ReactNode }[] = (() => {
-    const allTabs = [
-      { key: 'general' as TabType,        label: i18nService.t('general'),        icon: <SettingsSlidersIcon className="h-5 w-5" /> },
-      { key: 'appearance' as TabType,     label: i18nService.t('appearance'),     icon: <SunIcon className="h-5 w-5" /> },
-      { key: 'coworkAgentEngine' as TabType, label: i18nService.t('coworkAgentEngine'), icon: <CpuChipIcon className="h-5 w-5" /> },
-      { key: 'model' as TabType,          label: i18nService.t('settingsCustomModel'), icon: <CubeIcon className="h-5 w-5" /> },
-      { key: 'im' as TabType,             label: i18nService.t('imBot'),          icon: <ChatBubbleLeftIcon className="h-5 w-5" /> },
-      { key: 'browserWebAccess' as TabType, label: i18nService.t('browserWebAccessTab'), icon: <GlobeAltIcon className="h-5 w-5" /> },
-      { key: 'email' as TabType,          label: i18nService.t('emailTab'),       icon: <EnvelopeIcon className="h-5 w-5" /> },
-      { key: 'coworkMemory' as TabType,   label: i18nService.t('coworkMemoryTitle'), icon: <BrainIcon className="h-5 w-5" /> },
-      { key: 'coworkDreaming' as TabType, label: i18nService.t('coworkMemoryTabDreaming'), icon: <DreamingTabIcon className="h-5 w-5" /> },
-      { key: 'plugins' as TabType,        label: i18nService.t('pluginsTab'),     icon: <PlugIcon className="h-5 w-5" /> },
-      { key: 'shortcuts' as TabType,      label: i18nService.t('shortcuts'),      icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5"><rect x="2" y="4" width="20" height="14" rx="2" /><line x1="6" y1="8" x2="8" y2="8" /><line x1="10" y1="8" x2="12" y2="8" /><line x1="14" y1="8" x2="16" y2="8" /><line x1="6" y1="12" x2="8" y2="12" /><line x1="10" y1="12" x2="14" y2="12" /><line x1="16" y1="12" x2="18" y2="12" /><line x1="8" y1="15.5" x2="16" y2="15.5" /></svg> },
-      { key: 'about' as TabType,          label: i18nService.t('about'),          icon: <InformationCircleIcon className="h-5 w-5" /> },
+  // 渲染标签页（分组侧栏）
+  const sidebarNavGroups: Array<SettingsLayoutGroup<TabType>> = (() => {
+    const allGroups: Array<SettingsLayoutGroup<TabType>> = [
+      {
+        id: 'preferences',
+        label: i18nService.t('settingsNavGroupPreferences'),
+        items: [
+          { key: 'general', label: i18nService.t('general'), icon: <SettingsNavGeneralIcon /> },
+          { key: 'appearance', label: i18nService.t('appearance'), icon: <SettingsNavAppearanceIcon /> },
+          { key: 'shortcuts', label: i18nService.t('shortcuts'), icon: <SettingsNavShortcutsIcon /> },
+        ],
+      },
+      {
+        id: 'agent',
+        label: i18nService.t('settingsNavGroupAgent'),
+        items: [
+          { key: 'coworkAgentEngine', label: i18nService.t('coworkAgentEngine'), icon: <SettingsNavAgentEngineIcon /> },
+          { key: 'model', label: i18nService.t('settingsCustomModel'), icon: <SettingsNavModelIcon /> },
+          { key: 'coworkMemory', label: i18nService.t('coworkMemoryTitle'), icon: <SettingsNavMemoryIcon /> },
+          { key: 'coworkDreaming', label: i18nService.t('coworkMemoryTabDreaming'), icon: <SettingsNavDreamingIcon /> },
+        ],
+      },
+      {
+        id: 'connections',
+        label: i18nService.t('settingsNavGroupConnections'),
+        items: [
+          { key: 'im', label: i18nService.t('imBot'), icon: <SettingsNavImIcon /> },
+          { key: 'browserWebAccess', label: i18nService.t('browserWebAccessTab'), icon: <SettingsNavBrowserIcon /> },
+          { key: 'email', label: i18nService.t('emailTab'), icon: <SettingsNavEmailIcon /> },
+          { key: 'plugins', label: i18nService.t('pluginsTab'), icon: <SettingsNavPluginsIcon /> },
+        ],
+      },
+      {
+        id: 'about',
+        label: i18nService.t('settingsNavGroupAbout'),
+        items: [
+          { key: 'about', label: i18nService.t('about'), icon: <SettingsNavAboutIcon /> },
+        ],
+      },
     ];
+
     // Filter out tabs hidden by enterprise config
-    // Filter out tabs with 'hide' action in enterprise config
     // e.g., ui: { "settings.im": "hide" } → hide the 'im' tab
     const ui = enterpriseConfig?.ui;
-    if (ui) {
-      return allTabs.filter(tab => ui[`settings.${tab.key}`] !== 'hide');
-    }
-    return allTabs;
+    if (!ui) return allGroups;
+
+    return allGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((tab) => ui[`settings.${tab.key}`] !== 'hide'),
+      }))
+      .filter((group) => group.items.length > 0);
   })();
+
+  const filteredNavGroups = useMemo(() => {
+    const query = navQuery.trim().toLowerCase();
+    if (!query) return sidebarNavGroups;
+    return sidebarNavGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((tab) => tab.label.toLowerCase().includes(query)),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [navQuery, sidebarNavGroups]);
+
+  const sidebarTabs = useMemo(
+    () => sidebarNavGroups.flatMap((group) => group.items),
+    [sidebarNavGroups],
+  );
 
   const activeTabLabel = useMemo(() => {
     return sidebarTabs.find(t => t.key === activeTab)?.label ?? '';
@@ -4601,18 +4607,6 @@ const Settings: React.FC<SettingsProps> = ({
       setError(i18nService.t('themeApplyFailed'));
     }
   }, [selectThemeMode]);
-
-  const handleThemeIdSelection = useCallback(async (nextThemeId: string) => {
-    setError(null);
-    try {
-      const selection = await selectThemeById(nextThemeId);
-      setTheme(selection.mode);
-      setThemeId(selection.themeId);
-    } catch (selectionError) {
-      console.error('[Settings] Failed to select the default color theme', selectionError);
-      setError(i18nService.t('themeApplyFailed'));
-    }
-  }, [selectThemeById]);
 
   const renderAppearanceSettings = () => (
     <div className="space-y-8">
@@ -4724,48 +4718,6 @@ const Settings: React.FC<SettingsProps> = ({
             );
           })}
         </div>
-
-        <h4 className="text-sm font-medium mb-3 mt-5" style={{ color: 'var(--lobster-text-primary)' }}>
-          {i18nService.t('themeColor')}
-        </h4>
-        {(() => {
-          const allThemes = themeService.getAllThemes();
-          const renderTile = (t: import('../theme').ThemeDefinition) => {
-            const isSelected = !activeSkin && themeId === t.meta.id;
-            const [bg, c1, c2, c3] = t.meta.preview;
-            return (
-              <button
-                key={t.meta.id}
-                type="button"
-                onClick={() => void handleThemeIdSelection(t.meta.id)}
-                disabled={isAppearanceChanging}
-                className="flex flex-col items-center rounded-xl border-2 p-2 transition-colors cursor-pointer disabled:cursor-wait disabled:opacity-60"
-                style={{
-                  borderColor: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-border)',
-                  backgroundColor: isSelected ? 'var(--lobster-primary-muted)' : undefined,
-                }}
-              >
-                <svg viewBox="0 0 80 48" className="w-full h-auto rounded-md mb-1.5 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="80" height="48" fill={bg} />
-                  <rect x="4" y="6" width="20" height="36" rx="3" fill={c1} opacity="0.7" />
-                  <rect x="28" y="6" width="48" height="36" rx="3" fill={c2} opacity="0.5" />
-                  <circle cx="52" cy="24" r="8" fill={c3} opacity="0.8" />
-                  <rect x="32" y="34" width="40" height="4" rx="2" fill={c1} opacity="0.6" />
-                </svg>
-                <span className="text-[10px] font-medium truncate w-full text-center" style={{ color: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-text-primary)' }}>
-                  {i18nService.t('theme-name-' + t.meta.id) || t.meta.name}
-                </span>
-              </button>
-            );
-          };
-          return (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
-              {allThemes.map(renderTile)}
-            </div>
-          );
-        })()}
-
-        <SkinSettingsSection onStartAiSkin={onStartAiSkin} />
 
         <div className="mt-5 divide-y divide-border rounded-xl border border-border bg-surface">
           <div className="px-4 py-3">
@@ -5096,34 +5048,9 @@ const Settings: React.FC<SettingsProps> = ({
                           </span>
                         </div>
 
-                        {openClawGatewayHttpUrl ? (
-                          <div className="mt-3 flex max-w-full items-center gap-2 rounded-lg border border-border-subtle bg-surface-raised/60 p-1.5">
-                            <span className="shrink-0 rounded-md bg-background px-2 py-1 text-[11px] font-medium text-secondary">
-                              {i18nService.t('openClawGatewayAddress')}
-                            </span>
-                            <code
-                              className="min-w-0 flex-1 select-all truncate px-1 font-mono text-[13px] leading-6 text-foreground"
-                              title={openClawGatewayHttpUrl}
-                            >
-                              {openClawGatewayHttpUrl}
-                            </code>
-                            <button
-                              type="button"
-                              onClick={handleCopyOpenClawGatewayUrl}
-                              title={openClawGatewayCopied ? i18nService.t('copied') : i18nService.t('copyToClipboard')}
-                              aria-label={openClawGatewayCopied ? i18nService.t('copied') : i18nService.t('copyToClipboard')}
-                              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-background hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/25"
-                            >
-                              {openClawGatewayCopied
-                                ? <CheckCircleIcon className="h-4 w-4 text-primary" />
-                                : <MessageCopyIcon className="h-4 w-4" />}
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="mt-2 text-sm text-secondary">
-                            {resolveOpenClawStatusDescription(openClawEngineStatus)}
-                          </p>
-                        )}
+                        <p className="mt-2 text-sm text-secondary">
+                          {resolveOpenClawStatusDescription(openClawEngineStatus)}
+                        </p>
 
                         {openClawStatusTone.inProgress && openClawProgressPercent !== null && (
                           <div className="mt-3 space-y-1.5">
@@ -5769,7 +5696,7 @@ const Settings: React.FC<SettingsProps> = ({
             {/* Logo & App Name */}
             <img
               src="logo.png"
-              alt="BaiYing"
+              alt="百应"
               className="w-16 h-16 mb-3 cursor-pointer select-none"
               onClick={(e) => {
                 if (!e.altKey || !e.shiftKey) return;
@@ -5781,7 +5708,7 @@ const Settings: React.FC<SettingsProps> = ({
                 }
               }}
             />
-            <h3 className="text-lg font-semibold text-foreground">BaiYing</h3>
+            <h3 className="text-lg font-semibold text-foreground">百应</h3>
             <span className="text-xs text-secondary mt-1">v{appVersion}</span>
 
             {/* Info Card */}
@@ -5914,107 +5841,64 @@ const Settings: React.FC<SettingsProps> = ({
     <Modal
       onClose={guardedClose}
       onEscape={handleEscape}
-      overlayClassName="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-3 sm:p-4"
-      className="w-[calc(100vw-1.5rem)] min-w-0 sm:w-[85vw] max-w-[1200px]"
+      overlayClassName="fixed inset-0 z-[60] modal-backdrop flex items-center justify-center p-3 sm:p-4"
+      className="non-draggable w-[calc(100vw-1.5rem)] min-w-0 sm:w-[88vw] max-w-[1240px]"
     >
       <SkinPresentationScope
         enabled
         data-skin-settings="true"
-        className="relative flex h-[min(90vh,calc(100vh-6rem))] w-full min-w-0 rounded-2xl border-border border shadow-modal overflow-hidden modal-content"
+        className="relative flex h-[min(92vh,calc(100vh-5rem))] w-full min-w-0 overflow-hidden rounded-2xl border border-border shadow-modal modal-content"
         onClick={handleSettingsClick}
       >
-        {/* Left sidebar */}
-        <div className="w-[220px] shrink-0 flex flex-col bg-surface-raised border-r border-border rounded-l-2xl overflow-y-auto">
-          <div className="px-5 pt-5 pb-3">
-            <h2 className="text-lg font-semibold text-foreground">{i18nService.t('settings')}</h2>
-          </div>
-          <nav className="flex flex-col gap-0.5 px-3 pb-4">
-            {sidebarTabs.map((tab) => (
+        <SettingsLayout
+          title={i18nService.t('settings')}
+          groups={filteredNavGroups}
+          activeTab={activeTab}
+          activeTabLabel={activeTabLabel}
+          searchQuery={navQuery}
+          searchPlaceholder={i18nService.t('settingsNavSearchPlaceholder')}
+          searchEmptyLabel={i18nService.t('settingsNavSearchEmpty')}
+          closeLabel={i18nService.t('close')}
+          contentWide={SETTINGS_WIDE_CONTENT_TABS.has(activeTab)}
+          footerFadeVisible={footerFadeVisible}
+          contentRef={contentRef}
+          noticeSlot={noticeMessage ? (
+            <ErrorMessage
+              message={noticeMessage}
+              onClose={() => setNoticeMessage(null)}
+            />
+          ) : null}
+          errorSlot={error ? (
+            <ErrorMessage
+              message={error}
+              onClose={() => setError(null)}
+            />
+          ) : null}
+          onSubmit={handleSubmit}
+          onSearchQueryChange={setNavQuery}
+          onTabChange={handleTabChange}
+          onClose={guardedClose}
+          footer={(
+            <>
               <button
-                key={tab.key}
-                onClick={() => handleTabChange(tab.key)}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
-                  activeTab === tab.key
-                    ? 'bg-primary-muted text-primary'
-                    : 'text-secondary hover:text-foreground hover:bg-surface-raised'
-                }`}
+                type="button"
+                onClick={guardedClose}
+                className="cursor-pointer rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-surface-raised active:scale-[0.98]"
               >
-                <span className="shrink-0">{tab.icon}</span>
-                <span className="min-w-0 truncate">{tab.label}</span>
+                {i18nService.t('cancel')}
               </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Right content */}
-        <div className="relative flex-1 flex flex-col min-w-0 overflow-hidden bg-background rounded-r-2xl">
-          {/* Content header */}
-          <div className="flex justify-between items-center gap-3 px-6 pt-5 pb-3 shrink-0">
-            <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">{activeTabLabel}</h3>
-            <button
-              onClick={guardedClose}
-              className="text-secondary hover:text-foreground p-1.5 hover:bg-surface-raised rounded-lg transition-colors"
-            >
-              <XMarkIcon className="h-5 w-5" />
-            </button>
-          </div>
-
-          {noticeMessage && (
-            <div className="px-6">
-              <ErrorMessage
-                message={noticeMessage}
-                onClose={() => setNoticeMessage(null)}
-              />
-            </div>
+              <button
+                type="submit"
+                disabled={isSaving || isAppearanceChanging}
+                className="cursor-pointer rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+              >
+                {isSaving ? i18nService.t('saving') : i18nService.t('save')}
+              </button>
+            </>
           )}
-
-          {error && (
-            <div className="px-6">
-              <ErrorMessage
-                message={error}
-                onClose={() => setError(null)}
-              />
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-            {/* Tab content */}
-            <div
-              ref={contentRef}
-              className="px-6 py-4 flex-1 overflow-y-auto"
-              style={{ scrollbarGutter: 'stable' }}
-            >
-              {renderTabContent()}
-            </div>
-
-            {/* Footer buttons */}
-            <div className="relative shrink-0">
-              <div
-                aria-hidden="true"
-                className={`pointer-events-none absolute inset-x-0 bottom-full h-10 bg-gradient-to-t from-background to-transparent transition-opacity duration-200 ${
-                  footerFadeVisible ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-              <div className="flex justify-end space-x-4 px-6 pb-5 pt-3 bg-background">
-                <button
-                  type="button"
-                  onClick={guardedClose}
-                  className="px-4 py-2 rounded-xl transition-colors text-sm font-medium border border-border text-foreground hover:bg-surface-raised active:scale-[0.98]"
-                >
-                  {i18nService.t('cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving || isAppearanceChanging}
-                  className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
-                >
-                  {isSaving ? i18nService.t('saving') : i18nService.t('save')}
-                </button>
-              </div>
-            </div>
-          </form>
-
-        </div>
+        >
+          {renderTabContent()}
+        </SettingsLayout>
 
         <ModelEditorDialog
           activeProvider={activeProvider}

@@ -6,6 +6,7 @@ import {
   Archive,
   ArrowDown,
   FileArrowDown,
+  Globe,
   Image as ImageIcon,
   Paperclip as PaperClipIcon,
   Question,
@@ -534,9 +535,9 @@ const buildRailItems = (
       messageId: primaryMessageId,
       turnIndex: index,
       absoluteIndex: messageOffsetById.get(primaryMessageId) ?? items.length,
-      label: turn.userMessage ? getRailLabel(userContent, `Turn ${index + 1}`) : 'BaiYing',
+      label: turn.userMessage ? getRailLabel(userContent, `Turn ${index + 1}`) : '百应',
       summary: assistantContent
-        ? getRailLabel(assistantContent, 'BaiYing', COWORK_RAIL_TOOLTIP_PREVIEW_MAX_LENGTH)
+        ? getRailLabel(assistantContent, '百应', COWORK_RAIL_TOOLTIP_PREVIEW_MAX_LENGTH)
         : '',
       contentLen: userContent.length + assistantContent.length,
       isUser: false,
@@ -604,7 +605,7 @@ const buildRailItemsFromIndex = (
       messageId: current.messageId,
       turnIndex: loadedTurnIndex,
       absoluteIndex: current.messageOffset,
-      label: 'BaiYing',
+      label: '百应',
       summary: current.preview,
       contentLen: current.contentLen,
       isUser: false,
@@ -1235,7 +1236,7 @@ const composeExportCanvas = async (
 
   ctx.fillStyle = brandColor;
   ctx.font = `600 ${brandFontSize}px ${fontStack}`;
-  ctx.fillText('BaiYing·百应 — 全场景办公助手 Agent', textX, footerCenterY - taglineFontSize / 2 - 2);
+  ctx.fillText('百应 — 全场景办公助手 Agent', textX, footerCenterY - taglineFontSize / 2 - 2);
 
   ctx.fillStyle = subtitleColor;
   ctx.font = `400 ${taglineFontSize}px ${fontStack}`;
@@ -6342,7 +6343,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                         className="relative flex min-w-0 items-center gap-1.5 px-2 text-left"
                         title={i18nService.t('agentBrowserTab')}
                       >
-                        <ComputerDesktopIcon className="h-3.5 w-3.5 shrink-0" />
+                        <Globe className="h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">{i18nService.t('agentBrowserTab')}</span>
                         {hasUnreadAgentBrowserActivity && (
                           <span

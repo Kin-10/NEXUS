@@ -29,7 +29,7 @@ export const DSH_MANAGED_PROVIDER_PREFIX = 'baiying-';
 // dsh groups its model picker by display name, so every synced route carries
 // this marker: without it a BaiYing-managed provider is indistinguishable
 // from one the user added inside dsh.
-export const DSH_MANAGED_LABEL_PREFIX = 'BaiYing · ';
+export const DSH_MANAGED_LABEL_PREFIX = '百应 · ';
 
 // Route ids for the built-in billed provider, whose requests go through the
 // local token proxy rather than a user-supplied key. One route per wire

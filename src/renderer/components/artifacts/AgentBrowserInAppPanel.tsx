@@ -24,12 +24,25 @@ interface AgentBrowserInAppPanelProps {
   visible: boolean;
 }
 
+const OVERLAY_POLL_MS = 250;
+
 const applyResponseState = (
   response: AgentBrowserHostResponse,
   setState: React.Dispatch<React.SetStateAction<AgentBrowserHostState | null>>,
 ): void => {
   if (response.state) setState(response.state);
 };
+
+const boundsEqual = (
+  left: { x: number; y: number; width: number; height: number } | null,
+  right: { x: number; y: number; width: number; height: number },
+): boolean => (
+  left != null
+  && Math.abs(left.x - right.x) < 0.5
+  && Math.abs(left.y - right.y) < 0.5
+  && Math.abs(left.width - right.width) < 0.5
+  && Math.abs(left.height - right.height) < 0.5
+);
 
 const AgentBrowserInAppPanel: React.FC<AgentBrowserInAppPanelProps> = ({
   sessionId,
@@ -42,6 +55,10 @@ const AgentBrowserInAppPanel: React.FC<AgentBrowserInAppPanelProps> = ({
   const browserViewportRef = useRef<HTMLDivElement>(null);
   const addressFocusedRef = useRef(false);
   const syncFrameRef = useRef<number | null>(null);
+  const lastHostViewRef = useRef<{
+    visible: boolean;
+    bounds: { x: number; y: number; width: number; height: number } | null;
+  }>({ visible: false, bounds: null });
 
   const selectedTab = state?.tabs.find(tab => tab.pageId === state.selectedPageId);
   const credentialLoginBusy = state?.credentialLogin?.status === BrowserCredentialLoginStatus.AwaitingApproval
@@ -94,20 +111,31 @@ const AgentBrowserInAppPanel: React.FC<AgentBrowserInAppPanelProps> = ({
       && rect.width >= 2
       && rect.height >= 2
       && unobscured;
+    const bounds = {
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+    const last = lastHostViewRef.current;
+    if (
+      last.visible === shouldShow
+      && (!shouldShow || boundsEqual(last.bounds, bounds))
+    ) {
+      return;
+    }
+    lastHostViewRef.current = {
+      visible: shouldShow,
+      bounds: shouldShow ? bounds : null,
+    };
+    // Layout sync must not write React state: setHostView always returns a fresh
+    // updatedAt, and applying it re-renders the tree (which used to feedback into
+    // a MutationObserver → infinite IPC/render loop → white frozen UI).
     void browserApi.setHostView({
       sessionId,
       visible: shouldShow,
-      ...(shouldShow
-        ? {
-            bounds: {
-              x: rect.left,
-              y: rect.top,
-              width: rect.width,
-              height: rect.height,
-            },
-          }
-        : {}),
-    }).then(response => applyResponseState(response, setState)).catch(() => {});
+      ...(shouldShow ? { bounds } : {}),
+    }).catch(() => {});
   }, [sessionId, visible]);
 
   const scheduleNativeViewSync = useCallback(() => {
@@ -123,23 +151,24 @@ const AgentBrowserInAppPanel: React.FC<AgentBrowserInAppPanelProps> = ({
     if (!element) return undefined;
     const resizeObserver = new ResizeObserver(scheduleNativeViewSync);
     resizeObserver.observe(element);
-    const mutationObserver = new MutationObserver(scheduleNativeViewSync);
-    mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
     window.addEventListener('resize', scheduleNativeViewSync);
     window.addEventListener('scroll', scheduleNativeViewSync, true);
     scheduleNativeViewSync();
+    // Poll lightly for overlays covering the host viewport. Avoid MutationObserver
+    // on document.body — streaming/UI updates mutate constantly and would thrash.
+    const pollId = window.setInterval(() => {
+      if (visible) scheduleNativeViewSync();
+    }, OVERLAY_POLL_MS);
     return () => {
       resizeObserver.disconnect();
-      mutationObserver.disconnect();
       window.removeEventListener('resize', scheduleNativeViewSync);
       window.removeEventListener('scroll', scheduleNativeViewSync, true);
+      window.clearInterval(pollId);
       if (syncFrameRef.current !== null) window.cancelAnimationFrame(syncFrameRef.current);
+      lastHostViewRef.current = { visible: false, bounds: null };
       void window.electron?.openclaw?.browser.setHostView({ sessionId, visible: false });
     };
-  }, [scheduleNativeViewSync, sessionId]);
+  }, [scheduleNativeViewSync, sessionId, visible]);
 
   const runAction = useCallback(async (
     action: () => Promise<AgentBrowserHostResponse>,

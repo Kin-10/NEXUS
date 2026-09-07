@@ -36,10 +36,12 @@ import type { EmailInstanceConfig, IMConnectivityCheck, IMConnectivityTestResult
 import { MAX_DINGTALK_INSTANCES, MAX_DISCORD_INSTANCES, MAX_EMAIL_INSTANCES, MAX_FEISHU_INSTANCES, MAX_NIM_INSTANCES, MAX_POPO_INSTANCES, MAX_QQ_INSTANCES, MAX_TELEGRAM_INSTANCES, MAX_WECOM_INSTANCES } from '../../types/im';
 import { getPlatformLogoSrc } from '../../utils/platformLogo';
 import { getVisibleIMPlatforms } from '../../utils/regionFilter';
+import { MANAGEMENT_META_TEXT, MANAGEMENT_TITLE_TEXT } from '../common/managementTypography';
 import Modal from '../common/Modal';
 import ComposeIcon from '../icons/ComposeIcon';
 import EditIcon from '../icons/EditIcon';
 import TrashIcon from '../icons/TrashIcon';
+import { CAPABILITIES_CARD_CLASS } from '../skillsAndConnectors/capabilitiesChrome';
 import DingTalkInstanceSettings from './DingTalkInstanceSettings';
 import DiscordInstanceSettings from './DiscordInstanceSettings';
 import FeishuInstanceSettings from './FeishuInstanceSettings';
@@ -138,9 +140,10 @@ const IM_CREDENTIAL_FIELDS = [
   'webhookSecret',
 ] as const;
 
-const MULTI_INSTANCE_CARD_GRID_COLUMNS =
-  'repeat(auto-fit, minmax(min(100%, max(260px, calc((100% - 0.75rem) / 2))), 1fr))';
-const EMPTY_MULTI_INSTANCE_CARD_GRID_COLUMNS = 'minmax(min(100%, 260px), 320px)';
+const MULTI_INSTANCE_CARD_GRID_CLASS =
+  'grid w-full grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3';
+const EMPTY_MULTI_INSTANCE_CARD_GRID_CLASS =
+  'grid w-full grid-cols-[repeat(auto-fill,minmax(240px,320px))] gap-3';
 
 const getIMPlatformKind = (platform: Platform): IMAnalyticsPlatformKind => (
   MULTI_INSTANCE_PLATFORMS.has(platform) ? 'multi_instance' : 'single_instance'
@@ -1769,6 +1772,7 @@ const IMSettings: React.FC = () => {
     if (platform === 'popo') success = await imService.deletePopoInstance(instanceId);
 
     if (success) {
+      setActiveInstanceForPlatform(platform, null);
       await imService.loadStatus();
       reportIMInstanceChanged(
         platform,
@@ -1880,10 +1884,10 @@ const IMSettings: React.FC = () => {
 
     return (
       <div className="space-y-5">
-        <div className="flex items-center gap-3 border-b border-border-subtle pb-4">
+        <div className="flex items-center gap-3 border-b border-border pb-4">
           <div className="flex min-w-0 items-center gap-3">
             <div className="min-w-0">
-              <h3 className="truncate text-[15px] font-medium leading-5 text-foreground">
+              <h3 className={`truncate font-semibold leading-5 text-foreground ${MANAGEMENT_TITLE_TEXT}`}>
                 {i18nService.t('imChannelBotsTitle').replace('{platform}', i18nService.t(platform))}
               </h3>
               <p className="mt-0.5 whitespace-nowrap text-xs text-green-600 dark:text-green-400">
@@ -1896,12 +1900,9 @@ const IMSettings: React.FC = () => {
         </div>
 
         <div
-          className="grid w-full gap-3"
-          style={{
-            gridTemplateColumns: instances.length > 0
-              ? MULTI_INSTANCE_CARD_GRID_COLUMNS
-              : EMPTY_MULTI_INSTANCE_CARD_GRID_COLUMNS,
-          }}
+          className={instances.length > 0
+            ? MULTI_INSTANCE_CARD_GRID_CLASS
+            : EMPTY_MULTI_INSTANCE_CARD_GRID_CLASS}
         >
           {instances.map((instance) => {
             const instanceStatus = instanceStatuses.find((item) => item.instanceId === instance.instanceId);
@@ -1909,23 +1910,25 @@ const IMSettings: React.FC = () => {
             const lastError = instanceStatus?.lastError || instanceStatus?.error || null;
             const isMenuOpen = isSameInstanceTarget(instanceMenuTarget, platform, instance.instanceId);
             const isRenaming = isSameInstanceTarget(renamingInstance, platform, instance.instanceId);
+            const openDetail = () => setActiveInstanceForPlatform(platform, instance.instanceId);
             return (
               <div
                 key={instance.instanceId}
                 role="button"
                 tabIndex={0}
-                onClick={() => setActiveInstanceForPlatform(platform, instance.instanceId)}
+                onClick={openDetail}
                 onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    setActiveInstanceForPlatform(platform, instance.instanceId);
+                    openDetail();
                   }
                 }}
-                className="group relative flex min-h-[82px] flex-col justify-center rounded-lg border border-border-subtle bg-surface p-3 text-left transition-colors hover:border-primary/40 hover:bg-surface-raised"
+                className={`${CAPABILITIES_CARD_CLASS} relative min-h-[120px]`}
               >
                 {isMenuOpen && (
                   <div
-                    className="absolute right-3 top-10 z-20 min-w-[108px] overflow-hidden rounded-lg border border-border-subtle bg-surface py-1 shadow-popover"
+                    className="absolute right-3 top-12 z-20 min-w-[108px] overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-popover"
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={(event) => event.stopPropagation()}
                   >
@@ -1933,9 +1936,9 @@ const IMSettings: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setInstanceMenuTarget(null);
-                        setActiveInstanceForPlatform(platform, instance.instanceId);
+                        openDetail();
                       }}
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground transition-colors hover:bg-surface-raised"
+                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground transition-colors duration-200 hover:bg-surface-raised"
                     >
                       <ComposeIcon className="h-3.5 w-3.5" />
                       {i18nService.t('edit')}
@@ -1946,7 +1949,7 @@ const IMSettings: React.FC = () => {
                         setInstanceMenuTarget(null);
                         setRenamingInstance({ platform, instanceId: instance.instanceId, value: instance.instanceName });
                       }}
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground transition-colors hover:bg-surface-raised"
+                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground transition-colors duration-200 hover:bg-surface-raised"
                     >
                       <EditIcon className="h-3.5 w-3.5" />
                       {i18nService.t('rename')}
@@ -1957,19 +1960,20 @@ const IMSettings: React.FC = () => {
                         setInstanceMenuTarget(null);
                         setDeleteConfirmTarget({ platform, instanceId: instance.instanceId });
                       }}
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-red-500 transition-colors hover:bg-red-500/10"
+                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-red-500 transition-colors duration-200 hover:bg-red-500/10"
                     >
                       <TrashIcon className="h-3.5 w-3.5" />
                       {i18nService.t('delete')}
                     </button>
                   </div>
                 )}
-                <div className="flex items-start gap-2.5">
-                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 p-1">
+
+                <div className="mb-3 flex items-center gap-2.5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-primary-muted p-1.5">
                     <img
                       src={getPlatformLogoSrc(platform)}
                       alt={i18nService.t(platform)}
-                      className="h-6 w-6 rounded-md object-contain"
+                      className="h-7 w-7 rounded-md object-contain"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -1998,32 +2002,30 @@ const IMSettings: React.FC = () => {
                           }
                         }}
                         onBlur={() => void finishRenamingInstanceFromCard(platform, instance)}
-                        className="block w-full rounded-md border border-primary/50 bg-surface px-1.5 py-0.5 text-sm font-medium leading-5 text-foreground outline-none"
+                        className={`block w-full rounded-lg border border-primary/50 bg-surface px-2 py-1 font-semibold leading-snug text-foreground outline-none ${MANAGEMENT_TITLE_TEXT}`}
                         autoFocus
                       />
                     ) : (
-                      <div className="truncate text-sm font-medium leading-5 text-foreground">
+                      <div className={`truncate font-semibold leading-snug text-foreground ${MANAGEMENT_TITLE_TEXT}`}>
                         {instance.instanceName}
                       </div>
                     )}
-                    <div className={`mt-0.5 flex items-center gap-1 text-xs ${
-                      connected ? 'text-green-600 dark:text-green-400' : 'text-secondary'
-                    }`}>
-                      <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
-                        connected ? 'bg-green-500' : instance.enabled ? 'bg-yellow-500' : 'bg-gray-400'
-                      }`} />
-                      <span className="truncate">
-                        {connected ? i18nService.t('connected') : i18nService.t('disconnected')}
-                      </span>
-                    </div>
-                    {lastError && (
-                      <p className="mt-1 line-clamp-1 text-xs text-red-500">
-                        {translateIMError(lastError)}
-                      </p>
-                    )}
                   </div>
-                  <div className="flex flex-shrink-0 items-center gap-1 pl-1">
+                  <div className="flex shrink-0 items-center gap-1">
                     {renderInstanceToggle(platform, instance, connected)}
+                    <button
+                      type="button"
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setDeleteConfirmTarget({ platform, instanceId: instance.instanceId });
+                      }}
+                      className="cursor-pointer rounded-lg p-1 text-secondary opacity-0 transition-colors duration-200 hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100 group-focus-within:opacity-100"
+                      aria-label={i18nService.t('delete')}
+                      title={i18nService.t('delete')}
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                    </button>
                     <button
                       type="button"
                       onPointerDown={(event) => event.stopPropagation()}
@@ -2031,13 +2033,40 @@ const IMSettings: React.FC = () => {
                         event.stopPropagation();
                         setInstanceMenuTarget(isMenuOpen ? null : { platform, instanceId: instance.instanceId });
                       }}
-                      className="rounded-md p-1 text-secondary opacity-70 transition-colors hover:bg-surface-raised hover:text-foreground group-hover:opacity-100"
+                      className="cursor-pointer rounded-lg p-1 text-secondary transition-colors duration-200 hover:bg-surface-raised hover:text-foreground"
                       aria-label={i18nService.t('imInstanceActionMenu')}
                       title={i18nService.t('imInstanceActionMenu')}
                     >
                       <DotsThreeVertical className="h-3.5 w-3.5" />
                     </button>
                   </div>
+                </div>
+
+                <div className="mb-3 min-h-[2.6em]">
+                  {lastError ? (
+                    <p className="line-clamp-2 text-xs leading-relaxed text-red-500">
+                      {translateIMError(lastError)}
+                    </p>
+                  ) : (
+                    <p className="line-clamp-2 text-xs leading-relaxed text-secondary">
+                      {i18nService.t(platform)}
+                    </p>
+                  )}
+                </div>
+
+                <div className={`mt-auto flex min-w-0 flex-wrap items-center gap-1.5 ${MANAGEMENT_META_TEXT}`}>
+                  <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium ${
+                    connected
+                      ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                      : instance.enabled
+                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        : 'bg-surface-raised text-secondary'
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      connected ? 'bg-green-500' : instance.enabled ? 'bg-amber-500' : 'bg-gray-400'
+                    }`} />
+                    {connected ? i18nService.t('connected') : i18nService.t('disconnected')}
+                  </span>
                 </div>
               </div>
             );
@@ -2047,12 +2076,12 @@ const IMSettings: React.FC = () => {
             <button
               type="button"
               onClick={() => void addInstanceForPlatform(platform)}
-              className="flex min-h-[82px] flex-col items-center justify-center rounded-lg border border-dashed border-border-subtle bg-surface text-secondary transition-colors hover:border-primary/50 hover:bg-surface-raised hover:text-primary"
+              className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface/40 text-secondary transition-colors duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-raised">
-                <Plus className="h-4 w-4" />
+              <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-surface-raised">
+                <Plus className="h-5 w-5" />
               </span>
-              <span className="mt-2 text-sm font-medium">
+              <span className="mt-2.5 text-sm font-medium">
                 {i18nService.t('imAddBot')}
               </span>
             </button>
@@ -2084,7 +2113,7 @@ const IMSettings: React.FC = () => {
   return (
     <div className="flex h-full gap-3">
       {/* Platform List - Left Side */}
-      <div className="w-44 flex-shrink-0 space-y-1.5 overflow-y-auto border-r border-border pr-3">
+      <div className="w-48 flex-shrink-0 space-y-2 overflow-y-auto border-r border-border pr-3">
         {platforms.map((platform) => {
           const logo = getPlatformLogoSrc(platform);
           const isActive = activePlatform === platform;
@@ -2102,13 +2131,13 @@ const IMSettings: React.FC = () => {
                   setActiveInstanceForPlatform(platform, null);
                 }
               }}
-              className={`flex w-full items-center rounded-xl border p-2 text-left transition-colors ${
+              className={`group flex w-full cursor-pointer items-center rounded-xl border p-3 text-left transition-colors duration-200 ${
                 isActive
-                  ? 'border-primary bg-primary-muted shadow-subtle'
-                  : 'border-transparent bg-surface hover:bg-surface-raised'
+                  ? 'border-primary/50 bg-primary-muted'
+                  : 'border-border bg-surface hover:border-primary/40 hover:bg-surface-raised/50'
               }`}
             >
-              <div className="mr-2 flex h-7 w-7 flex-shrink-0 items-center justify-center">
+              <div className="mr-2.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] bg-surface-raised">
                 <img
                   src={logo}
                   alt={i18nService.t(platform)}
@@ -2117,7 +2146,9 @@ const IMSettings: React.FC = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <span className="flex min-w-0 items-center gap-1.5">
-                  <span className="truncate text-[14px] font-normal leading-5 text-foreground/80">
+                  <span className={`truncate text-sm font-medium leading-5 ${
+                    isActive ? 'text-primary' : 'text-foreground'
+                  }`}>
                     {i18nService.t(platform)}
                   </span>
                   {statusDotClass && (
@@ -2127,7 +2158,7 @@ const IMSettings: React.FC = () => {
               </div>
               {!isMultiInstancePlatform(platform) && (
                 <span
-                  className={`ml-2 flex h-4 w-7 flex-shrink-0 items-center rounded-full transition-colors ${
+                  className={`ml-2 flex h-4 w-7 flex-shrink-0 items-center rounded-full transition-colors duration-200 ${
                     isEnabled ? getPlatformSwitchColorClass(platform) : 'bg-gray-300 dark:bg-gray-600'
                   } ${(!canToggle || togglingPlatform === platform) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                   onClick={(event) => {
@@ -2136,7 +2167,7 @@ const IMSettings: React.FC = () => {
                   }}
                 >
                   <span
-                    className={`h-3 w-3 rounded-full bg-white shadow-sm transition-transform ${
+                    className={`h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200 ${
                       isEnabled ? 'translate-x-3.5' : 'translate-x-0.5'
                     }`}
                   />
@@ -3149,6 +3180,12 @@ const IMSettings: React.FC = () => {
                     dispatch(setWecomInstanceConfig({ instanceId: activeWecomInstanceId!, config: { instanceName: newName } as any }));
                     await imService.persistWecomInstanceConfig(activeWecomInstanceId!, { instanceName: newName } as any);
                   }}
+                  onDelete={() => {
+                    setDeleteConfirmTarget({
+                      platform: 'wecom',
+                      instanceId: activeWecomInstanceId!,
+                    });
+                  }}
                   onTestConnectivity={() => void handleConnectivityTest('wecom')}
                   onQuickSetup={async () => {
                     setWecomQuickSetupStatus('pending');
@@ -3250,7 +3287,7 @@ const IMSettings: React.FC = () => {
             onEscape={() => {
               if (!isDeletingInstance) setDeleteConfirmTarget(null);
             }}
-            overlayClassName="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            overlayClassName="fixed inset-0 z-[70] flex items-center justify-center bg-black/60"
             className="w-full max-w-sm mx-4 rounded-2xl bg-surface border border-border shadow-2xl p-5"
           >
             <div className="text-lg font-semibold text-foreground">
@@ -3286,7 +3323,7 @@ const IMSettings: React.FC = () => {
           <Modal
             onClose={() => setConnectivityModalPlatform(null)}
             onEscape={() => setConnectivityModalPlatform(null)}
-            overlayClassName="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+            overlayClassName="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4"
             className="w-full max-w-2xl bg-surface rounded-2xl shadow-modal border border-border overflow-hidden"
           >
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">

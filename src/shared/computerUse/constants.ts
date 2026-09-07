@@ -37,7 +37,7 @@ export const ComputerUseKitMetadata = {
     zh: '电脑操作',
   } satisfies LocalizedText,
   SkillDescription: {
-    en: 'Use BaiYing Computer Use tools to inspect and control Windows desktop applications.',
-    zh: '使用 BaiYing 电脑操作工具检查和操作 Windows 桌面应用。',
+    en: 'Use 百应 Computer Use tools to inspect and control Windows desktop applications.',
+    zh: '使用百应电脑操作工具检查和操作 Windows 桌面应用。',
   } satisfies LocalizedText,
 } as const;

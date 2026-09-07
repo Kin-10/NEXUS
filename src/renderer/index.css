@@ -968,13 +968,43 @@ select::-ms-expand {
 .cowork-home-windmill-logo {
   transform-origin: center;
   opacity: 0;
+  overflow: visible;
   will-change: transform, opacity;
+}
+
+/* Home intro ribbons: absolute layers sandwich the logo (front/back depth). */
+.cowork-home-orbit-shell {
+  overflow: visible;
+}
+
+.cowork-home-orbit-layer {
+  position: absolute;
+  /* Rings use STARTUP_VIEWBOX_HALF; expand past the 125-unit face viewBox. */
+  inset: -26%;
+  width: 152%;
+  height: 152%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.cowork-home-orbit-layer-back {
+  z-index: 0;
+}
+
+.cowork-home-orbit-layer-front {
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cowork-home-orbit-layer {
+    display: none;
+  }
 }
 
 .cowork-home-intro-copy {
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.44s ease-out, transform 0.44s ease-out;
+  transform: translateY(10px);
+  transition: opacity 0.48s ease-out, transform 0.48s ease-out;
 }
 
 .cowork-home-intro-copy-visible {

@@ -19,13 +19,22 @@ import { McpMarketplaceCategoryInfo,McpRegistryEntry, McpServerConfig, McpServer
 import { CARD_ACTION_PILL_CLASS, DETAIL_ACTION_PILL_CLASS } from '../common/actionPillStyles';
 import CardOverflowMenu, { type CardOverflowMenuItem } from '../common/CardOverflowMenu';
 import CardToggle from '../common/CardToggle';
-import { MANAGEMENT_BODY_TEXT, MANAGEMENT_META_TEXT, MANAGEMENT_TITLE_TEXT } from '../common/managementTypography';
+import { MANAGEMENT_BODY_TEXT, MANAGEMENT_META_TEXT } from '../common/managementTypography';
 import Modal from '../common/Modal';
 import ErrorMessage from '../ErrorMessage';
 import EditIcon from '../icons/EditIcon';
 import PlusCircleIcon from '../icons/PlusCircleIcon';
 import SearchIcon from '../icons/SearchIcon';
 import TrashIcon from '../icons/TrashIcon';
+import {
+  CAPABILITIES_SEARCH_INPUT_CLASS,
+  CAPABILITIES_SECONDARY_ACTION_CLASS,
+  CAPABILITIES_TAB_ROW_CLASS,
+  CAPABILITIES_TOOLBAR_CLASS,
+  capabilitiesChipClass,
+  capabilitiesTabButtonClass,
+  capabilitiesTabIndicatorClass,
+} from '../skillsAndConnectors/capabilitiesChrome';
 import {
   getFormAnalyticsParams,
   getRegistryAnalyticsParams,
@@ -1171,26 +1180,12 @@ const McpManager: React.FC = () => {
     return entry ? renderMarketplaceDetail(entry) : null;
   };
 
-  const tabClass = (tab: McpTab) =>
-    `relative px-2.5 pb-2.5 pt-0.5 ${MANAGEMENT_TITLE_TEXT} font-semibold transition-colors ${
-      activeTab === tab
-        ? 'text-foreground'
-        : 'text-secondary hover:text-foreground'
-    }`;
+  const tabClass = (tab: McpTab) => capabilitiesTabButtonClass(activeTab === tab);
 
-  const tabIndicatorClass = (tab: McpTab) =>
-    `absolute bottom-[-1px] left-0 right-0 h-0.5 rounded-full transition-colors ${
-      activeTab === tab ? 'bg-primary' : 'bg-transparent'
-    }`;
+  const tabIndicatorClass = (tab: McpTab) => capabilitiesTabIndicatorClass(activeTab === tab);
 
   return (
     <div className="relative space-y-4">
-      <div className="pb-2">
-        <p className={`${MANAGEMENT_BODY_TEXT} text-secondary`}>
-          {i18nService.t('mcpDescription')}
-        </p>
-      </div>
-
       {actionError && (
         <ErrorMessage
           message={actionError}
@@ -1201,18 +1196,18 @@ const McpManager: React.FC = () => {
       {/* Sticky toolbar: Search + Tabs + Category pills */}
       <div
         data-skin-management-toolbar="true"
-        className="sticky top-0 z-10 space-y-4 bg-background pb-2"
+        className={CAPABILITIES_TOOLBAR_CLASS}
       >
         {/* Search */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary" />
+            <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
             <input
-              type="text"
+              type="search"
               placeholder={i18nService.t('searchMcpServers')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-sm rounded-xl bg-surface text-foreground placeholder-secondary border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              className={CAPABILITIES_SEARCH_INPUT_CLASS}
             />
             {searchQuery && (
               <button
@@ -1229,7 +1224,7 @@ const McpManager: React.FC = () => {
                   });
                   setSearchQuery('');
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-secondary hover:text-primary transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-secondary transition-colors duration-200 hover:text-primary"
               >
                 <XCircleIconSolid className="h-4 w-4" />
               </button>
@@ -1239,7 +1234,7 @@ const McpManager: React.FC = () => {
           <button
             type="button"
             onClick={handleOpenCreateForm}
-            className="px-3 py-2 text-sm rounded-xl border transition-colors bg-surface border-border text-foreground hover:bg-surface-raised flex items-center gap-2"
+            className={CAPABILITIES_SECONDARY_ACTION_CLASS}
           >
             <PlusCircleIcon className="h-4 w-4" />
             <span>{i18nService.t('mcpAddServer')}</span>
@@ -1247,7 +1242,7 @@ const McpManager: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center border-b border-border">
+        <div className={CAPABILITIES_TAB_ROW_CLASS}>
           {MCP_TAB_ORDER.map((tab) => {
             const count = tab === McpTab.Installed
               ? installedItems.length
@@ -1268,7 +1263,7 @@ const McpManager: React.FC = () => {
               >
                 {i18nService.t(MCP_TAB_LABEL_KEYS[tab])}
                 {count > 0 && (
-                  <span className={`ml-1.5 rounded-full bg-surface-raised px-1.5 py-0.5 ${MANAGEMENT_META_TEXT} font-medium text-secondary`}>
+                  <span className={`ml-1.5 rounded-md bg-surface-raised px-1.5 py-0.5 ${MANAGEMENT_META_TEXT} font-medium text-secondary`}>
                     {count}
                   </span>
                 )}
@@ -1280,7 +1275,7 @@ const McpManager: React.FC = () => {
 
         {/* Category filter pills (Marketplace only) */}
         {activeTab === McpTab.Marketplace && !isLoadingMarketplace && (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex flex-wrap items-center gap-1.5">
             {dynamicCategories.map((cat) => (
               <button
                 key={cat.id}
@@ -1295,11 +1290,7 @@ const McpManager: React.FC = () => {
                   });
                   setActiveCategory(cat.id);
                 }}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  activeCategory === cat.id
-                    ? 'bg-primary text-white'
-                    : 'bg-surface-raised text-secondary hover:text-foreground'
-                }`}
+                className={capabilitiesChipClass(activeCategory === cat.id)}
               >
                 {(i18nService.getLanguage() === 'zh' ? cat.name_zh : cat.name_en) || i18nService.t(cat.key)}
               </button>
@@ -1423,7 +1414,7 @@ const McpManager: React.FC = () => {
         isLoadingMarketplace ? (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, idx) => (
-            <div key={idx} className="animate-pulse rounded-2xl border border-border bg-surface p-4">
+            <div key={idx} className="animate-pulse rounded-xl border border-border bg-surface p-4">
               <div className="mb-3 flex items-center gap-2.5">
                 <div className="h-10 w-10 rounded-[10px] bg-surface-raised" />
                 <div className="h-3.5 w-1/3 rounded bg-surface-raised" />

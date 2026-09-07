@@ -57,5 +57,8 @@ export const LegacyAgentName = {
 } as const;
 
 export const DefaultAgentProfile = {
-  Name: 'BaiYing',
+  Name: '百应',
 } as const;
+
+/** Legacy default agent name stored before UI branding switched to 百应. */
+export const LegacyDefaultAgentProfileName = 'BaiYing';

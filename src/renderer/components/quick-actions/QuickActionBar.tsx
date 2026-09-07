@@ -1,12 +1,16 @@
 import React from 'react';
 
+import {
+  ChartBar,
+  DeviceMobile,
+  FileText,
+  Globe,
+  GraduationCap,
+  PresentationChart,
+} from '@/components/icons/iconParkCompat';
+
 import type { LocalizedQuickAction } from '../../types/quickAction';
-import AcademicCapIcon from '../icons/AcademicCapIcon';
-import ChartBarIcon from '../icons/ChartBarIcon';
-import DevicePhoneMobileIcon from '../icons/DevicePhoneMobileIcon';
-import DocumentTextIcon from '../icons/DocumentTextIcon';
-import GlobeAltIcon from '../icons/GlobeAltIcon';
-import PresentationChartBarIcon from '../icons/PresentationChartBarIcon';
+import { iconParkOutlineProps } from '../icons/iconStyle';
 
 interface QuickActionBarProps {
   actions: LocalizedQuickAction[];
@@ -14,14 +18,14 @@ interface QuickActionBarProps {
   onActionSelect: (actionId: string) => void;
 }
 
-// 图标映射
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  PresentationChartBarIcon,
-  GlobeAltIcon,
-  DevicePhoneMobileIcon,
-  DocumentTextIcon,
-  ChartBarIcon,
-  AcademicCapIcon,
+/** Map config icon keys → Lucide chrome icons (1.5 stroke, optically consistent). */
+const iconMap: Record<string, React.ComponentType<{ className?: string; size?: string | number; strokeWidth?: number; 'aria-hidden'?: boolean }>> = {
+  PresentationChartBarIcon: PresentationChart,
+  GlobeAltIcon: Globe,
+  DevicePhoneMobileIcon: DeviceMobile,
+  DocumentTextIcon: FileText,
+  ChartBarIcon: ChartBar,
+  AcademicCapIcon: GraduationCap,
 };
 
 const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions, selectedActionId, onActionSelect }) => {
@@ -34,6 +38,7 @@ const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions, selectedAction
       {actions.map((action) => {
         const IconComponent = iconMap[action.icon];
         const isSelected = action.id === selectedActionId;
+        const accent = action.color || 'currentColor';
 
         return (
           <button
@@ -41,21 +46,29 @@ const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions, selectedAction
             type="button"
             aria-pressed={isSelected}
             onClick={() => onActionSelect(action.id)}
-            className={`group flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px] font-medium leading-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-200 ease-out active:translate-y-0 active:scale-[0.97] ${
+            className={`group inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium leading-4 transition-colors duration-200 ${
               isSelected
-                ? 'border-[color-mix(in_srgb,var(--lobster-primary)_45%,transparent)] bg-primary-muted text-primary'
-                : 'border-border bg-surface text-secondary hover:-translate-y-px hover:border-border hover:bg-surface-raised hover:text-foreground'
+                ? 'border-[color-mix(in_srgb,var(--lobster-primary)_42%,transparent)] bg-primary-muted text-primary'
+                : 'border-border/80 bg-surface text-secondary hover:border-border hover:bg-surface-raised hover:text-foreground'
             }`}
           >
-            {IconComponent && (
+            {IconComponent ? (
               <span
-                className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
-                style={{ color: isSelected ? undefined : action.color }}
+                aria-hidden="true"
+                className={`inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md transition-colors duration-200 ${
+                  isSelected ? 'bg-primary/10 text-primary' : 'bg-transparent'
+                }`}
+                style={isSelected ? undefined : {
+                  color: `color-mix(in srgb, ${accent} 68%, var(--lobster-text-secondary, #64748b))`,
+                }}
               >
-                <IconComponent className="h-4 w-4 transition-colors duration-200" />
+                <IconComponent
+                  className="h-3.5 w-3.5 transition-colors duration-200 group-hover:opacity-100"
+                  {...iconParkOutlineProps}
+                />
               </span>
-            )}
-            <span>{action.label}</span>
+            ) : null}
+            <span className="pr-0.5">{action.label}</span>
           </button>
         );
       })}

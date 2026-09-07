@@ -1,6 +1,7 @@
 ---
 name: web-search
 description: Real-time web search using Playwright-controlled browser. Use this skill when you need current information, latest documentation, recent news, or any data beyond your knowledge cutoff (January 2025).
+description_zh: 通过 Playwright 控制的浏览器进行实时联网搜索。需要当前信息、最新文档、近期新闻，或超出知识截止日期（2025 年 1 月）的数据时使用。
 official: true
 version: 1.0.2
 ---

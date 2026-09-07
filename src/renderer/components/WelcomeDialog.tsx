@@ -76,7 +76,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({
           </div>
           <img
             src="logo.svg"
-            alt="BaiYing"
+            alt="百应"
             width={72}
             height={72}
             className="relative rounded-2xl select-none"

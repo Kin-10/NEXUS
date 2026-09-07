@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -10,6 +9,7 @@ import { i18nService } from '../../services/i18n';
 import { RootState } from '../../store';
 import { selectPrompt } from '../../store/slices/quickActionSlice';
 import type { LocalizedPrompt, LocalizedQuickAction } from '../../types/quickAction';
+import { iconParkOutlineProps } from '../icons/iconStyle';
 import XMarkIcon from '../icons/XMarkIcon';
 
 interface PromptPanelProps {
@@ -35,9 +35,8 @@ const PromptPanel: React.FC<PromptPanelProps> = ({ action, onPromptSelect, onClo
 
   return (
     <div data-skin-prompt-panel="true" className="w-full animate-fade-in-up">
-      {/* 标题 */}
       <div className="mb-2.5 flex items-center justify-between px-0.5">
-        <span className="text-xs font-medium text-secondary">
+        <span className="text-xs font-medium tracking-wide text-secondary">
           {action.label}
         </span>
         {onClose && (
@@ -46,15 +45,14 @@ const PromptPanel: React.FC<PromptPanelProps> = ({ action, onPromptSelect, onClo
             onClick={onClose}
             aria-label={i18nService.t('coworkQuickActionCollapse')}
             title={i18nService.t('coworkQuickActionCollapse')}
-            className="flex h-5 w-5 items-center justify-center rounded-md text-secondary transition-colors duration-150 hover:bg-surface-raised hover:text-foreground"
+            className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-secondary transition-colors duration-200 hover:bg-surface-raised hover:text-foreground"
           >
             <XMarkIcon className="h-3.5 w-3.5" />
           </button>
         )}
       </div>
 
-      {/* 提示词卡片网格 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {action.prompts.map((prompt) => {
           const isPromptSelected = selectedPromptId === prompt.id;
 
@@ -63,36 +61,32 @@ const PromptPanel: React.FC<PromptPanelProps> = ({ action, onPromptSelect, onClo
               key={prompt.id}
               type="button"
               onClick={() => handlePromptClick(prompt)}
-              className={`
-                group relative flex flex-col items-start gap-1.5 px-3.5 py-3 rounded-lg
-                border text-left transition-all duration-200
-                ${
-                  isPromptSelected
-                    ? 'dark:bg-primary-muted bg-primary-muted border-[color-mix(in_srgb,var(--lobster-primary)_50%,transparent)]'
-                    : 'bg-surface border-border hover:border-primary/30 hover:bg-surface-raised'
-                }
-              `}
+              className={`group relative flex cursor-pointer flex-col items-start gap-1.5 rounded-xl border px-3.5 py-3 text-left transition-colors duration-200 ${
+                isPromptSelected
+                  ? 'border-[color-mix(in_srgb,var(--lobster-primary)_50%,transparent)] bg-primary-muted'
+                  : 'border-border bg-surface hover:border-primary/25 hover:bg-surface-raised'
+              }`}
             >
-              {/* 标题 */}
-              <div className="flex items-center justify-between w-full">
+              <div className="flex w-full items-center justify-between gap-2">
                 <span className={`text-sm font-medium ${isPromptSelected ? 'text-primary' : 'text-foreground'}`}>
                   {prompt.label}
                 </span>
-                <ArrowRight
-                  className={`
-                    w-3.5 h-3.5 transition-all duration-200
-                    ${
-                      isPromptSelected
-                        ? 'text-primary translate-x-0 opacity-100'
-                        : 'text-secondary -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'
-                    }
-                  `}
-                />
+                <span
+                  className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors duration-200 ${
+                    isPromptSelected
+                      ? 'bg-primary/10 text-primary opacity-100'
+                      : 'text-secondary opacity-0 group-hover:bg-surface group-hover:opacity-100'
+                  }`}
+                >
+                  <ArrowRight
+                    className="h-3 w-3"
+                    {...iconParkOutlineProps}
+                  />
+                </span>
               </div>
 
-              {/* 描述 */}
               {prompt.description && (
-                <p className="text-xs text-secondary line-clamp-2">
+                <p className="line-clamp-2 text-xs leading-4 text-secondary">
                   {prompt.description}
                 </p>
               )}

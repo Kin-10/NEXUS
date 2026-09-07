@@ -29,6 +29,16 @@ import SearchIcon from '../icons/SearchIcon';
 import TrashIcon from '../icons/TrashIcon';
 import UploadIcon from '../icons/UploadIcon';
 import {
+  CAPABILITIES_CARD_CLASS,
+  CAPABILITIES_SEARCH_INPUT_CLASS,
+  CAPABILITIES_SECONDARY_ACTION_CLASS,
+  CAPABILITIES_TAB_ROW_CLASS,
+  CAPABILITIES_TOOLBAR_CLASS,
+  capabilitiesChipClass,
+  capabilitiesTabButtonClass,
+  capabilitiesTabIndicatorClass,
+} from '../skillsAndConnectors/capabilitiesChrome';
+import {
   getInstalledSkillAnalyticsParams,
   getMarketplaceSkillAnalyticsParams,
   reportSkillAction,
@@ -247,7 +257,9 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
     const query = skillSearchQuery.trim().replace(/\s+/g, ' ').toLowerCase();
     return [...mySkills, ...builtInSkills].filter(skill => {
       const matchesSearch = skill.name.toLowerCase().includes(query)
-        || skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description).toLowerCase().includes(query);
+        || skillService.getLocalizedSkillDescription(
+          skill.id, skill.name, skill.description, skill.descriptionZh,
+        ).toLowerCase().includes(query);
       return matchesSearch;
     });
   }, [mySkills, builtInSkills, skillSearchQuery]);
@@ -1073,7 +1085,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
         key={skill.id}
         role="button"
         tabIndex={0}
-        className="group flex flex-col cursor-pointer rounded-2xl border border-border bg-surface p-4 shadow-subtle transition-all hover:border-primary/50 hover:shadow-card focus-within:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className={CAPABILITIES_CARD_CLASS}
         onClick={openInstalledDetail}
         onKeyDown={(e) => {
           if (e.target !== e.currentTarget) return;
@@ -1086,7 +1098,10 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
         {/* Single-line title keeps every card the same shape; the raw id is
             reference material and lives in the detail dialog. */}
         <div className="mb-3 flex items-center gap-2.5">
-          <SkillIconTile icon={skillService.getSkillIcon(skill.id)} />
+          <SkillIconTile
+            icon={skillService.getSkillIcon(skill.id)}
+            label={displayName}
+          />
           <div className={`min-w-0 flex-1 truncate ${MANAGEMENT_TITLE_TEXT} font-semibold leading-snug text-foreground`}>
             {displayName}
           </div>
@@ -1118,7 +1133,9 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
         </div>
 
         <p className="mb-3 line-clamp-2 min-h-[2.6em] text-xs leading-relaxed text-secondary">
-          {skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description)}
+          {skillService.getLocalizedSkillDescription(
+            skill.id, skill.name, skill.description, skill.descriptionZh,
+          )}
         </p>
 
         <div className={`mt-auto flex items-center justify-between gap-2 ${MANAGEMENT_META_TEXT} text-muted`}>
@@ -1156,12 +1173,6 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
 
   return (
     <div className="space-y-4">
-      <div className="pb-2">
-        <p className={`${MANAGEMENT_BODY_TEXT} text-secondary`}>
-          {i18nService.t('skillsDescription')}
-        </p>
-      </div>
-
       {skillActionError && !isRemoteImportOpen && (
         <ErrorMessage
           message={skillActionError}
@@ -1169,21 +1180,21 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
         />
       )}
 
-      {/* Sticky toolbar: Description + Search + Tabs + Tag pills */}
+      {/* Sticky toolbar: Search + Tabs + Tag pills */}
       <div
         data-skin-management-toolbar="true"
-        className="sticky top-0 z-10 space-y-4 bg-background pb-2"
+        className={CAPABILITIES_TOOLBAR_CLASS}
       >
         {/* Search + Add button */}
         <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary" />
+          <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
           <input
-            type="text"
+            type="search"
             placeholder={i18nService.t('searchSkills')}
             value={skillSearchQuery}
             onChange={(e) => setSkillSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 text-sm rounded-xl bg-surface text-foreground placeholder-secondary border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+            className={CAPABILITIES_SEARCH_INPUT_CLASS}
           />
           {skillSearchQuery && (
             <button
@@ -1200,7 +1211,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                 });
                 setSkillSearchQuery('');
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-secondary hover:text-primary transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-secondary transition-colors duration-200 hover:text-primary"
             >
               <XCircleIconSolid className="h-4 w-4" />
             </button>
@@ -1222,7 +1233,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                 return next;
               });
             }}
-            className="px-3 py-2 text-sm rounded-xl border transition-colors bg-surface border-border text-foreground hover:bg-surface-raised flex items-center gap-2"
+            className={CAPABILITIES_SECONDARY_ACTION_CLASS}
           >
             <PlusCircleIcon className="h-4 w-4" />
             <span>{i18nService.t('addSkill')}</span>
@@ -1231,16 +1242,16 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
           {isAddSkillMenuOpen && (
             <div
               ref={addSkillMenuRef}
-              className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-surface shadow-lg z-50 overflow-hidden"
+              className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-border bg-surface"
             >
-              <p className={`px-3 py-2 ${MANAGEMENT_META_TEXT} text-orange-600 dark:text-orange-400 border-b border-border`}>
+              <p className={`border-b border-border px-3 py-2 ${MANAGEMENT_META_TEXT} text-orange-600 dark:text-orange-400`}>
                 {i18nService.t('addSkillSecurityTip')}
               </p>
               <button
                 type="button"
                 onClick={handleUploadSkillZip}
                 disabled={isDownloadingSkill}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised transition-colors disabled:opacity-50"
+                className="flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-foreground transition-colors duration-200 hover:bg-surface-raised disabled:opacity-50"
               >
                 <UploadIcon className="h-4 w-4 text-secondary" />
                 <span>{i18nService.t('uploadSkillZip')}</span>
@@ -1249,7 +1260,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                 type="button"
                 onClick={handleUploadSkillFolder}
                 disabled={isDownloadingSkill}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised transition-colors disabled:opacity-50"
+                className="flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-foreground transition-colors duration-200 hover:bg-surface-raised disabled:opacity-50"
               >
                 <FolderOpenIcon className="h-4 w-4 text-secondary" />
                 <span>{i18nService.t('uploadSkillFolder')}</span>
@@ -1257,7 +1268,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
               <button
                 type="button"
                 onClick={handleOpenRemoteImport}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised transition-colors"
+                className="flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-foreground transition-colors duration-200 hover:bg-surface-raised"
               >
                 <LinkIcon className="h-4 w-4 text-secondary" />
                 <span>{i18nService.t('remoteImport')}</span>
@@ -1265,7 +1276,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
               <button
                 type="button"
                 onClick={handleCreateByChat}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised transition-colors"
+                className="flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-sm text-foreground transition-colors duration-200 hover:bg-surface-raised"
               >
                 <EditIcon className="h-4 w-4 text-secondary" />
                 <span>{i18nService.t('createSkillByChat')}</span>
@@ -1274,7 +1285,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
               <button
                 type="button"
                 onClick={handleManualOpenClawSync}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised transition-colors border-t border-border"
+                className="flex w-full cursor-pointer items-center gap-3 border-t border-border px-3 py-2.5 text-sm text-foreground transition-colors duration-200 hover:bg-surface-raised"
               >
                 <ArrowPathIcon className="h-4 w-4 text-secondary" />
                 <span>{i18nService.t('syncSkillsFromOpenClaw')}</span>
@@ -1286,7 +1297,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center border-b border-border">
+        <div className={CAPABILITIES_TAB_ROW_CLASS}>
           {SKILL_TAB_ORDER.map((tab) => {
             const count = getSkillTabCount(tab);
             return (
@@ -1301,31 +1312,25 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                   });
                   setActiveTab(tab);
                 }}
-                className={`relative px-2.5 pb-2.5 pt-0.5 ${MANAGEMENT_TITLE_TEXT} font-semibold transition-colors ${
-                  activeTab === tab
-                    ? 'text-foreground'
-                    : 'text-secondary hover:text-foreground'
-                }`}
+                className={capabilitiesTabButtonClass(activeTab === tab)}
               >
                 {i18nService.t(SKILL_TAB_LABEL_KEYS[tab])}
                 {count !== null && count > 0 && (
-                  <span className={`ml-1.5 rounded-full bg-surface-raised px-1.5 py-0.5 ${MANAGEMENT_META_TEXT} font-medium text-secondary`}>
+                  <span className={`ml-1.5 rounded-md bg-surface-raised px-1.5 py-0.5 ${MANAGEMENT_META_TEXT} font-medium text-secondary`}>
                     {count}
                   </span>
                 )}
-                <div className={`absolute bottom-[-1px] left-0 right-0 h-0.5 rounded-full transition-colors ${
-                  activeTab === tab ? 'bg-primary' : 'bg-transparent'
-                }`} />
+                <div className={capabilitiesTabIndicatorClass(activeTab === tab)} />
               </button>
             );
           })}
           {updatableSkills.length > 0 && (
-            <div className="ml-auto pr-1 pb-1">
+            <div className="ml-auto pb-1 pr-1">
               <button
                 type="button"
                 onClick={handleUpgradeAll}
                 disabled={upgradeState?.isActive === true}
-                className={`inline-flex items-center gap-1 px-2 py-1 ${MANAGEMENT_META_TEXT} font-medium rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 ${MANAGEMENT_META_TEXT} font-medium text-emerald-600 transition-colors duration-200 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-emerald-400`}
               >
                 <ArrowPathIcon className="h-3 w-3" />
                 {i18nService.t('skillUpgradeAll').replace('{count}', String(updatableSkills.length))}
@@ -1336,7 +1341,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
 
         {/* Tag filter pills (Marketplace only) */}
         {activeTab === SkillTab.Marketplace && !isLoadingMarketplace && marketTags.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
               onClick={() => {
@@ -1349,11 +1354,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                 });
                 setActiveMarketTag('all');
               }}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                activeMarketTag === 'all'
-                  ? 'bg-primary text-white'
-                  : 'bg-surface-raised text-secondary hover:text-foreground'
-              }`}
+              className={capabilitiesChipClass(activeMarketTag === 'all')}
             >
               {i18nService.t('skillCategoryAll')}
             </button>
@@ -1371,11 +1372,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                   });
                   setActiveMarketTag(tag.id);
                 }}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  activeMarketTag === tag.id
-                    ? 'bg-primary text-white'
-                    : 'bg-surface-raised text-secondary hover:text-foreground'
-                }`}
+                className={capabilitiesChipClass(activeMarketTag === tag.id)}
               >
                 {resolveLocalizedText(tag)}
               </button>
@@ -1473,7 +1470,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
         isLoadingMarketplace ? (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4" aria-hidden="true">
             {Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="animate-pulse rounded-2xl border border-border bg-surface p-4">
+              <div key={idx} className="animate-pulse rounded-xl border border-border bg-surface p-4">
                 <div className="mb-3 flex items-center gap-2">
                   <div className="h-7 w-7 rounded-lg bg-surface-raised" />
                   <div className="h-3.5 w-1/3 rounded bg-surface-raised" />
@@ -1516,7 +1513,7 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                 key={skill.id}
                 role="button"
                 tabIndex={0}
-                className="group flex flex-col cursor-pointer rounded-2xl border border-border bg-surface p-4 shadow-subtle transition-all hover:border-primary/50 hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className={CAPABILITIES_CARD_CLASS}
                 onClick={openMarketplaceDetail}
                 onKeyDown={(e) => {
                   if (e.target !== e.currentTarget) return;
@@ -1527,7 +1524,10 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                 }}
               >
                 <div className="mb-3 flex items-center gap-2.5">
-                  <SkillIconTile icon={skill.icon ?? skillService.getSkillIcon(skill.id)} />
+                  <SkillIconTile
+                    icon={skill.icon ?? skillService.getSkillIcon(skill.id)}
+                    label={skillService.getLocalizedSkillName(skill.id, skill.name)}
+                  />
                   <div className={`min-w-0 flex-1 truncate ${MANAGEMENT_TITLE_TEXT} font-semibold leading-snug text-foreground`}>
                     {skillService.getLocalizedSkillName(skill.id, skill.name)}
                   </div>
@@ -1660,8 +1660,9 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
               <div className="flex items-center gap-3.5 pr-9">
                 <SkillIconTile
                   icon={selectedMarketplaceSkill.icon ?? skillService.getSkillIcon(selectedMarketplaceSkill.id)}
+                  label={skillService.getLocalizedSkillName(selectedMarketplaceSkill.id, selectedMarketplaceSkill.name)}
                   className="h-14 w-14 rounded-2xl"
-                  iconClassName="h-7 w-7"
+                  iconClassName="text-lg font-semibold"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-base font-semibold leading-tight text-foreground">
@@ -1795,8 +1796,9 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
               <div className="flex items-center gap-3.5 pr-9">
                 <SkillIconTile
                   icon={skillService.getSkillIcon(selectedSkill.id)}
+                  label={skillService.getLocalizedSkillName(selectedSkill.id, selectedSkill.name)}
                   className="h-14 w-14 rounded-2xl"
-                  iconClassName="h-7 w-7"
+                  iconClassName="text-lg font-semibold"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-base font-semibold leading-tight text-foreground">
@@ -1848,7 +1850,9 @@ const SkillsManager: React.FC<SkillsManagerProps> = ({ readOnly, onCreateByChat,
                 {i18nService.t('skillDetailAbout')}
               </h3>
               <p className={`whitespace-pre-wrap break-words ${MANAGEMENT_TITLE_TEXT} leading-relaxed text-secondary`}>
-                {skillService.getLocalizedSkillDescription(selectedSkill.id, selectedSkill.name, selectedSkill.description)}
+                {skillService.getLocalizedSkillDescription(
+                  selectedSkill.id, selectedSkill.name, selectedSkill.description, selectedSkill.descriptionZh,
+                )}
               </p>
 
               <h3 className={`mb-2 mt-5 ${MANAGEMENT_BODY_TEXT} font-semibold text-foreground`}>

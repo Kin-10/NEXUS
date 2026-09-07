@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BaiYing</title>
+    <title>百应</title>
     <style>
       /* Pre-React splash: a static replica of EngineStartupOverlay so the whole
          startup (window shown -> renderer init -> engine starting) is one
@@ -40,26 +40,37 @@
       }
       .splash-logo-wrap {
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 120px;
+        height: 120px;
         margin-bottom: 20px;
-      }
-      .splash-logo-glow {
-        position: absolute;
-        inset: -8px;
-        border-radius: 24px;
-        background: rgba(59, 130, 246, 0.2);
-        filter: blur(24px);
-        animation: splash-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
       }
       .splash-logo {
         position: relative;
         display: block;
-        width: 72px;
-        height: 72px;
-        border-radius: 16px;
+        width: 120px;
+        height: 120px;
         user-select: none;
         -webkit-user-drag: none;
         transform-origin: center;
-        animation: splash-logo-spin 1.4s linear infinite;
+        overflow: visible;
+        animation: splash-bot-appear 0.52s cubic-bezier(0.18, 0.88, 0.26, 1) both;
+      }
+      .splash-eyes {
+        transform-origin: 0 0;
+        animation: splash-eye-tour 4s cubic-bezier(0.65, 0, 0.35, 1) 0.7s infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .splash-logo {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+        .splash-eyes {
+          animation: none;
+        }
       }
       .splash-title {
         margin: 0 0 8px;
@@ -175,21 +186,59 @@
         width: 12px;
         background: #3b82f6;
       }
-      @keyframes splash-pulse {
-        0%,
+      @keyframes splash-bot-appear {
+        0% {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        72% {
+          opacity: 1;
+          transform: scale(1.04);
+        }
         100% {
           opacity: 1;
-        }
-        50% {
-          opacity: 0.5;
+          transform: scale(1);
         }
       }
-      @keyframes splash-logo-spin {
-        from {
-          transform: rotate(0deg);
+      /*
+        Eye-orbit stand-in for the React tour: eyes slide off the silhouette
+        (limb), hide behind, reappear, then rest. Cycle ≈ tour + gap.
+      */
+      @keyframes splash-eye-tour {
+        0%,
+        8% {
+          transform: translate(0px, 0px);
+          opacity: 1;
         }
-        to {
-          transform: rotate(360deg);
+        22% {
+          transform: translate(108px, 13px);
+          opacity: 1;
+        }
+        30%,
+        42% {
+          transform: translate(0px, 26px);
+          opacity: 0;
+        }
+        50% {
+          transform: translate(-108px, 13px);
+          opacity: 0;
+        }
+        58% {
+          transform: translate(-108px, 13px);
+          opacity: 1;
+        }
+        72% {
+          transform: translate(0px, 0px);
+          opacity: 1;
+        }
+        76% {
+          transform: translate(0px, 0px) scaleY(0.08);
+          opacity: 1;
+        }
+        82%,
+        100% {
+          transform: translate(0px, 0px) scaleY(1);
+          opacity: 1;
         }
       }
       @keyframes splash-shimmer {
@@ -224,8 +273,23 @@
         <div class="splash-gradient"></div>
         <div class="splash-content">
           <div class="splash-logo-wrap">
-            <div class="splash-logo-glow"></div>
-            <img class="splash-logo" src="logo.svg" alt="BaiYing" width="72" height="72" draggable="false" />
+            <!-- Inline bot + bloub orbit ribbons; keep in sync with
+                 CoworkHomeInteractiveLogo (motion=startup) + coworkStartupOrbitRings. -->
+            <svg id="splash-logo" class="splash-logo" viewBox="-158 -158 316 316" role="img" aria-label="百应" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <mask id="splash-bot-mask" maskUnits="userSpaceOnUse" x="-158" y="-158" width="316" height="316">
+                  <path fill="#fff" d="M104.24 0.09C104.24 3.49 103.93 6.93 103.37 10.27C102.82 13.61 102.01 16.96 100.92 20.15C99.83 23.35 98.43 26.49 96.84 29.45C95.26 32.41 93.44 35.28 91.41 37.92C89.39 40.57 87.09 43.05 84.7 45.31C82.3 47.57 79.71 49.66 77.03 51.49C74.35 53.31 71.48 54.92 68.59 56.28C65.7 57.64 62.69 58.76 59.7 59.65C56.71 60.54 53.65 61.19 50.65 61.61C47.64 62.04 44.55 62.1 41.67 62.2C38.79 62.29 36.01 62.2 33.38 62.2C30.76 62.2 28.31 62.2 25.92 62.2C23.54 62.2 21.28 62.2 19.05 62.2C16.83 62.2 14.69 62.2 12.58 62.2C10.46 62.2 8.41 62.2 6.35 62.2C4.29 62.2 2.28 62.2 0.24 62.2C-1.79 62.2 -3.81 62.2 -5.86 62.2C-7.92 62.2 -9.97 62.2 -12.09 62.2C-14.21 62.2 -16.34 62.2 -18.56 62.2C-20.79 62.2 -23.05 62.2 -25.44 62.2C-27.83 62.2 -30.27 62.2 -32.9 62.2C-35.52 62.2 -38.31 62.29 -41.18 62.2C-44.06 62.1 -47.16 62.04 -50.16 61.61C-53.17 61.19 -56.22 60.54 -59.22 59.65C-62.21 58.76 -65.22 57.64 -68.11 56.28C-70.99 54.92 -73.86 53.31 -76.54 51.49C-79.23 49.66 -81.81 47.57 -84.21 45.31C-86.61 43.05 -88.9 40.57 -90.93 37.92C-92.95 35.28 -94.77 32.41 -96.36 29.45C-97.94 26.49 -99.34 23.35 -100.43 20.15C-101.52 16.96 -102.33 13.61 -102.89 10.27C-103.44 6.93 -103.76 3.49 -103.76 0.09C-103.76 -3.3 -103.44 -6.74 -102.89 -10.08C-102.33 -13.42 -101.52 -16.77 -100.43 -19.96C-99.34 -23.16 -97.94 -26.3 -96.36 -29.26C-94.77 -32.22 -92.95 -35.09 -90.93 -37.73C-88.9 -40.38 -86.61 -42.86 -84.21 -45.12C-81.81 -47.38 -79.23 -49.47 -76.54 -51.3C-73.86 -53.13 -70.99 -54.73 -68.11 -56.09C-65.22 -57.45 -62.21 -58.57 -59.22 -59.46C-56.22 -60.35 -53.17 -61 -50.16 -61.43C-47.16 -61.85 -44.06 -61.91 -41.18 -62.01C-38.31 -62.11 -35.52 -62.01 -32.9 -62.01C-30.27 -62.01 -27.83 -62.01 -25.44 -62.01C-23.05 -62.01 -20.79 -62.01 -18.56 -62.01C-16.34 -62.01 -14.21 -62.01 -12.09 -62.01C-9.97 -62.01 -7.92 -62.01 -5.86 -62.01C-3.81 -62.01 -1.79 -62.01 0.24 -62.01C2.28 -62.01 4.29 -62.01 6.35 -62.01C8.41 -62.01 10.46 -62.01 12.58 -62.01C14.69 -62.01 16.83 -62.01 19.05 -62.01C21.28 -62.01 23.54 -62.01 25.92 -62.01C28.31 -62.01 30.76 -62.01 33.38 -62.01C36.01 -62.01 38.79 -62.11 41.67 -62.01C44.55 -61.91 47.64 -61.85 50.65 -61.43C53.65 -61 56.71 -60.35 59.7 -59.46C62.69 -58.57 65.7 -57.45 68.59 -56.09C71.48 -54.73 74.35 -53.13 77.03 -51.3C79.71 -49.47 82.3 -47.38 84.7 -45.12C87.09 -42.86 89.39 -40.38 91.41 -37.73C93.44 -35.09 95.26 -32.22 96.84 -29.26C98.43 -26.3 99.83 -23.16 100.92 -19.96C102.01 -16.77 102.82 -13.42 103.37 -10.08C103.93 -6.74 104.24 -3.3 104.24 0.09Z"/>
+                  <g class="splash-eyes">
+                    <path fill="#000" transform="translate(-26.34 2.63) matrix(0.97,0.02,-0.01,1,0,0)" d="M-22.5 -1A22.5 22.5 0 0 1 0 -23.5L0 -23.5A22.5 22.5 0 0 1 22.5 -1L22.5 1A22.5 22.5 0 0 1 0 23.5L0 23.5A22.5 22.5 0 0 1 -22.5 1Z"/>
+                    <path fill="#000" transform="translate(40.99 3.19) matrix(0.92,0,-0.01,1,0,0)" d="M-22.5 -1A22.5 22.5 0 0 1 0 -23.5L0 -23.5A22.5 22.5 0 0 1 22.5 -1L22.5 1A22.5 22.5 0 0 1 0 23.5L0 23.5A22.5 22.5 0 0 1 -22.5 1Z"/>
+                  </g>
+                </mask>
+              </defs>
+              <g id="splash-orbit-back" fill="none" stroke-linecap="round"></g>
+              <path fill="#f9f9f9" stroke="rgba(15, 15, 18, 0.08)" stroke-width="3" d="M104.24 0.09C104.24 3.49 103.93 6.93 103.37 10.27C102.82 13.61 102.01 16.96 100.92 20.15C99.83 23.35 98.43 26.49 96.84 29.45C95.26 32.41 93.44 35.28 91.41 37.92C89.39 40.57 87.09 43.05 84.7 45.31C82.3 47.57 79.71 49.66 77.03 51.49C74.35 53.31 71.48 54.92 68.59 56.28C65.7 57.64 62.69 58.76 59.7 59.65C56.71 60.54 53.65 61.19 50.65 61.61C47.64 62.04 44.55 62.1 41.67 62.2C38.79 62.29 36.01 62.2 33.38 62.2C30.76 62.2 28.31 62.2 25.92 62.2C23.54 62.2 21.28 62.2 19.05 62.2C16.83 62.2 14.69 62.2 12.58 62.2C10.46 62.2 8.41 62.2 6.35 62.2C4.29 62.2 2.28 62.2 0.24 62.2C-1.79 62.2 -3.81 62.2 -5.86 62.2C-7.92 62.2 -9.97 62.2 -12.09 62.2C-14.21 62.2 -16.34 62.2 -18.56 62.2C-20.79 62.2 -23.05 62.2 -25.44 62.2C-27.83 62.2 -30.27 62.2 -32.9 62.2C-35.52 62.2 -38.31 62.29 -41.18 62.2C-44.06 62.1 -47.16 62.04 -50.16 61.61C-53.17 61.19 -56.22 60.54 -59.22 59.65C-62.21 58.76 -65.22 57.64 -68.11 56.28C-70.99 54.92 -73.86 53.31 -76.54 51.49C-79.23 49.66 -81.81 47.57 -84.21 45.31C-86.61 43.05 -88.9 40.57 -90.93 37.92C-92.95 35.28 -94.77 32.41 -96.36 29.45C-97.94 26.49 -99.34 23.35 -100.43 20.15C-101.52 16.96 -102.33 13.61 -102.89 10.27C-103.44 6.93 -103.76 3.49 -103.76 0.09C-103.76 -3.3 -103.44 -6.74 -102.89 -10.08C-102.33 -13.42 -101.52 -16.77 -100.43 -19.96C-99.34 -23.16 -97.94 -26.3 -96.36 -29.26C-94.77 -32.22 -92.95 -35.09 -90.93 -37.73C-88.9 -40.38 -86.61 -42.86 -84.21 -45.12C-81.81 -47.38 -79.23 -49.47 -76.54 -51.3C-73.86 -53.13 -70.99 -54.73 -68.11 -56.09C-65.22 -57.45 -62.21 -58.57 -59.22 -59.46C-56.22 -60.35 -53.17 -61 -50.16 -61.43C-47.16 -61.85 -44.06 -61.91 -41.18 -62.01C-38.31 -62.11 -35.52 -62.01 -32.9 -62.01C-30.27 -62.01 -27.83 -62.01 -25.44 -62.01C-23.05 -62.01 -20.79 -62.01 -18.56 -62.01C-16.34 -62.01 -14.21 -62.01 -12.09 -62.01C-9.97 -62.01 -7.92 -62.01 -5.86 -62.01C-3.81 -62.01 -1.79 -62.01 0.24 -62.01C2.28 -62.01 4.29 -62.01 6.35 -62.01C8.41 -62.01 10.46 -62.01 12.58 -62.01C14.69 -62.01 16.83 -62.01 19.05 -62.01C21.28 -62.01 23.54 -62.01 25.92 -62.01C28.31 -62.01 30.76 -62.01 33.38 -62.01C36.01 -62.01 38.79 -62.11 41.67 -62.01C44.55 -61.91 47.64 -61.85 50.65 -61.43C53.65 -61 56.71 -60.35 59.7 -59.46C62.69 -58.57 65.7 -57.45 68.59 -56.09C71.48 -54.73 74.35 -53.13 77.03 -51.3C79.71 -49.47 82.3 -47.38 84.7 -45.12C87.09 -42.86 89.39 -40.38 91.41 -37.73C93.44 -35.09 95.26 -32.22 96.84 -29.26C98.43 -26.3 99.83 -23.16 100.92 -19.96C102.01 -16.77 102.82 -13.42 103.37 -10.08C103.93 -6.74 104.24 -3.3 104.24 0.09Z"/>
+              <rect x="-158" y="-158" width="316" height="316" fill="#0a0a0c" mask="url(#splash-bot-mask)"/>
+              <g id="splash-orbit-front" fill="none" stroke-linecap="round"></g>
+            </svg>
           </div>
           <h1 class="splash-title" id="splash-title">AI 引擎启动中</h1>
           <p class="splash-subtitle" id="splash-subtitle">加载中...</p>
@@ -244,6 +308,184 @@
         </div>
       </div>
     </div>
+    <script>
+      // Bloub-style colorful orbit ribbons around the splash mascot.
+      // Keep in sync with src/renderer/components/cowork/coworkStartupOrbitRings.ts
+      (function () {
+        try {
+          var svg = document.getElementById('splash-logo');
+          var backG = document.getElementById('splash-orbit-back');
+          var frontG = document.getElementById('splash-orbit-front');
+          if (!svg || !backG || !frontG) return;
+
+          var TAU = Math.PI * 2;
+          var BALL = 100;
+          var reduce = false;
+          try {
+            reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          } catch (e) { /* ignore */ }
+
+          function r2(v) { return Math.round(v * 100) / 100; }
+          function createRng(seed) {
+            var a = seed >>> 0;
+            return function () {
+              a = (a + 0x6d2b79f5) >>> 0;
+              var t = Math.imul(a ^ (a >>> 15), 1 | a);
+              t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+              return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+          }
+          function wheel(hue, s, l) {
+            s = s == null ? 0.55 : s;
+            l = l == null ? 0.62 : l;
+            var h = ((hue % 360) + 360) % 360;
+            var c = (1 - Math.abs(2 * l - 1)) * s;
+            var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+            var m = l - c / 2;
+            var rgb =
+              h < 60 ? [c, x, 0] :
+              h < 120 ? [x, c, 0] :
+              h < 180 ? [0, c, x] :
+              h < 240 ? [0, x, c] :
+              h < 300 ? [x, 0, c] : [c, 0, x];
+            function hex(v) {
+              return Math.round((v + m) * 255).toString(16).padStart(2, '0');
+            }
+            return '#' + hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
+          }
+
+          var RING_RNG = createRng(0xa11ce);
+          var RINGS = [];
+          for (var i = 0; i < 6; i++) {
+            RINGS.push({
+              a: 1.3 + RING_RNG() * 0.1,
+              k: 0.05 + RING_RNG() * 0.4,
+              tilt: (i / 6) * Math.PI + RING_RNG() * 0.5,
+              speed: 3 + RING_RNG() * 0.7,
+              phase: RING_RNG() * TAU,
+              sweep: 0.6 + RING_RNG() * 0.25,
+              hue: (i * 360) / 6 + RING_RNG() * 30,
+              hueSpan: 60 + RING_RNG() * 60,
+              width: 0.05 + RING_RNG() * 0.012,
+              cx: 0,
+              cy: 0.1
+            });
+          }
+
+          function arcRender(seed, t, scale, id, opacity) {
+            var spin = seed.phase + t * seed.speed * TAU;
+            var cu = Math.cos(seed.tilt);
+            var su = Math.sin(seed.tilt);
+            var kz = Math.sqrt(Math.max(0, 1 - seed.k * seed.k));
+            var N = 64;
+            var span = seed.sweep * TAU;
+            var front = '';
+            var back = '';
+            var prev = null;
+            for (var j = 0; j <= N; j++) {
+              var th = spin + (j / N) * span;
+              var ct = Math.cos(th);
+              var st = Math.sin(th);
+              var x = seed.a * (ct * cu + st * -su * seed.k) + seed.cx;
+              var y = seed.a * (ct * su + st * cu * seed.k) + seed.cy;
+              var z = seed.a * st * kz;
+              var behind = z < 0;
+              var sx = r2(x * scale);
+              var sy = r2(y * scale);
+              var cmd = behind !== prev ? 'M' : 'L';
+              if (behind) back += cmd + sx + ' ' + sy;
+              else front += cmd + sx + ' ' + sy;
+              prev = behind;
+            }
+            var gx = Math.cos(seed.tilt) * seed.a * scale;
+            var gy = Math.sin(seed.tilt) * seed.a * scale;
+            return {
+              id: id,
+              front: front,
+              back: back,
+              width: seed.width * scale,
+              opacity: opacity,
+              grad: {
+                x1: r2(seed.cx * scale - gx),
+                y1: r2(seed.cy * scale - gy),
+                x2: r2(seed.cx * scale + gx),
+                y2: r2(seed.cy * scale + gy),
+                stops: [
+                  wheel(seed.hue),
+                  wheel(seed.hue + seed.hueSpan * 0.5),
+                  wheel(seed.hue + seed.hueSpan)
+                ]
+              }
+            };
+          }
+
+          var defs = svg.querySelector('defs');
+          var paths = [];
+          for (var r = 0; r < RINGS.length; r++) {
+            var id = 'splash-rg' + r;
+            var grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            grad.setAttribute('id', id);
+            grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+            for (var s = 0; s < 3; s++) {
+              var stop = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+              stop.setAttribute('offset', String(s / 2));
+              grad.appendChild(stop);
+            }
+            defs.appendChild(grad);
+
+            var backPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            backPath.setAttribute('stroke', 'url(#' + id + ')');
+            backG.appendChild(backPath);
+            var frontPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            frontPath.setAttribute('stroke', 'url(#' + id + ')');
+            frontG.appendChild(frontPath);
+            paths.push({ grad: grad, back: backPath, front: frontPath });
+          }
+
+          function paint(tSec) {
+            for (var i = 0; i < RINGS.length; i++) {
+              var enter = Math.max(0, Math.min(1, (tSec - i * 0.13) / 0.3));
+              var arc = arcRender(RINGS[i], tSec, BALL, 'rg' + i, enter);
+              var slot = paths[i];
+              slot.grad.setAttribute('x1', String(arc.grad.x1));
+              slot.grad.setAttribute('y1', String(arc.grad.y1));
+              slot.grad.setAttribute('x2', String(arc.grad.x2));
+              slot.grad.setAttribute('y2', String(arc.grad.y2));
+              var stops = slot.grad.querySelectorAll('stop');
+              for (var k = 0; k < stops.length; k++) {
+                stops[k].setAttribute('stop-color', arc.grad.stops[k]);
+              }
+              slot.back.setAttribute('d', arc.back || '');
+              slot.back.setAttribute('stroke-width', String(arc.width));
+              slot.back.setAttribute('opacity', String(arc.opacity));
+              slot.front.setAttribute('d', arc.front || '');
+              slot.front.setAttribute('stroke-width', String(arc.width));
+              slot.front.setAttribute('opacity', String(arc.opacity));
+            }
+          }
+
+          if (reduce) {
+            // Still spin, but slower — ribbons are the loading indicator.
+            var slowStarted = performance.now();
+            function slowTick(now) {
+              paint(((now - slowStarted) / 1000) * 0.4 + 1.2);
+              requestAnimationFrame(slowTick);
+            }
+            requestAnimationFrame(slowTick);
+            return;
+          }
+
+          var started = performance.now();
+          function tick(now) {
+            paint((now - started) / 1000 + 1.2);
+            requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        } catch (e) {
+          /* keep face-only splash */
+        }
+      })();
+    </script>
     <script>
       // 本地化启动屏文案并随机选一条小提示。
       // 'lobster-language' 由 i18n.ts 在语言确定后写入；首次启动回退到系统语言。

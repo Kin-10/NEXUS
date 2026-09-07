@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 
 import {
@@ -8,6 +7,7 @@ import {
 import { coworkService } from '../../services/cowork';
 import { i18nService } from '../../services/i18n';
 import type { OpenClawEngineStatus } from '../../types/cowork';
+import CoworkStartupMascot from './CoworkStartupMascot';
 
 const TIP_KEYS = [
   'engineStartingTip1',
@@ -20,7 +20,6 @@ const TIP_KEYS = [
 
 const TIP_ROTATE_MS = 5000;
 const SLOW_HINT_AFTER_MS = 15000;
-const LOGO_SPIN_DURATION_MS = 1400;
 
 // sessionStorage key written by index.html's static splash so the overlay
 // continues from the same tip instead of jumping to a different one.
@@ -92,7 +91,6 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
   });
   const [showSlowHint, setShowSlowHint] = useState(false);
   const hasRotatedTipRef = useRef(false);
-  const logoRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     coworkService.getOpenClawEngineStatus()
@@ -130,28 +128,6 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
 
     return () => {
       clearTimeout(slowHintTimer);
-    };
-  }, [visible]);
-
-  useEffect(() => {
-    if (!visible) {
-      return undefined;
-    }
-
-    const logoAnimation = logoRef.current?.animate(
-      [
-        { transform: 'rotate(0deg)' },
-        { transform: 'rotate(360deg)' },
-      ],
-      {
-        duration: LOGO_SPIN_DURATION_MS,
-        iterations: Infinity,
-        easing: 'linear',
-      },
-    );
-
-    return () => {
-      logoAnimation?.cancel();
     };
   }, [visible]);
 
@@ -202,17 +178,11 @@ const EngineStartupOverlay: React.FC<EngineStartupOverlayProps> = ({ bootstrappi
       />
 
       <div className="relative z-10 flex w-[420px] flex-col items-center px-6" role="status">
-        {/* logo with breathing glow */}
-        <div className="relative mb-5">
-          <div className="absolute -inset-2 rounded-3xl bg-primary/20 blur-xl animate-pulse" aria-hidden="true" />
-          <img
-            ref={logoRef}
-            src="logo.svg"
-            alt="BaiYing"
-            width={72}
-            height={72}
-            className="relative rounded-2xl select-none"
-            draggable={false}
+        {/* Bot mascot + bloub colorful orbit ribbons (dedicated component). */}
+        <div className="relative mb-5 flex h-[120px] w-[120px] items-center justify-center">
+          <CoworkStartupMascot
+            className="relative h-full w-full select-none"
+            aria-label="百应"
           />
         </div>
 

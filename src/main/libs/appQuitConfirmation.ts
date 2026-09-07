@@ -12,7 +12,7 @@
  */
 import { app, dialog, type MessageBoxOptions } from 'electron';
 
-import { APP_NAME } from '../appConstants';
+import { APP_DISPLAY_NAME } from '../appConstants';
 import { t } from '../i18n';
 
 export const AppQuitRequestVerdict = {
@@ -128,7 +128,7 @@ export async function showAppQuitConfirmation(): Promise<boolean> {
     console.debug('[AppQuit] failed to focus app before quit confirmation:', error);
   }
   const { response } = await dialog.showMessageBox(
-    buildAppQuitConfirmationOptions({ appName: APP_NAME, translate: t }),
+    buildAppQuitConfirmationOptions({ appName: APP_DISPLAY_NAME, translate: t }),
   );
   return isAppQuitConfirmed(response);
 }

@@ -5,7 +5,7 @@ import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
 
-import { AgentId, DefaultAgentAvatarIcon, DefaultAgentProfile, LegacyAgentName, normalizeAgentAvatarIcon } from '../shared/agent';
+import { AgentId, DefaultAgentAvatarIcon, DefaultAgentProfile, LegacyAgentName, LegacyDefaultAgentProfileName, normalizeAgentAvatarIcon } from '../shared/agent';
 import {
   OpenClawCronRunMetadataKey,
   parseOpenClawCronSessionKey,
@@ -680,7 +680,9 @@ export class SqliteStore {
           .run(AgentId.Main, DefaultAgentProfile.Name, existingSystemPrompt, DefaultAgentAvatarIcon, now, now);
       } else {
         const normalizedName = mainAgent.name.trim();
-        const shouldUpgradeName = !normalizedName || normalizedName.toLowerCase() === LegacyAgentName.Main;
+        const shouldUpgradeName = !normalizedName
+          || normalizedName.toLowerCase() === LegacyAgentName.Main
+          || normalizedName === LegacyDefaultAgentProfileName;
         if (shouldUpgradeName) {
           this.db
             .prepare('UPDATE agents SET name = ?, updated_at = ? WHERE id = ?')

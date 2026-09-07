@@ -202,7 +202,7 @@ import {
 import type { ShellOpenFailureReason as ShellOpenFailureReasonType } from '../shared/shell/constants';
 import { type ShellGetBrowserAppsInput, ShellIpc, ShellOpenFailureReason } from '../shared/shell/constants';
 import { AgentManager } from './agentManager';
-import { APP_NAME, APP_USER_MODEL_ID, DB_FILENAME } from './appConstants';
+import { APP_DISPLAY_NAME, APP_NAME, APP_USER_MODEL_ID, DB_FILENAME } from './appConstants';
 import { createLocalFileProtocolResponse } from './artifactLocalFileProtocol';
 import { authQuotaGateStateFromQuota, AuthSubscriptionStatus, createDefaultAuthQuotaGateState, normalizeAuthQuota } from './authQuota';
 import { type AutoLaunchStatus, getAutoLaunchStatus, isAutoLaunched, setAutoLaunchEnabled } from './autoLaunchManager';
@@ -13497,7 +13497,7 @@ if (!gotTheLock) {
       ...initialWindowBounds,
       minWidth: MIN_APP_WINDOW_WIDTH,
       minHeight: MIN_APP_WINDOW_HEIGHT,
-      title: APP_NAME,
+      title: APP_DISPLAY_NAME,
       icon: appIconPath,
       ...(isMac
         ? {

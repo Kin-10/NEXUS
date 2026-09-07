@@ -11,6 +11,6 @@ describe('cowork rail preview', () => {
   });
 
   test('keeps rail preview fallback when plan tags contain no visible text', () => {
-    expect(getCoworkRailPreview('<proposed_plan></proposed_plan>', 'BaiYing')).toBe('BaiYing');
+    expect(getCoworkRailPreview('<proposed_plan></proposed_plan>', '百应')).toBe('百应');
   });
 });

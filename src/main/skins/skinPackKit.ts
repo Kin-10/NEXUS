@@ -38,7 +38,7 @@ export function buildSkinPackMarketplaceKit(): Record<string, unknown> {
       zh: '用一句话定制 BaiYing 外观，AI 会生成专属背景与徽记、匹配界面配色并自动应用。',
     },
     icon: SkinPackKitMetadata.IconUrl,
-    author: 'BaiYing',
+    author: '百应',
     version: SkinPackKitMetadata.Version,
     workflowKind: SkinPackKitMetadata.WorkflowKind,
     tryAsking: [

@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest';
 
-import { computeEyePupilOffsets, pickBlinkDelayMs } from './coworkHomeInteractiveLogoMath';
+import {
+  computeEyePupilOffsets,
+  computeTourEyeOffsets,
+  easeInOutCubic,
+  pickBlinkDelayMs,
+} from './coworkHomeInteractiveLogoMath';
 
 describe('coworkHomeInteractiveLogoMath', () => {
   test('returns zero pupil offset when the cursor sits on the eye center', () => {
@@ -46,5 +51,29 @@ describe('coworkHomeInteractiveLogoMath', () => {
   test('schedules blink delays within the expected range', () => {
     expect(pickBlinkDelayMs(() => 0)).toBe(2800);
     expect(pickBlinkDelayMs(() => 1)).toBe(6000);
+  });
+
+  test('eases tour progress with ease-in-out cubic endpoints', () => {
+    expect(easeInOutCubic(0)).toBe(0);
+    expect(easeInOutCubic(1)).toBe(1);
+    expect(easeInOutCubic(0.5)).toBe(0.5);
+  });
+
+  test('tour eye offsets start and end at rest with full visibility', () => {
+    const start = computeTourEyeOffsets(0);
+    const end = computeTourEyeOffsets(1);
+    expect(start.left).toEqual({ x: 0, y: 0 });
+    expect(start.right).toEqual({ x: 0, y: 0 });
+    expect(start.visibility).toBe(1);
+    expect(end.left.x).toBeCloseTo(0, 5);
+    expect(end.left.y).toBeCloseTo(0, 5);
+    expect(end.visibility).toBeCloseTo(1, 5);
+  });
+
+  test('tour eye offsets leave the face near the limbs and hide behind', () => {
+    const side = computeTourEyeOffsets(0.25, 108);
+    expect(Math.abs(side.left.x)).toBeGreaterThan(90);
+    const back = computeTourEyeOffsets(0.5, 108);
+    expect(back.visibility).toBe(0);
   });
 });

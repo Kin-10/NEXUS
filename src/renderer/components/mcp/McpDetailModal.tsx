@@ -67,7 +67,7 @@ const McpDetailModal: React.FC<McpDetailModalProps> = ({
         <XMarkIcon className="h-5 w-5" />
       </button>
       <div className="flex items-center gap-3.5 pr-9">
-        <McpIconTile icon={icon} className="h-14 w-14 rounded-2xl" iconClassName="h-7 w-7" />
+        <McpIconTile icon={icon} label={title} className="h-14 w-14 rounded-2xl" iconClassName="text-lg font-semibold" />
         <div className="min-w-0 flex-1">
           <div className="truncate text-base font-semibold leading-tight text-foreground">
             {title}

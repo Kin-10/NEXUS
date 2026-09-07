@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Eye,
   EyeSlash,
+  Trash,
   X,
   XCircle,
 } from '@/components/icons/iconParkCompat';
@@ -24,6 +25,7 @@ interface WecomInstanceSettingsProps {
   onConfigChange: (update: Partial<WecomOpenClawConfig>) => void;
   onSave: (override?: Partial<WecomOpenClawConfig>) => Promise<void>;
   onRename: (newName: string) => void;
+  onDelete?: () => void;
   onTestConnectivity: () => void;
   onQuickSetup: () => void;
   quickSetupStatus: 'idle' | 'pending' | 'success' | 'error';
@@ -41,6 +43,7 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
   onConfigChange,
   onSave,
   onRename,
+  onDelete,
   onTestConnectivity,
   onQuickSetup,
   quickSetupStatus,
@@ -115,6 +118,18 @@ const WecomInstanceSettings: React.FC<WecomInstanceSettingsProps> = ({
             ? i18nService.t('connected')
             : i18nService.t('disconnected')}
         </div>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="inline-flex flex-shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-red-500 transition-colors duration-200 hover:bg-red-500/10"
+            title={i18nService.t('delete')}
+            aria-label={i18nService.t('delete')}
+          >
+            <Trash className="h-3.5 w-3.5" />
+            {i18nService.t('delete')}
+          </button>
+        )}
       </div>
 
       {/* Quick Setup via QR Code */}

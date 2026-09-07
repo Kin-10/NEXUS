@@ -2,10 +2,10 @@ import React from 'react';
 
 import { PresentationChart } from '@/components/icons/iconParkCompat';
 
-import { type AppIconProps, defaultIconProps } from './iconStyle';
+import { type AppIconProps, iconParkOutlineProps } from './iconStyle';
 
 const PresentationChartBarIcon: React.FC<AppIconProps> = ({ className }) => (
-  <PresentationChart className={className} {...defaultIconProps} />
+  <PresentationChart className={className} {...iconParkOutlineProps} />
 );
 
 export default PresentationChartBarIcon;

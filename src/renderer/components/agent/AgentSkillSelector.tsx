@@ -43,8 +43,8 @@ const AgentSkillSelector: React.FC<AgentSkillSelectorProps> = ({ selectedSkillId
     const q = search.trim().toLowerCase();
     return enabledSkills.filter((skill) => {
       if (!q) return true;
-      const localizedDescription = shouldUseFallbackDescription
-        ? skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description)
+      const localizedDescription = (skill.descriptionZh || shouldUseFallbackDescription)
+        ? skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description, skill.descriptionZh)
         : '';
       return skill.name.toLowerCase().includes(q) || localizedDescription.toLowerCase().includes(q);
     });
@@ -91,8 +91,8 @@ const AgentSkillSelector: React.FC<AgentSkillSelectorProps> = ({ selectedSkillId
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {filteredSkills.map((skill) => {
               const isSelected = selectedSkillIds.includes(skill.id);
-              const description = shouldUseFallbackDescription
-                ? skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description)
+              const description = (skill.descriptionZh || shouldUseFallbackDescription)
+                ? skillService.getLocalizedSkillDescription(skill.id, skill.name, skill.description, skill.descriptionZh)
                 : '';
 
               return (

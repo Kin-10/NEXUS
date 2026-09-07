@@ -1,4 +1,4 @@
-import { AgentId, DefaultAgentProfile, LegacyAgentName } from '@shared/agent';
+import { AgentId, LegacyAgentName, LegacyDefaultAgentProfileName } from '@shared/agent';
 
 import { i18nService } from '../services/i18n';
 
@@ -12,12 +12,20 @@ export const isDefaultAgentId = (agentId?: string | null): boolean => {
   return agentId?.trim() === AgentId.Main;
 };
 
+/**
+ * True when the main agent still uses a legacy/empty sentinel name that should
+ * be shown via `defaultAgentDisplayName` instead of the raw stored value.
+ *
+ * Do NOT treat `DefaultAgentProfile.Name` (百应) as a sentinel — that is the
+ * real default display name, and mapping it away makes renames to「百应」look
+ * like a no-op.
+ */
 export const isDefaultAgentProfileName = (agent: Pick<AgentDisplaySource, 'id' | 'name'>): boolean => {
   if (!isDefaultAgentId(agent.id)) return false;
   const normalizedName = agent.name?.trim() ?? '';
   return !normalizedName
     || normalizedName.toLowerCase() === LegacyAgentName.Main
-    || normalizedName === DefaultAgentProfile.Name;
+    || normalizedName === LegacyDefaultAgentProfileName;
 };
 
 export const getAgentDisplayName = (agent: Pick<AgentDisplaySource, 'id' | 'name'>): string => {

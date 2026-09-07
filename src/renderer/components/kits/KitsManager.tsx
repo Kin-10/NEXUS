@@ -21,7 +21,16 @@ import { MANAGEMENT_BODY_TEXT, MANAGEMENT_META_TEXT, MANAGEMENT_TITLE_TEXT } fro
 import Modal from '../common/Modal';
 import ErrorMessage from '../ErrorMessage';
 import SearchIcon from '../icons/SearchIcon';
+import {
+  CAPABILITIES_CARD_CLASS,
+  CAPABILITIES_SEARCH_INPUT_CLASS,
+  CAPABILITIES_TAB_ROW_CLASS,
+  CAPABILITIES_TOOLBAR_CLASS,
+  capabilitiesTabButtonClass,
+  capabilitiesTabIndicatorClass,
+} from '../skillsAndConnectors/capabilitiesChrome';
 import { getKitAnalyticsParams, reportKitAction } from './analytics';
+import KitCard from './KitCard';
 import KitIcon from './KitIcon';
 
 const KitOperationType = {
@@ -498,7 +507,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
             });
             setSelectedKit(null);
           }}
-          className="non-draggable relative z-30 inline-flex items-center gap-1.5 text-sm text-secondary hover:text-foreground transition-colors"
+          className="non-draggable relative z-30 inline-flex cursor-pointer items-center gap-1.5 text-sm text-secondary transition-colors duration-200 hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
           {i18nService.t('kitBack')}
@@ -508,13 +517,20 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
           <ErrorMessage message={actionError} onClose={() => setActionError('')} />
         )}
 
-        {/* Kit header */}
-        <div className="rounded-xl border border-border bg-surface p-4 shadow-card">
+        {/* Kit header — flat card, same family as directory tiles */}
+        <div className={`${CAPABILITIES_CARD_CLASS} cursor-default p-5`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
-              <KitIcon icon={selectedKit.icon} className="h-20 w-20" />
+              <KitIcon
+                icon={selectedKit.icon}
+                className="h-16 w-16 rounded-xl"
+                fallbackClassName="rounded-xl bg-primary-muted text-primary"
+                fallbackIconClassName="h-8 w-8"
+              />
               <div className="min-w-0">
-                <h2 className="text-base font-semibold text-foreground">{resolveLocalizedText(selectedKit.name)}</h2>
+                <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
+                  {resolveLocalizedText(selectedKit.name)}
+                </h2>
                 <p className={`mt-1.5 max-w-2xl ${MANAGEMENT_BODY_TEXT} leading-5 text-secondary`}>
                   {resolveLocalizedText(selectedKit.description)}
                 </p>
@@ -599,10 +615,10 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                   key={idx}
                   type="button"
                   onClick={() => handleTryAskingClick(resolveLocalizedText(prompt), selectedKit.id)}
-                  className="group flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-left transition-colors hover:border-primary/50 hover:bg-surface-raised/50"
+                  className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-surface px-3 py-2.5 text-left transition-colors duration-200 hover:border-primary/40 hover:bg-surface-raised/50"
                 >
                   <span className="text-sm text-foreground">{resolveLocalizedText(prompt)}</span>
-                  <CaretRight className="h-3.5 w-3.5 flex-shrink-0 text-secondary transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+                  <CaretRight className="h-3.5 w-3.5 flex-shrink-0 text-secondary transition-colors duration-200 group-hover:text-primary" />
                 </button>
               ))}
             </div>
@@ -694,28 +710,26 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
     );
   }
 
-  // List view
+  // List view — marketplace directory card grid
   return (
     <div className="space-y-4">
-      {/* Sticky toolbar: Search + tabs */}
       <div
         data-skin-management-toolbar="true"
-        className="sticky top-0 z-10 space-y-4 bg-background pb-2"
+        className={CAPABILITIES_TOOLBAR_CLASS}
       >
         {actionError && (
           <ErrorMessage message={actionError} onClose={() => setActionError('')} />
         )}
 
-        {/* Search */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
+            <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-secondary" />
             <input
-              type="text"
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={i18nService.t('kitSearchPlaceholder')}
-              className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-8 text-sm text-foreground placeholder-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+              className={CAPABILITIES_SEARCH_INPUT_CLASS}
             />
             {searchQuery && (
               <button
@@ -728,7 +742,8 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                   });
                   setSearchQuery('');
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-secondary transition-colors hover:text-primary"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-1 text-secondary transition-colors duration-200 hover:text-foreground"
+                aria-label={i18nService.t('kitClearSearch')}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -736,26 +751,23 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
           </div>
         </div>
 
-        {/* Marketplace / Installed tabs */}
-        <div className="flex items-center border-b border-border">
+        <div className={CAPABILITIES_TAB_ROW_CLASS} role="tablist" aria-label={i18nService.t('sidebarNavExperts')}>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === KitTab.Marketplace}
             onClick={() => handleTabChange(KitTab.Marketplace)}
-            className={`relative px-2.5 pb-2.5 pt-0.5 ${MANAGEMENT_TITLE_TEXT} font-semibold transition-colors ${
-              activeTab === KitTab.Marketplace ? 'text-foreground' : 'text-secondary hover:text-foreground'
-            }`}
+            className={capabilitiesTabButtonClass(activeTab === KitTab.Marketplace)}
           >
             {i18nService.t('kitMarketplace')}
-            <div className={`absolute bottom-[-1px] left-0 right-0 h-0.5 rounded-full transition-colors ${
-              activeTab === KitTab.Marketplace ? 'bg-primary' : 'bg-transparent'
-            }`} />
+            <span className={capabilitiesTabIndicatorClass(activeTab === KitTab.Marketplace)} aria-hidden="true" />
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === KitTab.Installed}
             onClick={() => handleTabChange(KitTab.Installed)}
-            className={`relative px-2.5 pb-2.5 pt-0.5 ${MANAGEMENT_TITLE_TEXT} font-semibold transition-colors ${
-              activeTab === KitTab.Installed ? 'text-foreground' : 'text-secondary hover:text-foreground'
-            }`}
+            className={capabilitiesTabButtonClass(activeTab === KitTab.Installed)}
           >
             {i18nService.t('kitInstalledTab')}
             {installedCount > 0 && (
@@ -763,32 +775,33 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                 {installedCount}
               </span>
             )}
-            <div className={`absolute bottom-[-1px] left-0 right-0 h-0.5 rounded-full transition-colors ${
-              activeTab === KitTab.Installed ? 'bg-primary' : 'bg-transparent'
-            }`} />
+            <span className={capabilitiesTabIndicatorClass(activeTab === KitTab.Installed)} aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      {/* Kit grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-hidden="true">
-          {Array.from({ length: 4 }).map((_, idx) => (
-            <div key={idx} className="min-h-[116px] animate-pulse rounded-xl border border-border bg-surface p-4">
-              <div className="flex gap-3.5">
-                <div className="h-16 w-16 rounded-xl bg-surface-raised" />
-                <div className="flex-1 space-y-2.5 pt-1">
-                  <div className="h-3.5 w-1/3 rounded bg-surface-raised" />
-                  <div className="h-3 w-full rounded bg-surface-raised" />
-                  <div className="h-3 w-2/3 rounded bg-surface-raised" />
-                </div>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4" aria-hidden="true">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx} className="animate-pulse rounded-xl border border-border bg-surface p-4">
+              <div className="mb-3 flex items-center gap-2.5">
+                <div className="h-10 w-10 rounded-[10px] bg-surface-raised" />
+                <div className="h-3.5 w-1/2 rounded bg-surface-raised" />
+              </div>
+              <div className="mb-3 space-y-2">
+                <div className="h-3 w-full rounded bg-surface-raised" />
+                <div className="h-3 w-2/3 rounded bg-surface-raised" />
+              </div>
+              <div className="flex gap-1.5">
+                <div className="h-4 w-12 rounded bg-surface-raised" />
+                <div className="h-4 w-10 rounded bg-surface-raised" />
               </div>
             </div>
           ))}
         </div>
       ) : filteredKits.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-sm text-secondary">
+        <div className="rounded-xl border border-dashed border-border bg-surface/40 px-6 py-14 text-center">
+          <p className={`${MANAGEMENT_BODY_TEXT} text-secondary`}>
             {searchQuery.trim()
               ? i18nService.t('kitSearchNoResults')
               : activeTab === KitTab.Installed
@@ -806,7 +819,7 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
                 });
                 setSearchQuery('');
               }}
-              className="mt-3 text-sm font-medium text-primary hover:underline"
+              className="mt-3 cursor-pointer text-sm font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
             >
               {i18nService.t('kitClearSearch')}
             </button>
@@ -814,114 +827,95 @@ const KitsManager: React.FC<KitsManagerProps> = ({ onTryAsking, onUseKit }) => {
             <button
               type="button"
               onClick={() => handleTabChange(KitTab.Marketplace)}
-              className="mt-3 text-sm font-medium text-primary hover:underline"
+              className="mt-3 cursor-pointer text-sm font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
             >
               {i18nService.t('kitGoInstall')}
             </button>
           ) : null}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {filteredKits.map((kit) => {
             const installed = isKitInstalled(kit.id);
             const operating = isOperating(kit.id);
             const skillCount = getSkillCount(kit);
             const updateInfo = getKitUpdateInfo(kit);
+            const title = resolveLocalizedText(kit.name);
+            const showInstalledBadge = installed && activeTab === KitTab.Marketplace;
+            const hasMeta = Boolean(
+              showInstalledBadge
+              || kit.author
+              || kit.version
+              || skillCount > 0
+              || updateInfo,
+            );
+
+            const actions = installed ? (
+              onUseKit ? (
+                <button
+                  type="button"
+                  disabled={operating}
+                  onClick={(e) => { e.stopPropagation(); handleUseKit(kit); }}
+                  className={CARD_ACTION_PILL_CLASS}
+                >
+                  {i18nService.t('kitUse')}
+                </button>
+              ) : undefined
+            ) : (
+              <button
+                type="button"
+                disabled={operating}
+                onClick={(e) => { e.stopPropagation(); handleInstall(kit); }}
+                className={CARD_ACTION_PILL_CLASS}
+              >
+                {operating && operationType === KitOperationType.Install ? (
+                  <>
+                    <ArrowsClockwise className="h-3 w-3 animate-spin" />
+                    {i18nService.t('kitInstalling')}
+                  </>
+                ) : i18nService.t('kitInstall')}
+              </button>
+            );
+
+            const meta = hasMeta ? (
+              <>
+                {showInstalledBadge && (
+                  <span className="inline-flex items-center gap-0.5 rounded-md bg-green-500/10 px-1.5 py-0.5 font-medium text-green-600 dark:text-green-400">
+                    <Check className="h-2.5 w-2.5" />
+                    {i18nService.t('kitInstalled')}
+                  </span>
+                )}
+                {kit.author && (
+                  <span className="rounded-md bg-primary-muted px-1.5 py-0.5 font-medium text-primary">
+                    {i18nService.t('kitOfficial')}
+                  </span>
+                )}
+                {kit.version && (
+                  <span className="rounded-md bg-surface-raised px-1.5 py-0.5 font-medium">
+                    v{kit.version}
+                  </span>
+                )}
+                {skillCount > 0 && (
+                  <span>{i18nService.t('kitSkillCount').replace('{count}', String(skillCount))}</span>
+                )}
+                {updateInfo && (
+                  <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 font-medium text-amber-600 dark:text-amber-400">
+                    {i18nService.t('kitReinstallRequiredBadge')}
+                  </span>
+                )}
+              </>
+            ) : undefined;
 
             return (
-              <div
+              <KitCard
                 key={kit.id}
-                role="button"
-                tabIndex={0}
-                className="min-h-[116px] cursor-pointer rounded-xl border border-border bg-surface p-4 shadow-subtle transition-all hover:border-primary/50 hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                onClick={() => openKitDetail(kit)}
-                onKeyDown={(e) => {
-                  if (e.target !== e.currentTarget) return;
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openKitDetail(kit);
-                  }
-                }}
-              >
-                <div className="flex gap-3.5">
-                  <KitIcon icon={kit.icon} className="h-16 w-16" />
-
-                  <div className="min-w-0 flex-1">
-                    {/* One capsule, its label carrying the state. Uninstall is
-                        not a browsing action, so it lives in the detail page. */}
-                    <div className="flex items-center gap-2">
-                      <h3 className={`min-w-0 flex-1 truncate ${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
-                        {resolveLocalizedText(kit.name)}
-                      </h3>
-                      {installed ? (
-                        onUseKit && (
-                          <button
-                            type="button"
-                            disabled={operating}
-                            onClick={(e) => { e.stopPropagation(); handleUseKit(kit); }}
-                            className={CARD_ACTION_PILL_CLASS}
-                          >
-                            {i18nService.t('kitUse')}
-                          </button>
-                        )
-                      ) : (
-                        <button
-                          type="button"
-                          disabled={operating}
-                          onClick={(e) => { e.stopPropagation(); handleInstall(kit); }}
-                          className={CARD_ACTION_PILL_CLASS}
-                        >
-                          {operating && operationType === KitOperationType.Install ? (
-                            <>
-                              <ArrowsClockwise className="h-3 w-3 animate-spin" />
-                              {i18nService.t('kitInstalling')}
-                            </>
-                          ) : i18nService.t('kitInstall')}
-                        </button>
-                      )}
-                    </div>
-                    <p className="mt-1.5 line-clamp-2 text-xs leading-[18px] text-secondary">
-                      {resolveLocalizedText(kit.description)}
-                    </p>
-
-                    <div className={`mt-3 flex flex-wrap items-center gap-1.5 ${MANAGEMENT_META_TEXT} text-secondary`}>
-                      {installed && activeTab === KitTab.Marketplace && (
-                        <>
-                          <span className="inline-flex items-center gap-0.5 rounded-md bg-green-500/10 px-1.5 py-0.5 font-medium text-green-600 dark:text-green-400">
-                            <Check className="h-2.5 w-2.5" />
-                            {i18nService.t('kitInstalled')}
-                          </span>
-                          <span className="text-secondary/50">·</span>
-                        </>
-                      )}
-                      {kit.author && (
-                        <>
-                          <span className="rounded-md bg-primary-muted px-1.5 py-0.5 font-medium text-primary">
-                            {i18nService.t('kitOfficial')}
-                          </span>
-                          <span className="text-secondary/50">·</span>
-                        </>
-                      )}
-                      {kit.version && (
-                        <>
-                          <span className="rounded-md bg-surface-raised px-1.5 py-0.5 font-medium">
-                            v{kit.version}
-                          </span>
-                          <span className="text-secondary/50">·</span>
-                        </>
-                      )}
-                      {skillCount > 0 && (
-                        <span>{i18nService.t('kitSkillCount').replace('{count}', String(skillCount))}</span>
-                      )}
-                      {updateInfo && (
-                        <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 font-medium text-amber-600 dark:text-amber-400">
-                          {i18nService.t('kitReinstallRequiredBadge')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                title={title}
+                description={resolveLocalizedText(kit.description)}
+                icon={kit.icon}
+                actions={actions}
+                meta={meta}
+                onOpenDetail={() => openKitDetail(kit)}
+              />
             );
           })}
         </div>

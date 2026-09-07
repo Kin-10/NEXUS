@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 
-import SkillIcon from '../icons/SkillIcon';
+import { getNameAbbreviation } from '../common/nameAbbreviation';
 
 interface SkillIconTileProps {
-  /** Server-provided icon URL. Falls back to the default skill icon when absent. */
+  /** Server-provided icon URL. Falls back to a name abbreviation when absent. */
   icon?: string;
+  /** Display name used for the abbreviation fallback. */
+  label?: string;
   className?: string;
   iconClassName?: string;
 }
 
 /**
  * Icon shown for a skill. Renders the server-provided image when there is one,
- * and otherwise the default skill glyph on a muted tile — deliberately uniform,
- * so the skill name stays the thing you read first.
+ * otherwise a two-character abbreviation of the skill name.
  */
 const SkillIconTile: React.FC<SkillIconTileProps> = ({
   icon,
+  label,
   className = 'h-10 w-10 rounded-[10px]',
-  iconClassName = 'h-5 w-5',
+  iconClassName = 'text-sm font-semibold',
 }) => {
   const [imageFailed, setImageFailed] = useState(false);
   const normalizedIcon = icon?.trim();
@@ -34,12 +36,15 @@ const SkillIconTile: React.FC<SkillIconTileProps> = ({
     );
   }
 
+  const abbreviation = getNameAbbreviation(label || '');
+
   return (
     <span
       aria-hidden="true"
-      className={`${className} inline-flex shrink-0 items-center justify-center bg-primary-muted text-primary`}
+      title={label}
+      className={`${className} inline-flex shrink-0 items-center justify-center bg-primary-muted text-primary ${iconClassName}`}
     >
-      <SkillIcon className={iconClassName} />
+      {abbreviation}
     </span>
   );
 };
