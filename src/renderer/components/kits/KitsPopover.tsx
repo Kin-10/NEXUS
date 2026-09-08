@@ -199,8 +199,8 @@ const KitsPopover: React.FC<KitsPopoverProps> = ({
           </div>
         ) : shouldShowInstallGuide ? (
           <div>
-            <div className="mb-3 flex justify-center">
-              <ExpertKitsEmptyIcon aria-hidden="true" className="h-20 w-20 text-foreground" />
+            <div className="mb-3 flex justify-center overflow-visible">
+              <ExpertKitsEmptyIcon aria-hidden="true" className="h-24 w-24" />
             </div>
             <div className="text-center text-[13px] font-medium text-foreground">
               {i18nService.t('noKitsInstalled')}

@@ -1,5 +1,6 @@
 export const LogReporterEndpoint = {
-  YoudaoAnalyzer: 'https://rlogs.youdao.com/rlog.php',
+  /** BaiYing Server analytics beacon (GET query params). */
+  hzbAnalyzer: 'http://127.0.0.1:8899/api/client/analytics/rlog',
 } as const;
 
 export const LogReporterProduct = {

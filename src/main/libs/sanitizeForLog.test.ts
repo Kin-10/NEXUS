@@ -143,10 +143,10 @@ describe('serializeForLog', () => {
 describe('sanitizeUrlForLog', () => {
   test('removes query values and fragments from valid URLs', () => {
     const result = sanitizeUrlForLog(
-      'https://rlogs.youdao.com/rlog.php?action=baiying_app_started&log_Usid=user-1#result',
+      `${LogReporterEndpoint.hzbAnalyzer}?action=baiying_app_started&log_Usid=user-1#result`,
     );
 
-    expect(result).toBe('https://rlogs.youdao.com/rlog.php?[redacted]#[redacted]');
+    expect(result).toBe(`${LogReporterEndpoint.hzbAnalyzer}?[redacted]#[redacted]`);
     expect(result).not.toContain('user-1');
     expect(result).not.toContain('baiying_app_started');
   });
@@ -161,16 +161,16 @@ describe('sanitizeUrlForLog', () => {
 // ---------------------------------------------------------------------------
 describe('isAnalyticsEndpointUrl', () => {
   test('matches the analyzer endpoint regardless of query or fragment', () => {
-    expect(isAnalyticsEndpointUrl(LogReporterEndpoint.YoudaoAnalyzer)).toBe(true);
-    expect(isAnalyticsEndpointUrl(`${LogReporterEndpoint.YoudaoAnalyzer}?_npid=wisdom&action=baiying_app_started&uts=1`)).toBe(true);
-    expect(isAnalyticsEndpointUrl(`${LogReporterEndpoint.YoudaoAnalyzer}#x`)).toBe(true);
+    expect(isAnalyticsEndpointUrl(LogReporterEndpoint.hzbAnalyzer)).toBe(true);
+    expect(isAnalyticsEndpointUrl(`${LogReporterEndpoint.hzbAnalyzer}?_npid=wisdom&action=baiying_app_started&uts=1`)).toBe(true);
+    expect(isAnalyticsEndpointUrl(`${LogReporterEndpoint.hzbAnalyzer}#x`)).toBe(true);
   });
 
   test('does not match other hosts, paths, or schemes', () => {
-    expect(isAnalyticsEndpointUrl('https://baiying-server.youdao.com/api/user/profile-summary?uuid=1')).toBe(false);
-    expect(isAnalyticsEndpointUrl('https://rlogs.youdao.com/other.php')).toBe(false);
-    expect(isAnalyticsEndpointUrl('http://rlogs.youdao.com/rlog.php')).toBe(false);
-    expect(isAnalyticsEndpointUrl('https://rlogs.youdao.com.evil.example/rlog.php')).toBe(false);
+    expect(isAnalyticsEndpointUrl('https://baiying-server.hzb.com/api/user/profile-summary?uuid=1')).toBe(false);
+    expect(isAnalyticsEndpointUrl('http://127.0.0.1:8899/api/client/analytics/other')).toBe(false);
+    expect(isAnalyticsEndpointUrl('https://127.0.0.1:8899/api/client/analytics/rlog')).toBe(false);
+    expect(isAnalyticsEndpointUrl('http://127.0.0.1:8899.evil.example/api/client/analytics/rlog')).toBe(false);
   });
 
   test('returns false for unparsable input', () => {

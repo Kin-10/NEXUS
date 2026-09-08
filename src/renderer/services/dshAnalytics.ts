@@ -1,7 +1,7 @@
 // Usage analytics for the experimental DeepSeek Harness settings card. Events
 // go through reportYdAnalyzer like every other settings event, so they reach
 // the analyzer via `api:fetch` and show up in the main log as
-// `[api:fetch] GET https://rlogs.youdao.com/rlog.php?[redacted]` lines.
+// `[api:fetch] GET http://127.0.0.1:8899/api/client/analytics/rlog?[redacted]` lines.
 
 import { LogReporterAction, LogReporterSource } from '../../shared/analytics/constants';
 import { type DshEngineErrorCode, DshEnginePhase } from '../../shared/dshEngine/constants';
