@@ -3,7 +3,6 @@
  * Configuration form for a single POPO bot instance in multi-instance mode
  */
 
-import { PlatformRegistry } from '@shared/platform';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect,useRef, useState } from 'react';
 
@@ -295,15 +294,6 @@ const PopoInstanceSettings: React.FC<PopoInstanceSettingsProps> = ({
           <li>{i18nService.t('imPopoGuideStep2')}</li>
           <li>{i18nService.t('imPopoGuideStep3')}</li>
         </ol>
-        {PlatformRegistry.guideUrl('popo') && (
-          <button
-            type="button"
-            onClick={() => { window.electron.shell.openExternal(PlatformRegistry.guideUrl('popo')!).catch(() => {}); }}
-            className="mt-2 text-xs font-medium text-primary hover:text-primary underline underline-offset-2 transition-colors"
-          >
-            {i18nService.t('imViewGuide')}
-          </button>
-        )}
       </div>
 
       {/* Bound status badge */}

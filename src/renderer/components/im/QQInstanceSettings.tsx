@@ -3,7 +3,6 @@
  * Configuration form for a single QQ bot instance in multi-instance mode
  */
 
-import { PlatformRegistry } from '@shared/platform';
 import React, { useState } from 'react';
 
 import {
@@ -183,19 +182,6 @@ const QQInstanceSettings: React.FC<QQInstanceSettingsProps> = ({
           <li>{i18nService.t('imQQGuideStep3')}</li>
           <li>{i18nService.t('imQQGuideStep4')}</li>
         </ol>
-        {PlatformRegistry.guideUrl('qq') && (
-          <button
-            type="button"
-            onClick={() => {
-              window.electron.shell.openExternal(PlatformRegistry.guideUrl('qq')!).catch((err: unknown) => {
-                console.error('[IM] Failed to open guide URL:', err);
-              });
-            }}
-            className="mt-2 text-xs font-medium text-primary dark:text-primary hover:text-primary dark:hover:text-blue-200 underline underline-offset-2 transition-colors"
-          >
-            {i18nService.t('imViewGuide')}
-          </button>
-        )}
       </div>
 
       {/* AppID */}

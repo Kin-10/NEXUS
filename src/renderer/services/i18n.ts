@@ -3087,7 +3087,6 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imWecomQuickSetupSuccess: '已获取配置，保存后生效',
     imWecomQuickSetupError: '创建失败',
     imWecomAddInstance: '添加实例',
-    imViewGuide: '配置手册',
     imDingtalkGuideStep1: '前往钉钉开放平台，在"应用开发 > 机器人"中创建或选择一个企业内部应用',
     imDingtalkGuideStep2: '从应用凭证页获取 Client ID（AppKey）与 Client Secret（AppSecret）',
     imDingtalkGuideStep3: '启用"机器人"能力，并将 Client ID 和 Client Secret 填入下方',
@@ -3100,7 +3099,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     dingtalkBotCreateWizardSuccessTitle: '已获取配置，保存后生效',
     dingtalkBotCreateWizardGenerating: '正在生成二维码…',
     imFeishuGuideStep1: '在下方填写飞书机器人的 App ID 和 App Secret 即可完成配置',
-    imFeishuGuideStep2: '可在飞书开放平台查看应用凭证，详情参考配置手册。',
+    imFeishuGuideStep2: '可在飞书开放平台查看应用凭证。',
     feishuBotCreateWizardTitle: '创建机器人',
     feishuBotCreateWizardScanBtn: '扫码创建机器人',
     feishuBotCreateWizardScanHint: '使用飞书客户端扫描二维码，一键创建并配置机器人',
@@ -7073,7 +7072,6 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imWecomQuickSetupSuccess: 'Configuration received. Save to apply.',
     imWecomQuickSetupError: 'Creation failed',
     imWecomAddInstance: 'Add Instance',
-    imViewGuide: 'Setup Manual',
     imDingtalkGuideStep1:
       'Go to DingTalk Open Platform, create or pick an enterprise app under "App Development > Bot"',
     imDingtalkGuideStep2:
@@ -7091,8 +7089,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     dingtalkBotCreateWizardSuccessTitle: 'Configuration received. Save to apply.',
     dingtalkBotCreateWizardGenerating: 'Generating QR code...',
     imFeishuGuideStep1: 'Enter the Feishu bot App ID and App Secret below to complete setup',
-    imFeishuGuideStep2:
-      'App credentials are available on the Feishu Open Platform. See the setup manual for details.',
+    imFeishuGuideStep2: 'App credentials are available on the Feishu Open Platform.',
     feishuBotCreateWizardTitle: 'Create Bot',
     feishuBotCreateWizardScanBtn: 'Scan QR Code to Create Bot',
     feishuBotCreateWizardScanHint:

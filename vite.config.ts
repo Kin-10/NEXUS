@@ -88,6 +88,8 @@ export default defineConfig({
         vite: {
           build: {
             sourcemap: true,
+            // Main bundle is ~10MB+; gzip size reporting can stall past wait-on.
+            reportCompressedSize: false,
             outDir: 'dist-electron',
             minify: false,
             rollupOptions: {
@@ -103,6 +105,16 @@ export default defineConfig({
               },
             },
           },
+          plugins: [
+            {
+              name: 'electron-ready-marker',
+              closeBundle() {
+                // Mark ready as soon as the bundle is written, not after gzip reporting.
+                fs.mkdirSync('dist-electron', { recursive: true });
+                fs.writeFileSync('dist-electron/.electron-ready', '');
+              },
+            },
+          ],
         },
         onstart() {
           // Signal that the main process bundle is ready for electron to load
@@ -115,6 +127,7 @@ export default defineConfig({
         vite: {
           build: {
             sourcemap: true,
+            reportCompressedSize: false,
             outDir: 'dist-electron',
             minify: false,
           },
@@ -127,6 +140,7 @@ export default defineConfig({
         vite: {
           build: {
             sourcemap: true,
+            reportCompressedSize: false,
             outDir: 'dist-electron',
             minify: false,
           },
@@ -139,6 +153,7 @@ export default defineConfig({
         vite: {
           build: {
             sourcemap: true,
+            reportCompressedSize: false,
             outDir: 'dist-electron',
             minify: false,
           },
@@ -151,6 +166,7 @@ export default defineConfig({
         vite: {
           build: {
             sourcemap: true,
+            reportCompressedSize: false,
             outDir: 'dist-electron',
             minify: false,
           },

@@ -4,7 +4,6 @@
  */
 
 import type { Platform } from '@shared/platform';
-import { PlatformRegistry } from '@shared/platform';
 import WecomAIBotSDK from '@wecom/wecom-aibot-sdk';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect, useMemo, useRef,useState } from 'react';
@@ -57,9 +56,7 @@ import WecomInstanceSettings from './WecomInstanceSettings';
 const PlatformGuide: React.FC<{
   title?: string;
   steps: string[];
-  guideUrl?: string;
-  guideLabel?: string;
-}> = ({ title, steps, guideUrl, guideLabel }) => (
+}> = ({ title, steps }) => (
   <div className="mb-3 p-3 rounded-lg border border-dashed border-border-subtle">
     {title && (
       <p className="text-xs text-foreground leading-relaxed mb-1.5 font-medium">{title}</p>
@@ -69,19 +66,6 @@ const PlatformGuide: React.FC<{
         <li key={i}>{step}</li>
       ))}
     </ol>
-    {guideUrl && (
-      <button
-        type="button"
-        onClick={() => {
-          window.electron.shell.openExternal(guideUrl).catch((err: unknown) => {
-            console.error('[IM] Failed to open guide URL:', err);
-          });
-        }}
-        className="mt-2 text-xs font-medium text-primary dark:text-primary hover:text-primary dark:hover:text-blue-200 underline underline-offset-2 transition-colors"
-      >
-        {guideLabel || i18nService.t('imViewGuide')}
-      </button>
-    )}
   </div>
 );
 
@@ -3139,7 +3123,6 @@ const IMSettings: React.FC = () => {
                   i18nService.t('imWeixinGuideStep2'),
                   i18nService.t('imWeixinGuideStep3'),
                 ]}
-                guideUrl={PlatformRegistry.guideUrl('weixin')}
               />
             )}
           </div>

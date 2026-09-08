@@ -265,10 +265,10 @@ export const CHINA_PROVIDERS = [...ProviderRegistry.idsByRegion('china')] as con
 export const GLOBAL_PROVIDERS = ProviderRegistry.idsByRegion('global');
 
 export const getVisibleProviders = (language: 'zh' | 'en'): readonly string[] => {
-  if (language === 'zh') {
-    return [...CHINA_PROVIDERS];
-  }
-  return ProviderRegistry.idsForEnLocale();
+  const ids = language === 'zh'
+    ? [...CHINA_PROVIDERS]
+    : ProviderRegistry.idsForEnLocale();
+  return ids.filter(id => !ProviderRegistry.isHiddenInSettings(id));
 };
 
 /**

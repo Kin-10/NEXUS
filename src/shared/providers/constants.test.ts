@@ -212,6 +212,13 @@ describe('ProviderRegistry', () => {
     expect(china).not.toContain(ProviderName.OpenAI);
   });
 
+  test('hides Youdao, Qianfan, and StepFun from settings lists', () => {
+    expect(ProviderRegistry.isHiddenInSettings(ProviderName.Youdaozhiyun)).toBe(true);
+    expect(ProviderRegistry.isHiddenInSettings(ProviderName.Qianfan)).toBe(true);
+    expect(ProviderRegistry.isHiddenInSettings(ProviderName.StepFun)).toBe(true);
+    expect(ProviderRegistry.isHiddenInSettings(ProviderName.DeepSeek)).toBe(false);
+  });
+
   test('idsByRegion global returns 6 providers', () => {
     const global = ProviderRegistry.idsByRegion('global');
     expect(global.length).toBe(6);

@@ -67,7 +67,7 @@ const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
     <Modal
       onClose={canDismiss ? onCancel : () => {}}
       onEscape={canDismiss ? onCancel : undefined}
-      overlayClassName="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
+      overlayClassName="fixed inset-0 z-[80] flex items-center justify-center modal-backdrop"
       className="modal-content w-full max-w-md mx-4 bg-surface rounded-2xl shadow-modal overflow-hidden"
     >
       <div className="px-5 pt-5 pb-4">

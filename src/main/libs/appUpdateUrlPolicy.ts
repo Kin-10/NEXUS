@@ -1,3 +1,4 @@
+import { app } from 'electron';
 import path from 'path';
 
 import { APP_UPDATE_URL_UNTRUSTED_ERROR } from '../../shared/appUpdate/constants';
@@ -31,6 +32,34 @@ export interface WindowsInstallerUrlPolicyReceipt {
   finalOrigin: string;
 }
 
+const isLoopbackHostname = (hostname: string): boolean => {
+  const host = hostname.trim().toLowerCase();
+  return host === 'localhost'
+    || host === '127.0.0.1'
+    || host === '::1'
+    || host === '[::1]';
+};
+
+/**
+ * Local BYServer serves installers over http://127.0.0.1:<ephemeral-port>/.
+ * Allow that only for unpackaged development (or an explicit escape hatch),
+ * never for packaged production clients talking to public CDNs.
+ */
+export const allowsLocalDevelopmentInstallerHttp = (): boolean => {
+  if (process.env.BAIYING_ALLOW_LOCAL_UPDATE_HTTP === '1') {
+    return true;
+  }
+  try {
+    return process.env.NODE_ENV === 'development' && !app.isPackaged;
+  } catch {
+    return false;
+  }
+};
+
+const hasDisallowedUserinfoOrFragment = (url: URL): boolean => (
+  Boolean(url.username || url.password || url.hash)
+);
+
 /**
  * Enforce the transport-level policy that is stable across CDN changes.
  * This deliberately does not authenticate the publisher or pin an origin;
@@ -46,20 +75,27 @@ export function validateWindowsInstallerUrl(
     return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.InvalidUrl };
   }
 
-  if (url.protocol !== 'https:') {
-    return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.InsecureProtocol };
-  }
-  if (url.username || url.password) {
-    return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.CredentialsPresent };
-  }
-  if (url.hash) {
+  if (hasDisallowedUserinfoOrFragment(url)) {
+    if (url.username || url.password) {
+      return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.CredentialsPresent };
+    }
     return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.FragmentPresent };
   }
 
-  // WHATWG URL normalizes an explicit :443 to the default empty port.
-  if (url.port) {
+  const isLoopbackHttp = url.protocol === 'http:'
+    && isLoopbackHostname(url.hostname)
+    && allowsLocalDevelopmentInstallerHttp();
+
+  if (!isLoopbackHttp && url.protocol !== 'https:') {
+    return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.InsecureProtocol };
+  }
+
+  // Public HTTPS installers must use the default port. Loopback HTTP may use
+  // an ephemeral BYServer artifact port (e.g. 127.0.0.1:59004).
+  if (!isLoopbackHttp && url.port) {
     return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.UnapprovedPort };
   }
+
   if (path.posix.extname(url.pathname).toLowerCase() !== '.exe') {
     return { trusted: false, reason: WindowsInstallerUrlPolicyFailure.InvalidExtension };
   }
@@ -71,16 +107,20 @@ export function validateWindowsInstallerUrl(
 export function isSecureWindowsInstallerOrigin(rawOrigin: string): boolean {
   try {
     const url = new URL(rawOrigin);
-    return (
-      url.protocol === 'https:'
-      && !url.username
-      && !url.password
-      && !url.port
-      && !url.search
-      && !url.hash
-      && url.pathname === '/'
-      && url.origin === rawOrigin
-    );
+    if (url.username || url.password || url.search || url.hash || url.pathname !== '/') {
+      return false;
+    }
+    if (url.origin !== rawOrigin) {
+      return false;
+    }
+
+    if (url.protocol === 'https:') {
+      return !url.port;
+    }
+
+    return url.protocol === 'http:'
+      && isLoopbackHostname(url.hostname)
+      && allowsLocalDevelopmentInstallerHttp();
   } catch {
     return false;
   }

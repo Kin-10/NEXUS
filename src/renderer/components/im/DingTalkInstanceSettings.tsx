@@ -1,9 +1,8 @@
 /**
  * DingTalk Instance Settings Component
  * Configuration form for a single DingTalk bot instance in multi-instance mode
- */
+  */
 
-import { PlatformRegistry } from '@shared/platform';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect,useRef, useState } from 'react';
 
@@ -36,27 +35,13 @@ interface DingTalkInstanceSettingsProps {
 // Reusable guide card component for platform setup instructions
 const PlatformGuide: React.FC<{
   steps: string[];
-  guideUrl?: string;
-}> = ({ steps, guideUrl }) => (
+}> = ({ steps }) => (
   <div className="mb-3 p-3 rounded-lg border border-dashed border-border-subtle">
     <ol className="text-xs text-secondary space-y-1 list-decimal list-inside">
       {steps.map((step, i) => (
         <li key={i}>{step}</li>
       ))}
     </ol>
-    {guideUrl && (
-      <button
-        type="button"
-        onClick={() => {
-          window.electron.shell.openExternal(guideUrl).catch((err: unknown) => {
-            console.error('[IM] Failed to open guide URL:', err);
-          });
-        }}
-        className="mt-2 text-xs font-medium text-primary dark:text-primary hover:text-primary dark:hover:text-blue-200 underline underline-offset-2 transition-colors"
-      >
-        {i18nService.t('imViewGuide')}
-      </button>
-    )}
   </div>
 );
 
@@ -353,7 +338,6 @@ const DingTalkInstanceSettings: React.FC<DingTalkInstanceSettingsProps> = ({
           i18nService.t('imDingtalkGuideStep3'),
           i18nService.t('imDingtalkGuideStep4'),
         ]}
-        guideUrl={PlatformRegistry.guideUrl('dingtalk')}
       />
 
       {/* Client ID (AppKey) */}

@@ -153,6 +153,11 @@ interface ProviderDefInput {
   };
   /** Region grouping for UI visibility */
   readonly region: 'china' | 'global';
+  /**
+   * When true, omit from Settings → custom model provider list.
+   * Existing saved configs remain loadable for compatibility.
+   */
+  readonly hiddenInSettings?: boolean;
   /** Priority ordering for English locale display (lower = higher priority, 0 = no special priority) */
   readonly enPriority: number;
   /** Default model list */
@@ -358,6 +363,7 @@ const PROVIDER_DEFINITIONS = [
     defaultApiFormat: ApiFormat.OpenAI,
     codingPlanSupported: false,
     region: 'china',
+    hiddenInSettings: true,
     enPriority: 0,
     defaultModels: [
       { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', supportsImage: false, supportsThinking: true },
@@ -382,6 +388,7 @@ const PROVIDER_DEFINITIONS = [
     },
     preferredCodingPlanFormat: 'openai',
     region: 'china',
+    hiddenInSettings: true,
     enPriority: 0,
     defaultModels: [
       { id: 'kimi-k2.5', name: 'Kimi K2.5', supportsImage: false },
@@ -401,6 +408,7 @@ const PROVIDER_DEFINITIONS = [
     defaultApiFormat: ApiFormat.OpenAI,
     codingPlanSupported: false,
     region: 'china',
+    hiddenInSettings: true,
     enPriority: 0,
     defaultModels: [{ id: 'step-3.5-flash', name: 'Step 3.5 Flash', supportsImage: false }],
   },
@@ -609,6 +617,11 @@ export interface ProviderDef {
   };
   /** Region grouping for UI visibility */
   readonly region: 'china' | 'global';
+  /**
+   * When true, omit from Settings → custom model provider list.
+   * Existing saved configs remain loadable for compatibility.
+   */
+  readonly hiddenInSettings?: boolean;
   /** Priority ordering for English locale display (lower = higher priority, 0 = no special priority) */
   readonly enPriority: number;
   /** Default model list */
@@ -863,6 +876,11 @@ class ProviderRegistryImpl {
   /** Provider IDs filtered by region. */
   idsByRegion(region: 'china' | 'global'): readonly string[] {
     return this.defs.filter(d => d.region === region).map(d => d.id);
+  }
+
+  /** Whether the provider should be hidden from Settings model list. */
+  isHiddenInSettings(id: string): boolean {
+    return this.idIndex.get(id)?.hiddenInSettings === true;
   }
 
   /**

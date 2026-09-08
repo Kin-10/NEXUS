@@ -1,10 +1,11 @@
-import { ApiFormat, ProviderName } from '@shared/providers';
+import { ApiFormat, ProviderName, ProviderRegistry } from '@shared/providers';
 import { expect, test } from 'vitest';
 
 import {
   defaultConfig,
   getCustomProviderDefaultName,
   getProviderDisplayName,
+  getVisibleProviders,
   isCustomProvider,
   ShortcutAction,
 } from './config';
@@ -130,4 +131,15 @@ test('defaultConfig leaves agent shortcuts unset', () => {
   expect(defaultConfig.shortcuts?.[ShortcutAction.OpenAgentTask7]).toBe('');
   expect(defaultConfig.shortcuts?.[ShortcutAction.OpenAgentTask8]).toBe('');
   expect(defaultConfig.shortcuts?.[ShortcutAction.OpenAgentTask9]).toBe('');
+});
+
+test('getVisibleProviders omits Youdao, Qianfan, and StepFun', () => {
+  for (const language of ['zh', 'en'] as const) {
+    const visible = getVisibleProviders(language);
+    expect(visible).not.toContain(ProviderName.Youdaozhiyun);
+    expect(visible).not.toContain(ProviderName.Qianfan);
+    expect(visible).not.toContain(ProviderName.StepFun);
+    expect(visible).toContain(ProviderName.DeepSeek);
+    expect(ProviderRegistry.isHiddenInSettings(ProviderName.Youdaozhiyun)).toBe(true);
+  }
 });
