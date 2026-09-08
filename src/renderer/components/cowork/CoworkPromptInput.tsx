@@ -3021,10 +3021,12 @@ const CoworkPromptInput = React.forwardRef<CoworkPromptInputRef, CoworkPromptInp
 
   const largeSendButtonSizeClass = useCompactSendButton ? 'h-7 w-7' : useHomeHeroLayout ? 'h-9 w-9' : 'h-8 w-8';
   const largeSendIconSizeClass = useCompactSendButton ? 'h-4 w-4' : useHomeHeroLayout ? 'h-4 w-4' : 'h-[18px] w-[18px]';
-  const largeVoiceInputButton = !remoteManaged ? renderVoiceInputButton(
-    `flex ${largeSendButtonSizeClass} shrink-0 items-center justify-center rounded-full`,
-    largeSendIconSizeClass,
-  ) : null;
+  const largeVoiceInputButton = !remoteManaged && !useHomeContextLayout
+    ? renderVoiceInputButton(
+      `flex ${largeSendButtonSizeClass} shrink-0 items-center justify-center rounded-full`,
+      largeSendIconSizeClass,
+    )
+    : null;
 
   const largeTaskStopButton = (
     <button

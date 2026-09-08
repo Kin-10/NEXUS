@@ -408,7 +408,7 @@ Form fields：
   "message": "success",
   "data": {
     "shareId": "shr_xxxxxxxxxxxxxxxx",
-    "url": "https://baiying-server.inner.youdao.com/s/shr_xxxxxxxxxxxxxxxx/",
+    "url": "https://baiying-server.inner.hzb.com/s/shr_xxxxxxxxxxxxxxxx/",
     "accessMode": "code",
     "shareCode": "K7Q9P2",
     "shareCodeUnavailable": false,
@@ -804,13 +804,13 @@ mybatis-router.datasource.writer-jdbc-url=jdbc:mysql://test-lunadb-writer.corp.y
 
 | 文件 | 改动 |
 | --- | --- |
-| `src/main/java/com/youdao/baiying/service/HtmlShareService.java` | 增加 sourceType、单文件校验、magic bytes 校验、SVG 安全校验 |
-| `src/main/java/com/youdao/baiying/web/controller/HtmlShareStaticController.java` | shell 根据 entry content type 渲染 iframe 或 img |
+| `src/main/java/com/hzb/baiying/service/HtmlShareService.java` | 增加 sourceType、单文件校验、magic bytes 校验、SVG 安全校验 |
+| `src/main/java/com/hzb/baiying/web/controller/HtmlShareStaticController.java` | shell 根据 entry content type 渲染 iframe 或 img |
 | `src/main/resources/mapper/HtmlShareMapper.xml` | 如需要新增 entry file meta 查询则补 mapper |
-| `src/main/java/com/youdao/baiying/mapper/HtmlShareMapper.java` | 同上 |
-| `src/main/java/com/youdao/baiying/exceptions/ErrorCode.java` | 新增 `HTML_SHARE_UNSAFE_SVG(41312, ...)` |
-| `src/test/java/com/youdao/baiying/service/HtmlShareServiceTest.java` | 增加 image/svg create/update 校验 |
-| `src/test/java/com/youdao/baiying/web/controller/HtmlShareStaticControllerTest.java` | 增加图片 shell 测试 |
+| `src/main/java/com/hzb/baiying/mapper/HtmlShareMapper.java` | 同上 |
+| `src/main/java/com/hzb/baiying/exceptions/ErrorCode.java` | 新增 `HTML_SHARE_UNSAFE_SVG(41312, ...)` |
+| `src/test/java/com/hzb/baiying/service/HtmlShareServiceTest.java` | 增加 image/svg create/update 校验 |
+| `src/test/java/com/hzb/baiying/web/controller/HtmlShareStaticControllerTest.java` | 增加图片 shell 测试 |
 | `sql/V53__html_share_artifact_source_types.sql` | 可选注释迁移 |
 
 ### 9.3 管理员后台
@@ -944,5 +944,5 @@ mybatis-router.datasource.writer-jdbc-url=jdbc:mysql://test-lunadb-writer.corp.y
 9. 管理员后台能筛选、展示、预览、审核图片/SVG 分享，文件列表不暴露 NOS URL。
 10. 服务端拒绝多文件 image/svg zip、伪装图片和危险 SVG。
 11. 内容审核、访问统计、后台列表不因新 sourceType 失败。
-12. `npm run lint`、相关 Electron 单元测试、`./gradlew test --tests com.youdao.baiying.service.HtmlShareServiceTest`、`./gradlew test --tests com.youdao.baiying.web.controller.HtmlShareStaticControllerTest` 通过。
+12. `npm run lint`、相关 Electron 单元测试、`./gradlew test --tests com.hzb.baiying.service.HtmlShareServiceTest`、`./gradlew test --tests com.hzb.baiying.web.controller.HtmlShareStaticControllerTest` 通过。
 12. 如修改管理员后台，`/Users/admin/Documents/baiying/baiying-admin` 下 `npm run type-check` 和 `npm run lint` 通过。

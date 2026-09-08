@@ -213,11 +213,11 @@ test('updateCurrentSessionModelOverride only patches the active session', () => 
     coworkReducer(undefined, addSession(session)),
     updateCurrentSessionModelOverride({
       sessionId: 'session-1',
-      modelOverride: 'baiying-server/qwen3.6-plus-YoudaoInner',
+      modelOverride: 'baiying-server/qwen3.6-plus-hzbInner',
     }),
   );
 
-  expect(activeState.currentSession?.modelOverride).toBe('baiying-server/qwen3.6-plus-YoudaoInner');
+  expect(activeState.currentSession?.modelOverride).toBe('baiying-server/qwen3.6-plus-hzbInner');
   expect(activeState.currentSession?.updatedAt).toBe(1);
 
   const ignoredState = coworkReducer(
@@ -228,7 +228,7 @@ test('updateCurrentSessionModelOverride only patches the active session', () => 
     }),
   );
 
-  expect(ignoredState.currentSession?.modelOverride).toBe('baiying-server/qwen3.6-plus-YoudaoInner');
+  expect(ignoredState.currentSession?.modelOverride).toBe('baiying-server/qwen3.6-plus-hzbInner');
 });
 
 test('updateSessionTitle preserves the session updated time', () => {

@@ -861,7 +861,7 @@ const INTERNAL_PLUGIN_IDS = [
   'qwen',
   'qwen-portal',
   'zai',
-  'youdaozhiyun',
+  'hzbzhiyun',
   'stepfun',
   'xiaomi',
   'openrouter',

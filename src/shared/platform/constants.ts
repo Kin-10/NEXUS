@@ -41,7 +41,7 @@ const DEFINITIONS = [
     channelAliases: [],
     logo: 'weixin.png',
     guideUrl:
-      'https://baiying.youdao.com/#/docs/baiying_im_bot_config_guide/%E5%BE%AE%E4%BF%A1-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+      'https://baiying.hzb.com/#/docs/baiying_im_bot_config_guide/%E5%BE%AE%E4%BF%A1-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
     enabled: true,
   },
   {
@@ -52,7 +52,7 @@ const DEFINITIONS = [
     channelAliases: ['dingtalk'],
     logo: 'dingding.png',
     guideUrl:
-      'https://baiying.youdao.com/#/docs/baiying_im_bot_config_guide/%E9%92%89%E9%92%89-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+      'https://baiying.hzb.com/#/docs/baiying_im_bot_config_guide/%E9%92%89%E9%92%89-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
     enabled: true,
   },
   {
@@ -63,7 +63,7 @@ const DEFINITIONS = [
     channelAliases: [],
     logo: 'feishu.png',
     guideUrl:
-      'https://baiying.youdao.com/#/docs/baiying_im_bot_config_guide/%E9%A3%9E%E4%B9%A6-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+      'https://baiying.hzb.com/#/docs/baiying_im_bot_config_guide/%E9%A3%9E%E4%B9%A6-im-%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
     enabled: true,
   },
   {
@@ -74,7 +74,7 @@ const DEFINITIONS = [
     channelAliases: ['wecom-openclaw-plugin'],
     logo: 'wecom.png',
     guideUrl:
-      'https://baiying.youdao.com/#/docs/baiying_im_bot_config_guide/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
+      'https://baiying.hzb.com/#/docs/baiying_im_bot_config_guide/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%9C%BA%E5%99%A8%E4%BA%BA%E9%85%8D%E7%BD%AE',
     enabled: true,
   },
   {
@@ -84,7 +84,7 @@ const DEFINITIONS = [
     channel: 'qqbot',
     channelAliases: [],
     logo: 'qq_bot.jpeg',
-    guideUrl: 'https://baiying.youdao.com/#/docs/baiying_im_bot_config_guide/qqqq-bot',
+    guideUrl: 'https://baiying.hzb.com/#/docs/baiying_im_bot_config_guide/qqqq-bot',
     enabled: true,
   },
   // ── Retired channels (kept for legacy data / channel id resolution) ──
@@ -126,7 +126,7 @@ const DEFINITIONS = [
     channelAliases: [],
     logo: 'telegram.svg',
     guideUrl:
-      'https://baiying.youdao.com/#/en/docs/baiying_im_bot_config_guide/telegram-bot-configuration',
+      'https://baiying.hzb.com/#/en/docs/baiying_im_bot_config_guide/telegram-bot-configuration',
     enabled: false,
   },
   {
@@ -137,7 +137,7 @@ const DEFINITIONS = [
     channelAliases: [],
     logo: 'discord.svg',
     guideUrl:
-      'https://baiying.youdao.com/#/en/docs/baiying_im_bot_config_guide/discord-bot-configuration',
+      'https://baiying.hzb.com/#/en/docs/baiying_im_bot_config_guide/discord-bot-configuration',
     enabled: false,
   },
   {

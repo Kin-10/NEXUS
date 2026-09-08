@@ -21,7 +21,7 @@
 | `zhipu` | `zhipu` | ⚠️ `zai` | ❌ **不匹配** |
 | `deepseek` | `deepseek` | ❓ 未列为官方 provider | ⚠️ **未确认** |
 | `qwen` | `qwen` | ❓ 未列为官方 provider | ⚠️ **未确认** |
-| `youdaozhiyun` | `youdaozhiyun` | ❓ 未列为官方 provider | ⚠️ **未确认** |
+| `hzbzhiyun` | `hzbzhiyun` | ❓ 未列为官方 provider | ⚠️ **未确认** |
 | `stepfun` | `stepfun` | ❓ 未列为官方 provider | ⚠️ **未确认** |
 
 ---
@@ -79,7 +79,7 @@
 
 以下 provider 同样未在 OpenClaw 文档中列为官方 provider：
 - `qwen` — 可能对应 `modelstudio`（阿里云 Model Studio）
-- `youdaozhiyun` — BaiYing 专有
+- `hzbzhiyun` — BaiYing 专有
 - `stepfun` — 未列出
 
 **注意**：由于 BaiYing 使用 `models.mode: 'replace'` 模式注入完整 provider 配置（含 baseUrl、api、apiKey、models），这些自定义 provider ID 不需要与 OpenClaw 内置 provider 匹配。OpenClaw 会将它们作为自定义 provider 处理。但如果 OpenClaw 对某些 provider ID 有特殊的内部逻辑（如 plugin-owned behavior），使用不匹配的 ID 会导致这些特殊逻辑不被触发。

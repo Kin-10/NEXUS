@@ -114,7 +114,7 @@ describe('pricing catalog model mapping', () => {
 describe('authenticated server model mapping', () => {
   test('preserves K3 runtime, modality, token, and agentic metadata', () => {
     const [model] = mapAvailableServerModelsToModels([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -140,7 +140,7 @@ describe('authenticated server model mapping', () => {
     }]);
 
     expect(model).toMatchObject({
-      id: 'kimi-k3-YoudaoInner',
+      id: 'kimi-k3-hzbInner',
       providerKey: ProviderName.BaiyingServer,
       isServerModel: true,
       serverApiFormat: 'openai',
@@ -269,7 +269,7 @@ describe('login diagnostics', () => {
     const fromRenderer = vi.fn();
     const loginResult = {
       success: true,
-      redirectUrl: 'https://baiying.youdao.com/portal#/login?source=electron',
+      redirectUrl: 'https://baiying.hzb.com/portal#/login?source=electron',
     };
     const login = vi.fn().mockResolvedValue(loginResult);
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -279,7 +279,7 @@ describe('login diagnostics', () => {
         api: {
           fetch: vi.fn().mockResolvedValue({
             ok: true,
-            data: { data: { value: 'https://baiying.youdao.com/portal#/login' } },
+            data: { data: { value: 'https://baiying.hzb.com/portal#/login' } },
           }),
         },
         auth: { login },
@@ -289,7 +289,7 @@ describe('login diagnostics', () => {
 
     await expect(authService.login()).resolves.toEqual(loginResult);
 
-    expect(login).toHaveBeenCalledWith('https://baiying.youdao.com/portal#/login');
+    expect(login).toHaveBeenCalledWith('https://baiying.hzb.com/portal#/login');
     expect(fromRenderer).toHaveBeenCalledWith(
       'info',
       'AuthService',
@@ -300,7 +300,7 @@ describe('login diagnostics', () => {
       'AuthService',
       expect.stringMatching(/^login attempt \d+ handed off to the system browser$/),
     );
-    expect(fromRenderer.mock.calls.flat().join(' ')).not.toContain('baiying.youdao.com');
+    expect(fromRenderer.mock.calls.flat().join(' ')).not.toContain('baiying.hzb.com');
   });
 
   test('returns the IPC failure result without throwing and records a warning', async () => {
@@ -313,7 +313,7 @@ describe('login diagnostics', () => {
         api: {
           fetch: vi.fn().mockResolvedValue({
             ok: true,
-            data: { data: { value: 'https://baiying.youdao.com/portal#/login' } },
+            data: { data: { value: 'https://baiying.hzb.com/portal#/login' } },
           }),
         },
         auth: { login: vi.fn().mockResolvedValue({ success: false, error: 'open failed' }) },

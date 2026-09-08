@@ -316,8 +316,8 @@ export const isTestModeEnabled = (): boolean => {
 
 export const getServerApiBaseUrl = (): string => {
   return isTestModeEnabled()
-    ? 'https://baiying-server.inner.youdao.com'
-    : 'https://baiying-server.youdao.com';
+    ? 'https://baiying-server.inner.hzb.com'
+    : 'https://baiying-server.hzb.com';
 };
 
 export const getHtmlSharePublicBaseUrl = (): string => {

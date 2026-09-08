@@ -112,7 +112,7 @@ export const getFixedApiFormatForProvider = (provider: string): 'anthropic' | 'o
   if (provider === 'openai' || provider === 'stepfun') {
     return 'openai';
   }
-  if (provider === ProviderName.Youdaozhiyun || provider === ProviderName.Copilot || provider === ProviderName.Qianfan || provider === ProviderName.Xai) {
+  if (provider === ProviderName.hzbzhiyun || provider === ProviderName.Copilot || provider === ProviderName.Qianfan || provider === ProviderName.Xai) {
     return 'openai';
   }
   if (provider === 'moonshot') {

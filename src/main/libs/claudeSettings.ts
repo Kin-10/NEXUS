@@ -112,11 +112,11 @@ export type ServerModelRunGateResult =
 
 const KIMI_K3_SERVER_MODEL_IDS = new Set([
   'kimik3',
-  'kimik3youdaoinner',
+  'kimik3hzbinner',
 ]);
 
 export const isKnownPackageKimiK3ModelId = (modelId: string): boolean =>
-  modelId.trim().toLowerCase() === 'kimi-k3-youdaoinner';
+  modelId.trim().toLowerCase() === 'kimi-k3-hzbinner';
 
 const isServerKimiK3Candidate = (
   metadata: Pick<ServerModelMetadataInput, 'modelId' | 'modelName' | 'provider'>,
@@ -463,7 +463,7 @@ type MatchedProvider = {
 };
 
 function getEffectiveProviderApiFormat(providerName: string, apiFormat: unknown): AnthropicApiFormat {
-  if (providerName === ProviderName.OpenAI || providerName === ProviderName.Gemini || providerName === ProviderName.Xai || providerName === ProviderName.StepFun || providerName === ProviderName.Youdaozhiyun || providerName === ProviderName.Copilot) {
+  if (providerName === ProviderName.OpenAI || providerName === ProviderName.Gemini || providerName === ProviderName.Xai || providerName === ProviderName.StepFun || providerName === ProviderName.hzbzhiyun || providerName === ProviderName.Copilot) {
     return 'openai';
   }
   if (providerName === ProviderName.Anthropic) {

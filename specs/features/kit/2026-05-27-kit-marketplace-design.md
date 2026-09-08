@@ -140,8 +140,8 @@ interface InstalledKit {
 | `kits:uninstall` | 删除 Skill 文件 → 清除记录 → 通知 |
 
 数据源 URL:
-- test: `https://api-overmind.youdao.com/openapi/get/luna/hardware/baiying/test/kit-store`
-- prod: `https://api-overmind.youdao.com/openapi/get/luna/hardware/baiying/prod/kit-store`
+- test: `https://api-overmind.hzb.com/openapi/get/luna/hardware/baiying/test/kit-store`
+- prod: `https://api-overmind.hzb.com/openapi/get/luna/hardware/baiying/prod/kit-store`
 
 安装流程：下载 zip → 临时目录解压 → 扫描 `SKILL.md` 识别 Skill 目录 → 拷贝到 `{userData}/SKILLs/` → 写入 `skills_state` 和 `kits_installed` → 触发 `skills:changed` 事件 → 清理临时文件。
 

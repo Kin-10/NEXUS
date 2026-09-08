@@ -4,9 +4,9 @@
 </h1>
 
 <p align="center">
-  <a href="https://github.com/netease-youdao/BaiYing/stargazers"><img src="https://badgen.net/github/stars/netease-youdao/BaiYing?label=%E2%98%85" alt="GitHub stars" /></a>
-  <a href="LICENSE"><img src="https://badgen.net/github/license/netease-youdao/BaiYing" alt="License" /></a>
-  <a href="https://x.com/BaiYingYoudao"><img src="https://img.shields.io/badge/-000000?logo=x&logoColor=white" alt="Follow BaiYing on X" /></a>
+  <a href="https://github.com/netease-hzb/BaiYing/stargazers"><img src="https://badgen.net/github/stars/netease-hzb/BaiYing?label=%E2%98%85" alt="GitHub stars" /></a>
+  <a href="LICENSE"><img src="https://badgen.net/github/license/netease-hzb/BaiYing" alt="License" /></a>
+  <a href="https://x.com/BaiYinghzb"><img src="https://img.shields.io/badge/-000000?logo=x&logoColor=white" alt="Follow BaiYing on X" /></a>
   <a href="https://shared.ydstatic.com/market/souti/fihserChatWeb/online/2.0.7/dist/assets/wechat_group-B34qRm1G.png"><img src="https://img.shields.io/badge/-000000?logo=wechat&logoColor=white" alt="Follow BaiYing on X" /></a>
   <br>
   <img src="https://img.shields.io/badge/macOS%20%7C%20Windows-4493F8?style=flat-square" alt="Supported platforms: macOS and Windows" />
@@ -20,7 +20,7 @@
 
 <p align="center">
   <strong>All-scenario office assistant Agent.</strong><br/>
-  The first open-source desktop-grade Agent among major Chinese tech companies, built by NetEase Youdao.
+  The first open-source desktop-grade Agent among major Chinese tech companies, built by NetEase hzb.
 </p>
 
 <p align="center">
@@ -31,7 +31,7 @@
   <a href="#community--support"><strong>Community</strong></a>
 </p>
 
-<h3 align="center"><a href="https://baiying.youdao.com/#/download-list"><ins>Download BaiYing</ins></a></h3>
+<h3 align="center"><a href="https://baiying.hzb.com/#/download-list"><ins>Download BaiYing</ins></a></h3>
 
 <p align="center">
   <img src="docs/res/mainpage_en.png" alt="main page" />
@@ -104,7 +104,7 @@ Sessions and app data live locally in SQLite. OpenClaw workspace memory uses fil
 
 ### Desktop
 
-Download the latest macOS and Windows installers from [Official Website](https://baiying.youdao.com/) or [GitHub Releases](https://github.com/netease-youdao/BaiYing/releases).
+Download the latest macOS and Windows installers from [Official Website](https://baiying.hzb.com/) or [GitHub Releases](https://github.com/netease-hzb/BaiYing/releases).
 
 ### Run From Source
 
@@ -115,7 +115,7 @@ Requirements:
 - git and pnpm, needed on the first run to build the pinned OpenClaw runtime from the sibling `../openclaw` checkout
 
 ```bash
-git clone https://github.com/netease-youdao/BaiYing.git
+git clone https://github.com/netease-hzb/BaiYing.git
 cd BaiYing
 npm install
 ```
@@ -335,10 +335,10 @@ Please use the repository issue templates for bugs and feature requests. For pul
 
 ## Star History
 
-[![Star History Chart](docs/res/star-history-2026828.png)](https://www.star-history.com/?repos=netease-youdao%2Fbaiying&type=date&legend=bottom-right)
+[![Star History Chart](docs/res/star-history-2026828.png)](https://www.star-history.com/?repos=netease-hzb%2Fbaiying&type=date&legend=bottom-right)
 
 ## License
 
 [MIT License](LICENSE)
 
-Built and maintained by [NetEase Youdao](https://www.youdao.com/).
+Built and maintained by [NetEase hzb](https://www.hzb.com/).

@@ -195,8 +195,8 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
     resolveApi: ({ apiType }) => mapApiTypeToOpenClawApi(apiType),
     normalizeBaseUrl: stripChatCompletionsSuffix,
   },
-  [ProviderName.Youdaozhiyun]: {
-    providerId: OpenClawProviderId.Youdaozhiyun,
+  [ProviderName.hzbzhiyun]: {
+    providerId: OpenClawProviderId.hzbzhiyun,
     resolveApi: () => OpenClawApi.OpenAICompletions as OpenClawProviderApi,
     normalizeBaseUrl: stripChatCompletionsSuffix,
   },
@@ -305,9 +305,9 @@ describe('resolveDescriptor', () => {
     expect(d.resolveModelReasoning?.('mimo-custom-model', false)).toBe(true);
   });
 
-  test('youdaozhiyun always uses openai-completions', () => {
-    const d = resolveDescriptor(ProviderName.Youdaozhiyun, false);
-    expect(d.providerId).toBe(OpenClawProviderId.Youdaozhiyun);
+  test('hzbzhiyun always uses openai-completions', () => {
+    const d = resolveDescriptor(ProviderName.hzbzhiyun, false);
+    expect(d.providerId).toBe(OpenClawProviderId.hzbzhiyun);
     expect(d.resolveApi({ apiType: 'anthropic', baseURL: '' })).toBe(OpenClawApi.OpenAICompletions);
   });
 
@@ -354,7 +354,7 @@ describe('provider registry coverage', () => {
     ProviderName.Zhipu,
     ProviderName.Volcengine,
     ProviderName.Minimax,
-    ProviderName.Youdaozhiyun,
+    ProviderName.hzbzhiyun,
     ProviderName.StepFun,
     ProviderName.Xiaomi,
     ProviderName.OpenRouter,

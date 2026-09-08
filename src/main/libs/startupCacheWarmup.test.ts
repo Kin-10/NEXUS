@@ -28,7 +28,7 @@ describe('startup server model warmup', () => {
 
   test('passes the complete server model metadata into the main cache', async () => {
     const serverModels = [{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',

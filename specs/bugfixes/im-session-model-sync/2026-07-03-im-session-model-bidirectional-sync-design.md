@@ -23,11 +23,11 @@
 
 现场日志和本地状态支持该结论：
 
-- 本次微信样本中，15:37:09 附近的运行日志显示 channel session 的实际请求模型是 `qwen3.7-max-YoudaoInner`。
-- IM 端要求切到 Kimi 后，OpenClaw session history 中出现 `session_status` 调用，结果包含 `changedModel: true` 和 `modelOverride: baiying-server/kimi-k2.6-YoudaoInner`。
-- 之后 15:37:25/15:37:30 附近的运行日志显示实际请求模型是 `kimi-k2.6-YoudaoInner`。
-- SQLite 中对应 BaiYing Cowork session 的 `model_override` 仍是 `baiying-server/qwen3.7-max-YoudaoInner`。
-- 最新消息 metadata 已记录 `model: kimi-k2.6-YoudaoInner`，说明每条消息的实际执行模型和 session 下拉状态已经分叉。
+- 本次微信样本中，15:37:09 附近的运行日志显示 channel session 的实际请求模型是 `qwen3.7-max-hzbInner`。
+- IM 端要求切到 Kimi 后，OpenClaw session history 中出现 `session_status` 调用，结果包含 `changedModel: true` 和 `modelOverride: baiying-server/kimi-k2.6-hzbInner`。
+- 之后 15:37:25/15:37:30 附近的运行日志显示实际请求模型是 `kimi-k2.6-hzbInner`。
+- SQLite 中对应 BaiYing Cowork session 的 `model_override` 仍是 `baiying-server/qwen3.7-max-hzbInner`。
+- 最新消息 metadata 已记录 `model: kimi-k2.6-hzbInner`，说明每条消息的实际执行模型和 session 下拉状态已经分叉。
 
 ### 1.3 根因
 
@@ -139,7 +139,7 @@ private async syncChannelSessionModelOverride(options: {
 
 该方法负责：
 
-1. 规范化 `modelRef` 为 BaiYing 使用的 OpenClaw model ref，例如 `baiying-server/kimi-k2.6-YoudaoInner`。
+1. 规范化 `modelRef` 为 BaiYing 使用的 OpenClaw model ref，例如 `baiying-server/kimi-k2.6-hzbInner`。
 2. 当 `modelRef` 有值且不同于 `cowork_sessions.model_override` 时，更新本地 session。
 3. 当 OpenClaw 明确表示无 session override 时，清空本地 `model_override`。
 4. 更新时避免无意义刷新 `updatedAt`，除非现有 store API 无法区分；若需要，优先新增或复用不影响会话排序的更新路径。

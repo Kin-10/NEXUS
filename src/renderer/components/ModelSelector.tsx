@@ -381,7 +381,7 @@ const MODEL_ICON_PROVIDER_HINTS: Array<{ pattern: RegExp; providerName: Provider
   { pattern: /claude|anthropic/i, providerName: ProviderName.Anthropic },
   { pattern: /gemini/i, providerName: ProviderName.Gemini },
   { pattern: /gpt|openai/i, providerName: ProviderName.OpenAI },
-  { pattern: /hy3|youdao/i, providerName: ProviderName.Youdaozhiyun },
+  { pattern: /hy3|hzb/i, providerName: ProviderName.hzbzhiyun },
 ];
 
 const ModelSelector: React.FC<ModelSelectorProps> = ({

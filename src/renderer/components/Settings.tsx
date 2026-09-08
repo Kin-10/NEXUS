@@ -2034,12 +2034,12 @@ const Settings: React.FC<SettingsProps> = ({
               baseUrl: config.api.baseUrl
             }
           }));
-        } else if (normalizedApiBaseUrl.includes('openapi.youdao.com')) {
-          setActiveProvider('youdaozhiyun');
+        } else if (normalizedApiBaseUrl.includes('openapi.hzb.com')) {
+          setActiveProvider('hzbzhiyun');
           setProviders(prev => ({
             ...prev,
-            youdaozhiyun: {
-              ...prev.youdaozhiyun,
+            hzbzhiyun: {
+              ...prev.hzbzhiyun,
               enabled: true,
               apiKey: config.api.key,
               baseUrl: config.api.baseUrl

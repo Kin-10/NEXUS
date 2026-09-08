@@ -142,7 +142,7 @@ describe('ProviderRegistry', () => {
       [ProviderName.Volcengine, 'ark-code-latest'],
       [ProviderName.Volcengine, 'doubao-seed-2-0-lite-260215'],
       [ProviderName.Volcengine, 'doubao-seed-2-0-mini-260215'],
-      [ProviderName.Youdaozhiyun, 'deepseek-reasoner'],
+      [ProviderName.hzbzhiyun, 'deepseek-reasoner'],
       [ProviderName.Qianfan, 'glm-5.1'],
       [ProviderName.Qianfan, 'deepseek-v4-flash'],
       [ProviderName.Xiaomi, 'mimo-v2.5-pro'],
@@ -166,8 +166,8 @@ describe('ProviderRegistry', () => {
     expect(ProviderRegistry.resolveModelSupportsThinking(ProviderName.Minimax, 'MiniMax-M2.7', false)).toBe(false);
     expect(ProviderRegistry.resolveModelSupportsThinking(ProviderName.Minimax, 'MiniMax-M2.5', false)).toBe(false);
     expect(ProviderRegistry.resolveModelSupportsThinking('custom_0', 'glm-5.1', false)).toBe(false);
-    expect(ProviderRegistry.resolveModelSupportsThinking('baiying-server', 'glm-5.1-YoudaoInner', false)).toBe(false);
-    expect(ProviderRegistry.resolveModelSupportsThinking('baiying-server', 'glm-5.1-YoudaoInner', true)).toBe(true);
+    expect(ProviderRegistry.resolveModelSupportsThinking('baiying-server', 'glm-5.1-hzbInner', false)).toBe(false);
+    expect(ProviderRegistry.resolveModelSupportsThinking('baiying-server', 'glm-5.1-hzbInner', true)).toBe(true);
     expect(ProviderRegistry.resolveModelSupportsThinking('custom_0', 'unknown-model', true)).toBe(true);
     expect(ProviderRegistry.resolveModelSupportsThinking('custom_0', 'unknown-model', false)).toBe(false);
   });
@@ -212,8 +212,8 @@ describe('ProviderRegistry', () => {
     expect(china).not.toContain(ProviderName.OpenAI);
   });
 
-  test('hides Youdao, Qianfan, and StepFun from settings lists', () => {
-    expect(ProviderRegistry.isHiddenInSettings(ProviderName.Youdaozhiyun)).toBe(true);
+  test('hides hzb, Qianfan, and StepFun from settings lists', () => {
+    expect(ProviderRegistry.isHiddenInSettings(ProviderName.hzbzhiyun)).toBe(true);
     expect(ProviderRegistry.isHiddenInSettings(ProviderName.Qianfan)).toBe(true);
     expect(ProviderRegistry.isHiddenInSettings(ProviderName.StepFun)).toBe(true);
     expect(ProviderRegistry.isHiddenInSettings(ProviderName.DeepSeek)).toBe(false);

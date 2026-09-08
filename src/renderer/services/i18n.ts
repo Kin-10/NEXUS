@@ -2018,9 +2018,9 @@ const translations: Record<LanguageType, Record<string, string>> = {
     coworkErrorOAuthInvalid: 'OAuth 授权已失效或权限不足，请重新授权后重试。',
     coworkErrorModelAccessDenied: '当前账号无权访问该模型，请切换模型或检查服务商账号权限。',
     coworkErrorQuotaExhausted:
-      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.youdao.com/portal#/pricing)',
+      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorFreeQuotaExhausted:
-      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.youdao.com/portal#/pricing)',
+      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorInsufficientBalance: 'API 余额不足，请充值后重试。',
     coworkCreditQuotaBannerTitle: '积分已用尽，请及时充值。',
     coworkCreditQuotaBannerDescription: '已达到使用上限，需购买 token 继续使用。',
@@ -3987,7 +3987,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imageVisionHint:
       'Image input is not enabled for the current model. Images will be sent as file paths. If the model supports vision, you can enable image input in the model configuration.',
     copied: 'Copied',
-    copyrightHolder: 'NetEase Youdao. All rights reserved.',
+    copyrightHolder: 'NetEase hzb. All rights reserved.',
     noModelsAvailable: 'No models available',
     addFirstModel: 'Add First Model',
     testConnection: 'Test Connection',
@@ -5939,9 +5939,9 @@ const translations: Record<LanguageType, Record<string, string>> = {
     coworkErrorModelAccessDenied:
       'This account is not allowed to access the selected model. Switch models or check provider account permissions.',
     coworkErrorQuotaExhausted:
-      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.youdao.com/portal#/pricing)',
+      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorFreeQuotaExhausted:
-      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.youdao.com/portal#/pricing)',
+      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorInsufficientBalance: 'Insufficient API balance. Please top up and try again.',
     coworkCreditQuotaBannerTitle: 'Credits used up. Please recharge.',
     coworkCreditQuotaBannerDescription: 'You have reached the usage limit. Purchase tokens to continue.',
@@ -7733,8 +7733,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     welcomeLogin: 'Log in',
     welcomeCustomModel: 'Custom Model',
     welcomeAgreementNotice: 'By continuing, you agree to the {link}',
-    welcomeAgreementLinkText: 'NetEase Youdao 百应 Terms of Service',
-    welcomeCopyright: '© {year} NetEase Youdao',
+    welcomeAgreementLinkText: 'NetEase hzb 百应 Terms of Service',
+    welcomeCopyright: '© {year} NetEase hzb',
     welcomeLoginWaiting: 'Complete the sign-in in your browser',
     welcomeLoginFailed: 'Could not start sign-in. Please try again.',
     githubCopilotAuth: 'GitHub Account Authentication',

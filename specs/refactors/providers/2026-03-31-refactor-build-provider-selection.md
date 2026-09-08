@@ -23,7 +23,7 @@
 | `zhipu` | 落入 default `lobster` | ⚠️ 无 codingPlan URL 切换 |
 | `volcengine` | 落入 default `lobster` | ⚠️ 无 codingPlan URL 切换 |
 | `minimax` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `youdaozhiyun` | 落入 default `lobster` | ⚠️ providerId 错误 |
+| `hzbzhiyun` | 落入 default `lobster` | ⚠️ providerId 错误 |
 | `stepfun` | 落入 default `lobster` | ⚠️ providerId 错误 |
 | `xiaomi` | 落入 default `lobster` | ⚠️ providerId 错误 |
 | `openrouter` | 落入 default `lobster` | ⚠️ providerId 错误 |
@@ -81,7 +81,7 @@ export const ProviderName = {
   Moonshot: 'moonshot',
   Zhipu: 'zhipu',
   Minimax: 'minimax',
-  Youdaozhiyun: 'youdaozhiyun',
+  hzbzhiyun: 'hzbzhiyun',
   Qwen: 'qwen',
   Xiaomi: 'xiaomi',
   StepFun: 'stepfun',
@@ -107,7 +107,7 @@ export const OpenClawProviderId = {
   Zhipu: 'zhipu',
   Volcengine: 'volcengine',
   Minimax: 'minimax',
-  Youdaozhiyun: 'youdaozhiyun',
+  hzbzhiyun: 'hzbzhiyun',
   StepFun: 'stepfun',
   Xiaomi: 'xiaomi',
   OpenRouter: 'openrouter',
@@ -413,8 +413,8 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
     normalizeBaseUrl: stripChatCompletionsSuffix,
   },
 
-  'youdaozhiyun': {
-    providerId: 'youdaozhiyun',
+  'hzbzhiyun': {
+    providerId: 'hzbzhiyun',
     resolveApi: () => 'openai-completions',
     normalizeBaseUrl: stripChatCompletionsSuffix,
   },
@@ -1000,7 +1000,7 @@ export const GLOBAL_PROVIDERS = ProviderRegistry.idsByRegion('global');
 **Before:**
 ```typescript
 function getEffectiveProviderApiFormat(providerName: string, apiFormat: unknown): AnthropicApiFormat {
-  if (providerName === 'openai' || providerName === 'gemini' || providerName === 'stepfun' || providerName === 'youdaozhiyun') {
+  if (providerName === 'openai' || providerName === 'gemini' || providerName === 'stepfun' || providerName === 'hzbzhiyun') {
     return 'openai';
   }
   if (providerName === 'anthropic') {

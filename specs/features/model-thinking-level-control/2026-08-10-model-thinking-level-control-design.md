@@ -19,7 +19,7 @@
 ### 1.2 目标
 
 1. 由 server 动态下发每个套餐模型允许的等级、默认值和 OpenClaw 映射。
-2. 客户端不按 DeepSeek 型号或 `YoudaoInner` 后缀硬编码规则。
+2. 客户端不按 DeepSeek 型号或 `hzbInner` 后缀硬编码规则。
 3. 会话和 Agent 均可持久化用户选择。
 4. 使用版本化内部参数明确表达 `off`、`high`、`max` 等产品语义。
 5. 通过客户端与模型双向能力协商控制新协议启用。
@@ -79,7 +79,7 @@
 
 ```json
 {
-  "modelId": "deepseek-v4-flash-YoudaoInner",
+  "modelId": "deepseek-v4-flash-hzbInner",
   "supportsThinking": true,
   "runtimeProfile": null,
   "thinkingConfig": {
@@ -154,11 +154,11 @@ baiying_options.thinking.level
 ### 3.5 旧客户端兼容
 
 - 未声明 `thinking-level-control-v1` 或未发送 v1 参数时，server 使用旧规则。
-- `deepseek-v4-pro` 在原生 DeepSeek 和 `YoudaoInner` 路由上继续强制 `max`。
+- `deepseek-v4-pro` 在原生 DeepSeek 和 `hzbInner` 路由上继续强制 `max`。
 - `deepseek-v4-pro-thinking` 在原生 DeepSeek 路由上继续映射到 Pro 并强制 `max`，不作为新可配置模型暴露。
 - 同名第三方路由保持原请求不变。
 - `deepseek-v4-flash` 对旧客户端维持原请求体。
-- 员工模型使用完整 Provider/model 元数据匹配，不删除 `YoudaoInner` 后缀。
+- 员工模型使用完整 Provider/model 元数据匹配，不删除 `hzbInner` 后缀。
 
 新客户端连接旧 server 时不会获得 `baiying-options-v1`，因此不会发送内部字段。
 

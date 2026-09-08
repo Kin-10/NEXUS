@@ -20,7 +20,7 @@ beforeEach(() => {
 describe('server model metadata cache', () => {
   test('preserves K3 runtime and agentic capability metadata', () => {
     expect(updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -36,7 +36,7 @@ describe('server model metadata cache', () => {
     }])).toBe(true);
 
     expect(getAllServerModelMetadata()).toEqual([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -54,7 +54,7 @@ describe('server model metadata cache', () => {
 
   test('overrides untrusted K3 capability values with the client runtime profile', () => {
     updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -78,7 +78,7 @@ describe('server model metadata cache', () => {
       contextWindow: 1_048_576,
       maxTokens: 8_192,
     });
-    expect(evaluateServerModelRunGate('kimi-k3-YoudaoInner')).toEqual({
+    expect(evaluateServerModelRunGate('kimi-k3-hzbInner')).toEqual({
       allowed: false,
       reason: ServerModelRunGateReason.ToolCallingUnavailable,
     });
@@ -86,7 +86,7 @@ describe('server model metadata cache', () => {
 
   test('treats identical metadata as unchanged', () => {
     const metadata = [{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -171,20 +171,20 @@ describe('server model run gate', () => {
 
   test('allows ordinary server models without K3-specific gates', () => {
     updateServerModelMetadata([{
-      modelId: 'qwen3.7-plus-YoudaoInner',
+      modelId: 'qwen3.7-plus-hzbInner',
       supportsToolCalling: false,
       agenticReady: false,
     }]);
 
-    expect(evaluateServerModelRunGate('qwen3.7-plus-YoudaoInner')).toMatchObject({
+    expect(evaluateServerModelRunGate('qwen3.7-plus-hzbInner')).toMatchObject({
       allowed: true,
-      metadata: { modelId: 'qwen3.7-plus-YoudaoInner' },
+      metadata: { modelId: 'qwen3.7-plus-hzbInner' },
     });
   });
 
   test('requires both tool calling and agentic readiness for package K3', () => {
     updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -192,13 +192,13 @@ describe('server model run gate', () => {
       supportsToolCalling: false,
       agenticReady: true,
     }]);
-    expect(evaluateServerModelRunGate('kimi-k3-YoudaoInner')).toEqual({
+    expect(evaluateServerModelRunGate('kimi-k3-hzbInner')).toEqual({
       allowed: false,
       reason: ServerModelRunGateReason.ToolCallingUnavailable,
     });
 
     updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -206,13 +206,13 @@ describe('server model run gate', () => {
       supportsToolCalling: true,
       agenticReady: false,
     }]);
-    expect(evaluateServerModelRunGate('kimi-k3-YoudaoInner')).toEqual({
+    expect(evaluateServerModelRunGate('kimi-k3-hzbInner')).toEqual({
       allowed: false,
       reason: ServerModelRunGateReason.AgenticNotReady,
     });
 
     updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -220,10 +220,10 @@ describe('server model run gate', () => {
       supportsToolCalling: true,
       agenticReady: true,
     }]);
-    expect(evaluateServerModelRunGate('kimi-k3-YoudaoInner')).toMatchObject({
+    expect(evaluateServerModelRunGate('kimi-k3-hzbInner')).toMatchObject({
       allowed: true,
       metadata: {
-        modelId: 'kimi-k3-YoudaoInner',
+        modelId: 'kimi-k3-hzbInner',
         runtimeProfile: 'moonshot-kimi-k3',
       },
     });
@@ -231,7 +231,7 @@ describe('server model run gate', () => {
 
   test('fails closed for a precise K3 candidate without a runtime profile', () => {
     updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'openai',
@@ -239,7 +239,7 @@ describe('server model run gate', () => {
       agenticReady: true,
     }]);
 
-    expect(evaluateServerModelRunGate('kimi-k3-YoudaoInner')).toEqual({
+    expect(evaluateServerModelRunGate('kimi-k3-hzbInner')).toEqual({
       allowed: false,
       reason: ServerModelRunGateReason.RuntimeProfileMissing,
     });
@@ -247,13 +247,13 @@ describe('server model run gate', () => {
 
   test('recognizes the controlled K3 package id even when provider metadata is missing', () => {
     updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       apiFormat: 'openai',
       supportsToolCalling: true,
       agenticReady: true,
     }]);
 
-    expect(evaluateServerModelRunGate('kimi-k3-YoudaoInner')).toEqual({
+    expect(evaluateServerModelRunGate('kimi-k3-hzbInner')).toEqual({
       allowed: false,
       reason: ServerModelRunGateReason.RuntimeProfileMissing,
     });
@@ -261,7 +261,7 @@ describe('server model run gate', () => {
 
   test('requires the OpenAI transport for the K3 profile', () => {
     updateServerModelMetadata([{
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       modelName: 'Kimi K3',
       provider: 'moonshot',
       apiFormat: 'anthropic',
@@ -270,7 +270,7 @@ describe('server model run gate', () => {
       agenticReady: true,
     }]);
 
-    expect(evaluateServerModelRunGate('kimi-k3-YoudaoInner')).toEqual({
+    expect(evaluateServerModelRunGate('kimi-k3-hzbInner')).toEqual({
       allowed: false,
       reason: ServerModelRunGateReason.TransportUnsupported,
     });

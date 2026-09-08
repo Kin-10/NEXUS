@@ -509,62 +509,62 @@ describe('resolveQualifiedAgentModelRef', () => {
 
 describe('resolveServerModelRefForRun', () => {
   const isKnownPackageKimiK3 = (modelId: string): boolean =>
-    modelId.toLowerCase() === 'kimi-k3-youdaoinner';
+    modelId.toLowerCase() === 'kimi-k3-hzbinner';
 
   test('keeps an explicitly qualified custom model non-server when the package uses the same id', () => {
     expect(resolveServerModelRefForRun({
-      modelRef: 'custom_0/kimi-k3-YoudaoInner',
+      modelRef: 'custom_0/kimi-k3-hzbInner',
       availableProviders: {
-        custom_0: { models: [{ id: 'kimi-k3-YoudaoInner' }] },
-        'baiying-server': { models: [{ id: 'kimi-k3-YoudaoInner' }] },
+        custom_0: { models: [{ id: 'kimi-k3-hzbInner' }] },
+        'baiying-server': { models: [{ id: 'kimi-k3-hzbInner' }] },
       },
       isKnownServerModelCandidate: isKnownPackageKimiK3,
     })).toEqual({
       status: ServerModelRefResolutionStatus.NonServer,
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       providerIds: ['custom_0'],
     });
   });
 
   test('fails closed for a historical bare id shared by a custom and package provider', () => {
     expect(resolveServerModelRefForRun({
-      modelRef: 'kimi-k3-YoudaoInner',
+      modelRef: 'kimi-k3-hzbInner',
       availableProviders: {
-        custom_0: { models: [{ id: 'kimi-k3-YoudaoInner' }] },
-        'baiying-server': { models: [{ id: 'kimi-k3-YoudaoInner' }] },
+        custom_0: { models: [{ id: 'kimi-k3-hzbInner' }] },
+        'baiying-server': { models: [{ id: 'kimi-k3-hzbInner' }] },
       },
       isKnownServerModelCandidate: isKnownPackageKimiK3,
     })).toEqual({
       status: ServerModelRefResolutionStatus.Ambiguous,
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       providerIds: ['custom_0', 'baiying-server'],
     });
   });
 
   test('resolves a bare package-only id to baiying-server', () => {
     expect(resolveServerModelRefForRun({
-      modelRef: 'kimi-k3-YoudaoInner',
+      modelRef: 'kimi-k3-hzbInner',
       availableProviders: {
-        'baiying-server': { models: [{ id: 'kimi-k3-YoudaoInner' }] },
+        'baiying-server': { models: [{ id: 'kimi-k3-hzbInner' }] },
       },
       isKnownServerModelCandidate: isKnownPackageKimiK3,
     })).toEqual({
       status: ServerModelRefResolutionStatus.Server,
-      modelId: 'kimi-k3-YoudaoInner',
-      primaryModel: 'baiying-server/kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
+      primaryModel: 'baiying-server/kimi-k3-hzbInner',
     });
   });
 
   test('requires a catalog refresh before accepting a known bare package id as custom', () => {
     expect(resolveServerModelRefForRun({
-      modelRef: 'kimi-k3-YoudaoInner',
+      modelRef: 'kimi-k3-hzbInner',
       availableProviders: {
-        custom_0: { models: [{ id: 'kimi-k3-YoudaoInner' }] },
+        custom_0: { models: [{ id: 'kimi-k3-hzbInner' }] },
       },
       isKnownServerModelCandidate: isKnownPackageKimiK3,
     })).toEqual({
       status: ServerModelRefResolutionStatus.RefreshRequired,
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
     });
   });
 

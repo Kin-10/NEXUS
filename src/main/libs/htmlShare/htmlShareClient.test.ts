@@ -48,8 +48,8 @@ describe('htmlShareClient', () => {
     let requestedUrl = '';
     let requestedBody = '';
     const result = await createGeneratedVideoShare(
-      'https://lobsterai-server.inner.youdao.com',
-      'https://lobsterai-server.inner.youdao.com/s',
+      'https://lobsterai-server.inner.hzb.com',
+      'https://lobsterai-server.inner.hzb.com/s',
       async (url, options) => {
         requestedUrl = url;
         requestedBody = String(options?.body || '');
@@ -80,7 +80,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://lobsterai-server.inner.youdao.com/api/html-shares/generated-videos',
+      'https://lobsterai-server.inner.hzb.com/api/html-shares/generated-videos',
     );
     expect(JSON.parse(requestedBody)).toEqual({
       taskId: '123',
@@ -96,8 +96,8 @@ describe('htmlShareClient', () => {
 
   test('preserves the server video size limit for renderer messaging', async () => {
     const result = await createGeneratedVideoShare(
-      'https://lobsterai-server.inner.youdao.com',
-      'https://lobsterai-server.inner.youdao.com/s',
+      'https://lobsterai-server.inner.hzb.com',
+      'https://lobsterai-server.inner.hzb.com/s',
       async () => new Response(JSON.stringify({
         code: HtmlShareErrorCode.TooLarge,
         message: '分享视频超过文件大小限制',
@@ -129,8 +129,8 @@ describe('htmlShareClient', () => {
   test('looks up generated video share state by task and output', async () => {
     let requestedUrl = '';
     const result = await getGeneratedVideoShareSource(
-      'https://lobsterai-server.inner.youdao.com',
-      'https://lobsterai-server.inner.youdao.com/s',
+      'https://lobsterai-server.inner.hzb.com',
+      'https://lobsterai-server.inner.hzb.com/s',
       async url => {
         requestedUrl = url;
         return new Response(JSON.stringify({
@@ -149,7 +149,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://lobsterai-server.inner.youdao.com/api/html-shares/generated-videos/source?taskId=123&outputIndex=0',
+      'https://lobsterai-server.inner.hzb.com/api/html-shares/generated-videos/source?taskId=123&outputIndex=0',
     );
     expect(result).toMatchObject({
       success: true,
@@ -162,8 +162,8 @@ describe('htmlShareClient', () => {
   test('maps a background video download size failure to the shared file limit error', async () => {
     let requestCount = 0;
     const result = await createGeneratedVideoShare(
-      'https://lobsterai-server.inner.youdao.com',
-      'https://lobsterai-server.inner.youdao.com/s',
+      'https://lobsterai-server.inner.hzb.com',
+      'https://lobsterai-server.inner.hzb.com/s',
       async () => {
         requestCount += 1;
         if (requestCount === 1) {
@@ -211,7 +211,7 @@ describe('htmlShareClient', () => {
   test('resolves legacy video provenance using a URL hash only', async () => {
     let requestedBody = '';
     const result = await resolveLegacyGeneratedVideoSource(
-      'https://lobsterai-server.inner.youdao.com',
+      'https://lobsterai-server.inner.hzb.com',
       async (_url, options) => {
         requestedBody = String(options?.body || '');
         return new Response(JSON.stringify({
@@ -230,7 +230,7 @@ describe('htmlShareClient', () => {
     let requestedUrl = '';
     let requestedMethod = '';
     const result = await deleteHtmlSharePermanently(
-      'https://lobsterai-server.inner.youdao.com',
+      'https://lobsterai-server.inner.hzb.com',
       async (url, options) => {
         requestedUrl = url;
         requestedMethod = options?.method || '';
@@ -243,7 +243,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://lobsterai-server.inner.youdao.com/api/html-shares/shr_file%2Fwith%20space/permanent',
+      'https://lobsterai-server.inner.hzb.com/api/html-shares/shr_file%2Fwith%20space/permanent',
     );
     expect(requestedMethod).toBe('DELETE');
     expect(result).toEqual({ success: true, httpStatus: 200 });
@@ -251,7 +251,7 @@ describe('htmlShareClient', () => {
 
   test('preserves server deletion errors for renderer recovery', async () => {
     const result = await deleteHtmlSharePermanently(
-      'https://lobsterai-server.inner.youdao.com',
+      'https://lobsterai-server.inner.hzb.com',
       async () => new Response(JSON.stringify({
         code: 41315,
         message: '请先停止分享，再永久删除',
@@ -268,17 +268,17 @@ describe('htmlShareClient', () => {
   });
 
   test('builds environment-specific public share URLs', () => {
-    expect(buildHtmlSharePublicUrl('https://baiying-server.inner.youdao.com/s', 'shr_123')).toBe(
-      'https://baiying-server.inner.youdao.com/s/shr_123/',
+    expect(buildHtmlSharePublicUrl('https://baiying-server.inner.hzb.com/s', 'shr_123')).toBe(
+      'https://baiying-server.inner.hzb.com/s/shr_123/',
     );
-    expect(buildHtmlSharePublicUrl('https://baiying-server.youdao.com/s/', 'shr_123')).toBe(
-      'https://baiying-server.youdao.com/s/shr_123/',
+    expect(buildHtmlSharePublicUrl('https://baiying-server.hzb.com/s/', 'shr_123')).toBe(
+      'https://baiying-server.hzb.com/s/shr_123/',
     );
   });
 
   test('uses the server quota snapshot without client-side limit defaults', async () => {
     const result = await getHtmlShareQuota(
-      'https://baiying-server.inner.youdao.com',
+      'https://baiying-server.inner.hzb.com',
       async () => new Response(JSON.stringify({
         code: 0,
         data: {
@@ -313,7 +313,7 @@ describe('htmlShareClient', () => {
     let requestedUrl = '';
     let requestedOptions: RequestInit | undefined;
     const result = await getPublishingTrialPolicy(
-      'https://baiying-server.inner.youdao.com',
+      'https://baiying-server.inner.hzb.com',
       async (url, options) => {
         requestedUrl = url;
         requestedOptions = options;
@@ -341,7 +341,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://baiying-server.inner.youdao.com/api/publishing/trial-policy',
+      'https://baiying-server.inner.hzb.com/api/publishing/trial-policy',
     );
     expect(requestedOptions).toEqual({ cache: 'no-store' });
     expect(result).toEqual({
@@ -369,7 +369,7 @@ describe('htmlShareClient', () => {
   test('loads owner analytics for the requested date range', async () => {
     let requestedUrl = '';
     const result = await getHtmlShareAnalytics(
-      'https://baiying-server.inner.youdao.com',
+      'https://baiying-server.inner.hzb.com',
       async url => {
         requestedUrl = url;
         return new Response(JSON.stringify({
@@ -395,7 +395,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://baiying-server.inner.youdao.com/api/html-shares/shr_123/analytics?from=2026-08-13&to=2026-08-19',
+      'https://baiying-server.inner.hzb.com/api/html-shares/shr_123/analytics?from=2026-08-13&to=2026-08-19',
     );
     expect(result.success).toBe(true);
     expect(result.analytics?.summary.accesses).toBe(8);
@@ -407,8 +407,8 @@ describe('htmlShareClient', () => {
     let requestedForm: FormData | null = null;
 
     const result = await uploadHtmlShare(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async (url, options) => {
         requestedUrl = url;
         if (options?.body instanceof FormData) requestedForm = options.body;
@@ -417,7 +417,7 @@ describe('htmlShareClient', () => {
             code: 0,
             data: {
               shareId: 'shr_test',
-              url: 'https://baiying-server.youdao.com/s/shr_test/',
+              url: 'https://baiying-server.hzb.com/s/shr_test/',
               accessMode: HtmlShareAccessMode.Code,
               shareCode: 'K7Q9P2',
               status: HtmlShareStatus.Live,
@@ -442,12 +442,12 @@ describe('htmlShareClient', () => {
       },
     );
 
-    expect(requestedUrl).toBe('https://baiying-server.inner.youdao.com/api/html-shares');
+    expect(requestedUrl).toBe('https://baiying-server.inner.hzb.com/api/html-shares');
     expect(requestedForm).not.toBeNull();
     expect(requestedForm!.get('sourceType')).toBe(HtmlShareSourceType.HtmlFile);
     expect(requestedForm!.get('accessMode')).toBe(HtmlShareAccessMode.Public);
     expect(result.success).toBe(true);
-    expect(result.url).toBe('https://baiying-server.youdao.com/s/shr_test/');
+    expect(result.url).toBe('https://baiying-server.hzb.com/s/shr_test/');
     expect(result.shareCode).toBe('K7Q9P2');
   });
 
@@ -455,8 +455,8 @@ describe('htmlShareClient', () => {
     const archivePath = await createArchiveFile();
 
     const result = await uploadHtmlShare(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async () =>
         new Response(
           JSON.stringify({
@@ -484,7 +484,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(result.success).toBe(true);
-    expect(result.url).toBe('https://baiying-server.inner.youdao.com/s/shr_test/');
+    expect(result.url).toBe('https://baiying-server.inner.hzb.com/s/shr_test/');
   });
 
   test('updates an existing share with PUT and keeps the server share URL', async () => {
@@ -494,8 +494,8 @@ describe('htmlShareClient', () => {
     let requestedForm: FormData | null = null;
 
     const result = await updateHtmlShare(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async (url, options) => {
         requestedUrl = url;
         requestedMethod = options?.method || '';
@@ -505,7 +505,7 @@ describe('htmlShareClient', () => {
             code: 0,
             data: {
               shareId: 'shr_test',
-              url: 'https://baiying-server.youdao.com/s/shr_test/',
+              url: 'https://baiying-server.hzb.com/s/shr_test/',
               accessMode: HtmlShareAccessMode.Code,
               status: HtmlShareStatus.Live,
               restoredByUpdate: true,
@@ -529,13 +529,13 @@ describe('htmlShareClient', () => {
       },
     );
 
-    expect(requestedUrl).toBe('https://baiying-server.inner.youdao.com/api/html-shares/shr_test');
+    expect(requestedUrl).toBe('https://baiying-server.inner.hzb.com/api/html-shares/shr_test');
     expect(requestedMethod).toBe('PUT');
     expect(requestedForm).not.toBeNull();
     expect(requestedForm!.get('sourceType')).toBe(HtmlShareSourceType.HtmlFile);
     expect(requestedForm!.get('accessMode')).toBe(HtmlShareAccessMode.Code);
     expect(result.success).toBe(true);
-    expect(result.url).toBe('https://baiying-server.youdao.com/s/shr_test/');
+    expect(result.url).toBe('https://baiying-server.hzb.com/s/shr_test/');
     expect(result.restoredByUpdate).toBe(true);
   });
 
@@ -544,8 +544,8 @@ describe('htmlShareClient', () => {
     let requestedForm: FormData | null = null;
 
     const result = await updateHtmlShare(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async (_url, options) => {
         if (options?.body instanceof FormData) requestedForm = options.body;
         return new Response(
@@ -553,7 +553,7 @@ describe('htmlShareClient', () => {
             code: 0,
             data: {
               shareId: 'shr_image',
-              url: 'https://baiying-server.youdao.com/s/shr_image/',
+              url: 'https://baiying-server.hzb.com/s/shr_image/',
               accessMode: HtmlShareAccessMode.Public,
               status: HtmlShareStatus.Live,
             },
@@ -593,8 +593,8 @@ describe('htmlShareClient', () => {
     let requestedContentType = '';
 
     const result = await updateHtmlShareAccessMode(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async (url, options) => {
         requestedUrl = url;
         requestedMethod = options?.method || '';
@@ -622,7 +622,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://baiying-server.inner.youdao.com/api/html-shares/shr_test/access-mode',
+      'https://baiying-server.inner.hzb.com/api/html-shares/shr_test/access-mode',
     );
     expect(requestedMethod).toBe('PUT');
     expect(requestedContentType).toBe('application/json');
@@ -638,8 +638,8 @@ describe('htmlShareClient', () => {
     let requestedContentType = '';
 
     const result = await updateHtmlShareStatus(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async (url, options) => {
         requestedUrl = url;
         requestedMethod = options?.method || '';
@@ -652,7 +652,7 @@ describe('htmlShareClient', () => {
             code: 0,
             data: {
               shareId: 'shr_test',
-              url: 'https://baiying-server.youdao.com/s/shr_test/',
+              url: 'https://baiying-server.hzb.com/s/shr_test/',
               status: HtmlShareStatus.Disabled,
               disabledAt: '2026-06-01T12:00:00',
               disabledReason: 'user',
@@ -669,7 +669,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://baiying-server.inner.youdao.com/api/html-shares/shr_test/status',
+      'https://baiying-server.inner.hzb.com/api/html-shares/shr_test/status',
     );
     expect(requestedMethod).toBe('PATCH');
     expect(requestedContentType).toBe('application/json');
@@ -683,8 +683,8 @@ describe('htmlShareClient', () => {
     let requestedUrl = '';
 
     const result = await getHtmlShareBySource(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async url => {
         requestedUrl = url;
         return new Response(
@@ -710,10 +710,10 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://baiying-server.inner.youdao.com/api/html-shares/source?sourceType=html_file&clientSourceKey=source-key&includeDisabled=true',
+      'https://baiying-server.inner.hzb.com/api/html-shares/source?sourceType=html_file&clientSourceKey=source-key&includeDisabled=true',
     );
     expect(result.success).toBe(true);
-    expect(result.share?.url).toBe('https://baiying-server.inner.youdao.com/s/shr_test/');
+    expect(result.share?.url).toBe('https://baiying-server.inner.hzb.com/s/shr_test/');
     expect(result.share?.shareCode).toBe('K7Q9P2');
     expect(result.share?.status).toBe(HtmlShareStatus.Disabled);
     expect(result.share?.disabledSource).toBe(HtmlShareDisabledSource.ActiveLimit);
@@ -721,8 +721,8 @@ describe('htmlShareClient', () => {
 
   test('preserves missing and explicit null access expiry from share lookup responses', async () => {
     const lookup = (data: Record<string, unknown>) => getHtmlShareBySource(
-      'https://lobsterai-server.inner.youdao.com',
-      'https://lobsterai-server.inner.youdao.com/s',
+      'https://lobsterai-server.inner.hzb.com',
+      'https://lobsterai-server.inner.hzb.com/s',
       async () => new Response(
         JSON.stringify({ code: 0, data }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -750,8 +750,8 @@ describe('htmlShareClient', () => {
     const requestedUrls: string[] = [];
 
     const result = await getHtmlShareBySource(
-      'https://baiying-server.inner.youdao.com',
-      'https://baiying-server.inner.youdao.com/s',
+      'https://baiying-server.inner.hzb.com',
+      'https://baiying-server.inner.hzb.com/s',
       async url => {
         requestedUrls.push(url);
         if (url.includes('/api/html-shares/source?')) {
@@ -792,12 +792,12 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrls).toEqual([
-      'https://baiying-server.inner.youdao.com/api/html-shares/source?sourceType=html_file&clientSourceKey=source-key&includeDisabled=true',
-      'https://baiying-server.inner.youdao.com/api/html-shares/my',
+      'https://baiying-server.inner.hzb.com/api/html-shares/source?sourceType=html_file&clientSourceKey=source-key&includeDisabled=true',
+      'https://baiying-server.inner.hzb.com/api/html-shares/my',
     ]);
     expect(result.success).toBe(true);
     expect(result.share?.shareId).toBe('shr_disabled');
-    expect(result.share?.url).toBe('https://baiying-server.inner.youdao.com/s/shr_disabled/');
+    expect(result.share?.url).toBe('https://baiying-server.inner.hzb.com/s/shr_disabled/');
     expect(result.share?.status).toBe(HtmlShareStatus.Disabled);
   });
 });

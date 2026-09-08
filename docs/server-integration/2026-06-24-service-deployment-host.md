@@ -6,11 +6,11 @@ Node service deployment shares now use a dedicated host instead of the regular H
 
 Regular artifact shares still use:
 
-- `http://baiying-server-dev.inner.youdao.com/s/{shareId}/`
+- `http://baiying-server-dev.inner.hzb.com/s/{shareId}/`
 
 Service deployment shares now use:
 
-- `http://shr-b25df9ca33df4d5f-share-service.baiying-server-dev.inner.youdao.com/`
+- `http://shr-b25df9ca33df4d5f-share-service.baiying-server-dev.inner.hzb.com/`
 
 The backend no longer supports service deployment access through `/s/{shareId}/`.
 
@@ -27,7 +27,7 @@ Expected URL shape:
 Example:
 
 ```text
-http://shr-b25df9ca33df4d5f-share-service.baiying-server-dev.inner.youdao.com/
+http://shr-b25df9ca33df4d5f-share-service.baiying-server-dev.inner.hzb.com/
 ```
 
 The service host handles all paths for the deployed app:

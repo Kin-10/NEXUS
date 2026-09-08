@@ -221,7 +221,7 @@ test('expires stale remembered quota errors', () => {
 
 test('hydrates missing Gemini package model tool call thought signatures', () => {
   const requestBody = {
-    model: 'gemini-3.5-flash-YoudaoInner',
+    model: 'gemini-3.5-flash-hzbInner',
     messages: [
       {
         role: 'assistant',
@@ -257,7 +257,7 @@ test('hydrates missing Gemini package model tool call thought signatures', () =>
 
 test('mirrors existing Gemini package model tool call thought signatures into function fields', () => {
   const requestBody = {
-    model: 'gemini-3.5-flash-YoudaoInner',
+    model: 'gemini-3.5-flash-hzbInner',
     messages: [
       {
         role: 'assistant',
@@ -296,7 +296,7 @@ test('mirrors existing Gemini package model tool call thought signatures into fu
 
 test('keeps fully hydrated Gemini package model tool calls unchanged', () => {
   const requestBody = {
-    model: 'gemini-3.5-flash-YoudaoInner',
+    model: 'gemini-3.5-flash-hzbInner',
     messages: [
       {
         role: 'assistant',
@@ -330,7 +330,7 @@ test('keeps fully hydrated Gemini package model tool calls unchanged', () => {
 
 test('leaves non-Gemini package model request bodies unchanged', () => {
   const requestBody = Buffer.from(JSON.stringify({
-    model: 'qwen3.5-plus-YoudaoInner',
+    model: 'qwen3.5-plus-hzbInner',
     messages: [
       {
         role: 'assistant',
@@ -353,7 +353,7 @@ test('leaves non-Gemini package model request bodies unchanged', () => {
 
 test('keeps Kimi K3 package payloads byte-for-byte transparent', () => {
   const requestBody = Buffer.from(JSON.stringify({
-    model: 'kimi-k3-YoudaoInner',
+    model: 'kimi-k3-hzbInner',
     reasoning_effort: 'max',
     messages: [
       {

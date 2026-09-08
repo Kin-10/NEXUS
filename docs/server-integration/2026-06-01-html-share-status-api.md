@@ -51,7 +51,7 @@ Success response:
   "message": "success",
   "data": {
     "shareId": "shr_xxxxxxxxxxxxxxxx",
-    "url": "https://baiying-server.youdao.com/s/shr_xxxxxxxxxxxxxxxx/",
+    "url": "https://baiying-server.hzb.com/s/shr_xxxxxxxxxxxxxxxx/",
     "status": "live",
     "moderationStatus": "not_required",
     "updatedAt": "2026-06-01T12:00:00",

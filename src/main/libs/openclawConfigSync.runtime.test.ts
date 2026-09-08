@@ -746,25 +746,25 @@ describe('OpenClawConfigSync runtime config output', () => {
     mockRuntimeState.proxyPort = 56646;
     mockRuntimeState.serverModels = [
       {
-        modelId: 'qwen3.5-plus-YoudaoInner',
-        modelName: 'qwen3.5-plus-YoudaoInner',
-        provider: 'YoudaoInner',
+        modelId: 'qwen3.5-plus-hzbInner',
+        modelName: 'qwen3.5-plus-hzbInner',
+        provider: 'hzbInner',
         apiFormat: 'openai',
         supportsImage: true,
         explicitContextCache: true,
       },
       {
-        modelId: 'qwen3.6-plus-YoudaoInner',
-        modelName: 'qwen3.6-plus-YoudaoInner',
-        provider: 'YoudaoInner',
+        modelId: 'qwen3.6-plus-hzbInner',
+        modelName: 'qwen3.6-plus-hzbInner',
+        provider: 'hzbInner',
         apiFormat: 'openai',
         supportsImage: true,
         explicitContextCache: true,
       },
       {
-        modelId: 'claude-sonnet-4-6-YoudaoInner',
-        modelName: 'claude-sonnet-4-6-YoudaoInner',
-        provider: 'YoudaoInner',
+        modelId: 'claude-sonnet-4-6-hzbInner',
+        modelName: 'claude-sonnet-4-6-hzbInner',
+        provider: 'hzbInner',
         apiFormat: 'anthropic',
         supportsImage: true,
         supportsThinking: true,
@@ -772,9 +772,9 @@ describe('OpenClawConfigSync runtime config output', () => {
         explicitContextCache: true,
       },
       {
-        modelId: 'claude-opus-4-YoudaoInner',
-        modelName: 'claude-opus-4-YoudaoInner',
-        provider: 'YoudaoInner',
+        modelId: 'claude-opus-4-hzbInner',
+        modelName: 'claude-opus-4-hzbInner',
+        provider: 'hzbInner',
         apiFormat: 'anthropic',
         supportsImage: true,
         supportsThinking: true,
@@ -782,7 +782,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       {
         modelId: 'claude-sonnet-4-6',
         modelName: 'Claude Sonnet 4.6 OpenAI Compat',
-        provider: 'YoudaoInner',
+        provider: 'hzbInner',
         apiFormat: 'openai',
         supportsImage: true,
         supportsThinking: true,
@@ -790,24 +790,24 @@ describe('OpenClawConfigSync runtime config output', () => {
         explicitContextCache: true,
       },
       {
-        modelId: 'glm-5.1-YoudaoInner',
-        provider: 'YoudaoInner',
+        modelId: 'glm-5.1-hzbInner',
+        provider: 'hzbInner',
         apiFormat: 'openai',
         supportsImage: false,
         supportsThinking: true,
       },
       {
-        modelId: 'deepseek-v3.2-YoudaoInner',
-        provider: 'YoudaoInner',
+        modelId: 'deepseek-v3.2-hzbInner',
+        provider: 'hzbInner',
         apiFormat: 'openai',
         supportsImage: false,
       },
     ];
     mockRuntimeState.rawApiConfig = {
       config: {
-        baseURL: 'https://baiying-server.youdao.com/api/proxy/v1',
+        baseURL: 'https://baiying-server.hzb.com/api/proxy/v1',
         apiKey: 'access-token',
-        model: 'qwen3.5-plus-YoudaoInner',
+        model: 'qwen3.5-plus-hzbInner',
         apiType: 'openai',
       },
       providerMetadata: {
@@ -866,24 +866,24 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(JSON.stringify(config)).not.toContain('LOBSTER_APIKEY_SERVER');
     expect(provider.models).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        id: 'qwen3.5-plus-YoudaoInner',
+        id: 'qwen3.5-plus-hzbInner',
         api: 'openai-completions',
         input: ['text', 'image'],
       }),
       expect.objectContaining({
-        id: 'qwen3.6-plus-YoudaoInner',
+        id: 'qwen3.6-plus-hzbInner',
         api: 'openai-completions',
         input: ['text', 'image'],
       }),
       expect.objectContaining({
-        id: 'claude-sonnet-4-6-YoudaoInner',
+        id: 'claude-sonnet-4-6-hzbInner',
         api: 'anthropic-messages',
         input: ['text', 'image'],
         reasoning: true,
         contextWindow: 1_000_000,
       }),
       expect.objectContaining({
-        id: 'claude-opus-4-YoudaoInner',
+        id: 'claude-opus-4-hzbInner',
         api: 'anthropic-messages',
         input: ['text', 'image'],
         reasoning: true,
@@ -896,13 +896,13 @@ describe('OpenClawConfigSync runtime config output', () => {
         contextWindow: 1_000_000,
       }),
       expect.objectContaining({
-        id: 'glm-5.1-YoudaoInner',
+        id: 'glm-5.1-hzbInner',
         api: 'openai-completions',
         input: ['text'],
         reasoning: true,
       }),
       expect.objectContaining({
-        id: 'deepseek-v3.2-YoudaoInner',
+        id: 'deepseek-v3.2-hzbInner',
         api: 'openai-completions',
         input: ['text'],
       }),
@@ -911,26 +911,26 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(JSON.stringify(provider.models)).not.toContain('cacheControlFormat');
     expect(JSON.stringify(provider.models)).not.toContain('supportsLongCacheRetention');
     expect(config.agents.defaults.models).toEqual(expect.objectContaining({
-      'baiying-server/qwen3.5-plus-YoudaoInner': {
+      'baiying-server/qwen3.5-plus-hzbInner': {
         params: {
           cacheRetention: 'short',
           contextCacheProvider: 'dashscope',
           contextCacheMode: 'explicit',
         },
       },
-      'baiying-server/qwen3.6-plus-YoudaoInner': {
+      'baiying-server/qwen3.6-plus-hzbInner': {
         params: {
           cacheRetention: 'short',
           contextCacheProvider: 'dashscope',
           contextCacheMode: 'explicit',
         },
       },
-      'baiying-server/claude-sonnet-4-6-YoudaoInner': {
+      'baiying-server/claude-sonnet-4-6-hzbInner': {
         params: {
           cacheRetention: 'short',
         },
       },
-      'baiying-server/claude-opus-4-YoudaoInner': {
+      'baiying-server/claude-opus-4-hzbInner': {
         params: {
           cacheRetention: 'short',
         },
@@ -950,7 +950,7 @@ describe('OpenClawConfigSync runtime config output', () => {
     mockRuntimeState.serverModels = [];
     mockRuntimeState.rawApiConfig = {
       config: {
-        baseURL: 'https://baiying-server.youdao.com/api/proxy/v1',
+        baseURL: 'https://baiying-server.hzb.com/api/proxy/v1',
         apiKey: 'access-token',
         model: 'claude-sonnet-4-6',
         apiType: 'openai',
@@ -1125,7 +1125,7 @@ describe('OpenClawConfigSync runtime config output', () => {
 
     mockRuntimeState.proxyPort = 56646;
     mockRuntimeState.serverModels = [
-      { modelId: 'MiniMax-M2.7-YoudaoInner', supportsImage: false },
+      { modelId: 'MiniMax-M2.7-hzbInner', supportsImage: false },
       { modelId: 'kimi-k2.6-inhouse-ZhiYun', supportsImage: true },
     ];
     mockRuntimeState.rawApiConfig = {
@@ -1221,14 +1221,14 @@ describe('OpenClawConfigSync runtime config output', () => {
         },
       },
       'deepseek/deepseek-v4-pro': {},
-      'baiying-server/MiniMax-M2.7-YoudaoInner': {},
+      'baiying-server/MiniMax-M2.7-hzbInner': {},
       'baiying-server/kimi-k2.6-inhouse-ZhiYun': {},
     }));
     expect(Object.keys(modelDefaults)).toEqual(expect.arrayContaining([
       'deepseek/deepseek-v4-flash',
       'deepseek/deepseek-v4-pro',
       'custom_0/custom-thinking-model',
-      'baiying-server/MiniMax-M2.7-YoudaoInner',
+      'baiying-server/MiniMax-M2.7-hzbInner',
       'baiying-server/kimi-k2.6-inhouse-ZhiYun',
     ]));
   });
@@ -1711,7 +1711,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       agents: {
         defaults: {
           models: {
-            'baiying-server/MiniMax-M2.7-YoudaoInner': {},
+            'baiying-server/MiniMax-M2.7-hzbInner': {},
           },
         },
       },

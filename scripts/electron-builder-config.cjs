@@ -103,7 +103,7 @@ for (const platformName of ['mac', 'win', 'linux']) {
 }
 
 // Sign every Windows binary electron-builder produces (BaiYing.exe, the
-// uninstaller, the installer) through the internal Youdao signing service,
+// uninstaller, the installer) through the internal hzb signing service,
 // not just the final Setup.exe: the unsigned inner exe is what security
 // software freezes on first execution. The hook skips with a warning when
 // YD_SIGN_* credentials are absent, so local packaging still works.

@@ -201,7 +201,7 @@ export const defaultConfig: AppConfig = {
     isDevelopment: process.env.NODE_ENV === 'development',
     // Default to production (official) services. Source-launched dev builds run
     // with NODE_ENV=development, but must not auto-target the internal-only test
-    // endpoints (*.inner.youdao.com) — external/open-source users can't reach
+    // endpoints (*.inner.hzb.com) — external/open-source users can't reach
     // them. Flip test mode via the hidden switch in Settings → About when the
     // internal endpoints are actually needed.
     testMode: false,

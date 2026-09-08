@@ -188,7 +188,7 @@ BaiYing 侧处理边界：`customParams` 只作为厂商请求参数透传到 `e
 
 2026-06-17 继续补齐自定义模型配置入口：模型编辑弹窗新增与“支持图像输入”并列的“支持思考输出”开关，用于显式写入 `supportsThinking: true`；模型列表同步显示“思考”徽标。该开关只负责模型元数据，不会从 `customParams` / `extra_body` 自动推断；如 Qwen 这类厂商还需要 `enable_thinking` 等请求参数，仍由用户在自定义参数中显式配置。
 
-已按 OpenClaw 6.1 manifest / provider catalog 中明确的 `reasoning: true`，以及业务侧确认的模型能力，补齐 BaiYing 当前静态模型表中的精确模型，例如 DeepSeek V4 / Reasoner、Kimi K2.5 / K2.6、Zhipu GLM、MiniMax M3、Volcengine 当前内置模型、Youdao DeepSeek Reasoner、Qianfan GLM / DeepSeek V4、Xiaomi MiMo、OpenAI GPT-5.4 / GPT-5.5、Gemini 3.x、Anthropic Claude 4.x，以及 OpenRouter 中对应的 Claude / GPT / Gemini 模型。Qwen 3.5 / 3.6 待后续确认；其他未确认模型不做泛化标记。
+已按 OpenClaw 6.1 manifest / provider catalog 中明确的 `reasoning: true`，以及业务侧确认的模型能力，补齐 BaiYing 当前静态模型表中的精确模型，例如 DeepSeek V4 / Reasoner、Kimi K2.5 / K2.6、Zhipu GLM、MiniMax M3、Volcengine 当前内置模型、hzb DeepSeek Reasoner、Qianfan GLM / DeepSeek V4、Xiaomi MiMo、OpenAI GPT-5.4 / GPT-5.5、Gemini 3.x、Anthropic Claude 4.x，以及 OpenRouter 中对应的 Claude / GPT / Gemini 模型。Qwen 3.5 / 3.6 待后续确认；其他未确认模型不做泛化标记。
 
 ### 3.2 Qwen provider alias 复核
 

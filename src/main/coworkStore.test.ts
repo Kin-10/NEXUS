@@ -923,12 +923,12 @@ test('updateSession can patch model override without refreshing the session upda
 
   store.updateSession(
     sid,
-    { modelOverride: 'baiying-server/qwen3.6-plus-YoudaoInner' },
+    { modelOverride: 'baiying-server/qwen3.6-plus-hzbInner' },
     { touchUpdatedAt: false },
   );
 
   const session = store.getSession(sid);
-  expect(session?.modelOverride).toBe('baiying-server/qwen3.6-plus-YoudaoInner');
+  expect(session?.modelOverride).toBe('baiying-server/qwen3.6-plus-hzbInner');
   expect(session?.updatedAt).toBe(1000);
 });
 

@@ -313,7 +313,7 @@ const migrateCustomProviders = (config: AppConfig): AppConfig => {
 const REMOVED_PROVIDER_MODELS: Record<string, string[]> = {
   deepseek: ['deepseek-chat'],
   qwen: ['qwen3-coder-plus'],
-  youdaozhiyun: ['deepseek-chat', 'deepseek-inhouse-chat'],
+  hzbzhiyun: ['deepseek-chat', 'deepseek-inhouse-chat'],
   qianfan: ['deepseek-v3.2', 'deepseek-r1', 'ernie-4.5-8k', 'ernie-4.5-turbo-8k'],
   openai: ['gpt-5.2-2025-12-11', 'gpt-5.2', 'gpt-5.3-codex', 'gpt-5.2-codex'],
   gemini: ['gemini-3-pro-preview'],
@@ -509,7 +509,7 @@ const applyProviderModelContextWindowOverrides = (
 const REORDER_PROVIDER_MODELS = new Set([
   'qwen',
   'zhipu',
-  'youdaozhiyun',
+  'hzbzhiyun',
   'qianfan',
   'openai',
   'gemini',

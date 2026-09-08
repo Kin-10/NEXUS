@@ -39,7 +39,7 @@ describe('BaiYing request options', () => {
 
     await wrapped({} as never, {} as never, {
       onPayload: () => ({
-        model: 'deepseek-v4-flash-YoudaoInner',
+        model: 'deepseek-v4-flash-hzbInner',
         [BAIYING_REQUEST_OPTIONS_FIELD]: {
           version: 999,
           thinking: { level: 'max' },
@@ -49,7 +49,7 @@ describe('BaiYing request options', () => {
 
     const payload = await forwardedOptions?.onPayload?.({}, {} as never);
     expect(payload).toEqual({
-      model: 'deepseek-v4-flash-YoudaoInner',
+      model: 'deepseek-v4-flash-hzbInner',
       [BAIYING_REQUEST_OPTIONS_FIELD]: {
         version: BAIYING_REQUEST_OPTIONS_VERSION,
         thinking: { level: 'off' },

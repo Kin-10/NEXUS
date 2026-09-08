@@ -131,12 +131,12 @@ Recommended local commands:
 # Real Volcengine OpenAPI smoke test. No cloud resource is created.
 SHARE_DEPLOYMENT_VOLCENGINE_API_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
+./gradlew test --tests com.hzb.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
 
 # End-to-end NAS functional test with brotato-clone.
 SHARE_DEPLOYMENT_BROTATO_PERSISTENCE_CLOUD_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoProjectWithNasPersistenceAndRedeployKeepsLeaderboard --rerun-tasks
+./gradlew test --tests com.hzb.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoProjectWithNasPersistenceAndRedeployKeepsLeaderboard --rerun-tasks
 ```
 
 Use TOS upload for the brotato test unless the package is known to be small enough for direct zip JSON upload. A 6 MiB zip becomes roughly 8 MiB after base64 encoding and may hit OpenAPI request parsing limits.

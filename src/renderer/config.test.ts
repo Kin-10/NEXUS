@@ -133,13 +133,13 @@ test('defaultConfig leaves agent shortcuts unset', () => {
   expect(defaultConfig.shortcuts?.[ShortcutAction.OpenAgentTask9]).toBe('');
 });
 
-test('getVisibleProviders omits Youdao, Qianfan, and StepFun', () => {
+test('getVisibleProviders omits hzb, Qianfan, and StepFun', () => {
   for (const language of ['zh', 'en'] as const) {
     const visible = getVisibleProviders(language);
-    expect(visible).not.toContain(ProviderName.Youdaozhiyun);
+    expect(visible).not.toContain(ProviderName.hzbzhiyun);
     expect(visible).not.toContain(ProviderName.Qianfan);
     expect(visible).not.toContain(ProviderName.StepFun);
     expect(visible).toContain(ProviderName.DeepSeek);
-    expect(ProviderRegistry.isHiddenInSettings(ProviderName.Youdaozhiyun)).toBe(true);
+    expect(ProviderRegistry.isHiddenInSettings(ProviderName.hzbzhiyun)).toBe(true);
   }
 });

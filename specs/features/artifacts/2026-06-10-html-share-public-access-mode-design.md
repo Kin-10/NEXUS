@@ -502,14 +502,14 @@ SHOW INDEX FROM html_shares WHERE Key_name = 'idx_html_shares_access_mode';
 
 | 文件 | 变更 |
 |------|------|
-| `src/main/java/com/youdao/baiying/service/HtmlShareAccessService.java` | 支持 `public`，拆分创建/更新归一化语义 |
-| `src/main/java/com/youdao/baiying/service/HtmlShareService.java` | 创建/更新模式处理，分享码复用 helper，新增仅更新访问方式方法 |
-| `src/main/java/com/youdao/baiying/web/controller/HtmlShareController.java` | 新增 `PUT /api/html-shares/{shareId}/access-mode` |
-| `src/main/java/com/youdao/baiying/entity/dto/HtmlShareAccessModeUpdateRequest.java` | 新增请求 DTO |
-| `src/main/java/com/youdao/baiying/exceptions/ErrorCode.java` | 更新访问方式错误文案 |
-| `src/test/java/com/youdao/baiying/service/HtmlShareAccessServiceTest.java` | 更新 normalize access mode 测试 |
-| `src/test/java/com/youdao/baiying/service/HtmlShareServiceTest.java` | 覆盖 public 创建、更新、模式切换和分享码复用 |
-| `src/test/java/com/youdao/baiying/web/controller/HtmlShareStaticControllerTest.java` | 覆盖 public/code 访问行为 |
+| `src/main/java/com/hzb/baiying/service/HtmlShareAccessService.java` | 支持 `public`，拆分创建/更新归一化语义 |
+| `src/main/java/com/hzb/baiying/service/HtmlShareService.java` | 创建/更新模式处理，分享码复用 helper，新增仅更新访问方式方法 |
+| `src/main/java/com/hzb/baiying/web/controller/HtmlShareController.java` | 新增 `PUT /api/html-shares/{shareId}/access-mode` |
+| `src/main/java/com/hzb/baiying/entity/dto/HtmlShareAccessModeUpdateRequest.java` | 新增请求 DTO |
+| `src/main/java/com/hzb/baiying/exceptions/ErrorCode.java` | 更新访问方式错误文案 |
+| `src/test/java/com/hzb/baiying/service/HtmlShareAccessServiceTest.java` | 更新 normalize access mode 测试 |
+| `src/test/java/com/hzb/baiying/service/HtmlShareServiceTest.java` | 覆盖 public 创建、更新、模式切换和分享码复用 |
+| `src/test/java/com/hzb/baiying/web/controller/HtmlShareStaticControllerTest.java` | 覆盖 public/code 访问行为 |
 
 ### 6.3 管理后台 `/Users/admin/Documents/baiying/baiying-admin`
 

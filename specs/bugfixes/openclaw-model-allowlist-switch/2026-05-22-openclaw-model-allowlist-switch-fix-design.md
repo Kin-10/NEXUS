@@ -14,10 +14,10 @@
 
 已观察到的失败模型包括：
 
-- `baiying-server/MiniMax-M2.7-YoudaoInner`
+- `baiying-server/MiniMax-M2.7-hzbInner`
 - `baiying-server/kimi-k2.6-inhouse-ZhiYun`
-- `baiying-server/kimi-k2.6-YoudaoInner`
-- `baiying-server/glm-5.1-YoudaoInner`
+- `baiying-server/kimi-k2.6-hzbInner`
+- `baiying-server/glm-5.1-hzbInner`
 - `deepseek/deepseek-v4-pro`
 
 这些模型在 BaiYing 的可用模型列表和 OpenClaw `models.providers` catalog 中都存在，但在已有会话执行 `sessions.patch` 时被 OpenClaw gateway 拒绝。
@@ -45,19 +45,19 @@ OpenClaw 的模型校验逻辑：
 日志显示模型本身是存在的：
 
 ```text
-[ClaudeSettings] resolved raw API config ... "MiniMax-M2.7-YoudaoInner" ...
+[ClaudeSettings] resolved raw API config ... "MiniMax-M2.7-hzbInner" ...
 ```
 
 会话发送前或底部模型切换时，BaiYing 正确把 UI 模型转换为 OpenClaw ref：
 
 ```text
-model=baiying-server/MiniMax-M2.7-YoudaoInner source=sessionOverride
+model=baiying-server/MiniMax-M2.7-hzbInner source=sessionOverride
 ```
 
 OpenClaw gateway 拒绝的真实错误是：
 
 ```text
-sessions.patch ... errorCode=INVALID_REQUEST errorMessage=model not allowed: baiying-server/MiniMax-M2.7-YoudaoInner
+sessions.patch ... errorCode=INVALID_REQUEST errorMessage=model not allowed: baiying-server/MiniMax-M2.7-hzbInner
 ```
 
 这说明问题不是模型列表缺失、账号权限缺失、网络失败或前端 toast 误报，而是 OpenClaw 当前配置中的 allowed model set 不完整。
@@ -112,7 +112,7 @@ sessions.patch ... errorCode=INVALID_REQUEST errorMessage=model not allowed: bai
   "agents": {
     "defaults": {
       "models": {
-        "baiying-server/MiniMax-M2.7-YoudaoInner": {},
+        "baiying-server/MiniMax-M2.7-hzbInner": {},
         "baiying-server/kimi-k2.6-inhouse-ZhiYun": {},
         "deepseek/deepseek-v4-flash": {}
       }
@@ -137,7 +137,7 @@ sessions.patch ... errorCode=INVALID_REQUEST errorMessage=model not allowed: bai
             }
           }
         },
-        "baiying-server/MiniMax-M2.7-YoudaoInner": {}
+        "baiying-server/MiniMax-M2.7-hzbInner": {}
       }
     }
   }
@@ -270,7 +270,7 @@ baiying-server/<modelId>
    - 带参数模型包含 `params.extra_body`。
    - 不带参数模型为 `{}`。
 3. 存在服务端模型且任意模型带 `customParams` 时：
-   - `config.agents.defaults.models` 包含 `baiying-server/MiniMax-M2.7-YoudaoInner`。
+   - `config.agents.defaults.models` 包含 `baiying-server/MiniMax-M2.7-hzbInner`。
    - `config.agents.defaults.models` 包含 `baiying-server/kimi-k2.6-inhouse-ZhiYun`。
    - 这些无自定义参数的服务端模型 entry 为 `{}`。
 4. 删除所有 `customParams` 后重新 sync，`agents.defaults.models` 不再生成。
@@ -285,8 +285,8 @@ npm test -- openclawConfigSync
 
 1. 在设置里给任意模型添加自定义参数，例如 `{"reasoning_effort": "high"}`。
 2. 启动 OpenClaw runtime，确认 `openclaw.json` 中 `agents.defaults.models` 包含所有可选模型。
-3. 新建任务，用 `MiniMax-M2.7-YoudaoInner` 完成首轮对话。
-4. 首轮回复完成后，从底部模型选择切换到 `kimi-k2.6-YoudaoInner`、`glm-5.1-YoudaoInner`、`deepseek/deepseek-v4-pro` 等模型。
+3. 新建任务，用 `MiniMax-M2.7-hzbInner` 完成首轮对话。
+4. 首轮回复完成后，从底部模型选择切换到 `kimi-k2.6-hzbInner`、`glm-5.1-hzbInner`、`deepseek/deepseek-v4-pro` 等模型。
 5. 预期不再出现“模型切换失败”，gateway 日志不再出现 `model not allowed`。
 
 ## 8. 验收标准

@@ -93,9 +93,9 @@ const translations: Record<LanguageType, Record<string, string>> = {
     coworkErrorOAuthInvalid: 'OAuth 授权已失效或权限不足，请重新授权后重试。',
     coworkErrorModelAccessDenied: '当前账号无权访问该模型，请切换模型或检查服务商账号权限。',
     coworkErrorQuotaExhausted:
-      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.youdao.com/portal#/pricing)',
+      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorFreeQuotaExhausted:
-      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.youdao.com/portal#/pricing)',
+      '积分额度已用完，请升级套餐后继续使用。[立即升级/充值](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorEnterpriseMemberQuotaExhausted: '当前团队成员周期额度已用完。',
     coworkErrorEnterprisePoolExhausted: '当前团队积分池已用完。',
     coworkErrorEnterpriseCreditBatchesExpired: '当前团队积分批次已全部过期。',
@@ -458,9 +458,9 @@ const translations: Record<LanguageType, Record<string, string>> = {
     coworkErrorOAuthInvalid: 'OAuth authorization is invalid or missing required access. Re-authenticate and try again.',
     coworkErrorModelAccessDenied: 'This account is not allowed to access the selected model. Switch models or check provider account permissions.',
     coworkErrorQuotaExhausted:
-      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.youdao.com/portal#/pricing)',
+      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorFreeQuotaExhausted:
-      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.youdao.com/portal#/pricing)',
+      'Your credits have been used up. Upgrade your plan to continue.\n\n[Upgrade or recharge](https://baiying.hzb.com/portal#/pricing)',
     coworkErrorEnterpriseMemberQuotaExhausted: 'The current team member period quota has been used up.',
     coworkErrorEnterprisePoolExhausted: 'The current team credit pool has been used up.',
     coworkErrorEnterpriseCreditBatchesExpired: 'All credit batches for the current team have expired.',

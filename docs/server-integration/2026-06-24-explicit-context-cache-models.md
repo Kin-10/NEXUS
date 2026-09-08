@@ -4,7 +4,7 @@
 
 `baiying-server` adds explicit context cache support metadata for package models:
 
-- `qwen3.5-plus` and `qwen3.6-plus` are available through OpenAI-compatible Chat Completions for both `BaiYing` and `YoudaoInner` providers.
+- `qwen3.5-plus` and `qwen3.6-plus` are available through OpenAI-compatible Chat Completions for both `BaiYing` and `hzbInner` providers.
 - Claude employee models can be exposed through either Anthropic Messages or OpenAI-compatible Chat Completions, depending on server route metadata.
 - `/api/models/available` now returns `explicitContextCache` so the client can generate cache-aware OpenClaw model config.
 - `/v1/messages` now resolves models through DB pricing/routes and only accepts `apiFormat="anthropic"` models.
@@ -20,9 +20,9 @@ Response item additions:
 
 ```json
 {
-  "modelId": "qwen3.6-plus-YoudaoInner",
-  "modelName": "qwen3.6-plus-YoudaoInner",
-  "provider": "YoudaoInner",
+  "modelId": "qwen3.6-plus-hzbInner",
+  "modelName": "qwen3.6-plus-hzbInner",
+  "provider": "hzbInner",
   "apiFormat": "openai",
   "supportsImage": true,
   "supportsThinking": true,
@@ -36,7 +36,7 @@ Claude employee model example:
 ```json
 {
   "modelId": "claude-sonnet-4-6",
-  "provider": "YoudaoInner",
+  "provider": "hzbInner",
   "apiFormat": "openai",
   "explicitContextCache": true
 }
@@ -48,7 +48,7 @@ Anthropic-format Claude models can still be returned with `"apiFormat": "anthrop
 
 Auth: local Lobster proxy token forwarded as `Authorization`.
 
-Only Anthropic-format DB models are accepted. `claude-sonnet-4-6-YoudaoInner` is employee-only; C-end users must not see or call it.
+Only Anthropic-format DB models are accepted. `claude-sonnet-4-6-hzbInner` is employee-only; C-end users must not see or call it.
 
 ## Frontend Action Items
 
@@ -62,7 +62,7 @@ Only Anthropic-format DB models are accepted. `claude-sonnet-4-6-YoudaoInner` is
 
 ## Auth Requirements
 
-All proxy endpoints require Electron JWT Bearer auth at the server boundary. Claude is restricted to `YoudaoInner` employee-visible models.
+All proxy endpoints require Electron JWT Bearer auth at the server boundary. Claude is restricted to `hzbInner` employee-visible models.
 
 ## Notes & Caveats
 

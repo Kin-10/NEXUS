@@ -25,7 +25,7 @@ const banner = (
 ): ClientBanner => ({
   id,
   activityDescription: `Banner ${id}`,
-  linkUrl: `https://baiying.youdao.com/banner/${id}`,
+  linkUrl: `https://baiying.hzb.com/banner/${id}`,
   imageUrl: `https://nos.example.com/banner-${id}.png`,
   updatedAt,
 });

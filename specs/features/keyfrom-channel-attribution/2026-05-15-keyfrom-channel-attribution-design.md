@@ -502,8 +502,8 @@ GET query 示例：
 
 | 环境   | Base URL                                    |
 | ------ | ------------------------------------------- |
-| 测试服 | `https://baiying-server.inner.youdao.com` |
-| 正式服 | `https://baiying-server.youdao.com`       |
+| 测试服 | `https://baiying-server.inner.hzb.com` |
+| 正式服 | `https://baiying-server.hzb.com`       |
 
 要求：
 

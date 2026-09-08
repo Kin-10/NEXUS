@@ -2039,14 +2039,14 @@ test('patchSession uses the persisted IM channel session key after runtime cache
     persistedSessionKey: 'agent:main:feishu:dm:ou_123',
   });
 
-  await adapter.patchSession('session-1', { model: 'baiying-server/qwen3.6-plus-YoudaoInner' });
+  await adapter.patchSession('session-1', { model: 'baiying-server/qwen3.6-plus-hzbInner' });
 
   expect(requests).toEqual([
     {
       method: 'sessions.patch',
       params: {
         key: 'agent:main:feishu:dm:ou_123',
-        model: 'baiying-server/qwen3.6-plus-YoudaoInner',
+        model: 'baiying-server/qwen3.6-plus-hzbInner',
       },
     },
   ]);
@@ -2083,7 +2083,7 @@ test('patchSession rejects IM channel sessions when the real OpenClaw key is mis
     persistedSessionKey: null,
   });
 
-  await expect(adapter.patchSession('session-1', { model: 'baiying-server/qwen3.6-plus-YoudaoInner' }))
+  await expect(adapter.patchSession('session-1', { model: 'baiying-server/qwen3.6-plus-hzbInner' }))
     .rejects.toThrow('Cannot patch IM channel session because the OpenClaw session key is missing.');
 
   expect(requests).toHaveLength(0);
@@ -2210,7 +2210,7 @@ test('pollChannelSessions syncs channel row model into the local session overrid
           sessions: [{
             key: sessionKey,
             modelProvider: 'baiying-server',
-            model: 'kimi-k2.6-YoudaoInner',
+            model: 'kimi-k2.6-hzbInner',
           }],
         };
       }
@@ -2229,11 +2229,11 @@ test('pollChannelSessions syncs channel row model into the local session overrid
 
   await adapter.pollChannelSessions();
 
-  expect(session.modelOverride).toBe('baiying-server/kimi-k2.6-YoudaoInner');
+  expect(session.modelOverride).toBe('baiying-server/kimi-k2.6-hzbInner');
   expect(getUpdateSessionCalls()).toEqual([
     {
       sessionId: session.id,
-      patch: { modelOverride: 'baiying-server/kimi-k2.6-YoudaoInner' },
+      patch: { modelOverride: 'baiying-server/kimi-k2.6-hzbInner' },
       options: { touchUpdatedAt: false },
     },
   ]);
@@ -2241,12 +2241,12 @@ test('pollChannelSessions syncs channel row model into the local session overrid
 
 test('pollChannelSessions clears stale override when channel row matches the agent default model', async () => {
   const sessionKey = 'agent:main:feishu:dm:ou_123';
-  const defaultModel = 'baiying-server/deepseek-v4-flash-YoudaoInner';
+  const defaultModel = 'baiying-server/deepseek-v4-flash-hzbInner';
   const { session, store, getUpdateSessionCalls } = createReconcileStore([], {
     agentModel: defaultModel,
     sessionId: 'session-1',
   });
-  session.modelOverride = 'baiying-server/qwen3.7-max-YoudaoInner';
+  session.modelOverride = 'baiying-server/qwen3.7-max-hzbInner';
   const adapter = new OpenClawRuntimeAdapter(store, {});
   adapter.gatewayClient = {
     start: () => {},
@@ -2255,7 +2255,7 @@ test('pollChannelSessions clears stale override when channel row matches the age
       sessions: [{
         key: sessionKey,
         modelProvider: 'baiying-server',
-        model: 'deepseek-v4-flash-YoudaoInner',
+        model: 'deepseek-v4-flash-hzbInner',
       }],
     }),
   };
@@ -2970,7 +2970,7 @@ function createRunTurnAdapter(options: {
       ? {
         id: 'main',
         name: 'Main',
-        model: options.agentModel ?? 'baiying-server/qwen3.5-plus-YoudaoInner',
+        model: options.agentModel ?? 'baiying-server/qwen3.5-plus-hzbInner',
       }
       : null),
     updateAgent: () => {},
@@ -3680,7 +3680,7 @@ test('continueSession blocks an oversized active transcript before gateway reque
 });
 
 test('continueSession patches a session override before chat.send even when the model cache matches', async () => {
-  const model = 'baiying-server/qwen3.6-plus-YoudaoInner';
+  const model = 'baiying-server/qwen3.6-plus-hzbInner';
   const { adapter, requests } = createRunTurnAdapter({
     sessionModelOverride: model,
     cachedModel: model,
@@ -3701,7 +3701,7 @@ test('continueSession patches a session override before chat.send even when the 
 });
 
 test('continueSession continues after a redundant session override patch times out', async () => {
-  const model = 'baiying-server/qwen3.6-plus-YoudaoInner';
+  const model = 'baiying-server/qwen3.6-plus-hzbInner';
   const { adapter, requests } = createRunTurnAdapter({
     sessionModelOverride: model,
     cachedModel: model,
@@ -3718,7 +3718,7 @@ test('continueSession continues after a redundant session override patch times o
 });
 
 test('continueSession rejects an unconfirmed session override patch timeout before chat.send', async () => {
-  const model = 'baiying-server/qwen3.6-plus-YoudaoInner';
+  const model = 'baiying-server/qwen3.6-plus-hzbInner';
   const { adapter, requests } = createRunTurnAdapter({
     sessionModelOverride: model,
     modelPatchError: new Error('gateway request timeout for sessions.patch'),
@@ -3732,7 +3732,7 @@ test('continueSession rejects an unconfirmed session override patch timeout befo
 });
 
 test('continueSession waits for an in-flight model patch before chat.send', async () => {
-  const model = 'baiying-server/qwen3.6-plus-YoudaoInner';
+  const model = 'baiying-server/qwen3.6-plus-hzbInner';
   const {
     adapter,
     requests,
@@ -3816,7 +3816,7 @@ test('continueSession clears the pending turn when chat.send fails immediately',
 });
 
 test('pre-send model patch uses the extended send timeout while patchSession keeps the default', async () => {
-  const model = 'baiying-server/qwen3.6-plus-YoudaoInner';
+  const model = 'baiying-server/qwen3.6-plus-hzbInner';
   const { adapter, requests } = createRunTurnAdapter({
     sessionModelOverride: model,
   });
@@ -3831,7 +3831,7 @@ test('pre-send model patch uses the extended send timeout while patchSession kee
 });
 
 test('continueSession sends after a slow pre-send model patch eventually succeeds', async () => {
-  const model = 'baiying-server/qwen3.6-plus-YoudaoInner';
+  const model = 'baiying-server/qwen3.6-plus-hzbInner';
   const {
     adapter,
     requests,
@@ -3858,7 +3858,7 @@ test('continueSession sends after a slow pre-send model patch eventually succeed
 });
 
 test('continueSession aborts silently when the session is stopped during the model patch wait', async () => {
-  const model = 'baiying-server/qwen3.6-plus-YoudaoInner';
+  const model = 'baiying-server/qwen3.6-plus-hzbInner';
   const {
     adapter,
     requests,
@@ -4533,7 +4533,7 @@ test('reconcileWithHistory: syncs session_status model changes into the local se
   const { session, store, getUpdateSessionCalls } = createReconcileStore([
     { id: 'msg-1', type: 'user', content: '切成 kimi2.6', timestamp: 1, metadata: {} },
   ]);
-  session.modelOverride = 'baiying-server/qwen3.7-max-YoudaoInner';
+  session.modelOverride = 'baiying-server/qwen3.7-max-hzbInner';
 
   const adapter = new OpenClawRuntimeAdapter(store, {});
   adapter.channelSessionSync = {
@@ -4552,22 +4552,22 @@ test('reconcileWithHistory: syncs session_status model changes into the local se
           details: {
             ok: true,
             changedModel: true,
-            model: 'kimi-k2.6-YoudaoInner',
+            model: 'kimi-k2.6-hzbInner',
             modelProvider: 'baiying-server',
-            modelOverride: 'baiying-server/kimi-k2.6-YoudaoInner',
+            modelOverride: 'baiying-server/kimi-k2.6-hzbInner',
           },
         },
-        { role: 'assistant', content: '已经切好了', model: 'qwen3.7-max-YoudaoInner' },
+        { role: 'assistant', content: '已经切好了', model: 'qwen3.7-max-hzbInner' },
       ],
     }),
   };
 
   await adapter.reconcileWithHistory(session.id, sessionKey);
 
-  expect(session.modelOverride).toBe('baiying-server/kimi-k2.6-YoudaoInner');
+  expect(session.modelOverride).toBe('baiying-server/kimi-k2.6-hzbInner');
   expect(getUpdateSessionCalls()).toContainEqual({
     sessionId: session.id,
-    patch: { modelOverride: 'baiying-server/kimi-k2.6-YoudaoInner' },
+    patch: { modelOverride: 'baiying-server/kimi-k2.6-hzbInner' },
     options: { touchUpdatedAt: false },
   });
 });
@@ -4577,7 +4577,7 @@ test('reconcileWithHistory: syncs model-snapshot entries without reading assista
   const { session, store, getUpdateSessionCalls } = createReconcileStore([
     { id: 'msg-1', type: 'user', content: '你现在是什么模型', timestamp: 1, metadata: {} },
   ]);
-  session.modelOverride = 'baiying-server/qwen3.7-max-YoudaoInner';
+  session.modelOverride = 'baiying-server/qwen3.7-max-hzbInner';
 
   const adapter = new OpenClawRuntimeAdapter(store, {});
   adapter.channelSessionSync = {
@@ -4593,14 +4593,14 @@ test('reconcileWithHistory: syncs model-snapshot entries without reading assista
           customType: 'model-snapshot',
           data: {
             provider: 'baiying-server',
-            modelId: 'kimi-k2.6-YoudaoInner',
+            modelId: 'kimi-k2.6-hzbInner',
           },
         },
         { role: 'user', content: '你现在是什么模型' },
         {
           role: 'assistant',
           content: '当前是 Kimi-K2.6',
-          model: 'kimi-k2.6-YoudaoInner',
+          model: 'kimi-k2.6-hzbInner',
         },
       ],
     }),
@@ -4608,10 +4608,10 @@ test('reconcileWithHistory: syncs model-snapshot entries without reading assista
 
   await adapter.reconcileWithHistory(session.id, sessionKey);
 
-  expect(session.modelOverride).toBe('baiying-server/kimi-k2.6-YoudaoInner');
+  expect(session.modelOverride).toBe('baiying-server/kimi-k2.6-hzbInner');
   expect(getUpdateSessionCalls()).toContainEqual({
     sessionId: session.id,
-    patch: { modelOverride: 'baiying-server/kimi-k2.6-YoudaoInner' },
+    patch: { modelOverride: 'baiying-server/kimi-k2.6-hzbInner' },
     options: { touchUpdatedAt: false },
   });
 });
@@ -4621,7 +4621,7 @@ test('reconcileWithHistory: assistant text and message model metadata do not ove
   const { session, store, getUpdateSessionCalls } = createReconcileStore([
     { id: 'msg-1', type: 'user', content: '你现在是什么模型', timestamp: 1, metadata: {} },
   ]);
-  session.modelOverride = 'baiying-server/qwen3.7-max-YoudaoInner';
+  session.modelOverride = 'baiying-server/qwen3.7-max-hzbInner';
 
   const adapter = new OpenClawRuntimeAdapter(store, {});
   adapter.channelSessionSync = {
@@ -4636,7 +4636,7 @@ test('reconcileWithHistory: assistant text and message model metadata do not ove
         {
           role: 'assistant',
           content: '当前是 Kimi-K2.6',
-          model: 'kimi-k2.6-YoudaoInner',
+          model: 'kimi-k2.6-hzbInner',
         },
       ],
     }),
@@ -4644,13 +4644,13 @@ test('reconcileWithHistory: assistant text and message model metadata do not ove
 
   await adapter.reconcileWithHistory(session.id, sessionKey);
 
-  expect(session.modelOverride).toBe('baiying-server/qwen3.7-max-YoudaoInner');
+  expect(session.modelOverride).toBe('baiying-server/qwen3.7-max-hzbInner');
   expect(
     getUpdateSessionCalls().some((call) =>
       Object.prototype.hasOwnProperty.call(call.patch, 'modelOverride'),
     ),
   ).toBe(false);
-  expect(session.messages.some((message) => message.metadata?.model === 'kimi-k2.6-YoudaoInner')).toBe(true);
+  expect(session.messages.some((message) => message.metadata?.model === 'kimi-k2.6-hzbInner')).toBe(true);
 });
 
 test('reconcileWithHistory: carries gateway timestamps into replacement entries', async () => {

@@ -289,7 +289,7 @@ sha256("service-deployment:v3:<normalized-project-directory>")
 入口：
 
 ```text
-src/main/java/com/youdao/baiying/web/controller/ShareDeploymentController.java
+src/main/java/com/hzb/baiying/web/controller/ShareDeploymentController.java
 ```
 
 接口：
@@ -306,7 +306,7 @@ Controller 负责解析 multipart、从 JWT 解析用户 ID，然后转交 `Shar
 实现：
 
 ```text
-src/main/java/com/youdao/baiying/service/sharedeployment/ShareDeploymentService.java
+src/main/java/com/hzb/baiying/service/sharedeployment/ShareDeploymentService.java
 ```
 
 `createNodeDeployment()` 的职责：
@@ -374,7 +374,7 @@ share_deployment_events
 实现：
 
 ```text
-src/main/java/com/youdao/baiying/service/sharedeployment/ShareDeploymentWorkerService.java
+src/main/java/com/hzb/baiying/service/sharedeployment/ShareDeploymentWorkerService.java
 ```
 
 流程：
@@ -410,7 +410,7 @@ ShareDeploymentProvider.stop(deployment): void
 当前实现：
 
 ```text
-src/main/java/com/youdao/baiying/service/sharedeployment/VolcengineVefaasDeploymentProvider.java
+src/main/java/com/hzb/baiying/service/sharedeployment/VolcengineVefaasDeploymentProvider.java
 ```
 
 部署步骤：

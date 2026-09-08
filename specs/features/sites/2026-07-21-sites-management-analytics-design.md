@@ -1202,20 +1202,20 @@ siteQuotaConfigUnavailable
 建议新增模块：
 
 ```text
-src/main/java/com/youdao/baiying/web/controller/SiteController.java
-src/main/java/com/youdao/baiying/service/site/SiteService.java
-src/main/java/com/youdao/baiying/service/site/SiteQuotaService.java
-src/main/java/com/youdao/baiying/service/site/SiteQuotaReservationCleanupJob.java
-src/main/java/com/youdao/baiying/service/site/SiteAnalyticsService.java
-src/main/java/com/youdao/baiying/service/site/SiteAnalyticsAsyncService.java
-src/main/java/com/youdao/baiying/service/site/SitePageViewClassifier.java
-src/main/java/com/youdao/baiying/mapper/SiteMapper.java
-src/main/java/com/youdao/baiying/mapper/SiteQuotaMapper.java
-src/main/java/com/youdao/baiying/mapper/SiteAnalyticsMapper.java
+src/main/java/com/hzb/baiying/web/controller/SiteController.java
+src/main/java/com/hzb/baiying/service/site/SiteService.java
+src/main/java/com/hzb/baiying/service/site/SiteQuotaService.java
+src/main/java/com/hzb/baiying/service/site/SiteQuotaReservationCleanupJob.java
+src/main/java/com/hzb/baiying/service/site/SiteAnalyticsService.java
+src/main/java/com/hzb/baiying/service/site/SiteAnalyticsAsyncService.java
+src/main/java/com/hzb/baiying/service/site/SitePageViewClassifier.java
+src/main/java/com/hzb/baiying/mapper/SiteMapper.java
+src/main/java/com/hzb/baiying/mapper/SiteQuotaMapper.java
+src/main/java/com/hzb/baiying/mapper/SiteAnalyticsMapper.java
 src/main/resources/mapper/SiteMapper.xml
 src/main/resources/mapper/SiteQuotaMapper.xml
 src/main/resources/mapper/SiteAnalyticsMapper.xml
-src/main/java/com/youdao/baiying/entity/dto/site/*
+src/main/java/com/hzb/baiying/entity/dto/site/*
 ```
 
 现有大文件只做边界接入：

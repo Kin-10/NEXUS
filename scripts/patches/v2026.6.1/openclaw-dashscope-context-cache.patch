@@ -9,7 +9,7 @@ index 13834104ef0..dfb44d9bdb0 100644
 +  it("passes through explicit context cache params for Claude OpenAI-compatible providers", () => {
 +    const { calls, agent } = createOptionsCaptureAgent();
 +    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-+    const cfg = buildModelConfig("baiying-server/claude-sonnet-4-6-YoudaoInner", {
++    const cfg = buildModelConfig("baiying-server/claude-sonnet-4-6-hzbInner", {
 +      cacheRetention: "short",
 +      contextCacheProvider: "anthropic-compatible",
 +      contextCacheMode: "explicit",
@@ -20,13 +20,13 @@ index 13834104ef0..dfb44d9bdb0 100644
 +        agent,
 +        cfg,
 +        "baiying-server",
-+        "claude-sonnet-4-6-YoudaoInner",
++        "claude-sonnet-4-6-hzbInner",
 +      );
 +
 +      const model = {
 +        api: "openai-completions",
 +        provider: "baiying-server",
-+        id: "claude-sonnet-4-6-YoudaoInner",
++        id: "claude-sonnet-4-6-hzbInner",
 +      } as Model<"openai-completions">;
 +      const context: Context = { messages: [] };
 +
@@ -38,7 +38,7 @@ index 13834104ef0..dfb44d9bdb0 100644
 +      expect(captured?.contextCacheProvider).toBe("anthropic-compatible");
 +      expect(captured?.contextCacheMode).toBe("explicit");
 +      expect(infoSpy).toHaveBeenCalledWith(
-+        "******************** [ExplicitCachePassThrough] provider=baiying-server model=claude-sonnet-4-6-YoudaoInner api=openai-completions cacheRetention=short contextCacheProvider=anthropic-compatible contextCacheMode=explicit",
++        "******************** [ExplicitCachePassThrough] provider=baiying-server model=claude-sonnet-4-6-hzbInner api=openai-completions cacheRetention=short contextCacheProvider=anthropic-compatible contextCacheMode=explicit",
 +      );
 +    } finally {
 +      infoSpy.mockRestore();
@@ -85,28 +85,28 @@ index 13834104ef0..dfb44d9bdb0 100644
 +
 +    applyExtraParamsToAgent(
 +      missingMode.agent,
-+      buildModelConfig("baiying-server/claude-sonnet-4-6-YoudaoInner", {
++      buildModelConfig("baiying-server/claude-sonnet-4-6-hzbInner", {
 +        cacheRetention: "short",
 +        contextCacheProvider: "anthropic-compatible",
 +      }),
 +      "baiying-server",
-+      "claude-sonnet-4-6-YoudaoInner",
++      "claude-sonnet-4-6-hzbInner",
 +    );
 +    applyExtraParamsToAgent(
 +      invalidProvider.agent,
-+      buildModelConfig("baiying-server/claude-sonnet-4-6-YoudaoInner", {
++      buildModelConfig("baiying-server/claude-sonnet-4-6-hzbInner", {
 +        cacheRetention: "short",
 +        contextCacheProvider: "other-compatible",
 +        contextCacheMode: "explicit",
 +      }),
 +      "baiying-server",
-+      "claude-sonnet-4-6-YoudaoInner",
++      "claude-sonnet-4-6-hzbInner",
 +    );
 +
 +    const model = {
 +      api: "openai-completions",
 +      provider: "baiying-server",
-+      id: "claude-sonnet-4-6-YoudaoInner",
++      id: "claude-sonnet-4-6-hzbInner",
 +    } as Model<"openai-completions">;
 +    const context: Context = { messages: [] };
 +
@@ -245,7 +245,7 @@ index 9f80e39184f..d8a9fd5abdf 100644
 +        },
 +        "baiying-server",
 +        "openai-completions",
-+        "qwen3.6-plus-YoudaoInner",
++        "qwen3.6-plus-hzbInner",
 +      ),
 +    ).toBe("short");
 +
@@ -270,7 +270,7 @@ index 9f80e39184f..d8a9fd5abdf 100644
 +        },
 +        "baiying-server",
 +        "openai-completions",
-+        "qwen3.5-plus-YoudaoInner",
++        "qwen3.5-plus-hzbInner",
 +      ),
 +    ).toBe("short");
 +  });
@@ -281,7 +281,7 @@ index 9f80e39184f..d8a9fd5abdf 100644
 +        { cacheRetention: "short", contextCacheProvider: "dashscope" },
 +        "baiying-server",
 +        "openai-completions",
-+        "qwen3.6-plus-YoudaoInner",
++        "qwen3.6-plus-hzbInner",
 +      ),
 +    ).toBeUndefined();
 +  });
@@ -346,7 +346,7 @@ index dafce9a199f..8a322282160 100644
 +    try {
 +      const params = buildOpenAICompletionsParams(
 +        {
-+          id: "claude-sonnet-4-6-YoudaoInner",
++          id: "claude-sonnet-4-6-hzbInner",
 +          name: "Claude Sonnet 4.6",
 +          api: "openai-completions",
 +          provider: "baiying-server",
@@ -380,7 +380,7 @@ index dafce9a199f..8a322282160 100644
 +      expect(userMessage?.content?.[0]?.cache_control).toEqual({ type: "ephemeral" });
 +      expect(params.tools?.at(-1)?.cache_control).toEqual({ type: "ephemeral" });
 +      expect(infoSpy).toHaveBeenCalledWith(
-+        "******************** [ExplicitCachePayload] model=claude-sonnet-4-6-YoudaoInner provider=anthropic-compatible retention=short markers=system,tool,conversation hasCacheControl=true",
++        "******************** [ExplicitCachePayload] model=claude-sonnet-4-6-hzbInner provider=anthropic-compatible retention=short markers=system,tool,conversation hasCacheControl=true",
 +      );
 +    } finally {
 +      infoSpy.mockRestore();

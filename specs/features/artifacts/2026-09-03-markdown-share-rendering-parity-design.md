@@ -18,7 +18,7 @@
 
 ### 1.1 问题与根因
 
-示例分享：[AI-Agent 扩展机制文档](https://lobsterai-server.inner.youdao.com/s/shr_8997a99103904147)。
+示例分享：[AI-Agent 扩展机制文档](https://lobsterai-server.inner.hzb.com/s/shr_8997a99103904147)。
 
 原文 `tool_calls` 和 `tool` 使用单反引号，客户端显示为行内代码，分享页却显示成带工具栏的代码块。只读排查确认文件为 21,414 个 UTF-8 字节、12,149 个 JavaScript UTF-16 码元，32 字符样例也能复现。
 

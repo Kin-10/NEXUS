@@ -248,7 +248,7 @@ window.location.replace(returnTo);
 
 `return_to` 白名单：
 
-- 线上环境允许 `youdao.com` 与 `*.youdao.com`。
+- 线上环境允许 `hzb.com` 与 `*.hzb.com`。
 - 本地开发允许 `127.0.0.1` 与 `localhost`，用于 portal dev server 联调。
 - 其他域名全部忽略，避免本地 callback server 变成开放跳转入口。
 
@@ -291,7 +291,7 @@ baiying://auth/callback?code=<authCode>
 客户端当前打开的生产登录地址为：
 
 ```text
-https://baiying.youdao.com/portal#/login?source=electron
+https://baiying.hzb.com/portal#/login?source=electron
 ```
 
 网页端登录主入口为：

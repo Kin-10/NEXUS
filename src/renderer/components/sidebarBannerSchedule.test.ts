@@ -32,7 +32,7 @@ const banner = (
 ): ClientBanner => ({
   id: 42,
   activityDescription: 'Banner 42',
-  linkUrl: 'https://lobsterai.youdao.com/banner/42',
+  linkUrl: 'https://lobsterai.hzb.com/banner/42',
   imageUrl: 'https://nos.example.com/banner-42.png',
   onlineAt,
   offlineAt,

@@ -1058,8 +1058,8 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
     normalizeBaseUrl: stripChatCompletionsSuffix,
   },
 
-  [ProviderName.Youdaozhiyun]: {
-    providerId: OpenClawProviderId.Youdaozhiyun,
+  [ProviderName.hzbzhiyun]: {
+    providerId: OpenClawProviderId.hzbzhiyun,
     resolveApi: () => OpenClawApiConst.OpenAICompletions as OpenClawTransportApi,
     normalizeBaseUrl: stripChatCompletionsSuffix,
   },

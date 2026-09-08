@@ -26,9 +26,9 @@ BaiYing 当前分支已将 OpenClaw pinned version 升级到 `v2026.6.1`。历�
 
 引入位置：
 
-- BaiYing PR：[#2049](https://github.com/netease-youdao/BaiYing/pull/2049)
+- BaiYing PR：[#2049](https://github.com/netease-hzb/BaiYing/pull/2049)
 - BaiYing commit：`5fffc70d fix(openclaw): prevent aborted tool loops from burning tokens`
-- 后续补修：[#2051](https://github.com/netease-youdao/BaiYing/pull/2051)，commit `b46bf747 fix: re fix tool loop breaker`
+- 后续补修：[#2051](https://github.com/netease-hzb/BaiYing/pull/2051)，commit `b46bf747 fix: re fix tool loop breaker`
 - 设计文档：`specs/bugfixes/openclaw-aborted-tool-loop-token-burn/2026-05-25-openclaw-aborted-tool-loop-token-burn-design.md`
 
 引入背景：
@@ -61,7 +61,7 @@ OpenClaw 6.1 上游状态：
 
 引入位置：
 
-- BaiYing PR：[#1834](https://github.com/netease-youdao/BaiYing/pull/1834)
+- BaiYing PR：[#1834](https://github.com/netease-hzb/BaiYing/pull/1834)
 - BaiYing commit：`1ec7c2c1 fix: upgrade openclaw-weixin to 2.1.10 and add openclaw patches`
 
 引入背景：
@@ -93,7 +93,7 @@ OpenClaw 6.1 上游状态：
 
 引入位置：
 
-- BaiYing PR：[#2044](https://github.com/netease-youdao/BaiYing/pull/2044)
+- BaiYing PR：[#2044](https://github.com/netease-hzb/BaiYing/pull/2044)
 - BaiYing commit：`79988fe9 fix(openclaw): prevent subagent cleanup finalize from blocking on hook failure`
 - 设计文档：`specs/bugfixes/openclaw-subagent-cleanup-finalize/2026-05-25-openclaw-subagent-cleanup-finalize-design.md`
 
@@ -127,7 +127,7 @@ OpenClaw 6.1 上游状态：
 
 引入位置：
 
-- BaiYing PR：[#1834](https://github.com/netease-youdao/BaiYing/pull/1834)
+- BaiYing PR：[#1834](https://github.com/netease-hzb/BaiYing/pull/1834)
 - BaiYing commit：`1ec7c2c1 fix: upgrade openclaw-weixin to 2.1.10 and add openclaw patches`
 
 引入背景：

@@ -633,12 +633,12 @@ V1 不做用户自定义额度。后续可按套餐或后台配置下发。
 # 真实 OpenAPI smoke test，不创建云资源。
 SHARE_DEPLOYMENT_VOLCENGINE_API_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
+./gradlew test --tests com.hzb.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.listFunctionsThroughVolcengineOpenApiClient --rerun-tasks
 
 # brotato-clone 端到端 NAS 功能测试，会创建临时函数并在结束后清理。
 SHARE_DEPLOYMENT_BROTATO_PERSISTENCE_CLOUD_TEST=true \
 SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessKey":"..."}' \
-./gradlew test --tests com.youdao.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoAndManageNasDataThroughEphemeralFunctions --rerun-tasks
+./gradlew test --tests com.hzb.baiying.service.sharedeployment.VolcengineVefaasCloudIntegrationTest.deployBrotatoAndManageNasDataThroughEphemeralFunctions --rerun-tasks
 ```
 
 测试通过条件：

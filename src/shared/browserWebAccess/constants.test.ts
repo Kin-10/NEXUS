@@ -21,7 +21,7 @@ describe('browser web access constants', () => {
       'example.com:443',
       '*.Internal.local/path',
       'localhost:123',
-      'youdao.com',
+      'hzb.com',
       'https://api.baidu.com/path',
       '',
       'https://Example.com/other',
@@ -30,7 +30,7 @@ describe('browser web access constants', () => {
       'https://www.example.com:443',
       '*.internal.local',
       'https://localhost:123',
-      'https://www.youdao.com',
+      'https://www.hzb.com',
       'https://api.baidu.com',
     ]);
   });

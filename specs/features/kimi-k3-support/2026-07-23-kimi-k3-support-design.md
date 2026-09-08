@@ -22,7 +22,7 @@ BaiYing 当前版本为 `2026.7.17`，固定使用 OpenClaw `v2026.6.1`。这一
 现场轨迹同时证明问题不是“OpenClaw 完全不认识 K3 工具调用”：
 
 - 直连 `moonshot/kimi-k3` 时，旧 runtime 曾成功解析并执行一个结构化 `read` 工具调用，但续轮在 8192 token 处截断，没有继续写文件。
-- 套餐路径 `baiying-server/kimi-k3-YoudaoInner` 加载了 105 个工具，但最终没有任何结构化工具事件，只输出了声称“已落盘”的普通文本。
+- 套餐路径 `baiying-server/kimi-k3-hzbInner` 加载了 105 个工具，但最终没有任何结构化工具事件，只输出了声称“已落盘”的普通文本。
 
 因此，本次支持不能只是在模型列表中新增一个 ID，也不能只升级 OpenClaw。需要同时补齐：
 
@@ -367,7 +367,7 @@ trim -> lowercase -> 删除非字母数字字符
 
 ```json
 {
-  "modelId": "kimi-k3-YoudaoInner",
+  "modelId": "kimi-k3-hzbInner",
   "modelName": "Kimi K3",
   "provider": "moonshot",
   "apiFormat": "openai",
@@ -444,7 +444,7 @@ BaiYing 输出会导致 Gateway 拒绝配置。本次版本 patch 必须同时�
 {
   "modelProfiles": {
     "custom_0/my-kimi-prod": "moonshot-kimi-k3",
-    "baiying-server/kimi-k3-YoudaoInner": "moonshot-kimi-k3"
+    "baiying-server/kimi-k3-hzbInner": "moonshot-kimi-k3"
   }
 }
 ```
@@ -768,7 +768,7 @@ OpenClaw runtime 的 `MODEL_APIS` / Zod Schema 中，并由契约测试保证两
         "baseUrl": "http://127.0.0.1:<proxy-port>/v1",
         "api": "baiying-model-compat",
         "models": [{
-          "id": "kimi-k3-YoudaoInner",
+          "id": "kimi-k3-hzbInner",
           "name": "Kimi K3",
           "api": "openai-completions",
           "reasoning": true,
@@ -808,7 +808,7 @@ OpenClaw runtime 的 `MODEL_APIS` / Zod Schema 中，并由契约测试保证两
         "enabled": true,
         "config": {
           "modelProfiles": {
-            "baiying-server/kimi-k3-YoudaoInner": "moonshot-kimi-k3"
+            "baiying-server/kimi-k3-hzbInner": "moonshot-kimi-k3"
           }
         }
       }

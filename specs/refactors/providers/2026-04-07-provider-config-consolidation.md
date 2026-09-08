@@ -116,10 +116,10 @@ const PROVIDER_DEFINITIONS = [
     // ...
   },
   {
-    id: ProviderName.Youdaozhiyun,
-    label: 'Youdao',
-    website: 'https://ai.youdao.com',
-    apiKeyUrl: 'https://ai.youdao.com/console',
+    id: ProviderName.hzbzhiyun,
+    label: 'hzb',
+    website: 'https://ai.hzb.com',
+    apiKeyUrl: 'https://ai.hzb.com/console',
     // ...
   },
   {
@@ -285,7 +285,7 @@ import React from 'react';
 import { ProviderName } from '@shared/providers';
 import {
   OpenAIIcon, DeepSeekIcon, GeminiIcon, AnthropicIcon,
-  MoonshotIcon, ZhipuIcon, MiniMaxIcon, YouDaoZhiYunIcon,
+  MoonshotIcon, ZhipuIcon, MiniMaxIcon, hzbZhiYunIcon,
   QwenIcon, XiaomiIcon, StepfunIcon, VolcengineIcon,
   OpenRouterIcon, OllamaIcon, GitHubCopilotIcon, CustomProviderIcon,
 } from '../components/icons/providers';
@@ -305,7 +305,7 @@ const PROVIDER_ICON_MAP: Record<string, React.ReactNode> = {
   [ProviderName.Moonshot]:      <MoonshotIcon />,
   [ProviderName.Zhipu]:         <ZhipuIcon />,
   [ProviderName.Minimax]:       <MiniMaxIcon />,
-  [ProviderName.Youdaozhiyun]:  <YouDaoZhiYunIcon />,
+  [ProviderName.hzbzhiyun]:  <hzbZhiYunIcon />,
   [ProviderName.Qwen]:          <QwenIcon />,
   [ProviderName.Xiaomi]:        <XiaomiIcon />,
   [ProviderName.StepFun]:       <StepfunIcon />,
@@ -363,7 +363,7 @@ export function getProviderIcon(id: string): React.ReactNode {
 **Before（第 4–15 行）：**
 ```typescript
 const getFixedProviderApiFormat = (providerKey: string): 'anthropic' | 'openai' | 'gemini' | null => {
-  if (providerKey === 'openai' || providerKey === 'stepfun' || providerKey === 'youdaozhiyun' || providerKey === 'github-copilot') {
+  if (providerKey === 'openai' || providerKey === 'stepfun' || providerKey === 'hzbzhiyun' || providerKey === 'github-copilot') {
     return 'openai';
   }
   if (providerKey === 'anthropic') { return 'anthropic'; }
@@ -395,7 +395,7 @@ const getFixedProviderApiFormat = (providerKey: string): ApiFormat | null => {
 |---|---|---|---|
 | openai | ❌ 无 | openai | `'openai'` ✅ |
 | stepfun | ❌ 无 | openai | `'openai'` ✅ |
-| youdaozhiyun | ❌ 无 | openai | `'openai'` ✅ |
+| hzbzhiyun | ❌ 无 | openai | `'openai'` ✅ |
 | github-copilot | ❌ 无 | openai | `'openai'` ✅ |
 | anthropic | ❌ 无 | anthropic | `'anthropic'` ✅ |
 | gemini | ❌ 无 | gemini | `'gemini'` ✅ |
@@ -417,7 +417,7 @@ const getFixedProviderApiFormat = (providerKey: string): ApiFormat | null => {
 ```typescript
 const providerKeys = [
   'openai', 'gemini', 'anthropic', 'deepseek', 'moonshot',
-  'zhipu', 'minimax', 'volcengine', 'qwen', 'youdaozhiyun',
+  'zhipu', 'minimax', 'volcengine', 'qwen', 'hzbzhiyun',
   'stepfun', 'xiaomi', 'openrouter', 'github-copilot', 'ollama',
   ...CUSTOM_PROVIDER_KEYS,
 ] as const;

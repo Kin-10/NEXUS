@@ -118,13 +118,13 @@ describe('resolveModelRuntimeProfile', () => {
     expect(resolve({
       source: ModelRuntimeProfileSource.Server,
       providerId: OpenClawProviderId.BaiyingServer,
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       serverRuntimeProfile: ModelRuntimeProfile.MoonshotKimiK3,
     })).toBe(ModelRuntimeProfile.MoonshotKimiK3);
     expect(resolve({
       source: ModelRuntimeProfileSource.Server,
       providerId: OpenClawProviderId.BaiyingServer,
-      modelId: 'kimi-k3-YoudaoInner',
+      modelId: 'kimi-k3-hzbInner',
       serverRuntimeProfile: 'unknown-profile',
     })).toBeUndefined();
   });

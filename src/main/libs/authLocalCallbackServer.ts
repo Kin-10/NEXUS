@@ -132,9 +132,9 @@ function resolveSafeReturnTo(value: string | null): string | null {
   try {
     const url = new URL(value);
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
-    const isYoudaoHost = url.hostname.endsWith('.youdao.com') || url.hostname === 'youdao.com';
+    const ishzbHost = url.hostname.endsWith('.hzb.com') || url.hostname === 'hzb.com';
     const isLoopbackHost = url.hostname === '127.0.0.1' || url.hostname === 'localhost';
-    if (!isYoudaoHost && !isLoopbackHost) return null;
+    if (!ishzbHost && !isLoopbackHost) return null;
     return url.toString();
   } catch {
     return null;
