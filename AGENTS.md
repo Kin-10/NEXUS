@@ -501,7 +501,7 @@ Commit messages must follow Conventional Commits and be written in English:
 ```text
 feat(cowork): add streaming progress indicator
 fix(sqlite): prevent duplicate session insert on retry
-chore: bump version to 2026.6.18
+chore: bump version to 1.0.1
 ```
 
 Do not add `Co-Authored-By` trailers unless explicitly requested.

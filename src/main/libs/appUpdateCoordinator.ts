@@ -15,6 +15,7 @@ import {
   AppUpdateStatus,
   isManualDownloadUrl,
 } from '../../shared/appUpdate/constants';
+import { compareClientVersions } from '../../shared/clientVersion';
 import type { SqliteStore } from '../sqliteStore';
 import {
   cancelActiveDownload,
@@ -775,25 +776,7 @@ export class AppUpdateCoordinator {
   }
 
   private compareVersions(a: string, b: string): number {
-    const aParts = this.toVersionParts(a);
-    const bParts = this.toVersionParts(b);
-    const maxLength = Math.max(aParts.length, bParts.length);
-
-    for (let index = 0; index < maxLength; index += 1) {
-      const left = aParts[index] ?? 0;
-      const right = bParts[index] ?? 0;
-      if (left > right) return 1;
-      if (left < right) return -1;
-    }
-
-    return 0;
-  }
-
-  private toVersionParts(version: string): number[] {
-    return version.split('.').map(part => {
-      const match = part.trim().match(/^\d+/);
-      return match ? Number.parseInt(match[0], 10) : 0;
-    });
+    return compareClientVersions(a, b);
   }
 
   private setState(nextState: AppUpdateRuntimeState): AppUpdateRuntimeState {
