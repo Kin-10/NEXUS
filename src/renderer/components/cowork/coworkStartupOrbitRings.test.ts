@@ -6,11 +6,14 @@ import {
   COMET_RIBBONS,
   createRng,
   HOME_COMET_DURATION_SECONDS,
+  HOME_PLAY_DURATION_SECONDS,
   homeCometBodyScale,
   r2,
   RINGS,
   sampleHomeCometRings,
+  sampleHomePlayRings,
   sampleOrbitRings,
+  SWOOSH,
   wheel,
 } from './coworkStartupOrbitRings';
 
@@ -61,6 +64,35 @@ describe('coworkStartupOrbitRings', () => {
     expect(arcs[0]!.grad.stops[0]).toBe('#ff1524');
     expect(arcs[1]!.grad.stops[0]).toBe('#0f5da7');
     expect(arcs.every((a) => a.grad.stops.every((c) => c.startsWith('#')))).toBe(true);
+  });
+
+  test('defines four play swoosh ribbons', () => {
+    expect(SWOOSH).toHaveLength(4);
+    for (const ribbon of SWOOSH) {
+      expect(ribbon.a).toBeGreaterThanOrEqual(0.78);
+      expect(ribbon.a).toBeLessThanOrEqual(1.4);
+      expect(ribbon.sweep).toBeCloseTo(0.4);
+      expect(ribbon.speed).toBeCloseTo(0.3);
+    }
+  });
+
+  test('sampleHomePlayRings sweeps then ends (~0.7s)', () => {
+    expect(HOME_PLAY_DURATION_SECONDS).toBe(0.7);
+    const early = sampleHomePlayRings(0.04, 100);
+    expect(early).not.toBeNull();
+    expect(early).toHaveLength(4);
+    expect(early![0]!.opacity).toBeGreaterThan(0);
+    expect(early![0]!.grad.stops[0]).toBe('#ff1524');
+
+    const mid = sampleHomePlayRings(0.28, 100);
+    expect(mid!.every((a) => a.opacity > 0.9)).toBe(true);
+    // Sweep moves the bouquet leftward (cx decreases over time).
+    const midCxHint = mid![0]!.grad.x1 + mid![0]!.grad.x2;
+    const late = sampleHomePlayRings(0.52, 100)!;
+    const lateCxHint = late[0]!.grad.x1 + late[0]!.grad.x2;
+    expect(lateCxHint).toBeLessThan(midCxHint);
+
+    expect(sampleHomePlayRings(0.7, 100)).toBeNull();
   });
 
   test('defines four comet trail ribbons', () => {

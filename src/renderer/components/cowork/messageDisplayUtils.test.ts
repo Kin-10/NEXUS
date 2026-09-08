@@ -132,7 +132,8 @@ test('streaming activity status uses employee-style waiting stages', () => {
   }];
 
   expect(getStreamingActivityStatusText(messages)).toBe('收到，我先理清你的需求…');
-  expect(getStreamingActivityStatusText(messages, false, 2_500)).toBe('正在翻资料、对齐上下文…');
+  expect(getStreamingActivityStatusText(messages, false, 1_500)).toBe('正在翻资料、对齐上下文…');
+  expect(getStreamingActivityStatusText(messages, false, 3_500)).toBe('思路已经串起来了，继续推进…');
   expect(getStreamingActivityStatusText(messages, false, 12_000)).toBe('还在跟进细节，再稍等片刻…');
 });
 
@@ -241,11 +242,12 @@ test('resolved tool call is not self-indicating activity', () => {
 
 test('cowork working stage index advances with elapsed wait time', () => {
   expect(getCoworkWorkingStageIndex(0)).toBe(0);
-  expect(getCoworkWorkingStageIndex(1_999)).toBe(0);
-  expect(getCoworkWorkingStageIndex(2_000)).toBe(1);
-  expect(getCoworkWorkingStageIndex(5_000)).toBe(2);
-  expect(getCoworkWorkingStageIndex(10_000)).toBe(3);
-  expect(getCoworkWorkingStageIndex(20_000)).toBe(4);
+  expect(getCoworkWorkingStageIndex(1_199)).toBe(0);
+  expect(getCoworkWorkingStageIndex(1_200)).toBe(1);
+  expect(getCoworkWorkingStageIndex(3_000)).toBe(2);
+  expect(getCoworkWorkingStageIndex(5_500)).toBe(3);
+  expect(getCoworkWorkingStageIndex(10_000)).toBe(4);
+  expect(getCoworkWorkingStageIndex(18_000)).toBe(5);
   expect(getCoworkWorkingStageText(20_000)).toBe('事情比预想复杂一点，我继续盯着…');
 });
 

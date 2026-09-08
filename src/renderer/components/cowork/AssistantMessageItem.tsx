@@ -153,6 +153,9 @@ const AssistantMessageItem: React.FC<{
               forceExpanded={forceSearchExpanded}
               onImageClick={handleImageClick}
             />
+            {Boolean(message.metadata?.isStreaming) && (
+              <span className="streaming-caret" aria-hidden="true" />
+            )}
             {showCopyButton && (
               <div
                 className={messageMetaClassName(metaVisible)}

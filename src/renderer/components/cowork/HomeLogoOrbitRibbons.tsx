@@ -2,11 +2,9 @@ import React, { useEffect, useId, useRef } from 'react';
 
 import {
   type ArcRender,
-  HOME_COMET_DURATION_SECONDS,
-  HOME_COMET_RIBBON_COUNT,
-  homeCometBodyCy,
-  homeCometBodyScale,
-  sampleHomeCometRings,
+  HOME_PLAY_DURATION_SECONDS,
+  HOME_PLAY_RIBBON_COUNT,
+  sampleHomePlayRings,
   STARTUP_BALL_RADIUS,
   STARTUP_VIEWBOX_HALF,
 } from './coworkStartupOrbitRings';
@@ -37,7 +35,7 @@ function mountOrbitLayer(svg: SVGSVGElement, uid: string, layer: 'front' | 'back
   const stops: SVGStopElement[][] = [];
   const paths: SVGPathElement[] = [];
 
-  for (let i = 0; i < HOME_COMET_RIBBON_COUNT; i++) {
+  for (let i = 0; i < HOME_PLAY_RIBBON_COUNT; i++) {
     const grad = document.createElementNS(SVG_NS, 'linearGradient');
     grad.id = `${uid}-${layer}-${i}`;
     grad.setAttribute('gradientUnits', 'userSpaceOnUse');
@@ -65,7 +63,7 @@ function mountOrbitLayer(svg: SVGSVGElement, uid: string, layer: 'front' | 'back
 }
 
 function paintOrbitLayer(handles: OrbitLayerHandles, arcs: ArcRender[], side: 'front' | 'back'): void {
-  for (let i = 0; i < HOME_COMET_RIBBON_COUNT; i++) {
+  for (let i = 0; i < HOME_PLAY_RIBBON_COUNT; i++) {
     const arc = arcs[i];
     const path = handles.paths[i]!;
     const grad = handles.grads[i]!;
@@ -87,7 +85,7 @@ function paintOrbitLayer(handles: OrbitLayerHandles, arcs: ArcRender[], side: 'f
     });
 
     path.setAttribute('d', d);
-    path.setAttribute('stroke-width', String(arc.width));
+    path.setAttribute('stroke-width', String(Math.max(arc.width * 1.35, 4)));
     path.setAttribute('opacity', String(arc.opacity));
     path.style.display = '';
   }
@@ -98,25 +96,22 @@ interface HomeLogoOrbitRibbonsProps {
 }
 
 /**
- * Home intro = bloub `comet`: body collapses to a point, 4 trail ribbons orbit
- * (~0.6s), then body regrows. RAF paints path `d` — no React state.
+ * Home intro = bloub `play` swoosh only: keep the circular logo, sweep 4
+ * brand-colored arcs right→left for ~0.7s (compressed from bloub's 2s).
  */
 const HomeLogoOrbitRibbons: React.FC<HomeLogoOrbitRibbonsProps> = ({ children }) => {
   const uid = useId().replace(/:/g, '');
   const backRef = useRef<SVGSVGElement>(null);
   const frontRef = useRef<SVGSVGElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
   const vb = STARTUP_VIEWBOX_HALF;
   const viewBox = `${-vb} ${-vb} ${vb * 2} ${vb * 2}`;
 
   useEffect(() => {
     const backSvg = backRef.current;
     const frontSvg = frontRef.current;
-    const body = bodyRef.current;
-    if (!backSvg || !frontSvg || !body) return undefined;
+    if (!backSvg || !frontSvg) return undefined;
 
     if (prefersReducedMotion()) {
-      body.style.transform = '';
       return undefined;
     }
 
@@ -130,26 +125,17 @@ const HomeLogoOrbitRibbons: React.FC<HomeLogoOrbitRibbonsProps> = ({ children })
     const tick = (now: number) => {
       if (cancelled) return;
       const tSeconds = (now - started) / 1000;
-      const scale = homeCometBodyScale(tSeconds);
-      const cy = homeCometBodyCy(tSeconds) * STARTUP_BALL_RADIUS;
-      // cy is in SVG units; map roughly to CSS px via current body height.
-      const pxPerUnit = body.clientHeight / (2 * 125);
-      body.style.transform = `translateY(${cy * pxPerUnit}px) scale(${scale})`;
-
-      const arcs = sampleHomeCometRings(tSeconds, STARTUP_BALL_RADIUS);
+      const arcs = sampleHomePlayRings(tSeconds, STARTUP_BALL_RADIUS);
       if (!arcs) {
         paintOrbitLayer(back, [], 'back');
         paintOrbitLayer(front, [], 'front');
-        body.style.transform = '';
         return;
       }
       paintOrbitLayer(back, arcs, 'back');
       paintOrbitLayer(front, arcs, 'front');
 
-      if (tSeconds < HOME_COMET_DURATION_SECONDS) {
+      if (tSeconds < HOME_PLAY_DURATION_SECONDS) {
         raf = window.requestAnimationFrame(tick);
-      } else {
-        body.style.transform = '';
       }
     };
 
@@ -157,7 +143,6 @@ const HomeLogoOrbitRibbons: React.FC<HomeLogoOrbitRibbonsProps> = ({ children })
     return () => {
       cancelled = true;
       window.cancelAnimationFrame(raf);
-      body.style.transform = '';
     };
   }, [uid]);
 
@@ -169,11 +154,7 @@ const HomeLogoOrbitRibbons: React.FC<HomeLogoOrbitRibbonsProps> = ({ children })
         viewBox={viewBox}
         aria-hidden
       />
-      <div
-        ref={bodyRef}
-        className="relative z-[1] h-full w-full"
-        style={{ transformOrigin: '50% 50%' }}
-      >
+      <div className="relative z-[1] h-full w-full">
         {children}
       </div>
       <svg

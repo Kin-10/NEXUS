@@ -1,5 +1,5 @@
 import type { CoworkBrowserAnnotationMessageBatch } from '@shared/cowork/browserAnnotations';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
@@ -86,9 +86,9 @@ const logCoworkViewModel = (message: string): void => {
 };
 
 const HOME_INTRO_LOGO_SPIN_DURATION_MS = 1180;
-/** After home comet (~0.6s): copy lands as the head finishes regrowing. */
-const HOME_INTRO_COPY_DELAY_MS = 550;
-const HOME_INTRO_SUBTITLE_DELAY_MS = 700;
+/** After home play intro (~0.7s): copy lands as the swoosh finishes. */
+const HOME_INTRO_COPY_DELAY_MS = 650;
+const HOME_INTRO_SUBTITLE_DELAY_MS = 800;
 
 export interface CoworkViewProps {
   onRequestAppSettings?: (options?: SettingsOpenOptions) => void;
@@ -192,7 +192,9 @@ const CoworkView: React.FC<CoworkViewProps> = ({
   const homeIntroLogoRef = useRef<HTMLDivElement>(null);
   const homeEmblemSkinUrl = useSkinAsset(SkinAssetSlot.HomeEmblem);
   const useInteractiveHomeLogo = !homeEmblemSkinUrl;
-  const wasHomeVisibleRef = useRef(false);
+  // Seed from the first paint so cold start does not remount the logo
+  // (runId 0→1) and cancel the appear animation while opacity is still 0.
+  const wasHomeVisibleRef = useRef(!shouldPresentConversation);
   const currentAgentWorkingDirectory = currentAgent?.workingDirectory?.trim() || config.workingDirectory || '';
   const currentAgentSelectedModel = useAgentSelectedModel(currentAgentId, currentAgent?.model ?? '');
   const currentAgentSelectedModelRef = currentAgentSelectedModel
@@ -223,13 +225,12 @@ const CoworkView: React.FC<CoworkViewProps> = ({
     wasHomeVisibleRef.current = isHomeVisible;
   }, [shouldPresentConversation]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (shouldPresentConversation) {
       setIsHomeIntroCopyVisible(false);
       return undefined;
     }
 
-    const logoElement = homeIntroLogoRef.current;
     setIsHomeIntroCopyVisible(false);
 
     const copyTimer = window.setTimeout(() => {
@@ -237,76 +238,107 @@ const CoworkView: React.FC<CoworkViewProps> = ({
     }, HOME_INTRO_COPY_DELAY_MS);
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let cancelled = false;
+    let logoAnimation: Animation | null = null;
+    let retryRaf = 0;
+    let retryCount = 0;
+    const maxRefRetries = 60;
 
-    // Interactive logo: soft appear only — ribbons are painted by HomeLogoOrbitRibbons.
-    if (useInteractiveHomeLogo) {
-      if (!logoElement || reduceMotion) {
-        return () => {
-          window.clearTimeout(copyTimer);
-        };
+    const revealLogo = (logoElement: HTMLDivElement) => {
+      logoElement.classList.add('cowork-home-windmill-logo-visible');
+      logoElement.style.opacity = '1';
+    };
+
+    const startLogoIntro = () => {
+      if (cancelled) return;
+      const logoElement = homeIntroLogoRef.current;
+      if (!logoElement) {
+        // Ref can lag one frame after key/orbit remounts; retry instead of
+        // leaving the CSS opacity:0 logo permanently invisible.
+        if (retryCount < maxRefRetries) {
+          retryCount += 1;
+          retryRaf = window.requestAnimationFrame(startLogoIntro);
+        }
+        return;
       }
-      // Opacity only — comet owns scale (collapse → trail → regrow).
-      const logoAnimation = logoElement.animate(
-        [
-          {
-            opacity: 0,
-            filter: 'drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08))',
-          },
-          {
-            opacity: 1,
-            filter: 'drop-shadow(0 12px 20px rgba(0, 0, 0, 0.1))',
-          },
-        ],
-        {
-          duration: 280,
-          easing: 'cubic-bezier(0.18, 0.88, 0.26, 1)',
-          fill: 'both',
-        },
-      );
-      return () => {
-        window.clearTimeout(copyTimer);
-        logoAnimation.cancel();
-      };
-    }
 
-    // Skin emblem: keep the legacy spin intro.
-    if (reduceMotion || !logoElement) {
-      return () => {
-        window.clearTimeout(copyTimer);
-      };
-    }
+      logoElement.classList.remove('cowork-home-windmill-logo-visible');
+      logoElement.style.removeProperty('opacity');
 
-    const logoAnimation = logoElement.animate(
-      [
-        {
-          opacity: 0,
-          transform: 'rotate(0deg) scale(0.86)',
-          filter: 'drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08))',
-        },
-        {
-          opacity: 1,
-          offset: 0.18,
-        },
-        {
-          transform: 'rotate(430deg) scale(1.06)',
-          offset: 0.72,
-        },
-        {
-          opacity: 1,
-          transform: 'rotate(360deg) scale(1)',
-          filter: 'drop-shadow(0 12px 20px rgba(0, 0, 0, 0.1))',
-        },
-      ],
-      {
-        duration: HOME_INTRO_LOGO_SPIN_DURATION_MS,
-        easing: 'cubic-bezier(0.18, 0.88, 0.26, 1)',
-        fill: 'both',
-      },
-    );
+      if (reduceMotion) {
+        revealLogo(logoElement);
+        return;
+      }
+
+      // Interactive logo: soft appear only — ribbons are painted by HomeLogoOrbitRibbons.
+      if (useInteractiveHomeLogo) {
+        logoAnimation = logoElement.animate(
+          [
+            {
+              opacity: 0,
+              filter: 'drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08))',
+            },
+            {
+              opacity: 1,
+              filter: 'drop-shadow(0 12px 20px rgba(0, 0, 0, 0.1))',
+            },
+          ],
+          {
+            duration: 280,
+            easing: 'cubic-bezier(0.18, 0.88, 0.26, 1)',
+            fill: 'both',
+          },
+        );
+      } else {
+        // Skin emblem: keep the legacy spin intro.
+        logoAnimation = logoElement.animate(
+          [
+            {
+              opacity: 0,
+              transform: 'rotate(0deg) scale(0.86)',
+              filter: 'drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08))',
+            },
+            {
+              opacity: 1,
+              offset: 0.18,
+            },
+            {
+              transform: 'rotate(430deg) scale(1.06)',
+              offset: 0.72,
+            },
+            {
+              opacity: 1,
+              transform: 'rotate(360deg) scale(1)',
+              filter: 'drop-shadow(0 12px 20px rgba(0, 0, 0, 0.1))',
+            },
+          ],
+          {
+            duration: HOME_INTRO_LOGO_SPIN_DURATION_MS,
+            easing: 'cubic-bezier(0.18, 0.88, 0.26, 1)',
+            fill: 'both',
+          },
+        );
+      }
+
+      logoAnimation.addEventListener('finish', () => {
+        if (!cancelled) revealLogo(logoElement);
+      });
+    };
+
+    startLogoIntro();
+
+    // Hard fallback: never leave the home logo stuck at CSS opacity 0.
+    const safetyTimer = window.setTimeout(() => {
+      const logoElement = homeIntroLogoRef.current;
+      if (!cancelled && logoElement) revealLogo(logoElement);
+    }, useInteractiveHomeLogo ? 480 : HOME_INTRO_LOGO_SPIN_DURATION_MS + 80);
 
     return () => {
+      cancelled = true;
       window.clearTimeout(copyTimer);
-      logoAnimation.cancel();
+      window.clearTimeout(safetyTimer);
+      window.cancelAnimationFrame(retryRaf);
+      logoAnimation?.cancel();
     };
   }, [homeIntroRunId, shouldPresentConversation, useInteractiveHomeLogo]);
 

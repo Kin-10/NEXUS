@@ -202,7 +202,67 @@ export function easeOutQuint(t: number): number {
   return 1 - (1 - x) ** 5;
 }
 
-/* ------------------------------------------------------------------ comet */
+/* ------------------------------------------------------------------ play */
+
+/**
+ * Nested swoosh arcs that sweep across the logo (bloub `decor.ts` SWOOSH).
+ * Seen nearly edge-on (hairpin), rmax ≈ 1.37.
+ */
+export const SWOOSH: ArcSeed[] = Array.from({ length: 4 }, (_, i) => ({
+  a: 0.78 + i * 0.2,
+  k: 0.05 + i * 0.02,
+  tilt: -0.62 + i * 0.05,
+  speed: 0.3,
+  phase: 0.06 * i,
+  sweep: 0.4,
+  hue: 95 + i * 62,
+  hueSpan: 100,
+  width: 0.05,
+  cx: 0,
+  cy: -0.12,
+}));
+
+/**
+ * Home intro play duration. bloub's reference block is 2s; compress so the
+ * home hero stays snappy while the swoosh remains readable.
+ */
+export const HOME_PLAY_DURATION_SECONDS = 0.7;
+
+const HOME_PLAY_TIME_SCALE = HOME_PLAY_DURATION_SECONDS / 2;
+
+/** Home intro ribbon count — bloub play uses four swoosh arcs. */
+export const HOME_PLAY_RIBBON_COUNT = SWOOSH.length;
+
+/**
+ * Home-page one-shot play: 4 logo-colored swoosh ribbons sweeping L←R
+ * over the circular logo (bloub `play` arcs only — no triangle body).
+ * Returns null when the block is over.
+ */
+export function sampleHomePlayRings(
+  tSeconds: number,
+  ballRadius: number = STARTUP_BALL_RADIUS,
+): ArcRender[] | null {
+  if (tSeconds >= HOME_PLAY_DURATION_SECONDS) return null;
+
+  const bloubT = tSeconds / HOME_PLAY_TIME_SCALE;
+  const fade = clamp01(bloubT / 0.35) * clamp01((2.2 - bloubT) / 0.5);
+  // Bouquet sweeps right → left across the logo (bloub play pose).
+  const sweepCx = 0.45 - bloubT * 0.42;
+
+  return SWOOSH.map((seed, i) => (
+    arcRender(
+      { ...seed, cx: sweepCx },
+      bloubT,
+      ballRadius,
+      `sw${i}`,
+      fade,
+      'logo',
+      i,
+    )
+  ));
+}
+
+/* ------------------------------------------------------------------ comet (kept for tests / reuse) */
 
 /**
  * Unlike a flying particle, the head stays centered and the trail orbits it.
@@ -213,11 +273,9 @@ export const COMET_RIBBONS: ArcSeed[] = Array.from({ length: 4 }, (_, i) => {
   const d = i - 1.5;
   return {
     a: 0.85 * (1 + d * 0.03),
-    // same flatten within ±5%: ribbons form a tight beam
     k: (0.15 / 0.85) * (1 + d * 0.16),
     tilt: (34 * Math.PI) / 180 + d * 0.035,
     speed: 210 / 360,
-    // measured phase: 10–20° between ribbons, no more
     phase: -i * 0.045 + COMET_RNG() * 0.012,
     sweep: 0.34,
     hue: i * 85 + COMET_RNG() * 20,
@@ -231,15 +289,9 @@ export const COMET_RIBBONS: ArcSeed[] = Array.from({ length: 4 }, (_, i) => {
 /** Comet head radius as a fraction of the ball — measured 0.129 in bloub. */
 export const COMET_DOT = 0.129;
 
-/**
- * Home intro comet duration. bloub's reference block is 2.4s; we compress the
- * same pose curve into 0.6s so the home hero stays snappy.
- */
+/** @deprecated Home intro now uses play; kept for unit coverage of the comet curve. */
 export const HOME_COMET_DURATION_SECONDS = 0.6;
-
-/** Scale factor from bloub's 2.4s comet timeline → home duration. */
 const HOME_COMET_TIME_SCALE = HOME_COMET_DURATION_SECONDS / 2.4;
-
 const COMET_COLLAPSE_SECONDS = 0.55 * HOME_COMET_TIME_SCALE;
 const COMET_REGROW_START_SECONDS = 1.85 * HOME_COMET_TIME_SCALE;
 const COMET_REGROW_SECONDS = 0.6 * HOME_COMET_TIME_SCALE;
@@ -248,14 +300,8 @@ const COMET_FADE_IN_START_SECONDS = 0.15 * HOME_COMET_TIME_SCALE;
 const COMET_FADE_IN_SECONDS = 0.25 * HOME_COMET_TIME_SCALE;
 const COMET_FADE_OUT_START_SECONDS = 1.95 * HOME_COMET_TIME_SCALE;
 const COMET_FADE_OUT_SECONDS = 0.3 * HOME_COMET_TIME_SCALE;
-
-/** Home intro ribbon count — bloub comet uses four. */
 export const HOME_COMET_RIBBON_COUNT = COMET_RIBBONS.length;
 
-/**
- * Body scale for the comet collapse → regrow curve (bloub `states.ts` comet pose,
- * time-scaled to {@link HOME_COMET_DURATION_SECONDS}).
- */
 export function homeCometBodyScale(tSeconds: number): number {
   if (tSeconds <= 0 || tSeconds >= HOME_COMET_DURATION_SECONDS) return 1;
   const collapse = 1 - (1 - COMET_DOT) * easeOutQuint(clamp01(tSeconds / COMET_COLLAPSE_SECONDS));
@@ -263,29 +309,18 @@ export function homeCometBodyScale(tSeconds: number): number {
   return collapse + (1 - collapse) * regrow;
 }
 
-/**
- * Vertical wobble in ball-radius units while collapsed (bloub: sin(t/1.7·π)·0.035).
- */
 export function homeCometBodyCy(tSeconds: number): number {
   if (tSeconds <= 0 || tSeconds >= HOME_COMET_DURATION_SECONDS) return 0;
   return Math.sin(clamp01(tSeconds / COMET_WOBBLE_SECONDS) * Math.PI) * 0.035;
 }
 
-/**
- * Home-page one-shot comet: 4 logo-colored trail ribbons (bloub `comet`).
- * Fade curve matches bloub, compressed into {@link HOME_COMET_DURATION_SECONDS}.
- * Spin uses bloub-time so the trail sweeps about as far as the 2.4s reference.
- * Returns null when the block is over so callers can stop the loop.
- */
 export function sampleHomeCometRings(
   tSeconds: number,
   ballRadius: number = STARTUP_BALL_RADIUS,
 ): ArcRender[] | null {
   if (tSeconds >= HOME_COMET_DURATION_SECONDS) return null;
-
   const fade = clamp01((tSeconds - COMET_FADE_IN_START_SECONDS) / COMET_FADE_IN_SECONDS)
     * clamp01((COMET_FADE_OUT_START_SECONDS - tSeconds) / COMET_FADE_OUT_SECONDS);
-  // Keep trail angular travel close to the 2.4s reference despite the shorter block.
   const spinT = tSeconds / HOME_COMET_TIME_SCALE;
   return COMET_RIBBONS.map((seed, i) => (
     arcRender(seed, spinT, ballRadius, `cm${i}`, fade, 'logo', i)

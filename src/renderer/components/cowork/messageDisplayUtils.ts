@@ -413,7 +413,7 @@ export const getLargeToolResultSummary = (sizeLabel: string): string =>
   i18nService.t('coworkToolLargeOutput').replace('{size}', sizeLabel);
 
 /** Elapsed-time thresholds (ms) for employee-style waiting copy stages. */
-export const COWORK_WORKING_STAGE_THRESHOLDS_MS = [0, 2_000, 5_000, 10_000, 20_000] as const;
+export const COWORK_WORKING_STAGE_THRESHOLDS_MS = [0, 1_200, 3_000, 5_500, 10_000, 18_000] as const;
 
 const COWORK_WORKING_STAGE_I18N_KEYS = [
   'coworkWorkingStage0',
@@ -421,6 +421,7 @@ const COWORK_WORKING_STAGE_I18N_KEYS = [
   'coworkWorkingStage2',
   'coworkWorkingStage3',
   'coworkWorkingStage4',
+  'coworkWorkingStage5',
 ] as const;
 
 export const getCoworkWorkingStageIndex = (elapsedMs: number): number => {

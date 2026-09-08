@@ -31,6 +31,7 @@ import MarkdownContent from '../MarkdownContent';
 import ActivityGroupBlock from './ActivityGroupBlock';
 import AssistantMessageItem from './AssistantMessageItem';
 import { reportConversationBlockAction } from './conversationAnalytics';
+import CoworkAliveWave from './CoworkAliveWave';
 import MediaPollingIndicator from './MediaPollingIndicator';
 import { MessageCopyButton } from './MessageActionButton';
 import {
@@ -192,8 +193,8 @@ export const ActivityIndicator: React.FC<{
       : getCoworkWorkingStageText(elapsedMs ?? 0));
 
   return (
-    <div className="flex items-center gap-2 py-1 animate-fade-in">
-      <span className="activity-indicator-dot h-2 w-2 rounded-full bg-primary flex-shrink-0" aria-hidden="true" />
+    <div className="flex items-center gap-2.5 py-1 animate-fade-in">
+      <CoworkAliveWave size="md" />
       <span
         className="shimmer-text text-sm text-secondary min-w-0 truncate"
         role="status"

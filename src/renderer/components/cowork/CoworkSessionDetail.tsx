@@ -180,6 +180,7 @@ import {
   isUsableConversationSearchRect,
   scheduleConversationSearchSettle,
 } from './conversationSearchNavigation';
+import CoworkAliveWave from './CoworkAliveWave';
 import CoworkBtwFloatingPanel from './CoworkBtwFloatingPanel';
 import CoworkConversationSearch from './CoworkConversationSearch';
 import CoworkPromptInput, { type CoworkPromptInputRef } from './CoworkPromptInput';
@@ -1378,20 +1379,12 @@ const StreamingActivityBar: React.FC<{ messages: CoworkMessage[]; isContextMaint
     isContextMaintenance,
     elapsedMs,
   );
-  // First-token wait already shows employee copy beside the pulse in the
-  // assistant turn; keep the bottom bar visual-only until tools/content appear.
-  const showStatusText = isContextMaintenance
-    || messages.some((message) => (
-      message.type === 'tool_use'
-      || message.type === 'tool_result'
-      || message.type === 'assistant'
-    ));
 
   return (
     <div className={`shrink-0 animate-fade-in ${COWORK_DETAIL_GUTTER_CLASS}`}>
       <div className={COWORK_DETAIL_CONTENT_CLASS}>
         <div
-          className="streaming-bar streaming-bar--live"
+          className="streaming-bar streaming-bar--live streaming-bar--ambient"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
@@ -1403,10 +1396,10 @@ const StreamingActivityBar: React.FC<{ messages: CoworkMessage[]; isContextMaint
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-        {showStatusText && statusText && (
-          <div className="flex items-center gap-2 py-1">
-            <span className="cowork-waiting-pulse cowork-waiting-pulse--sm" aria-hidden="true" />
-            <span className="text-xs text-secondary" aria-live="polite">
+        {statusText && (
+          <div className="flex items-center gap-2.5 py-1.5">
+            <CoworkAliveWave size="sm" />
+            <span className="shimmer-text text-xs text-secondary min-w-0 truncate" aria-live="polite">
               {statusText}
             </span>
           </div>
