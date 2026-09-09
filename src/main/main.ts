@@ -208,6 +208,10 @@ import { authQuotaGateStateFromQuota, AuthSubscriptionStatus, createDefaultAuthQ
 import { type AutoLaunchStatus, getAutoLaunchStatus, isAutoLaunched, setAutoLaunchEnabled } from './autoLaunchManager';
 import { BrowserCredentialApprovalService } from './browserCredentials/browserCredentialApprovalService';
 import { BrowserCredentialService } from './browserCredentials/browserCredentialService';
+import {
+  destroyComputerUseActivityOverlay,
+  reportComputerUseActivity,
+} from './computerUse/computerUseActivityOverlay';
 import { getRecentComputerUseLogEntries } from './computerUse/computerUseLogs';
 import { type CoworkForkContextMessage, type CoworkMessage, CoworkStore } from './coworkStore';
 import {
@@ -3620,6 +3624,9 @@ const startAskUserServer = async (): Promise<void> => {
   const runtime = getMcpRuntime();
   await runtime.startAskUserServer();
   runtime.setBrowserToolHandler(request => getAgentBrowserHost().handleToolRequest(request));
+  runtime.onComputerUseActivity((state) => {
+    reportComputerUseActivity(state);
+  });
 };
 
 const getIMGatewayManager = () => {
@@ -14019,6 +14026,7 @@ if (!gotTheLock) {
     const cleanupStartedAt = Date.now();
     console.log(`[Main] App cleanup started for ${reason}`);
     currentAppCleanupStep = 'sync-teardown';
+    destroyComputerUseActivityOverlay();
     skillManager?.stopWatching();
     stopMediaPollTimer();
     pendingMediaTasks.clear();

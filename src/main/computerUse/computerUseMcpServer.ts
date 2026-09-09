@@ -2,6 +2,7 @@ import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
+import { ComputerUseBridgePath } from '../../shared/computerUse/constants';
 import type { ResolvedMcpServer } from '../libs/openclawConfigSync';
 import { findSystemNodePath } from '../libs/resolveStdioCommand';
 import {
@@ -21,26 +22,40 @@ export type ComputerUseMcpServerName =
   typeof ComputerUseMcpServerName[keyof typeof ComputerUseMcpServerName];
 
 export const ComputerUseMcpEnv = {
-  AskUserUrl: 'LOBSTER_COMPUTER_USE_ASKUSER_URL',
-  BridgeSecret: 'LOBSTER_MCP_BRIDGE_SECRET',
-  ClientModulePath: 'LOBSTER_COMPUTER_USE_CLIENT_MODULE',
-  ExePath: 'LOBSTER_COMPUTER_USE_EXE',
-  HelperStateHome: 'LOBSTER_COMPUTER_USE_HOME',
-  LogDir: 'LOBSTER_COMPUTER_USE_LOG_DIR',
-  LogLevel: 'LOBSTER_COMPUTER_USE_LOG_LEVEL',
-  LogRetentionDays: 'LOBSTER_COMPUTER_USE_LOG_RETENTION_DAYS',
-  RuntimePackageRoot: 'LOBSTER_COMPUTER_USE_RUNTIME_PACKAGE_ROOT',
-  SdkRoot: 'LOBSTER_COMPUTER_USE_MCP_SDK_ROOT',
-  ZodRoot: 'LOBSTER_COMPUTER_USE_ZOD_ROOT',
+  ActivityUrl: 'baiying_COMPUTER_USE_ACTIVITY_URL',
+  AskUserUrl: 'baiying_COMPUTER_USE_ASKUSER_URL',
+  BridgeSecret: 'BAIYING_MCP_BRIDGE_SECRET',
+  ClientModulePath: 'baiying_COMPUTER_USE_CLIENT_MODULE',
+  ExePath: 'baiying_COMPUTER_USE_EXE',
+  HelperStateHome: 'baiying_COMPUTER_USE_HOME',
+  LogDir: 'baiying_COMPUTER_USE_LOG_DIR',
+  LogLevel: 'baiying_COMPUTER_USE_LOG_LEVEL',
+  LogRetentionDays: 'baiying_COMPUTER_USE_LOG_RETENTION_DAYS',
+  RuntimePackageRoot: 'baiying_COMPUTER_USE_RUNTIME_PACKAGE_ROOT',
+  SdkRoot: 'baiying_COMPUTER_USE_MCP_SDK_ROOT',
+  ZodRoot: 'baiying_COMPUTER_USE_ZOD_ROOT',
 } as const;
 export type ComputerUseMcpEnv =
   typeof ComputerUseMcpEnv[keyof typeof ComputerUseMcpEnv];
 
 type ResolveComputerUseMcpServerOptions = {
+  activityCallbackUrl?: string | null;
   askUserCallbackUrl: string | null;
   bridgeSecret: string;
   electronNodePath: string;
 };
+
+export function deriveComputerUseActivityUrl(askUserCallbackUrl: string): string {
+  try {
+    const url = new URL(askUserCallbackUrl);
+    url.pathname = ComputerUseBridgePath.Activity;
+    url.search = '';
+    url.hash = '';
+    return url.toString();
+  } catch {
+    return askUserCallbackUrl.replace(/\/[^/]*\/?$/, ComputerUseBridgePath.Activity);
+  }
+}
 
 const SERVER_SCRIPT_NAME = 'computer-use-mcp-server.mjs';
 
@@ -130,12 +145,18 @@ export function resolveComputerUseMcpServer(
 
   const systemNodePath = app.isPackaged ? null : findSystemNodePath();
   const command = systemNodePath || options.electronNodePath;
+  const activityCallbackUrl = options.activityCallbackUrl?.trim()
+    || deriveComputerUseActivityUrl(options.askUserCallbackUrl);
+  const helperStateHome = ensureComputerUseHelperStateHome();
   const env: Record<string, string> = {
+    [ComputerUseMcpEnv.ActivityUrl]: activityCallbackUrl,
     [ComputerUseMcpEnv.AskUserUrl]: options.askUserCallbackUrl,
     [ComputerUseMcpEnv.BridgeSecret]: options.bridgeSecret,
     [ComputerUseMcpEnv.ClientModulePath]: runtimePaths.clientModulePath,
     [ComputerUseMcpEnv.ExePath]: runtimePaths.helperExePath,
-    [ComputerUseMcpEnv.HelperStateHome]: ensureComputerUseHelperStateHome(),
+    [ComputerUseMcpEnv.HelperStateHome]: helperStateHome,
+    // Native helper also reads LOBSTER_COMPUTER_USE_HOME for config.json branding.
+    LOBSTER_COMPUTER_USE_HOME: helperStateHome,
     [ComputerUseMcpEnv.LogDir]: ensureComputerUseLogDir(),
     [ComputerUseMcpEnv.LogLevel]: 'info',
     [ComputerUseMcpEnv.LogRetentionDays]: String(getComputerUseLogRetentionDays()),
@@ -175,13 +196,14 @@ function moduleUrl(...parts) {
   return pathToFileURL(path.join(...parts)).href;
 }
 
-const sdkRoot = requireEnv('LOBSTER_COMPUTER_USE_MCP_SDK_ROOT');
-const zodRoot = requireEnv('LOBSTER_COMPUTER_USE_ZOD_ROOT');
-const clientModulePath = requireEnv('LOBSTER_COMPUTER_USE_CLIENT_MODULE');
-const helperExePath = requireEnv('LOBSTER_COMPUTER_USE_EXE');
-const askUserUrl = requireEnv('LOBSTER_COMPUTER_USE_ASKUSER_URL');
-const bridgeSecret = requireEnv('LOBSTER_MCP_BRIDGE_SECRET');
-const helperStateHome = requireEnv('LOBSTER_COMPUTER_USE_HOME');
+const sdkRoot = requireEnv('baiying_COMPUTER_USE_MCP_SDK_ROOT');
+const zodRoot = requireEnv('baiying_COMPUTER_USE_ZOD_ROOT');
+const clientModulePath = requireEnv('baiying_COMPUTER_USE_CLIENT_MODULE');
+const helperExePath = requireEnv('baiying_COMPUTER_USE_EXE');
+const askUserUrl = requireEnv('baiying_COMPUTER_USE_ASKUSER_URL');
+const activityUrl = requireEnv('baiying_COMPUTER_USE_ACTIVITY_URL');
+const bridgeSecret = requireEnv('BAIYING_MCP_BRIDGE_SECRET');
+const helperStateHome = requireEnv('baiying_COMPUTER_USE_HOME');
 
 const { McpServer } = await import(moduleUrl(sdkRoot, 'dist', 'esm', 'server', 'mcp.js'));
 const { StdioServerTransport } = await import(moduleUrl(sdkRoot, 'dist', 'esm', 'server', 'stdio.js'));
@@ -330,6 +352,27 @@ function assertHelperTurnActive() {
   }
 }
 
+async function notifyActivity(state) {
+  try {
+    const response = await fetch(activityUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-mcp-bridge-secret': bridgeSecret,
+      },
+      body: JSON.stringify({ state }),
+    });
+    if (!response.ok) {
+      console.error('[ComputerUseMCP] activity notify failed HTTP ' + response.status);
+    }
+  } catch (error) {
+    console.error(
+      '[ComputerUseMCP] activity notify error:',
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
 const server = new McpServer({
   name: 'computer-use',
   version: '1.0.0',
@@ -404,6 +447,7 @@ function stateToContent(state) {
 
 function registerTool(name, description, inputSchema, handler) {
   server.registerTool(name, { description, inputSchema }, async (args) => {
+    await notifyActivity('active');
     try {
       assertHelperTurnActive();
       return await handler(args || {});
@@ -413,6 +457,7 @@ function registerTool(name, description, inputSchema, handler) {
         isError: true,
       };
       if (isComputerUseStoppedError(error)) {
+        await notifyActivity('stopped');
         renewHelperTurn();
       }
       return result;

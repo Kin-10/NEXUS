@@ -26,6 +26,10 @@ import {
   OpenClawBrowserGatewayMethod,
 } from '../../../shared/browserWebAccess/constants';
 import {
+  ComputerUseActivityState,
+  isComputerUseToolName,
+} from '../../../shared/computerUse/constants';
+import {
   buildBrowserAnnotationPromptSection,
   type CoworkBrowserAnnotationMessageBatch,
 } from '../../../shared/cowork/browserAnnotations';
@@ -84,6 +88,7 @@ import type {
 import { OpenClawGatewayFailureKind } from '../../../shared/openclawEngine/constants';
 import { OpenClawTranscriptSafetyStatus } from '../../../shared/openclawTranscript/constants';
 import { ProviderName } from '../../../shared/providers';
+import { reportComputerUseActivity } from '../../computerUse/computerUseActivityOverlay';
 import type { Agent, CoworkExecutionMode, CoworkMessage, CoworkMessageMetadata, CoworkSession, CoworkSessionStatus, CoworkStore } from '../../coworkStore';
 import { t } from '../../i18n';
 import { MediaGenerationTool } from '../../mediaGenerationPolicy';
@@ -8395,6 +8400,25 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
 
     const toolNameRaw = typeof data.name === 'string' ? data.name.trim() : '';
     const toolName = toolNameRaw || 'Tool';
+    if (isComputerUseToolName(toolNameRaw)) {
+      if (phase === 'result') {
+        const resultText = (() => {
+          const result = isRecord(data.result) ? data.result : null;
+          if (!result) return '';
+          if (typeof result.text === 'string') return result.text;
+          const content = Array.isArray(result.content) ? result.content : [];
+          return content
+            .map((part) => (isRecord(part) && typeof part.text === 'string' ? part.text : ''))
+            .join('\n');
+        })();
+        if (resultText.includes('physical Escape key')) {
+          reportComputerUseActivity(ComputerUseActivityState.Stopped);
+        }
+        // Tool completion must NOT dismiss the overlay — it stays until Esc.
+      } else {
+        reportComputerUseActivity(ComputerUseActivityState.Active);
+      }
+    }
     logThinkingDiagnostic(
       'tool-event',
       `sessionId=${sessionId}`,

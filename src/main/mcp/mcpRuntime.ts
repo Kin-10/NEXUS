@@ -2,6 +2,9 @@ import crypto from 'crypto';
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 
+import {
+  type ComputerUseActivityState,
+} from '../../shared/computerUse/constants';
 import { ASK_USER_QUESTION_TOOL_NAME, SESSION_AGNOSTIC_PERMISSION_SESSION_ID } from '../../shared/cowork/constants';
 import { McpIpcChannel } from '../../shared/mcp/constants';
 import { isComputerUseKitInstalled } from '../computerUse/computerUseKit';
@@ -109,6 +112,16 @@ export class McpRuntime {
 
   getBrowserCallbackUrl(): string | null {
     return this.bridgeServer?.browserCallbackUrl ?? null;
+  }
+
+  getComputerUseActivityCallbackUrl(): string | null {
+    return this.bridgeServer?.computerUseActivityCallbackUrl ?? null;
+  }
+
+  onComputerUseActivity(
+    callback: (state: ComputerUseActivityState) => void,
+  ): void {
+    this.bridgeServer?.onComputerUseActivity(callback);
   }
 
   getBridgeSecret(): string {
@@ -346,6 +359,7 @@ export class McpRuntime {
 
     const computerUseServer = shouldEnableComputerUse
       ? resolveComputerUseMcpServer({
+        activityCallbackUrl: this.getComputerUseActivityCallbackUrl(),
         askUserCallbackUrl,
         bridgeSecret: this.bridgeSecret,
         electronNodePath: electronPath,

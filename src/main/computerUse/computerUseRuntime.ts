@@ -29,14 +29,27 @@ export type ComputerUseRuntimeStatus =
   typeof ComputerUseRuntimeStatus[keyof typeof ComputerUseRuntimeStatus];
 
 export const ComputerUseHelperConfig = {
-  AccentColor: '#339cff',
+  /**
+   * Native helper paints its top banner with this accent. Keep it non-white so any
+   * brief flash before we hide the HWND does not look like screen-edge white bars.
+   * BaiYing owns the visible bottom white bar + ribbons.
+   */
+  AccentColor: '#5B9DFF',
   Direction: 'ltr',
   Locale: 'zh-CN',
-  EscToCancel: '按 Esc 取消',
-  UsingComputer: 'BaiYing正在使用你的电脑',
+  EscToCancel: '按Esc键退出',
+  UsingComputer: '百应正在接管你的电脑',
+  /** Combined status line shown in BaiYing overlay (helper lacks bottom placement). */
+  StatusBanner: '百应正在接管你的电脑 | 按Esc键退出',
 } as const;
 export type ComputerUseHelperConfig =
   typeof ComputerUseHelperConfig[keyof typeof ComputerUseHelperConfig];
+
+/** Native helper status HWND class — used to hide the top LobsterAI banner. */
+export const ComputerUseNativeStatusWindow = {
+  ClassName: 'LobsterAIComputerUseStatusOverlay',
+  WindowName: 'LobsterAI Computer Use Status Overlay',
+} as const;
 
 export interface ComputerUseRuntimePaths {
   clientModulePath: string;

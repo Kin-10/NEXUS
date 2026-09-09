@@ -17,10 +17,24 @@ vi.mock('electron', () => ({
       fetch: vi.fn(),
     },
   },
+  BrowserWindow: vi.fn(),
+  globalShortcut: {
+    register: vi.fn(() => true),
+    unregister: vi.fn(),
+  },
+  screen: {
+    getAllDisplays: vi.fn(() => []),
+    on: vi.fn(),
+  },
 }));
 
+import { ComputerUseActivityState, ComputerUseBridgePath } from '../../shared/computerUse/constants';
+import {
+  ComputerUseActivityController,
+} from './computerUseActivityOverlay';
 import {
   ComputerUseMcpEnv,
+  deriveComputerUseActivityUrl,
   ensureComputerUseMcpServerScript,
   resolveComputerUseMcpServer,
   resolveComputerUseRuntimePaths,
@@ -64,7 +78,7 @@ describe('resolveComputerUseRuntimePaths', () => {
   } {
     const rootDir = getComputerUseRuntimeRoot();
     const runtimePackageRoot = path.join(rootDir, 'node_modules', '@baiying', 'computer-use');
-    const helperExePath = path.join(runtimePackageRoot, 'bin', 'windows', 'lobster-computer-use.exe');
+    const helperExePath = path.join(runtimePackageRoot, 'bin', 'windows', 'baiying-computer-use.exe');
     const clientPath = path.join(
       runtimePackageRoot,
       'dist',
@@ -79,7 +93,7 @@ describe('resolveComputerUseRuntimePaths', () => {
       platform: ComputerUseRuntime.Platform,
       version: ComputerUseRuntime.Version,
       clientModule: 'node_modules/@baiying/computer-use/dist/windows/computer_use_client.js',
-      helper: 'node_modules/@baiying/computer-use/bin/windows/lobster-computer-use.exe',
+      helper: 'node_modules/@baiying/computer-use/bin/windows/baiying-computer-use.exe',
       runtimePackageRoot: 'node_modules/@baiying/computer-use',
     })}`);
     fs.writeFileSync(helperExePath, '');
@@ -100,8 +114,9 @@ describe('resolveComputerUseRuntimePaths', () => {
   test('configures the helper with BaiYing branding', () => {
     writeRuntimeFixture();
 
+    const askUserCallbackUrl = 'http://127.0.0.1:1234/ask-user';
     const server = resolveComputerUseMcpServer({
-      askUserCallbackUrl: 'http://127.0.0.1:1234/ask-user',
+      askUserCallbackUrl,
       bridgeSecret: 'secret',
       electronNodePath: process.execPath,
     });
@@ -112,6 +127,12 @@ describe('resolveComputerUseRuntimePaths', () => {
     )) as { strings?: { escToCancel?: string; usingComputer?: string } };
 
     expect(server?.env?.[ComputerUseMcpEnv.HelperStateHome]).toBe(helperStateHome);
+    expect(server?.env?.[ComputerUseMcpEnv.ActivityUrl]).toBe(
+      deriveComputerUseActivityUrl(askUserCallbackUrl),
+    );
+    expect(server?.env?.[ComputerUseMcpEnv.ActivityUrl]).toBe(
+      `http://127.0.0.1:1234${ComputerUseBridgePath.Activity}`,
+    );
     expect(server?.env?.[ComputerUseMcpEnv.ClientModulePath]).toContain(path.join(
       'node_modules',
       '@baiying',
@@ -123,16 +144,25 @@ describe('resolveComputerUseRuntimePaths', () => {
     expect(server?.env?.[ComputerUseMcpEnv.LogDir]).toBe(path.join(TEST_USER_DATA, 'computer-use', 'logs'));
     expect(server?.env?.[ComputerUseMcpEnv.LogLevel]).toBe('info');
     expect(server?.env?.[ComputerUseMcpEnv.LogRetentionDays]).toBe('7');
-    expect(config.strings?.usingComputer).toBe('BaiYing正在使用你的电脑');
-    expect(config.strings?.escToCancel).toBe('按 Esc 取消');
+    expect(config.strings?.usingComputer).toBe('百应正在接管你的电脑');
+    expect(config.strings?.escToCancel).toBe('按Esc键退出');
+    expect(config).toMatchObject({
+      accentColor: '#5B9DFF',
+      locale: 'zh-CN',
+    });
   });
 
   test('reports Escape cancellation before renewing the helper turn', () => {
     const scriptPath = ensureComputerUseMcpServerScript();
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain("requireEnv('LOBSTER_COMPUTER_USE_HOME')");
-    expect(script).toContain("requireEnv('LOBSTER_COMPUTER_USE_CLIENT_MODULE')");
+    expect(script).toContain("requireEnv('baiying_COMPUTER_USE_HOME')");
+    expect(script).toContain("requireEnv('baiying_COMPUTER_USE_CLIENT_MODULE')");
+    expect(script).toContain("requireEnv('baiying_COMPUTER_USE_ACTIVITY_URL')");
+    expect(script).toContain('async function notifyActivity(state)');
+    expect(script).toContain("await notifyActivity('active')");
+    expect(script).toContain("await notifyActivity('stopped')");
+    expect(script).not.toContain("await notifyActivity('idle')");
     expect(script).not.toContain("requireEnv('CODEX_HOME')");
     expect(script).not.toContain('sky_js');
     expect(script).not.toContain('@oai');
@@ -150,5 +180,47 @@ describe('resolveComputerUseRuntimePaths', () => {
     expect(script).toContain('STOPPED_BY_USER_MESSAGE');
     expect(script).not.toContain('turn_id: String(Date.now())');
     expect(script).not.toContain("client.transport?.request?.('end_turn'");
+  });
+});
+
+describe('deriveComputerUseActivityUrl', () => {
+  test('replaces the ask-user path with the activity bridge path', () => {
+    expect(deriveComputerUseActivityUrl('http://127.0.0.1:4242/askuser')).toBe(
+      `http://127.0.0.1:4242${ComputerUseBridgePath.Activity}`,
+    );
+  });
+});
+
+describe('ComputerUseActivityController', () => {
+  test('stays visible through tool idle and only hides on stopped (Esc)', () => {
+    const visibleChanges: boolean[] = [];
+    const controller = new ComputerUseActivityController({
+      onVisibleChange: (visible) => visibleChanges.push(visible),
+    });
+
+    controller.setActivity(ComputerUseActivityState.Active);
+    expect(controller.isVisible).toBe(true);
+
+    controller.setActivity(ComputerUseActivityState.Idle);
+    expect(controller.isVisible).toBe(true);
+
+    controller.setActivity(ComputerUseActivityState.Active);
+    expect(controller.isVisible).toBe(true);
+
+    controller.setActivity(ComputerUseActivityState.Stopped);
+    expect(controller.isVisible).toBe(false);
+    expect(visibleChanges).toEqual([true, false]);
+
+    controller.destroy();
+  });
+
+  test('destroy hides the overlay', () => {
+    const controller = new ComputerUseActivityController({
+      onVisibleChange: () => {},
+    });
+    controller.setActivity(ComputerUseActivityState.Active);
+    expect(controller.isVisible).toBe(true);
+    controller.destroy();
+    expect(controller.isVisible).toBe(false);
   });
 });

@@ -104,3 +104,50 @@ describe('McpBridgeServer browser bridge', () => {
     }
   });
 });
+
+describe('McpBridgeServer computer-use activity', () => {
+  test('authenticates and forwards activity state updates', async () => {
+    const secret = 'activity-test-secret';
+    const server = new McpBridgeServer(secret);
+    const received: string[] = [];
+
+    try {
+      await server.start();
+      expect(server.computerUseActivityCallbackUrl).toContain('/computer-use/activity');
+      server.onComputerUseActivity(state => {
+        received.push(state);
+      });
+
+      const unauthorized = await fetch(server.computerUseActivityCallbackUrl!, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ state: 'active' }),
+      });
+      expect(unauthorized.status).toBe(401);
+
+      const invalid = await fetch(server.computerUseActivityCallbackUrl!, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-mcp-bridge-secret': secret,
+        },
+        body: JSON.stringify({ state: 'busy' }),
+      });
+      expect(invalid.status).toBe(400);
+
+      const response = await fetch(server.computerUseActivityCallbackUrl!, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-mcp-bridge-secret': secret,
+        },
+        body: JSON.stringify({ state: 'active' }),
+      });
+      expect(response.ok).toBe(true);
+      await expect(response.json()).resolves.toEqual({ ok: true, state: 'active' });
+      expect(received).toEqual(['active']);
+    } finally {
+      await server.stop();
+    }
+  });
+});

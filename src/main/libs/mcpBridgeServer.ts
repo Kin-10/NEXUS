@@ -1,13 +1,18 @@
 /**
  * McpBridgeServer — authenticated loopback callbacks shared by OpenClaw integrations.
  *
- * Provides AskUser, media-generation, and in-app browser endpoints. Binds to
- * 127.0.0.1 only and requires the per-process bridge secret.
+ * Provides AskUser, media-generation, in-app browser, and Computer Use activity
+ * endpoints. Binds to 127.0.0.1 only and requires the per-process bridge secret.
  */
 import crypto from 'crypto';
 import http from 'http';
 import net from 'net';
 
+import {
+  ComputerUseActivityState,
+  type ComputerUseActivityState as ComputerUseActivityStateType,
+  ComputerUseBridgePath,
+} from '../../shared/computerUse/constants';
 import { serializeForLog } from './sanitizeForLog';
 
 const log = (level: string, msg: string) => {
@@ -82,6 +87,7 @@ export class McpBridgeServer {
   private onAskUserDismissCallback: ((requestId: string) => void) | null = null;
   private onMediaGenerationCallback: ((request: MediaGenerationRequest) => Promise<MediaGenerationResponse>) | null = null;
   private onBrowserToolCallback: ((request: BrowserToolRequest) => Promise<BrowserToolResponse>) | null = null;
+  private onComputerUseActivityCallback: ((state: ComputerUseActivityStateType) => void) | null = null;
 
   constructor(secret: string) {
     this.secret = secret;
@@ -102,6 +108,12 @@ export class McpBridgeServer {
 
   get browserCallbackUrl(): string | null {
     return this._port ? `http://127.0.0.1:${this._port}/browser/tool` : null;
+  }
+
+  get computerUseActivityCallbackUrl(): string | null {
+    return this._port
+      ? `http://127.0.0.1:${this._port}${ComputerUseBridgePath.Activity}`
+      : null;
   }
 
   /**
@@ -130,6 +142,10 @@ export class McpBridgeServer {
 
   onBrowserTool(callback: (request: BrowserToolRequest) => Promise<BrowserToolResponse>): void {
     this.onBrowserToolCallback = callback;
+  }
+
+  onComputerUseActivity(callback: (state: ComputerUseActivityStateType) => void): void {
+    this.onComputerUseActivityCallback = callback;
   }
 
   /**
@@ -243,7 +259,7 @@ export class McpBridgeServer {
     }
 
     // Verify secret token (accept any of the known header name for backwards compats)
-    const authHeader = req.headers['x-mcp-bridge-secret'] || req.headers['x-ask-user-secret'] || req.headers['x-lobster-media-secret'];
+    const authHeader = req.headers['x-mcp-bridge-secret'] || req.headers['x-ask-user-secret'] || req.headers['x-baiying-media-secret'];
     if (authHeader !== this.secret) {
       log('WARN', `Auth rejected for ${req.url}: header=${authHeader ? 'present-but-mismatch' : 'missing'}`);
       res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -263,6 +279,11 @@ export class McpBridgeServer {
 
     if (req.url?.startsWith('/browser/tool')) {
       await this.handleBrowserTool(req, res);
+      return;
+    }
+
+    if (req.url?.startsWith(ComputerUseBridgePath.Activity)) {
+      await this.handleComputerUseActivity(req, res);
       return;
     }
 
@@ -378,6 +399,38 @@ export class McpBridgeServer {
     }
   }
 
+  private async handleComputerUseActivity(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+  ): Promise<void> {
+    try {
+      const body = await this.readBody(req);
+      const input = JSON.parse(body || '{}') as { state?: unknown };
+      const state = input.state === ComputerUseActivityState.Active
+        || input.state === ComputerUseActivityState.Idle
+        || input.state === ComputerUseActivityState.Stopped
+        ? input.state
+        : null;
+      if (!state) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid state; expected "active", "idle", or "stopped"' }));
+        return;
+      }
+
+      this.onComputerUseActivityCallback?.(state);
+      log('INFO', `Computer Use activity state=${state}`);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, state }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      log('ERROR', `Computer Use activity request failed: ${message}`);
+      if (!res.writableEnded) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+      }
+    }
+  }
+
   private async handleBrowserTool(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     const startedAt = Date.now();
     try {
@@ -394,7 +447,7 @@ export class McpBridgeServer {
       if (!this.onBrowserToolCallback) {
         res.writeHead(503, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-          content: [{ type: 'text', text: 'LobsterAI in-app browser is not ready.' }],
+          content: [{ type: 'text', text: 'baiyingAI in-app browser is not ready.' }],
           isError: true,
         }));
         return;
@@ -415,7 +468,7 @@ export class McpBridgeServer {
       if (!res.writableEnded) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-          content: [{ type: 'text', text: `LobsterAI browser error: ${message}` }],
+          content: [{ type: 'text', text: `baiyingAI browser error: ${message}` }],
           isError: true,
         }));
       }

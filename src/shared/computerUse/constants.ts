@@ -41,3 +41,49 @@ export const ComputerUseKitMetadata = {
     zh: '使用百应电脑操作工具检查和操作 Windows 桌面应用。',
   } satisfies LocalizedText,
 } as const;
+
+export const ComputerUseBridgePath = {
+  Activity: '/computer-use/activity',
+} as const;
+export type ComputerUseBridgePath =
+  typeof ComputerUseBridgePath[keyof typeof ComputerUseBridgePath];
+
+export const ComputerUseActivityState = {
+  Active: 'active',
+  /** @deprecated Tool-end idle no longer hides the overlay; use Stopped for Esc. */
+  Idle: 'idle',
+  /** User pressed Esc (or equivalent cancel). Hides bottom banner + ribbons. */
+  Stopped: 'stopped',
+} as const;
+export type ComputerUseActivityState =
+  typeof ComputerUseActivityState[keyof typeof ComputerUseActivityState];
+
+export const ComputerUseToolName = {
+  ListWindows: 'list_windows',
+  ListApps: 'list_apps',
+  LaunchApp: 'launch_app',
+  GetWindow: 'get_window',
+  GetWindowState: 'get_window_state',
+  ActivateWindow: 'activate_window',
+  Click: 'click',
+  PressKey: 'press_key',
+  TypeText: 'type_text',
+  Scroll: 'scroll',
+  Drag: 'drag',
+  SetValue: 'set_value',
+  PerformSecondaryAction: 'perform_secondary_action',
+} as const;
+export type ComputerUseToolName =
+  typeof ComputerUseToolName[keyof typeof ComputerUseToolName];
+
+const COMPUTER_USE_TOOL_NAME_SET = new Set<string>(Object.values(ComputerUseToolName));
+
+export function isComputerUseToolName(toolName: string | undefined | null): boolean {
+  if (!toolName) return false;
+  const normalized = toolName.trim().toLowerCase();
+  if (!normalized) return false;
+  if (COMPUTER_USE_TOOL_NAME_SET.has(normalized)) return true;
+  // OpenClaw may prefix MCP tools as "computer-use__click" / "mcp__computer-use__click".
+  const suffix = normalized.split(/__+/).pop() || normalized;
+  return COMPUTER_USE_TOOL_NAME_SET.has(suffix);
+}
