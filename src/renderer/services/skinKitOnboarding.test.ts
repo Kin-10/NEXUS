@@ -25,6 +25,18 @@ const installedSkinKit: InstalledKit = {
 };
 
 describe('prepareSkinKitOnboarding', () => {
+  test('fails when the built-in kit is no longer in the marketplace', async () => {
+    const installKit = vi.fn();
+    await expect(prepareSkinKitOnboarding({
+      fetchMarketplaceKits: vi.fn().mockResolvedValue([]),
+      getInstalledKits: vi.fn().mockResolvedValue({
+        [SkinPackKitId.BuiltIn]: installedSkinKit,
+      }),
+      installKit,
+    })).rejects.toThrow('no longer available in Expert Kits');
+    expect(installKit).not.toHaveBeenCalled();
+  });
+
   test('uses the first starter prompt without reinstalling an installed kit', async () => {
     const installKit = vi.fn();
     const result = await prepareSkinKitOnboarding({

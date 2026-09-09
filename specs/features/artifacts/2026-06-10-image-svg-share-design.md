@@ -256,7 +256,7 @@ src/main/libs/htmlShare/artifactFileSharePackager.ts
 3. 为无文件名内容生成稳定文件名：
    - 图片：`image.<ext>`
    - SVG：`image.svg`
-4. 写入临时目录 `lobster-artifact-share-*`。
+4. 写入临时目录 `baiying-artifact-share-*`。
 5. 生成只包含一个文件的 zip。
 6. 计算 zip 的 SHA-256 作为 `sourceSha256`。
 7. 返回：
@@ -522,9 +522,9 @@ SVG 在公开页中使用 `<img src="/s/{shareId}/content/">` 渲染，不内联
 图片 shell 示例结构：
 
 ```html
-<main class="lobster-image-share-viewer">
+<main class="baiying-image-share-viewer">
   <img
-    class="lobster-image-share-image"
+    class="baiying-image-share-image"
     src="/s/{shareId}/content/?preview=1"
     alt="{title}"
     referrerpolicy="same-origin"

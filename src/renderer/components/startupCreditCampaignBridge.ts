@@ -5,7 +5,7 @@ import {
   type StartupCreditCampaignSource as StartupCreditCampaignSourceType,
 } from './startupCreditCampaignAnalytics';
 
-export const STARTUP_CREDIT_OPEN_EVENT = 'lobster:startup-credit-campaign-open';
+export const STARTUP_CREDIT_OPEN_EVENT = 'baiying:startup-credit-campaign-open';
 
 export interface StartupCreditCampaignEntry {
   resolved: boolean;

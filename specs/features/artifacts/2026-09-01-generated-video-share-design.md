@@ -3,16 +3,16 @@
 > 版本：V1.0<br>
 > 日期：2026-09-01<br>
 > 状态：已实现，待环境联调与灰度启用<br>
-> 涉及系统：`LobsterAI`、`lobsterai-server`、`lobsterai-admin`<br>
-> 不涉及系统：`lobsterai-portal`<br>
+> 涉及系统：`baiyingAI`、`baiyingai-server`、`baiyingai-admin`<br>
+> 不涉及系统：`baiyingai-portal`<br>
 > 分享能力基线：[Artifact 图片与 SVG 分享设计](./2026-06-10-image-svg-share-design.md)<br>
-> 媒体生成基线：[LobsterAI 生图生视频托管工具设计](../media-generation/2026-05-13-media-generation-design.md)<br>
-> 发布权益基线：[`lobsterai-server/docs/specs/html-share/feature-2026-08-20-unified-publishing-quota-expiration.md`](../../../../lobsterai-server/docs/specs/html-share/feature-2026-08-20-unified-publishing-quota-expiration.md)
+> 媒体生成基线：[baiyingAI 生图生视频托管工具设计](../media-generation/2026-05-13-media-generation-design.md)<br>
+> 发布权益基线：[`baiyingai-server/docs/specs/html-share/feature-2026-08-20-unified-publishing-quota-expiration.md`](../../../../baiyingai-server/docs/specs/html-share/feature-2026-08-20-unified-publishing-quota-expiration.md)
 
 ## 0. 决策摘要
 
-1. 视频分享入口只存在于 LobsterAI Electron 客户端的 Artifact 预览区域，不在 Portal 增加入口。
-2. 首期只允许分享 `lobsterai-server` 视频模型任务生成的结果，不允许用户把本地视频导入会话后分享。
+1. 视频分享入口只存在于 baiyingAI Electron 客户端的 Artifact 预览区域，不在 Portal 增加入口。
+2. 首期只允许分享 `baiyingai-server` 视频模型任务生成的结果，不允许用户把本地视频导入会话后分享。
 3. 客户端 UI、访问模式、订阅/普通用户额度、状态管理、分享码、访问统计和管理员治理复用其他文件分享能力。
 4. 视频不能加入现有通用文件分享白名单，也不能通过现有 multipart 压缩包接口上传；否则本地视频会绕过生成来源校验。
 5. 标准视频分享请求只提交 `taskId + outputIndex` 和展示字段。服务端不接受客户端视频文件、本地路径、远端视频 URL、NOS URL、时长或内容哈希作为分享依据。
@@ -147,10 +147,10 @@ Content-Type: multipart/form-data
 
 | 项目 | 首期范围 |
 | --- | --- |
-| `LobsterAI` | 唯一用户入口、任务溯源 metadata、分享 IPC/API 调用、准备状态和错误展示 |
-| `lobsterai-server` | 资产持久化、历史恢复、NOS、数据库、专用分享 API、Range 播放、审核、权益和生命周期 |
-| `lobsterai-admin` | 视频类型筛选、详情、预览、审核、禁用、恢复、删除和统计 |
-| `lobsterai-portal` | 不改；保持现有接口兼容 |
+| `baiyingAI` | 唯一用户入口、任务溯源 metadata、分享 IPC/API 调用、准备状态和错误展示 |
+| `baiyingai-server` | 资产持久化、历史恢复、NOS、数据库、专用分享 API、Range 播放、审核、权益和生命周期 |
+| `baiyingai-admin` | 视频类型筛选、详情、预览、审核、禁用、恢复、删除和统计 |
+| `baiyingai-portal` | 不改；保持现有接口兼容 |
 
 ---
 
@@ -612,7 +612,7 @@ contentTypeHint?
 
 兼容路径只用于确认服务端已有任务身份：
 
-1. 客户端仅对“已知由 LobsterAI 托管视频生成工具产生”的旧 tool result 启用恢复；
+1. 客户端仅对“已知由 baiyingAI 托管视频生成工具产生”的旧 tool result 启用恢复；
 2. 客户端取旧 Artifact 保存的原始 `remoteUrl`，本地计算完整字符串的 SHA-256；
 3. 调用兼容解析接口，只发送 `resultUrlSha256`，不发送文件和 URL；
 4. 服务端只扫描当前账号上下文中 `task_type = video AND status = succeeded` 的任务；
@@ -841,7 +841,7 @@ PERSISTENCE_RETRY_EXHAUSTED
 
 ---
 
-## 9. LobsterAI 客户端设计
+## 9. baiyingAI 客户端设计
 
 ### 9.1 Artifact 可信来源模型
 
@@ -909,7 +909,7 @@ export interface Artifact {
 
 ### 9.4 历史 Artifact 恢复
 
-对于已知 LobsterAI 视频生成 tool result、缺少 `taskId` 但仍有 `remoteUrl` 的旧 Artifact：
+对于已知 baiyingAI 视频生成 tool result、缺少 `taskId` 但仍有 `remoteUrl` 的旧 Artifact：
 
 1. UI 可显示分享入口，但标记为“需要确认来源”；
 2. 用户点击后由主进程计算 URL SHA-256；
@@ -921,12 +921,12 @@ export interface Artifact {
 
 | 视频来源 | 是否显示 |
 | --- | --- |
-| 当前 LobsterAI 视频任务，含有效 `mediaOrigin` | 是 |
-| 旧 LobsterAI 视频任务，可通过 URL 哈希恢复 | 是，点击后先恢复 |
+| 当前 baiyingAI 视频任务，含有效 `mediaOrigin` | 是 |
+| 旧 baiyingAI 视频任务，可通过 URL 哈希恢复 | 是，点击后先恢复 |
 | 会话附件导入的本地视频 | 否 |
 | Library 本地视频 | 否 |
 | 任意本地 `.mp4` 文件 Artifact | 否 |
-| 其他工具生成但无 LobsterAI 媒体任务的文件 | 否 |
+| 其他工具生成但无 baiyingAI 媒体任务的文件 | 否 |
 | 只有本地路径且无法恢复任务的旧视频 | 否或点击后明确失败 |
 
 即使 Renderer 误显示按钮，主进程和服务端仍必须分别校验，不能只依赖 UI 隐藏。
@@ -1101,7 +1101,7 @@ PublishingPolicyService.ResourceKind.FILE
 要求：
 
 - 不自动播放；
-- 复用现有 LobsterAI 分享页标题、Logo、访问方式和下载入口；
+- 复用现有 baiyingAI 分享页标题、Logo、访问方式和下载入口；
 - 标题和文件名严格 HTML 转义；
 - CSP 增加 `media-src 'self'`，不加入 NOS 域名；
 - 分享码验证成功前不返回视频内容；
@@ -1112,16 +1112,16 @@ Header 与文档、文本等支持下载的文件分享页保持同一信息架�
 
 | 区域 | 内容 | 规则 |
 | --- | --- | --- |
-| 左侧 | LobsterAI Logo 和品牌名 | 沿用现有分享页品牌链接 |
+| 左侧 | baiyingAI Logo 和品牌名 | 沿用现有分享页品牌链接 |
 | 中间 | 视频文件名、文件大小 | 文件名单行省略并保留完整 `title`；不依赖 `ffprobe` 展示实际时长 |
-| 右侧 | 下载当前视频图标、分隔线、“下载 LobsterAI” | 当前视频下载是主内容操作，客户端下载安装是产品操作 |
+| 右侧 | 下载当前视频图标、分隔线、“下载 baiyingAI” | 当前视频下载是主内容操作，客户端下载安装是产品操作 |
 
 下载当前视频使用现有源文件下载图标，按钮尺寸、hover、focus 和无障碍标签复用文档/文本分享页；播放器下方不再重复显示文件信息和“下载视频”按钮。这样下载动作在不同文件分享页的位置一致，也能为播放器保留更多纵向空间。
 
 响应式规则：
 
 - 窄屏隐藏 Header 中间的文件信息，但保留下载当前视频图标；
-- 超窄屏可以隐藏“下载 LobsterAI”次级按钮，但不能隐藏视频下载图标；
+- 超窄屏可以隐藏“下载 baiyingAI”次级按钮，但不能隐藏视频下载图标；
 - 分享码验证前、分享关闭或过期时，不显示视频文件信息和视频下载图标；
 - 管理员预览标识继续复用现有 Header 的居中展示规则，不挤占下载操作区。
 
@@ -1263,7 +1263,7 @@ video_transcript
 
 ### 13.1 列表
 
-`lobsterai-admin` 分享管理新增来源筛选：
+`baiyingai-admin` 分享管理新增来源筛选：
 
 ```text
 generated_video_file -> 模型生成视频
@@ -1464,7 +1464,7 @@ generated_video_moderation_total{result}
 
 ## 18. 实施位置
 
-### 18.1 LobsterAI
+### 18.1 baiyingAI
 
 重点文件/模块：
 
@@ -1490,7 +1490,7 @@ src/main/libs/htmlShare/generatedVideoShareClient.ts
 
 不要继续向通用 zip packager 增加视频分支。
 
-### 18.2 lobsterai-server
+### 18.2 baiyingai-server
 
 建议新增职责边界：
 
@@ -1518,7 +1518,7 @@ GeneratedVideoShareController（也可挂在 HtmlShareController 下）
 - Library 共享文件类型映射；
 - `sql/schema.sql` 和新的 MySQL 5.7 迁移。
 
-### 18.3 lobsterai-admin
+### 18.3 baiyingai-admin
 
 重点文件/模块：
 
@@ -1529,7 +1529,7 @@ src/views/HtmlShareListView.vue
 
 增加 source type 类型、筛选和中文标签；详情显示生成任务与技术 metadata；预览使用管理员 preview URL，不直接加载 NOS。
 
-### 18.4 lobsterai-portal
+### 18.4 baiyingai-portal
 
 无改动。
 
@@ -1544,7 +1544,7 @@ src/views/HtmlShareListView.vue
 3. 上线服务端资产持久化、历史刷新、专用分享 API 和播放代理；
 4. 确认服务端开始为新成功任务自动创建资产；
 5. 上线管理后台视频识别、预览和审核；
-6. 上线 LobsterAI 客户端入口；
+6. 上线 baiyingAI 客户端入口；
 7. 灰度开启 `html-share.generated-video.enabled`；
 8. 观察持久化成功率、源地址刷新失败和 Range 播放指标后全量。
 
@@ -1622,7 +1622,7 @@ src/views/HtmlShareListView.vue
 - 视频不能以 unsupported skipped 结束；
 - 抽帧数量和临时文件清理符合限制。
 
-### 20.2 LobsterAI 测试
+### 20.2 baiyingAI 测试
 
 - 含 `mediaOrigin` 的模型视频显示分享按钮；
 - 本地附件、Library、本地文件视频不显示；
@@ -1718,11 +1718,11 @@ NOS URL -> 不对用户暴露
 
 本方案已经在以下三个项目落地：
 
-- `LobsterAI`：保留视频生成任务的 `taskId + outputIndex` 溯源信息；只对模型视频展示分享能力；通过专用 IPC/API 创建和查询分享；旧消息只把结果 URL 的 SHA-256 交给服务端反查，不上传本地视频或提交结果 URL。
-- `lobsterai-server`：新增 MySQL 5.7 兼容迁移 `sql/V84__generated_video_share.sql`、生成资产异步持久化、供应商地址刷新、专用分享接口、同源 Range 播放代理、提示词/抽帧/音轨审核以及 Admin 元数据接口。
-- `lobsterai-admin`：新增模型生成视频筛选、生成资产元数据和审核项展示；预览继续使用现有 Admin 临时预览令牌，不返回 NOS URL。
+- `baiyingAI`：保留视频生成任务的 `taskId + outputIndex` 溯源信息；只对模型视频展示分享能力；通过专用 IPC/API 创建和查询分享；旧消息只把结果 URL 的 SHA-256 交给服务端反查，不上传本地视频或提交结果 URL。
+- `baiyingai-server`：新增 MySQL 5.7 兼容迁移 `sql/V84__generated_video_share.sql`、生成资产异步持久化、供应商地址刷新、专用分享接口、同源 Range 播放代理、提示词/抽帧/音轨审核以及 Admin 元数据接口。
+- `baiyingai-admin`：新增模型生成视频筛选、生成资产元数据和审核项展示；预览继续使用现有 Admin 临时预览令牌，不返回 NOS URL。
 
-`lobsterai-portal` 未修改。视频分享不进入现有 multipart 文件上传和文件内容更新接口。
+`baiyingai-portal` 未修改。视频分享不进入现有 multipart 文件上传和文件内容更新接口。
 
 发布前需要完成：
 
@@ -1733,9 +1733,9 @@ NOS URL -> 不对用户暴露
 
 当前代码验证结果：
 
-- LobsterAI 视频来源、分享策略、客户端 API 与本地资产持久化定向测试：151 项通过；
-- LobsterAI 变更 TypeScript/TSX ESLint：通过；
-- LobsterAI Electron 主进程编译和生产构建：通过；
-- `lobsterai-server` `compileJava`：通过；
-- `lobsterai-admin` Vue TypeScript 类型检查与变更文件 ESLint：通过；
+- baiyingAI 视频来源、分享策略、客户端 API 与本地资产持久化定向测试：151 项通过；
+- baiyingAI 变更 TypeScript/TSX ESLint：通过；
+- baiyingAI Electron 主进程编译和生产构建：通过；
+- `baiyingai-server` `compileJava`：通过；
+- `baiyingai-admin` Vue TypeScript 类型检查与变更文件 ESLint：通过；
 - 按约定未执行依赖 Redis、NOS、供应商或媒体二进制的服务端测试，仍需在测试环境完成第 20、21 节中的外部联调验收。

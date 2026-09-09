@@ -54,7 +54,7 @@ message[46]: 40,886 -> 40,454 -> 39,715 -> 30,920 bytes
 - [openclaw/openclaw#94518](https://github.com/openclaw/openclaw/issues/94518)
 - [openclaw/openclaw#95311](https://github.com/openclaw/openclaw/pull/95311)
 - [openclaw/openclaw@a60947fb3e](https://github.com/openclaw/openclaw/commit/a60947fb3e92f45ea7eb2581da8877b10a8bebb2)
-- [netease-hzb/BaiYing#2219](https://github.com/netease-hzb/BaiYing/pull/2219)
+- [baiying-hzb/BaiYing#2219](https://github.com/baiying-hzb/BaiYing/pull/2219)
 
 ## 2. 目标
 

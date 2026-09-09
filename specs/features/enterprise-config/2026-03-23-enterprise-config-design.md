@@ -61,7 +61,7 @@ enterprise-config/                     # Fixed path: {userData}/enterprise-confi
 
 ### Model/Provider Config → `kv['app_config']`
 
-Model configuration uses a **separate `app_config.json`** file (not derived from openclaw.json) to avoid lossy reverse-mapping. The `openclawConfigSync` forward path collapses many providers into `providerId: 'lobster'`, making reverse mapping ambiguous.
+Model configuration uses a **separate `app_config.json`** file (not derived from openclaw.json) to avoid lossy reverse-mapping. The `openclawConfigSync` forward path collapses many providers into `providerId: 'baiying'`, making reverse mapping ambiguous.
 
 `app_config.json` uses the exact same structure as the `kv['app_config']` value in SQLite — it is written directly without transformation.
 

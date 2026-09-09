@@ -54,7 +54,7 @@ const LibraryShareDeleteDialog: React.FC<LibraryShareDeleteDialogProps> = ({
         <h2 id={titleId} className={`${MANAGEMENT_TITLE_TEXT} mt-4 font-semibold text-foreground`}>
           {i18nService.t('libraryShareDeleteConfirmTitle').replace('{name}', fileName)}
         </h2>
-        <p id={descriptionId} className={`${MANAGEMENT_BODY_TEXT} mt-2 leading-[var(--lobster-leading-sm)] text-secondary`}>
+        <p id={descriptionId} className={`${MANAGEMENT_BODY_TEXT} mt-2 leading-[var(--baiying-leading-sm)] text-secondary`}>
           {i18nService.t('libraryShareDeleteConfirmDescription')}
         </p>
         {showFreeQuotaNotice && (
@@ -63,7 +63,7 @@ const LibraryShareDeleteDialog: React.FC<LibraryShareDeleteDialogProps> = ({
           </p>
         )}
         <label
-          className={`${MANAGEMENT_META_TEXT} mt-4 block font-medium leading-[var(--lobster-leading-xs)] text-secondary`}
+          className={`${MANAGEMENT_META_TEXT} mt-4 block font-medium leading-[var(--baiying-leading-xs)] text-secondary`}
           htmlFor={inputId}
         >
           {i18nService.t('libraryShareDeleteConfirmInputLabel').replace('{name}', fileName)}

@@ -37,7 +37,7 @@ export interface NimQrLoginPollResult {
   error?: string;
 }
 
-export const DEFAULT_NIM_QR_BASE_URL = 'https://lbs.netease.im';
+export const DEFAULT_NIM_QR_BASE_URL = 'https://lbs.baiying.im';
 export const DEFAULT_NIM_QR_EXPIRES_IN = 180;
 export const DEFAULT_NIM_QR_POLL_INTERVAL = 3000;
 

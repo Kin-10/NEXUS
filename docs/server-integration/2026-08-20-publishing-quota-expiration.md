@@ -291,14 +291,14 @@ Electron 主进程会保留该结构，渲染进程不得解析中文错误文�
 
 #### 客户端产品与订阅转化埋点
 
-本节专指在 Electron 客户端产生、通过现有 `reportYdAnalyzer` 上传到分析服务端的产品事件，不是下文 `lobsterai-server` 进程运行日志，也不是分享访问量 owner analytics。内存等待意图和 `trace_id` 本身不等于已完成埋点。
+本节专指在 Electron 客户端产生、通过现有 `reportYdAnalyzer` 上传到分析服务端的产品事件，不是下文 `baiyingai-server` 进程运行日志，也不是分享访问量 owner analytics。内存等待意图和 `trace_id` 本身不等于已完成埋点。
 
 | 客户端事件 | 触发条件 |
 | --- | --- |
-| `lobsterai_publishing_recovery_cta_exposure` | CTA 首次实际可见；列表行进入可视区、页面停留跨过到期边界时同样触发 |
-| `lobsterai_publishing_recovery_cta_action` | 鼠标/键盘激活被接受后，在记录等待意图及 `openExternal()` 之前 |
-| `lobsterai_publishing_subscription_observed` | 复用既有事件；同 owner 的 auth/quota 权威快照在有效 last-touch 内观察到有效订阅 |
-| `lobsterai_publishing_recovery_result` | 订阅观察后，资源权威响应收敛或有界重试用尽 |
+| `baiyingai_publishing_recovery_cta_exposure` | CTA 首次实际可见；列表行进入可视区、页面停留跨过到期边界时同样触发 |
+| `baiyingai_publishing_recovery_cta_action` | 鼠标/键盘激活被接受后，在记录等待意图及 `openExternal()` 之前 |
+| `baiyingai_publishing_subscription_observed` | 复用既有事件；同 owner 的 auth/quota 权威快照在有效 last-touch 内观察到有效订阅 |
+| `baiyingai_publishing_recovery_result` | 订阅观察后，资源权威响应收敛或有界重试用尽 |
 
 三个新增 recovery 事件使用独立 `PublishingRecoveryAnalyticsEventVersion=1` 和独立参数 builder，不直接复用会写入 v2 的旧 publishing builder。共同字段为 `attemptId/exposureId/interactionType/feature/resourceKind/operationType/source/entryPoint/surface/recoverySurface/pageViewId/hasExistingResource/identityType/subscriptionRecoveryMode`；固定 `interactionType=recovery_cta`、`operationType=subscription_recovery`、`hasExistingResource=true`、`identityType=free`。点击另带 `actionType=click`、`ctaId=primary`、`target=pricing`、`operationId` 和 `exposureToClickMs`。`recoverySurface` 是新维度，不覆盖旧 `surface`。
 
@@ -336,7 +336,7 @@ Electron 主进程会保留该结构，渲染进程不得解析中文错误文�
 - 客户端在现有 `src/shared/publishing/constants.ts` 增加 mode 常量和 fail-closed normalizer；`htmlShareClient`、`shareDeploymentClient`、`libraryCloudClient` 与 Site 类型只做白名单解析/透传，Main/Preload 不新增恢复写 IPC。
 - 共享恢复按钮与展示策略供 `ArtifactFileShareDialog`、`ArtifactPanel`、`LibrarySharedFilesView` 和 `SitesView` 使用；账号级恢复协调器放 Renderer service，不放在任一页面组件生命周期内。
 - 套餐 URL 复用 `src/renderer/services/endpoints.ts` 的 `getPortalPricingUrl`/`PortalPricingKeyfrom`；IDE 当前打开的 `src/main/libs/endpoints.ts` 不属于本需求，不修改。
-- 客户端埋点在 `src/shared/analytics/constants.ts`、`src/renderer/components/artifacts/publishingAnalytics.ts` 和 `src/renderer/services/publishingConversionAttribution.ts` 扩展，统一恢复 CTA helper 同时支持弹窗和内联入口，不新增 `lobsterai-server` 埋点接口。
+- 客户端埋点在 `src/shared/analytics/constants.ts`、`src/renderer/components/artifacts/publishingAnalytics.ts` 和 `src/renderer/services/publishingConversionAttribution.ts` 扩展，统一恢复 CTA helper 同时支持弹窗和内联入口，不新增 `baiyingai-server` 埋点接口。
 
 #### 服务端运行日志与监控指标（非客户端转化埋点）
 

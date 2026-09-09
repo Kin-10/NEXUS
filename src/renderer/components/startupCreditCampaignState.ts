@@ -14,7 +14,7 @@ const ACTIVITY_CODE_PATTERN = /^[a-z0-9][a-z0-9_-]{2,63}$/;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{1,64}$/;
 const STARTUP_DISMISS_KEY_PREFIX = 'startup_credit_campaign.auto_dismissed.v1';
 const STARTUP_PENDING_CLAIM_KEY = 'startup_credit_campaign.pending_claim.v1';
-const STARTUP_POSTER_REVISION_QUERY_PARAM = 'lobster_activity_revision';
+const STARTUP_POSTER_REVISION_QUERY_PARAM = 'baiying_activity_revision';
 
 export const STARTUP_PENDING_CLAIM_TTL_MS = 30 * 60 * 1000;
 

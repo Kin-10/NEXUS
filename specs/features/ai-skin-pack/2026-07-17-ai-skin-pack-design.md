@@ -46,7 +46,7 @@ BaiYing 已有颜色主题系统，但不能根据用户描述生成并应用整
 - 注册只接受生图工具返回的精确本地路径或 `file://` URL，不扫描工作目录猜测产物。
 - 仅允许可解码的 PNG、JPEG、WebP，并校验文件大小和图片尺寸。
 - 资产复制到 `userData/skins/<skinId>/assets`，使用内容哈希文件名；manifest 只保存受管相对路径。
-- `lobster-skin://` 协议只能读取注册表中已登记且仍位于受管目录内的资产。
+- `baiying-skin://` 协议只能读取注册表中已登记且仍位于受管目录内的资产。
 - 两个必需槽位均有效时才可应用；半成品保留为草稿但不影响当前皮肤。
 
 ### 3.3 结构化表现层
@@ -88,7 +88,7 @@ BaiYing 已有颜色主题系统，但不能根据用户描述生成并应用整
 | `SKILLs/skin-creator/` | 主题理解、两槽位提示词、串行顺序、工具选择和停止条件 |
 | `src/shared/skin/` | 工作流、槽位、表现配置、IPC 和协议类型 |
 | `src/main/skins/` | 会话事务、媒体桥、资产校验、存储、协议、IPC 和 Kit 生命周期 |
-| `openclaw-extensions/lobster-media-generation/` | 会员生图状态轮询和本地皮肤管理工具桥 |
+| `openclaw-extensions/baiying-media-generation/` | 会员生图状态轮询和本地皮肤管理工具桥 |
 | `src/renderer/components/skin/` | 表现作用域、背景、皮肤库与管理交互 |
 | `src/renderer/services/skin*.ts` | Renderer 状态同步和明暗模式适配 |
 

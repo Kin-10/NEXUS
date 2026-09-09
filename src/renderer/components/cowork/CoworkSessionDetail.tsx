@@ -3006,11 +3006,11 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   const handleOpenHtmlFileInBrowser = useCallback(async (artifact: Artifact) => {
     if (!sessionId || artifact.type !== ArtifactTypeValue.Html || !artifact.filePath) return;
     reportArtifactPreviewAction({
-      actionType: 'open_lobster_browser',
+      actionType: 'open_baiying_browser',
       source: 'artifact_panel',
       artifact,
       params: {
-        openTarget: 'lobster_browser',
+        openTarget: 'baiying_browser',
       },
     });
 
@@ -3094,7 +3094,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       source: 'artifact_panel',
       artifact,
       params: {
-        openTarget: 'lobster_browser',
+        openTarget: 'baiying_browser',
       },
     });
     handleOpenArtifactBrowserTab();

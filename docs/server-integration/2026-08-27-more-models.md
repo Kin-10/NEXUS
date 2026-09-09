@@ -2,7 +2,7 @@
 
 ## Change Summary
 
-Text model responses now include a `moreModel` boolean. LobsterAI keeps normal models first and places entries with `moreModel=true` in a default-collapsed “More models” section at the bottom of the current model group.
+Text model responses now include a `moreModel` boolean. baiyingAI keeps normal models first and places entries with `moreModel=true` in a default-collapsed “More models” section at the bottom of the current model group.
 
 ## Endpoint Details
 

@@ -598,7 +598,7 @@ index 8ec0be3..d059db8 100644
 +      !ifmacrodef customWebPackageAcquireEnd
 +        !insertmacro customWebPackageAcquireEnd "explicit"
 +      !endif
-+      Goto LobsterWebPackageReady
++      Goto baiyingWebPackageReady
 +    ${endif}
 +  ${else}
 +    # sibling package next to the installer (channel co-download layout)
@@ -608,7 +608,7 @@ index 8ec0be3..d059db8 100644
 +        !ifmacrodef customWebPackageAcquireEnd
 +          !insertmacro customWebPackageAcquireEnd "sibling"
 +        !endif
-+        Goto LobsterWebPackageReady
++        Goto baiyingWebPackageReady
 +      ${else}
 +        # /SD keeps a stale sibling package from blocking silent installs
 +        MessageBox MB_OK "Package file $4 found locally, but checksum doesn't match ${U+2014} expected $webPackageExpectedHash, actual $3.$\r$\nLocal file is ignored and package will be downloaded from Internet." /SD IDOK
@@ -632,7 +632,7 @@ index 8ec0be3..d059db8 100644
 +          !ifmacrodef customWebPackageAcquireEnd
 +            !insertmacro customWebPackageAcquireEnd "cache"
 +          !endif
-+          Goto LobsterWebPackageReady
++          Goto baiyingWebPackageReady
 +        ${endif}
 +      ${endif}
 +      ${if} $installMode == "all"
@@ -646,7 +646,7 @@ index 8ec0be3..d059db8 100644
 +    !insertmacro customWebPackageAcquireEnd "download"
 +  !endif
 +
-+  LobsterWebPackageReady:
++  baiyingWebPackageReady:
 +!macroend
 diff --git a/node_modules/app-builder-lib/templates/nsis/installSection.nsh b/node_modules/app-builder-lib/templates/nsis/installSection.nsh
 index 053772f..adc8ad4 100644
@@ -772,13 +772,13 @@ index 1b88a9d..515662e 100644
  !endif
  
 +!ifmacrodef customInstallerUserAbort
-+  !define MUI_CUSTOMFUNCTION_ABORT lobsterCustomInstallerUserAbort
++  !define MUI_CUSTOMFUNCTION_ABORT baiyingCustomInstallerUserAbort
 +!endif
 +
  !insertmacro addLangs
  
 +!ifmacrodef customInstallerUserAbort
-+  Function lobsterCustomInstallerUserAbort
++  Function baiyingCustomInstallerUserAbort
 +    !insertmacro customInstallerUserAbort
 +  FunctionEnd
 +!endif

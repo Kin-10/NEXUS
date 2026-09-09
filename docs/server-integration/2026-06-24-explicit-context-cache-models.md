@@ -46,7 +46,7 @@ Anthropic-format Claude models can still be returned with `"apiFormat": "anthrop
 
 ### POST `/v1/messages`
 
-Auth: local Lobster proxy token forwarded as `Authorization`.
+Auth: local baiying proxy token forwarded as `Authorization`.
 
 Only Anthropic-format DB models are accepted. `claude-sonnet-4-6-hzbInner` is employee-only; C-end users must not see or call it.
 

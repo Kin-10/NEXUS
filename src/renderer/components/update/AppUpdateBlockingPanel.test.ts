@@ -18,7 +18,7 @@ const createState = (status: AppUpdateRuntimeState['status']): AppUpdateRuntimeS
     url: 'https://updates.example.com/baiying.exe',
   },
   progress: null,
-  readyFilePath: '/tmp/lobsterai-update.dmg',
+  readyFilePath: '/tmp/baiyingai-update.dmg',
   readyFileHash: 'hash',
   errorMessage: null,
 });

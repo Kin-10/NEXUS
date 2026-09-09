@@ -76,7 +76,7 @@ const BUNDLED_EXTENSIONS_TO_KEEP = new Set([
   // --- Channels (managed via entries or third-party replacements) ---
   'telegram', 'discord', 'feishu', 'qqbot',
   // --- Core features ---
-  'browser', 'memory-core', 'lobster', 'llm-task', 'zai',
+  'browser', 'memory-core', 'baiying', 'llm-task', 'zai',
   // --- Media / voice (bundled defaults, may be used by agents) ---
   'image-generation-core', 'media-understanding-core', 'speech-core', 'talk-voice',
   // --- Internal ---

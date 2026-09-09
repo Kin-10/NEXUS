@@ -4,8 +4,8 @@
 </h1>
 
 <p align="center">
-  <a href="https://github.com/netease-hzb/BaiYing/stargazers"><img src="https://badgen.net/github/stars/netease-hzb/BaiYing?label=%E2%98%85" alt="GitHub stars" /></a>
-  <a href="LICENSE"><img src="https://badgen.net/github/license/netease-hzb/BaiYing" alt="License" /></a>
+  <a href="https://github.com/baiying-hzb/BaiYing/stargazers"><img src="https://badgen.net/github/stars/baiying-hzb/BaiYing?label=%E2%98%85" alt="GitHub stars" /></a>
+  <a href="LICENSE"><img src="https://badgen.net/github/license/baiying-hzb/BaiYing" alt="License" /></a>
   <a href="https://x.com/BaiYinghzb"><img src="https://img.shields.io/badge/-000000?logo=x&logoColor=white" alt="Follow BaiYing on X" /></a>
   <a href="https://shared.ydstatic.com/market/souti/fihserChatWeb/online/2.0.7/dist/assets/wechat_group-B34qRm1G.png"><img src="https://img.shields.io/badge/-000000?logo=wechat&logoColor=white" alt="Follow BaiYing on X" /></a>
   <br>
@@ -20,7 +20,7 @@
 
 <p align="center">
   <strong>All-scenario office assistant Agent.</strong><br/>
-  The first open-source desktop-grade Agent among major Chinese tech companies, built by NetEase hzb.
+  The first open-source desktop-grade Agent among major Chinese tech companies, built by baiying hzb.
 </p>
 
 <p align="center">
@@ -104,7 +104,7 @@ Sessions and app data live locally in SQLite. OpenClaw workspace memory uses fil
 
 ### Desktop
 
-Download the latest macOS and Windows installers from [Official Website](https://baiying.hzb.com/) or [GitHub Releases](https://github.com/netease-hzb/BaiYing/releases).
+Download the latest macOS and Windows installers from [Official Website](https://baiying.hzb.com/) or [GitHub Releases](https://github.com/baiying-hzb/BaiYing/releases).
 
 ### Run From Source
 
@@ -115,7 +115,7 @@ Requirements:
 - git and pnpm, needed on the first run to build the pinned OpenClaw runtime from the sibling `../openclaw` checkout
 
 ```bash
-git clone https://github.com/netease-hzb/BaiYing.git
+git clone https://github.com/baiying-hzb/BaiYing.git
 cd BaiYing
 npm install
 ```
@@ -335,10 +335,10 @@ Please use the repository issue templates for bugs and feature requests. For pul
 
 ## Star History
 
-[![Star History Chart](docs/res/star-history-2026828.png)](https://www.star-history.com/?repos=netease-hzb%2Fbaiying&type=date&legend=bottom-right)
+[![Star History Chart](docs/res/star-history-2026828.png)](https://www.star-history.com/?repos=baiying-hzb%2Fbaiying&type=date&legend=bottom-right)
 
 ## License
 
 [MIT License](LICENSE)
 
-Built and maintained by [NetEase hzb](https://www.hzb.com/).
+Built and maintained by [baiying hzb](https://www.hzb.com/).

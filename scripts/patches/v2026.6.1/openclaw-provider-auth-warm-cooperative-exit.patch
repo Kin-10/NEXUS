@@ -6,7 +6,7 @@ index 9ce729efc..fb2caae51 100644
  
  const PROVIDER_AUTH_WARM_WORKER_TIMEOUT_MS = 120_000;
  const PROVIDER_AUTH_WARM_CANCEL_POLL_MS = 25;
-+// LobsterAI patch: grace window for the warm worker to exit on its own after
++// baiyingAI patch: grace window for the warm worker to exit on its own after
 +// delivering its result before terminate() is used as a fallback.
 +const PROVIDER_AUTH_WARM_EXIT_GRACE_MS = 2_000;
  
@@ -17,7 +17,7 @@ index 9ce729efc..fb2caae51 100644
      cancelTimer.unref?.();
      worker.once("message", (message: unknown) => {
 -      void worker.terminate();
-+      // LobsterAI patch: prefer the worker's cooperative self-exit (see
++      // baiyingAI patch: prefer the worker's cooperative self-exit (see
 +      // model-provider-auth.worker.ts) over terminating it in the same tick
 +      // it delivers its result. Under ELECTRON_RUN_AS_NODE an immediate
 +      // terminate() races Electron's worker-isolate teardown and has crashed
@@ -42,7 +42,7 @@ index 4a72d2550..b62f96ff0 100644
    const sendToParent: (message: ProviderAuthWarmWorkerResult) => void =
      parentPort.postMessage.bind(parentPort);
    sendToParent(await runProviderAuthWarmWorkerInput(workerData));
-+  // LobsterAI patch: exit cooperatively once the result has been posted so
++  // baiyingAI patch: exit cooperatively once the result has been posted so
 +  // the parent thread does not need to hard-terminate this worker. The
 +  // message is already queued on the parent port, so exiting here cannot
 +  // drop it.

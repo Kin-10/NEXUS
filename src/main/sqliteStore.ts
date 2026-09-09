@@ -26,7 +26,7 @@ type ChangePayload<T = unknown> = {
 const USER_MEMORIES_MIGRATION_KEY = 'userMemories.migration.v1.completed';
 const AGENT_WORKING_DIRECTORY_BACKFILL_KEY = 'agents.workingDirectoryBackfill.v1.completed';
 const SCHEDULED_TASK_SESSION_BACKFILL_KEY = 'coworkSessions.scheduledTaskIdBackfill.v1.completed';
-const EXTRACT_SCHEDULED_TASK_ID_SQL_FUNCTION = 'lobster_extract_scheduled_task_id';
+const EXTRACT_SCHEDULED_TASK_ID_SQL_FUNCTION = 'baiying_extract_scheduled_task_id';
 
 const extractScheduledTaskIdFromMessageMetadata = (metadata: unknown): string | null => {
   if (typeof metadata !== 'string' || !metadata) return null;

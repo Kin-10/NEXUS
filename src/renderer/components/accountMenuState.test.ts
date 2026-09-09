@@ -52,7 +52,7 @@ describe('accountMenuState', () => {
     expect(maskPhoneLikeAccountName(mobileFixture)).toBe(maskedMobileFixture);
     expect(maskPhoneLikeAccountName(`+86${mobileFixture}`)).toBe(maskedMobileFixture);
     expect(maskPhoneLikeAccountName(`${mobilePrefix}-${mobileMiddle}-${mobileSuffix}`)).toBe(maskedMobileFixture);
-    expect(maskPhoneLikeAccountName('Lobster User')).toBe('Lobster User');
+    expect(maskPhoneLikeAccountName('baiying User')).toBe('baiying User');
   });
 
   test('keeps nickname priority while masking phone display values', () => {

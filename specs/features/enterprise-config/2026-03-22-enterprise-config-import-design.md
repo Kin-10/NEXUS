@@ -66,7 +66,7 @@ Reuses OpenClaw's `openclaw.json` structure. Example:
 {
   "models": {
     "providers": {
-      "lobster": {
+      "baiying": {
         "baseUrl": "https://api.example.com",
         "api": "anthropic-messages",
         "apiKey": "sk-xxx",
@@ -103,7 +103,7 @@ Both OpenClaw plugin-style keys (`dingtalk-connector`, `qqbot`, `moltbot-popo`, 
 
 ### LLM API Config
 
-Provider resolution: if config has multiple providers, use the one named `lobster`; if no `lobster` key, use the first provider.
+Provider resolution: if config has multiple providers, use the one named `baiying`; if no `baiying` key, use the first provider.
 
 ```
 openclaw.json                            →  api-config.json

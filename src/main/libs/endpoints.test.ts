@@ -12,9 +12,9 @@ describe('endpoints', () => {
     delete process.env.BAIYING_SERVER_BASE_URL;
     delete process.env.BAIYING_OVERMIND_BASE_URL;
     delete process.env.BAIYING_PORTAL_BASE_URL;
-    delete process.env.LOBSTER_SERVER_BASE_URL;
-    delete process.env.LOBSTER_OVERMIND_BASE_URL;
-    delete process.env.LOBSTER_PORTAL_BASE_URL;
+    delete process.env.baiying_SERVER_BASE_URL;
+    delete process.env.baiying_OVERMIND_BASE_URL;
+    delete process.env.baiying_PORTAL_BASE_URL;
     process.env.NODE_ENV = 'development';
   });
 
@@ -25,8 +25,8 @@ describe('endpoints', () => {
   test('buildOvermindCatalogUrl uses baiying product segment', async () => {
     const { buildOvermindCatalogUrl, OVERMIND_PRODUCT } = await import('./endpoints');
     expect(OVERMIND_PRODUCT).toBe('baiying');
-    expect(buildOvermindCatalogUrl('http://127.0.0.1:8899', 'test', 'kit-store')).toBe(
-      'http://127.0.0.1:8899/openapi/get/luna/hardware/baiying/test/kit-store',
+    expect(buildOvermindCatalogUrl('http://192.168.101.24:8899', 'test', 'kit-store')).toBe(
+      'http://192.168.101.24:8899/openapi/get/luna/hardware/baiying/test/kit-store',
     );
   });
 
@@ -38,11 +38,11 @@ describe('endpoints', () => {
       getPortalBaseUrl,
     } = await import('./endpoints');
 
-    expect(getServerApiBaseUrl()).toBe('http://127.0.0.1:8899');
-    expect(getOvermindBaseUrl()).toBe('http://127.0.0.1:8899');
-    expect(getPortalBaseUrl()).toBe('http://127.0.0.1:8899/portal#');
+    expect(getServerApiBaseUrl()).toBe('http://192.168.101.24:8899');
+    expect(getOvermindBaseUrl()).toBe('http://192.168.101.24:8899');
+    expect(getPortalBaseUrl()).toBe('http://192.168.101.24:8899/portal#');
     expect(getKitStoreUrl()).toBe(
-      'http://127.0.0.1:8899/openapi/get/luna/hardware/baiying/test/kit-store',
+      'http://192.168.101.24:8899/openapi/get/luna/hardware/baiying/test/kit-store',
     );
   });
 

@@ -56,7 +56,7 @@ describe('startup server model warmup', () => {
     });
 
     await runStartupCacheWarmup({
-      serverBaseUrl: 'https://lobster.test',
+      serverBaseUrl: 'https://baiying.test',
       fetchWithAuth,
       appendKeyfromQuery: url => url,
       cachedSubscriptionStatus: 'free',
@@ -66,7 +66,7 @@ describe('startup server model warmup', () => {
 
     expect(updateServerModelMetadata).toHaveBeenCalledWith(serverModels);
     expect(fetchWithAuth).toHaveBeenCalledWith(
-      'https://lobster.test/api/models/available',
+      'https://baiying.test/api/models/available',
       expect.objectContaining({
         headers: {
           Accept: 'application/json',

@@ -49,7 +49,7 @@ When `persistence_enabled=true`, the veFaaS `CreateFunction` request:
 - Enables `VpcConfig` with configured VPC, subnet, and security group IDs.
 - Adds `NasStorage.EnableNas=true` and one `NasConfigs` item. The NAS remote path is mounted from `/`; each deployment then writes under `persistence.remote-root/{shareId}` inside the mounted directory.
 - Sets `MaxConcurrency=10`, the minimum allowed value for veFaaS non-exclusive web functions.
-- Injects `LOBSTER_PERSISTENCE=filesystem`, `LOBSTER_DATA_DIR`, `LOBSTER_PERSISTENCE_REMOTE_ROOT`, `LOBSTER_SHARE_ID`, and `LOBSTER_DEPLOYMENT_ID`.
+- Injects `baiying_PERSISTENCE=filesystem`, `baiying_DATA_DIR`, `baiying_PERSISTENCE_REMOTE_ROOT`, `baiying_SHARE_ID`, and `baiying_DEPLOYMENT_ID`.
 
 Relevant server properties:
 
@@ -59,7 +59,7 @@ share-deployment:
     enabled: true
     provider: filesystem
     mount-path: /data
-    remote-root: /lobster-share-data/{env}/shares
+    remote-root: /baiying-share-data/{env}/shares
     default-quota-bytes: 104857600
     max-bindings: 8
   volcengine:
@@ -78,15 +78,15 @@ share-deployment:
 
 The checked-in profiles separate data roots:
 
-- `local`: `/lobster-share-data/dev/shares`
-- `test`: `/lobster-share-data/test/shares`
-- `prod`: `/lobster-share-data/prod/shares`
+- `local`: `/baiying-share-data/dev/shares`
+- `test`: `/baiying-share-data/test/shares`
+- `prod`: `/baiying-share-data/prod/shares`
 
 The checked-in profiles use subnet `subnet-1c0ddemli7ny85e8j70q0nhd8` by default. Override `SHARE_DEPLOYMENT_VOLCENGINE_SUBNET_ID` if a target environment moves to a different subnet.
 
 ## Runtime Data Handling
 
-The generated `run.sh` copies the immutable code package to `/tmp/lobster-share-runtime-{deploymentId}` as before. It mounts NAS at `/data`, derives the actual data root from `LOBSTER_PERSISTENCE_REMOTE_ROOT`, for example `/data/lobster-share-data/test/shares/{shareId}`, and for each persistence binding it then:
+The generated `run.sh` copies the immutable code package to `/tmp/baiying-share-runtime-{deploymentId}` as before. It mounts NAS at `/data`, derives the actual data root from `baiying_PERSISTENCE_REMOTE_ROOT`, for example `/data/baiying-share-data/test/shares/{shareId}`, and for each persistence binding it then:
 
 1. Creates the NAS-mounted data directory.
 2. Copies the packaged seed file or directory only if the NAS target does not exist.

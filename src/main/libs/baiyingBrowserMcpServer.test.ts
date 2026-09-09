@@ -12,14 +12,14 @@ import {
   BrowserCredentialMcpServer,
 } from '../../shared/browserCredentials/constants';
 import {
-  resolveLobsterBrowserMcpCommand,
-  resolveLobsterBrowserMcpStdioLaunch,
-} from './lobsterBrowserMcpServer';
+  resolvebaiyingBrowserMcpCommand,
+  resolvebaiyingBrowserMcpStdioLaunch,
+} from './baiyingBrowserMcpServer';
 
 const createdDirectories: string[] = [];
 
 const createTempDirectory = (): string => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lobster-browser-mcp-'));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'baiying-browser-mcp-'));
   createdDirectories.push(directory);
   return directory;
 };
@@ -30,12 +30,12 @@ afterEach(() => {
   }
 });
 
-describe('resolveLobsterBrowserMcpCommand', () => {
+describe('resolvebaiyingBrowserMcpCommand', () => {
   test('generates a self-contained Windows launcher and private runtime descriptor', () => {
     const baseDir = createTempDirectory();
     const bridgeSecret = 'runtime-only-secret';
-    const electronNodeRuntimePath = 'D:\\龙虾\\LobsterAI 100%\\LobsterAI.exe';
-    const command = resolveLobsterBrowserMcpCommand(baseDir, {
+    const electronNodeRuntimePath = 'D:\\龙虾\\baiyingAI 100%\\baiyingAI.exe';
+    const command = resolvebaiyingBrowserMcpCommand(baseDir, {
       electronNodeRuntimePath,
       bridgeUrl: 'http://127.0.0.1:61234/browser/tool',
       bridgeSecret,
@@ -45,16 +45,16 @@ describe('resolveLobsterBrowserMcpCommand', () => {
     const launcher = fs.readFileSync(command, 'utf8');
     const serverDir = path.dirname(command);
     const runtimeConfig = JSON.parse(fs.readFileSync(
-      path.join(serverDir, 'lobster-browser-mcp-runtime.json'),
+      path.join(serverDir, 'baiying-browser-mcp-runtime.json'),
       'utf8',
     ));
 
     expect(path.extname(command)).toBe('.cmd');
-    expect(launcher).toContain('"D:\\龙虾\\LobsterAI 100%%\\LobsterAI.exe"');
+    expect(launcher).toContain('"D:\\龙虾\\baiyingAI 100%%\\baiyingAI.exe"');
     expect(launcher).toMatch(/^@echo off\r\nchcp 65001 >nul 2>&1\r\n/);
     expect(launcher.indexOf('chcp 65001')).toBeLessThan(launcher.indexOf(electronNodeRuntimePath.replaceAll('%', '%%')));
     expect(launcher).toContain('set "ELECTRON_RUN_AS_NODE=1"');
-    expect(launcher).not.toContain('LOBSTERAI_ELECTRON_PATH');
+    expect(launcher).not.toContain('baiyingAI_ELECTRON_PATH');
     expect(launcher).not.toContain(bridgeSecret);
     expect(runtimeConfig).toEqual({
       version: 1,
@@ -93,7 +93,7 @@ describe('resolveLobsterBrowserMcpCommand', () => {
       });
       const address = bridgeServer.address() as AddressInfo;
       const bridgeUrl = `http://127.0.0.1:${address.port}/browser/tool`;
-      const command = resolveLobsterBrowserMcpCommand(baseDir, {
+      const command = resolvebaiyingBrowserMcpCommand(baseDir, {
         electronNodeRuntimePath,
         bridgeUrl,
         bridgeSecret,
@@ -106,13 +106,13 @@ describe('resolveLobsterBrowserMcpCommand', () => {
           '--no-usage-statistics',
           '--experimentalStructuredContent',
           '--experimental-page-id-routing',
-          `--lobster-bridge-url=${bridgeUrl}`,
+          `--baiying-bridge-url=${bridgeUrl}`,
         ],
         stderr: 'pipe',
       });
       const stderr: string[] = [];
       transport.stderr?.on('data', chunk => stderr.push(String(chunk)));
-      const client = new Client({ name: 'lobster-browser-unicode-launcher-test', version: '1.0.0' }, {});
+      const client = new Client({ name: 'baiying-browser-unicode-launcher-test', version: '1.0.0' }, {});
 
       try {
         await client.connect(transport);
@@ -127,7 +127,7 @@ describe('resolveLobsterBrowserMcpCommand', () => {
       }
 
       const stderrText = stderr.join('');
-      expect(stderrText).toContain('[LobsterBrowserMcp] startup');
+      expect(stderrText).toContain('[baiyingBrowserMcp] startup');
       expect(stderrText).toContain('runtimeConfig=loaded');
       expect(stderrText).not.toContain(bridgeSecret);
     },
@@ -138,8 +138,8 @@ describe('resolveLobsterBrowserMcpCommand', () => {
     'generates a self-contained %s launcher with safely quoted app paths',
     platform => {
       const baseDir = createTempDirectory();
-      const runtimePath = "/Applications/Lobster AI/O'Brien Helper.app/Contents/MacOS/O'Brien Helper";
-      const command = resolveLobsterBrowserMcpCommand(baseDir, {
+      const runtimePath = "/Applications/baiying AI/O'Brien Helper.app/Contents/MacOS/O'Brien Helper";
+      const command = resolvebaiyingBrowserMcpCommand(baseDir, {
         electronNodeRuntimePath: runtimePath,
         bridgeUrl: 'http://127.0.0.1:61234/browser/tool',
         bridgeSecret: 'runtime-only-secret',
@@ -148,17 +148,17 @@ describe('resolveLobsterBrowserMcpCommand', () => {
 
       const launcher = fs.readFileSync(command, 'utf8');
 
-      expect(path.basename(command)).toBe('lobster-browser-mcp');
-      expect(launcher).toContain("'/Applications/Lobster AI/O'\"'\"'Brien Helper.app/Contents/MacOS/O'\"'\"'Brien Helper'");
+      expect(path.basename(command)).toBe('baiying-browser-mcp');
+      expect(launcher).toContain("'/Applications/baiying AI/O'\"'\"'Brien Helper.app/Contents/MacOS/O'\"'\"'Brien Helper'");
       expect(launcher).toContain('ELECTRON_RUN_AS_NODE=1');
-      expect(launcher).not.toContain('LOBSTERAI_ELECTRON_PATH');
+      expect(launcher).not.toContain('baiyingAI_ELECTRON_PATH');
     },
   );
 
   test('builds a shell-free stdio launch using Electron as Node', () => {
     const baseDir = createTempDirectory();
-    const electronNodeRuntimePath = 'C:\\Program Files\\LobsterAI\\LobsterAI.exe';
-    const launch = resolveLobsterBrowserMcpStdioLaunch(baseDir, {
+    const electronNodeRuntimePath = 'C:\\Program Files\\baiyingAI\\baiyingAI.exe';
+    const launch = resolvebaiyingBrowserMcpStdioLaunch(baseDir, {
       electronNodeRuntimePath,
       bridgeUrl: 'http://127.0.0.1:61234/browser/tool',
       bridgeSecret: 'runtime-only-secret',
@@ -167,14 +167,14 @@ describe('resolveLobsterBrowserMcpCommand', () => {
 
     expect(launch).toEqual({
       command: electronNodeRuntimePath,
-      args: [path.join(baseDir, 'lobster-browser-mcp', 'lobster-browser-mcp-server.mjs')],
+      args: [path.join(baseDir, 'baiying-browser-mcp', 'baiying-browser-mcp-server.mjs')],
       env: { ELECTRON_RUN_AS_NODE: '1' },
     });
     expect(path.extname(launch.command)).toBe('.exe');
     expect(fs.existsSync(launch.args[0])).toBe(true);
   });
 
-  test('starts with the MCP SDK restricted environment without LobsterAI variables', async () => {
+  test('starts with the MCP SDK restricted environment without baiyingAI variables', async () => {
     const baseDir = createTempDirectory();
     const bridgeSecret = 'runtime-only-secret';
     const receivedSecrets: string[] = [];
@@ -195,7 +195,7 @@ describe('resolveLobsterBrowserMcpCommand', () => {
     });
     const address = bridgeServer.address() as AddressInfo;
     const bridgeUrl = `http://127.0.0.1:${address.port}/browser/tool`;
-    const launch = resolveLobsterBrowserMcpStdioLaunch(baseDir, {
+    const launch = resolvebaiyingBrowserMcpStdioLaunch(baseDir, {
       electronNodeRuntimePath: process.execPath,
       bridgeUrl,
       bridgeSecret,
@@ -208,14 +208,14 @@ describe('resolveLobsterBrowserMcpCommand', () => {
         '--no-usage-statistics',
         '--experimentalStructuredContent',
         '--experimental-page-id-routing',
-        `--lobster-bridge-url=${bridgeUrl}`,
+        `--baiying-bridge-url=${bridgeUrl}`,
       ],
       env: launch.env,
       stderr: 'pipe',
     });
     const stderr: string[] = [];
     transport.stderr?.on('data', chunk => stderr.push(String(chunk)));
-    const client = new Client({ name: 'lobster-browser-test', version: '1.0.0' }, {});
+    const client = new Client({ name: 'baiying-browser-test', version: '1.0.0' }, {});
 
     try {
       await client.connect(transport);
@@ -234,12 +234,12 @@ describe('resolveLobsterBrowserMcpCommand', () => {
 
     expect(receivedSecrets).toEqual([bridgeSecret]);
     const stderrText = stderr.join('');
-    expect(stderrText).toContain('[LobsterBrowserMcp] startup');
+    expect(stderrText).toContain('[baiyingBrowserMcp] startup');
     expect(stderrText).toContain('runtimeConfig=loaded');
     expect(stderrText).toContain('bridgeUrlArg=true');
     expect(stderrText).toContain('bridgeSecretConfigured=true');
     expect(stderrText).not.toContain(bridgeSecret);
-    expect(stderrText).not.toContain('LOBSTERAI_ELECTRON_PATH is not set');
+    expect(stderrText).not.toContain('baiyingAI_ELECTRON_PATH is not set');
   }, 15_000);
 
   test('writes bridge failures to stderr without exposing the bridge secret', async () => {
@@ -258,7 +258,7 @@ describe('resolveLobsterBrowserMcpCommand', () => {
     });
     const address = bridgeServer.address() as AddressInfo;
     const bridgeUrl = `http://127.0.0.1:${address.port}/browser/tool?private=ignored`;
-    const launch = resolveLobsterBrowserMcpStdioLaunch(baseDir, {
+    const launch = resolvebaiyingBrowserMcpStdioLaunch(baseDir, {
       electronNodeRuntimePath: process.execPath,
       bridgeUrl,
       bridgeSecret,
@@ -271,7 +271,7 @@ describe('resolveLobsterBrowserMcpCommand', () => {
     });
     const stderr: string[] = [];
     transport.stderr?.on('data', chunk => stderr.push(String(chunk)));
-    const client = new Client({ name: 'lobster-browser-diagnostic-test', version: '1.0.0' }, {});
+    const client = new Client({ name: 'baiying-browser-diagnostic-test', version: '1.0.0' }, {});
 
     try {
       await client.connect(transport);
@@ -295,7 +295,7 @@ describe('resolveLobsterBrowserMcpCommand', () => {
 
   test('can expose only the saved-credential login tool to the Agent runtime', async () => {
     const baseDir = createTempDirectory();
-    const launch = resolveLobsterBrowserMcpStdioLaunch(baseDir, {
+    const launch = resolvebaiyingBrowserMcpStdioLaunch(baseDir, {
       electronNodeRuntimePath: process.execPath,
       bridgeUrl: 'http://127.0.0.1:61234/browser/tool',
       bridgeSecret: 'runtime-only-secret',
@@ -306,7 +306,7 @@ describe('resolveLobsterBrowserMcpCommand', () => {
       env: launch.env,
       stderr: 'pipe',
     });
-    const client = new Client({ name: 'lobster-browser-credential-test', version: '1.0.0' }, {});
+    const client = new Client({ name: 'baiying-browser-credential-test', version: '1.0.0' }, {});
 
     try {
       await client.connect(transport);
@@ -320,12 +320,12 @@ describe('resolveLobsterBrowserMcpCommand', () => {
   test('rejects incomplete runtime configuration', () => {
     const baseDir = createTempDirectory();
 
-    expect(() => resolveLobsterBrowserMcpCommand(baseDir, {
+    expect(() => resolvebaiyingBrowserMcpCommand(baseDir, {
       electronNodeRuntimePath: '',
       bridgeUrl: 'http://127.0.0.1:61234/browser/tool',
       bridgeSecret: 'secret',
     })).toThrow('Electron Node runtime path');
-    expect(() => resolveLobsterBrowserMcpCommand(baseDir, {
+    expect(() => resolvebaiyingBrowserMcpCommand(baseDir, {
       electronNodeRuntimePath: process.execPath,
       bridgeUrl: '',
       bridgeSecret: 'secret',

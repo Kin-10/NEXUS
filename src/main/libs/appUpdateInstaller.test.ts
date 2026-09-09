@@ -561,12 +561,12 @@ describe('mac swap builders', () => {
   });
 
   test('single-quotes paths containing spaces and quotes', () => {
-    const target = `/Applications/It's "Lobster".app`;
+    const target = `/Applications/It's "baiying".app`;
     const swapPaths = buildMacSwapPaths(target, 7);
 
     const cmd = buildMacSwapInstallCommand('/Volumes/src.app', target, swapPaths);
 
-    expect(cmd).toContain(`'/Applications/It'\\''s "Lobster".app'`);
+    expect(cmd).toContain(`'/Applications/It'\\''s "baiying".app'`);
   });
 });
 

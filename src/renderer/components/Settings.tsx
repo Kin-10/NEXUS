@@ -2,6 +2,7 @@ import { ArchiveBoxIcon, ArrowPathIcon, ArrowPathRoundedSquareIcon, CheckCircleI
 import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { UsageAnalyticsUnlockClickCount } from '../../shared/analytics/constants';
 import { AppSettingsAutoLaunchErrorCode } from '../../shared/appSettings/constants';
 import { type AppUpdateInfo,type AppUpdateRuntimeState,AppUpdateSource,AppUpdateStatus } from '../../shared/appUpdate/constants';
 import {
@@ -1383,6 +1384,8 @@ const Settings: React.FC<SettingsProps> = ({
   const [useSystemProxy, setUseSystemProxy] = useState(false);
   const [sqliteAutoBackupEnabled, setSqliteAutoBackupEnabled] = useState(false);
   const [usageAnalyticsEnabled, setUsageAnalyticsEnabled] = useState(true);
+  const [usageAnalyticsUnlocked, setUsageAnalyticsUnlocked] = useState(false);
+  const usageAnalyticsNavClickCountRef = useRef(0);
   const [taskCompletionNotificationMode, setTaskCompletionNotificationMode] =
     useState<TaskCompletionNotificationMode>(TaskCompletionNotificationMode.Unfocused);
   const [permissionNotificationsEnabled, setPermissionNotificationsEnabled] = useState(true);
@@ -3662,11 +3665,23 @@ const Settings: React.FC<SettingsProps> = ({
 
   const handleTabChange = useCallback((tab: TabType) => {
     if (isBackingUpOpenClawData || isRestoringOpenClawData) return;
+    if (tab === 'general' && !usageAnalyticsUnlocked) {
+      usageAnalyticsNavClickCountRef.current += 1;
+      if (usageAnalyticsNavClickCountRef.current >= UsageAnalyticsUnlockClickCount) {
+        setUsageAnalyticsUnlocked(true);
+      }
+    }
     if (activeTab === 'plugins' && pluginsSettingsRef.current?.guardLeave(() => doTabChange(tab))) {
       return;
     }
     doTabChange(tab);
-  }, [activeTab, doTabChange, isBackingUpOpenClawData, isRestoringOpenClawData]);
+  }, [
+    activeTab,
+    doTabChange,
+    isBackingUpOpenClawData,
+    isRestoringOpenClawData,
+    usageAnalyticsUnlocked,
+  ]);
 
   // Guarded close: check plugin dirty state before closing
   const guardedClose = useCallback(() => {
@@ -4611,7 +4626,7 @@ const Settings: React.FC<SettingsProps> = ({
   const renderAppearanceSettings = () => (
     <div className="space-y-8">
       <div>
-        <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--lobster-text-primary)' }}>
+        <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--baiying-text-primary)' }}>
           {i18nService.t('appearance')}
         </h4>
 
@@ -4626,8 +4641,8 @@ const Settings: React.FC<SettingsProps> = ({
                 disabled={isAppearanceChanging}
                 className="flex flex-col items-center rounded-xl border-2 p-3 transition-colors cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 style={{
-                  borderColor: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-border)',
-                  backgroundColor: isSelected ? 'var(--lobster-primary-muted)' : undefined,
+                  borderColor: isSelected ? 'var(--baiying-primary)' : 'var(--baiying-border)',
+                  backgroundColor: isSelected ? 'var(--baiying-primary-muted)' : undefined,
                 }}
               >
                 <svg viewBox="0 0 120 80" className="w-full h-auto rounded-md mb-2 overflow-hidden" xmlns="http://www.w3.org/2000/svg">
@@ -4711,7 +4726,7 @@ const Settings: React.FC<SettingsProps> = ({
                     </>
                   )}
                 </svg>
-                <span className="text-xs font-medium" style={{ color: isSelected ? 'var(--lobster-primary)' : 'var(--lobster-text-primary)' }}>
+                <span className="text-xs font-medium" style={{ color: isSelected ? 'var(--baiying-primary)' : 'var(--baiying-text-primary)' }}>
                   {i18nService.t(mode)}
                 </span>
               </button>
@@ -5002,16 +5017,18 @@ const Settings: React.FC<SettingsProps> = ({
                 />
               </SettingsRow>
 
-              <SettingsRow>
-                <SettingsToggleRow
-                  title={i18nService.t('usageAnalyticsEnabled')}
-                  description={i18nService.t('usageAnalyticsEnabledDescription')}
-                  checked={usageAnalyticsEnabled}
-                  onToggle={() => {
-                    setUsageAnalyticsEnabled((prev) => !prev);
-                  }}
-                />
-              </SettingsRow>
+              {usageAnalyticsUnlocked && (
+                <SettingsRow>
+                  <SettingsToggleRow
+                    title={i18nService.t('usageAnalyticsEnabled')}
+                    description={i18nService.t('usageAnalyticsEnabledDescription')}
+                    checked={usageAnalyticsEnabled}
+                    onToggle={() => {
+                      setUsageAnalyticsEnabled((prev) => !prev);
+                    }}
+                  />
+                </SettingsRow>
+              )}
             </SettingsGroup>
           </div>
         );

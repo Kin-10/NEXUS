@@ -143,7 +143,7 @@ AskUser callback 使用 desktop resolver。无法解析或属于 IM 链路时返
 
 ### 4.3 媒体生成 child session 支持
 
-媒体插件的 `isLobsterAiDesktopSessionKey()` 增加 `agent:*:subagent:*` 支持。
+媒体插件的 `isbaiyingAiDesktopSessionKey()` 增加 `agent:*:subagent:*` 支持。
 
 媒体回调中的 sessionId 提取从 `parseManagedSessionKey()` 切换为本地 resolver，使 child key 能映射到 materialized child Cowork session。
 
@@ -191,10 +191,10 @@ AskUser callback 使用 desktop resolver。无法解析或属于 IM 链路时返
 | 文件 | 改动 |
 |------|------|
 | `openclaw-extensions/ask-user-question/index.ts` | 使用新的 sessionKey helper，支持非 main 桌面 agent 和 subagent candidate |
-| `openclaw-extensions/lobster-media-generation/sessionKey.ts` | 允许 `agent:*:subagent:*` |
+| `openclaw-extensions/baiying-media-generation/sessionKey.ts` | 允许 `agent:*:subagent:*` |
 | `src/main/mcp/mcpRuntime.ts` | AskUser callback 使用本地桌面 session resolver，并对非桌面/未知会话 deny |
 | `src/main/main.ts` | 媒体 callback 使用本地 session resolver，并支持 parent media selection 回退 |
-| `tests/openclaw-extensions/lobster-media-generation/sessionKey.test.ts` | 增加 subagent sessionKey 覆盖 |
+| `tests/openclaw-extensions/baiying-media-generation/sessionKey.test.ts` | 增加 subagent sessionKey 覆盖 |
 
 ## 7. 验收标准
 

@@ -689,11 +689,11 @@ function detectImageExtension(bytes: Uint8Array, fallbackExtension: string): str
 
 function createPptxPreviewMediaPath(zip: { file(path: string): unknown }, index: number, extension: string): string {
   const normalizedExtension = extension.startsWith('.') ? extension : `.${extension}`;
-  let candidate = `${PPTX_MEDIA_DIR}image_lobster_${index}${normalizedExtension}`;
+  let candidate = `${PPTX_MEDIA_DIR}image_baiying_${index}${normalizedExtension}`;
   let suffix = 1;
 
   while (zip.file(candidate)) {
-    candidate = `${PPTX_MEDIA_DIR}image_lobster_${index}_${suffix}${normalizedExtension}`;
+    candidate = `${PPTX_MEDIA_DIR}image_baiying_${index}_${suffix}${normalizedExtension}`;
     suffix += 1;
   }
 

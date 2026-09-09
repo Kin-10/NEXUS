@@ -1,15 +1,10 @@
 import type { InstalledKitRecord } from '../../shared/kit/constants';
 import { KitStoreKey } from '../../shared/kit/constants';
 import {
-  SkinPackKitBundle,
   SkinPackKitId,
   SkinPackSkillId,
 } from '../../shared/skin/kit';
 import { OpenClawConfigImpact } from '../libs/openclawConfigImpact';
-import {
-  buildInstalledSkinPackKitRecord,
-  buildSkinPackMarketplaceKit,
-} from './skinPackKit';
 
 const SKILLS_STATE_KEY = 'skills_state';
 
@@ -55,7 +50,7 @@ export interface SkinPackKitLifecycle {
   ): string;
   installIfHandled(
     request: SkinPackKitInstallRequest,
-  ): Promise<{ success: true; skillIds: string[] } | undefined>;
+  ): Promise<{ success: true; skillIds: string[] } | { success: false; error: string } | undefined>;
   uninstallIfHandled(
     kitId: string,
   ): Promise<{ success: boolean; error?: string } | undefined>;
@@ -76,15 +71,17 @@ function appendToStoreResponse(
     ? JSON.parse(rawValue) as Record<string, unknown>
     : rawValue as Record<string, unknown>;
   const kits = Array.isArray(value.kits) ? value.kits : [];
-  const builtInKits = [
-    buildSkinPackMarketplaceKit(),
-    ...additionalBuiltInKits,
-  ];
-  const builtInKitIds = new Set(builtInKits.map(kit => kit.id));
+  // Skin pack kit is retired from Expert Kits; strip any remote/stale copies
+  // and only keep additional built-ins (e.g. computer-use).
+  const builtInKits = [...additionalBuiltInKits];
+  const removedKitIds = new Set<unknown>([
+    SkinPackKitId.BuiltIn,
+    ...builtInKits.map(kit => kit.id),
+  ]);
   const withoutDuplicate = kits.filter((kit) => (
     !kit
     || typeof kit !== 'object'
-    || !builtInKitIds.has((kit as Record<string, unknown>).id)
+    || !removedKitIds.has((kit as Record<string, unknown>).id)
   ));
   const nextValue = {
     ...value,
@@ -138,38 +135,15 @@ export function createSkinPackKitLifecycle(
 
   const installIfHandled = async (
     request: SkinPackKitInstallRequest,
-  ): Promise<{ success: true; skillIds: string[] } | undefined> => {
+  ): Promise<{ success: true; skillIds: string[] } | { success: false; error: string } | undefined> => {
     if (request.kitId !== SkinPackKitId.BuiltIn) {
       return undefined;
     }
-    if (request.bundleUrl !== SkinPackKitBundle.BuiltIn) {
-      throw new Error('AI Skin Designer kit bundle URL does not match the built-in catalog entry');
-    }
-
-    return withPausedSkillWatcher(async (skillManager) => {
-      skillManager.syncBundledSkillsToUserData();
-      const skinSkill = skillManager.listSkills().find(skill => skill.id === SkinPackSkillId.BuiltIn);
-      if (!skinSkill) {
-        throw new Error('Bundled AI Skin Creator skill is unavailable');
-      }
-      skillManager.setSkillEnabled(SkinPackSkillId.BuiltIn, true);
-
-      const store = deps.getStore();
-      const installedMap = store.get<InstalledKitsMap>(KitStoreKey.Installed) ?? {};
-      installedMap[SkinPackKitId.BuiltIn] = buildInstalledSkinPackKitRecord();
-      store.set(KitStoreKey.Installed, installedMap);
-
-      const syncResult = await deps.syncOpenClawConfig({
-        reason: 'ai-skin-designer-kit-installed',
-        expectedImpact: OpenClawConfigImpact.Sync,
-      });
-      if (!syncResult.success) {
-        throw new Error(syncResult.error || 'OpenClaw config sync failed after AI Skin Designer install');
-      }
-
-      console.log(`[SkinPackKit] Kit installed with bundled skill: ${SkinPackSkillId.BuiltIn}`);
-      return { success: true, skillIds: [SkinPackSkillId.BuiltIn] };
-    });
+    // Expert-kit entry for AI Skin Designer has been removed.
+    return {
+      success: false,
+      error: 'AI Skin Designer kit is no longer available in Expert Kits',
+    };
   };
 
   const uninstallIfHandled = async (

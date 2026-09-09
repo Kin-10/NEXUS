@@ -215,16 +215,16 @@ CTA 点击后继续打开现有 Portal `#/pricing`：文件使用 `keyfrom=html_
 
 ### 客户端恢复 CTA 转化埋点
 
-这里的埋点是在 Electron 客户端产生、通过 `reportYdAnalyzer` 上传到分析服务端的产品事件，不是 `lobsterai-server` 进程日志，也不是分享访问分析 API。它沿用现有客户端上报链路，不需要新增 `lobsterai-server` 业务接口或数据库字段。完整五 surface 合同见 [`2026-08-20-publishing-quota-expiration.md`](./2026-08-20-publishing-quota-expiration.md)；本 Library 联调需保证：
+这里的埋点是在 Electron 客户端产生、通过 `reportYdAnalyzer` 上传到分析服务端的产品事件，不是 `baiyingai-server` 进程日志，也不是分享访问分析 API。它沿用现有客户端上报链路，不需要新增 `baiyingai-server` 业务接口或数据库字段。完整五 surface 合同见 [`2026-08-20-publishing-quota-expiration.md`](./2026-08-20-publishing-quota-expiration.md)；本 Library 联调需保证：
 
-- 列表、文件详情和站点详情分别使用 `recoverySurface=library_cloud_list/library_file_detail/library_site_detail`，上报 `lobsterai_publishing_recovery_cta_exposure` 与 `lobsterai_publishing_recovery_cta_action`；
+- 列表、文件详情和站点详情分别使用 `recoverySurface=library_cloud_list/library_file_detail/library_site_detail`，上报 `baiyingai_publishing_recovery_cta_exposure` 与 `baiyingai_publishing_recovery_cta_action`；
 - 列表使用 `source=library_list, entryPoint=subscription_recovery_cta`，两个详情使用 `source=library_preview, entryPoint=library_settings`；新 `recoverySurface` 不覆盖旧 `surface`；
 - 共同字段固定 `interactionType=recovery_cta`、`operationType=subscription_recovery`、`identityType=free`，并带 `subscriptionRecoveryMode`、`feature/resourceKind`、`attemptId/exposureId`；点击固定 `ctaId=primary`、`target=pricing` 并生成 `operationId`；
-- 同一曝光周期的 `attemptId` 必须等于 Portal `trace_id`，并被七天 last-touch 与既有 `lobsterai_publishing_subscription_observed` 继续回传；
+- 同一曝光周期的 `attemptId` 必须等于 Portal `trace_id`，并被七天 last-touch 与既有 `baiyingai_publishing_subscription_observed` 继续回传；
 - 列表行进入可视区才产生曝光，倒计时、查询刷新、有界轮询和虚拟列表重挂载不得重复上报；
 - owner/resource key 只在本地归因 envelope 中用于隔离和去重，上报 payload 必须按白名单构造，禁止整体展开本地记录；不上传 `ownerAccountKey`、`resourceKey`、`itemId/shareId/siteId/deploymentId`、文件名、路径、URL、分享码、任务标题、搜索词或资源内容；
 - `subscription_observed` 只表示七天 last-touch 内同一 personal owner 被客户端权威 auth/quota 快照观察为 `subscriptionStatus=active` 且事件上传成功，不代表 Portal 订单支付成功，也不代表 Library 资源已恢复；
-- 恢复结果单独上报 `lobsterai_publishing_recovery_result`；`automatic` 只在权威响应已可访问且期限为 `null` 时记 `outcome=restored`，`redeploy_required` 订阅生效后记 `outcome=redeploy_ready`。
+- 恢复结果单独上报 `baiyingai_publishing_recovery_result`；`automatic` 只在权威响应已可访问且期限为 `null` 时记 `outcome=restored`，`redeploy_required` 订阅生效后记 `outcome=redeploy_ready`。
 
 所有事件遵守 `usageAnalyticsEnabled`，上报失败不阻断打开套餐页。
 
@@ -464,8 +464,8 @@ mermaid_file
 - 资料库和 `/api/html-shares/my` 不返回 deleted，可见 `counts.sharedFile` 和 `sharedStatusCounts` 在删除后减少；
 - 免费个人账号的累计创建限制继续使用 `status <> 'failed'`，因此 deleted 仍计入历史用量。例如 10/10 删除一条后仍是 10/10，不能创建第 11 条；
 - 订阅和企业活跃额度在停止分享时已经释放，永久删除不再次调整或补位；
-- `lobsterai-admin` 未传 `status` 时默认增加 `status <> 'deleted'`；显式选择“已删除”只展示墓碑安全字段和删除时间，不能预览、审核、恢复、修改权限或下载文件；
-- `lobsterai-portal` 没有分享文件管理入口，本功能不增加重复入口。
+- `baiyingai-admin` 未传 `status` 时默认增加 `status <> 'deleted'`；显式选择“已删除”只展示墓碑安全字段和删除时间，不能预览、审核、恢复、修改权限或下载文件；
+- `baiyingai-portal` 没有分享文件管理入口，本功能不增加重复入口。
 
 ### NOS 物理删除发布 Gate
 

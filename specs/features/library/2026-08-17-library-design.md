@@ -34,10 +34,10 @@
 
 本次永久删除实施落点：
 
-- `LobsterAI`：分享设置页增加危险区域、完整文件名确认、删除 IPC/API、错误恢复、列表计数与收藏清理；删除只影响云端分享，本地原文件和相关任务不参与；
-- `lobsterai-server`：新增 `DELETE /api/html-shares/{shareId}/permanent` 与独立事务服务；owner 条件行锁、普通来源白名单、`disabled` 前置校验、同 owner 重复删除幂等、`deleted` 查询隔离、迟到统计/审核写保护均已落地；
-- `lobsterai-admin`：默认列表排除 `deleted`，显式“已删除”筛选仅显示最小审计详情，预览、审核、恢复及其他写动作禁用；
-- `lobsterai-portal`：没有分享文件管理入口，本功能不修改；
+- `baiyingAI`：分享设置页增加危险区域、完整文件名确认、删除 IPC/API、错误恢复、列表计数与收藏清理；删除只影响云端分享，本地原文件和相关任务不参与；
+- `baiyingai-server`：新增 `DELETE /api/html-shares/{shareId}/permanent` 与独立事务服务；owner 条件行锁、普通来源白名单、`disabled` 前置校验、同 owner 重复删除幂等、`deleted` 查询隔离、迟到统计/审核写保护均已落地；
+- `baiyingai-admin`：默认列表排除 `deleted`，显式“已删除”筛选仅显示最小审计详情，预览、审核、恢复及其他写动作禁用；
+- `baiyingai-portal`：没有分享文件管理入口，本功能不修改；
 - 存储边界：现有仓库没有可确认的 NOS 删除 API 或队列消费者，因此当前完成定义是“数据库内容已清理、NOS 删除意图已与墓碑同事务提交”。在测试环境观察到对象实际不存在、失败可重试且有积压告警前，不得对外宣称 NOS 字节已完成物理删除。
 
 已完成 Electron 基础手动验收：侧栏入口和本地索引可用；历史回填后可展示本地产物；列表按日期/任务使用单列布局；索引支持同一文件关联多个任务并选择最新有效任务分组；真实 HTML 文件可使用现有预览链路渲染；云端接口不可用时本地产物保持可浏览、可预览，并显示弱打扰的独立错误状态。测试 MySQL 5.7 实库查询、真实分享/部署联调、深色主题回归，以及 Windows 文件打开/显示行为仍属于上线前验收项。
@@ -819,16 +819,16 @@ Portal 没有支付完成后回跳 Electron 的 deep link，因此客户端使�
 
 ##### 客户端产品与订阅转化埋点
 
-本节的“埋点”专指在 Electron Renderer 产生、通过现有 `reportYdAnalyzer` 通道上传到分析服务端的客户端产品事件，用于恢复入口漏斗和订阅转化归因；不是 `lobsterai-server` 进程打印的运行日志，也不是分享访问 UV/PV 的 owner analytics API。恢复协调器内存中的 owner/resource 等待意图只用于刷新业务，不等于埋点，也不代表这些字段可以上传。
+本节的“埋点”专指在 Electron Renderer 产生、通过现有 `reportYdAnalyzer` 通道上传到分析服务端的客户端产品事件，用于恢复入口漏斗和订阅转化归因；不是 `baiyingai-server` 进程打印的运行日志，也不是分享访问 UV/PV 的 owner analytics API。恢复协调器内存中的 owner/resource 等待意图只用于刷新业务，不等于埋点，也不代表这些字段可以上传。
 
 恢复 CTA 跨越弹窗、列表和详情，不把非弹窗界面伪装成 `PublishingDialogExposure/Action`。新增统一客户端事件，但复用既有发布埋点的 attempt/exposure/operation 关联模型和七天 last-touch 逻辑：
 
 | 客户端事件 | 触发时机 | 用途 |
 | --- | --- | --- |
-| `lobsterai_publishing_recovery_cta_exposure` | CTA 首次实际可见；列表项要进入可视区，页面停留跨过到期边界后出现也要上报 | 恢复入口曝光分母 |
-| `lobsterai_publishing_recovery_cta_action` | 鼠标点击或键盘激活被接受后，在 armed 协调器和 `openExternal()` 之前 | CTA 点击与订阅归因起点 |
-| `lobsterai_publishing_subscription_observed` | 复用既有事件；对恢复 CTA 只在同一个人 owner 的权威 auth/quota 快照由 `free` 收敛为 `active` 时上报 | 客户端订阅转化终点 |
-| `lobsterai_publishing_recovery_result` | 订阅观察后，客户端取得资源权威响应或有界重试用尽 | 区分“订阅已观察”和“资源已恢复” |
+| `baiyingai_publishing_recovery_cta_exposure` | CTA 首次实际可见；列表项要进入可视区，页面停留跨过到期边界后出现也要上报 | 恢复入口曝光分母 |
+| `baiyingai_publishing_recovery_cta_action` | 鼠标点击或键盘激活被接受后，在 armed 协调器和 `openExternal()` 之前 | CTA 点击与订阅归因起点 |
+| `baiyingai_publishing_subscription_observed` | 复用既有事件；对恢复 CTA 只在同一个人 owner 的权威 auth/quota 快照由 `free` 收敛为 `active` 时上报 | 客户端订阅转化终点 |
+| `baiyingai_publishing_recovery_result` | 订阅观察后，客户端取得资源权威响应或有界重试用尽 | 区分“订阅已观察”和“资源已恢复” |
 
 三个新增 recovery 事件使用独立 `PublishingRecoveryAnalyticsEventVersion=1` 和独立参数 builder，不直接复用会写入 `PublishingAnalyticsEventVersion=2` 的旧 `getAttemptParams`。共同字段为 `attemptId/exposureId/interactionType/feature/resourceKind/operationType/source/entryPoint/surface/recoverySurface/pageViewId/hasExistingResource/identityType/subscriptionRecoveryMode`，固定 `interactionType=recovery_cta`、`operationType=subscription_recovery`、`hasExistingResource=true`、`identityType=free`。点击事件另带 `actionType=click`、`ctaId=primary`、`target=pricing`、每次真实点击生成的 `operationId` 和 `exposureToClickMs`。`recoverySurface` 是新维度，不覆盖或改变旧 `surface` 语义；`operationType`、事件名、mode 与 surface 都必须集中定义常量，不在五个界面使用裸字符串。
 
@@ -850,7 +850,7 @@ Portal 没有支付完成后回跳 Electron 的 deep link，因此客户端使�
 
 `reportPendingPublishingSubscriptionObserved` 改为接收当前权威 `ownerAccountKey + accountMode + subscriptionStatus`，`auth.ts` 初始化和刷新两个调用点都必须传入同一快照。当前 owner 与本地 attribution envelope 不一致时立即清理且不上报。恢复 CTA 点击前已证明个人普通账号，因此 attribution 固定写入 `identityType=free`，并只将同一 personal owner 后续观察到 `subscriptionStatus=active` 计为恢复转化；既有其他发布 CTA 对 `enterprise` 的旧规则不变。换账号、登出、关闭使用分析、7 天过期或 `subscription_observed` 成功上报后清理归因；上报失败保留归因，并在后续 auth/quota 刷新重试，每次尝试可生成新 `eventId`，分析端以 `operationId` 去重。当前 `reportDeploymentDialogAction()` 不会写入 last-touch，统一恢复 CTA helper 必须直接复用公共 attribution writer，不能为网站入口再双报 generic dialog action。
 
-客户端转化成功的口径只是：同 personal owner 在有效 last-touch 后 7 天内被权威 auth/quota 快照观察为 `subscriptionStatus=active`，且 `lobsterai_publishing_subscription_observed` 上传成功。它不可命名为 `payment_success`，也不代表资源恢复成功；报表统计该转化时固定筛选 `interactionType=recovery_cta && subscriptionStatus=active && confidence=known_free`。`automatic` 只有在资源权威响应已可访问且期限为 `null` 时才上报 `outcome=restored`；`redeploy_required` 在订阅后只能上报 `outcome=redeploy_ready`，真实重新部署结果继续使用现有 deployment result 事件。`recovery_result.outcome` 只允许 `restored/redeploy_ready/retry_exhausted/resource_unavailable`，并附带原点击 `operationId` 和从该次点击到终态的 `durationMs`；`retry_exhausted` 只在同 owner 已观察到 `active` 但有界恢复重试仍未收敛时上报。恢复协调器另存不上传 owner/resource key 的 in-flight analytics context；`subscription_observed` 上报成功只清理 last-touch，不清理该结果关联。同 owner 多次真实点击时只保留最新 `operationId` 的终态关联，旧操作不再上报 result。取消购买、仍为 free 或浏览器中买了其他账号不记为转化或恢复失败。
+客户端转化成功的口径只是：同 personal owner 在有效 last-touch 后 7 天内被权威 auth/quota 快照观察为 `subscriptionStatus=active`，且 `baiyingai_publishing_subscription_observed` 上传成功。它不可命名为 `payment_success`，也不代表资源恢复成功；报表统计该转化时固定筛选 `interactionType=recovery_cta && subscriptionStatus=active && confidence=known_free`。`automatic` 只有在资源权威响应已可访问且期限为 `null` 时才上报 `outcome=restored`；`redeploy_required` 在订阅后只能上报 `outcome=redeploy_ready`，真实重新部署结果继续使用现有 deployment result 事件。`recovery_result.outcome` 只允许 `restored/redeploy_ready/retry_exhausted/resource_unavailable`，并附带原点击 `operationId` 和从该次点击到终态的 `durationMs`；`retry_exhausted` 只在同 owner 已观察到 `active` 但有界恢复重试仍未收敛时上报。恢复协调器另存不上传 owner/resource key 的 in-flight analytics context；`subscription_observed` 上报成功只清理 last-touch，不清理该结果关联。同 owner 多次真实点击时只保留最新 `operationId` 的终态关联，旧操作不再上报 result。取消购买、仍为 free 或浏览器中买了其他账号不记为转化或恢复失败。
 
 埋点失败不得阻断打开套餐页。所有事件遵守 `usageAnalyticsEnabled`，不上传 `ownerAccountKey`、`shareId/siteId/deploymentId`、文件名、本地路径、URL、分享码、任务标题、搜索词或资源内容。
 
@@ -956,7 +956,7 @@ Node 服务的手动重新部署继续复用现有部署接口和状态机。接
 2. 订阅回调只在事务提交后投递恢复，不把第三方部署延迟引入订阅接口。
 3. 同一批次在一个事务内收敛；分享与静态 deployment 配对更新不一致时整体回滚，避免半恢复状态。Node 服务需要用户操作不视为恢复失败。
 4. 订阅提交后事件和页面兜底都按至少一次触发设计，业务结果依赖非空到期标记和条件更新幂等收敛。
-5. 以下为 `lobsterai-server` 运行日志，不是客户端转化埋点：日志使用 `[PublishingRecovery]` 模块前缀，记录 `trigger/userId/candidateCount/fileRestored/onlineSiteConverted/staticSiteRestored/skipped/pending/durationMs`；不得记录文件名、URL、分享码、任务标题或本地路径。
+5. 以下为 `baiyingai-server` 运行日志，不是客户端转化埋点：日志使用 `[PublishingRecovery]` 模块前缀，记录 `trigger/userId/candidateCount/fileRestored/onlineSiteConverted/staticSiteRestored/skipped/pending/durationMs`；不得记录文件名、URL、分享码、任务标题或本地路径。
 
 ##### 灰度与回滚
 
@@ -1247,7 +1247,7 @@ const LibraryLoadingTiming = {
 - 加载容器维持与结果区相同的起始位置和合理最小高度，工具栏、滚动条槽和页面宽度不移动。
 - 容器使用 `aria-busy`；骨架本身 `aria-hidden`。超过 150ms 时通过一个 `role="status"` 的本地化文本宣布“正在加载”，同一请求只宣布一次，快速请求不产生无意义播报。
 
-本增量仅修改 `LobsterAI` Renderer 的状态和视觉，不改变 Preload/Main IPC、`lobsterai-server` API、MySQL 5.7、客户端 SQLite 表或分页合同。接口快慢只用于验证显现策略，不需要数据库迁移或服务端联调发布顺序。
+本增量仅修改 `baiyingAI` Renderer 的状态和视觉，不改变 Preload/Main IPC、`baiyingai-server` API、MySQL 5.7、客户端 SQLite 表或分页合同。接口快慢只用于验证显现策略，不需要数据库迁移或服务端联调发布顺序。
 
 ### 6.3 来源独立分页与自动续页
 
@@ -1453,7 +1453,7 @@ Windows 上 `realpath/stat`、杀毒软件扫描和目录 watcher 建立可能�
 2. Renderer 缓存键使用 `clientRendererVersion + filePath + fileMtimeMs + fileSizeBytes`，主进程在重新 `stat` 后使用规范化路径、真实 mtime、大小和 rendererVersion 复核；异步结果只有在请求缓存键仍等于卡片当前缓存键时才可回填；
 3. 缓存位于客户端 `userData/library/thumbnails`，不写 SQLite BLOB；
 4. 文件变化后旧缓存自然失效，后台可按 LRU 清理；磁盘缓存先写同目录临时文件再原子 rename，读取前校验 PNG 签名，空文件、截断文件和非 PNG 文件必须删除并重新生成；
-5. macOS、Windows 和 Linux 优先使用 LobsterAI 隔离的跨平台 Renderer 生成缩略图；Renderer 失败后才尝试 Electron `nativeImage.createThumbnailFromPath()`，两条链路均失败时显示类型封面；Renderer 侧按缓存键去重，客户端共享调度器最多并发 2 个 IPC，主进程只保留一个可按可见性提权、可取消的渲染队列，不得再叠加 Renderer 私有 FIFO；
+5. macOS、Windows 和 Linux 优先使用 baiyingAI 隔离的跨平台 Renderer 生成缩略图；Renderer 失败后才尝试 Electron `nativeImage.createThumbnailFromPath()`，两条链路均失败时显示类型封面；Renderer 侧按缓存键去重，客户端共享调度器最多并发 2 个 IPC，主进程只保留一个可按可见性提权、可取消的渲染队列，不得再叠加 Renderer 私有 FIFO；
 6. JPG/JPEG/PNG/GIF/WebP/AVIF/BMP、清洗后的 SVG、PDF 第一页、文本/Markdown/代码、视频抽帧、Mermaid 和表格首屏都在 Renderer 内绘制到固定尺寸 Canvas 并直接返回 PNG；这些格式不得进入隐藏窗口 presentation/capturePage。只有 HTML、DOCX 和 PPTX 等必须依赖完整 DOM 排版的格式保留 presentation 路径；
 7. PPTX 缩略图只解析并渲染第 1 张幻灯片，不得使用列表模式创建整份演示文稿的页面 DOM 后再隐藏；第一页为空白时保留真实空白结果，不擅自改用第 2 页；
 8. PPTX Renderer 在解析完成后必须直接从第一页源模型计算 `sourceHasVisualContent` 和 `sourceVisualElementCount`：检查有效背景、第一页节点以及布局/母版中的 `userDrawn` 节点；空占位符和纯白背景不算视觉内容。随后再从第一页 DOM 独立计算 `domHasVisualContent`。只有字体就绪、内嵌图片完成加载和解码、源模型有内容时 DOM 也有对应内容、布局连续两帧稳定后才可返回成功；媒体等待必须有超时并在失败时进入统一降级链路；
@@ -2330,7 +2330,7 @@ Authorization: Bearer <token>
 
 免费累计创建限制不得复用可见列表条件，继续按 `status <> 'failed'` 或等价条件计入 deleted。当前 10 个历史分享的用户删除一条后仍为 10，不能创建第 11 条。订阅/企业活跃限制继续只看活动资源，关闭时已释放，删除不再修改配额计数或触发额度补位。
 
-管理员分享列表目前在未传 status 时会包含所有状态，需改为默认 `status <> 'deleted'`。如运营确需审计，可增加显式 deleted 筛选和只读墓碑详情；deleted 行禁用预览、审核、状态恢复、权限编辑和内容下载。管理员接口不得返回已清空前的 title、entry path、分享码或统计。`lobsterai-portal` 当前没有相关分享管理入口，本功能不修改。
+管理员分享列表目前在未传 status 时会包含所有状态，需改为默认 `status <> 'deleted'`。如运营确需审计，可增加显式 deleted 筛选和只读墓碑详情；deleted 行禁用预览、审核、状态恢复、权限编辑和内容下载。管理员接口不得返回已清空前的 title、entry path、分享码或统计。`baiyingai-portal` 当前没有相关分享管理入口，本功能不修改。
 
 ### 10.12 分享文件访问分析接口
 
@@ -2819,9 +2819,9 @@ OpenClaw/Cowork 消息
 
 | 仓库/模块 | 修改 |
 | --- | --- |
-| `lobsterai-admin` 分享列表与 API 类型 | 默认排除 deleted；可选增加显式“已删除”只读筛选；deleted 禁止预览、审核、恢复、权限编辑和下载 |
-| `lobsterai-server` Admin HtmlShare Mapper/Service | 未传 status 时增加 `status <> 'deleted'`；显式审计查询只返回墓碑安全字段 |
-| `lobsterai-portal` | 当前没有对应分享文件管理入口，不修改；不得为了本功能新增重复入口 |
+| `baiyingai-admin` 分享列表与 API 类型 | 默认排除 deleted；可选增加显式“已删除”只读筛选；deleted 禁止预览、审核、恢复、权限编辑和下载 |
+| `baiyingai-server` Admin HtmlShare Mapper/Service | 未传 status 时增加 `status <> 'deleted'`；显式审计查询只返回墓碑安全字段 |
+| `baiyingai-portal` | 当前没有对应分享文件管理入口，不修改；不得为了本功能新增重复入口 |
 
 正式实施分享文件管理页、访问分析和永久删除时，还需同步更新现有 `docs/server-integration/2026-08-17-library-cloud-items.md`，并新增或补充永久删除联调合同，冻结 `/permanent`、`41315/41316`、deleted 过滤、免费历史配额、NOS 清理完成定义、灰度顺序和兼容策略；订阅恢复合同同时同步到 `docs/server-integration/2026-08-20-publishing-quota-expiration.md`。联调文档必须明确区分已实现合同与待上线接口。本 Spec 是产品与技术目标设计，不替代实施时冻结的 API 合同。
 

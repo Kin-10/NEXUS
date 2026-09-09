@@ -71,7 +71,7 @@ describe('migrateLegacyOpenClawPluginInstalls', () => {
         OPENCLAW_STATE_DIR: stateDir,
         OPENCLAW_CONFIG_PATH: configPath,
         ELECTRON_RUN_AS_NODE: '1',
-        LOBSTER_APIKEY_0: 'secret',
+        BAIYING_APIKEY_0: 'secret',
       });
       const migrated = structuredClone(legacyConfig);
       delete (migrated.plugins as { installs?: unknown }).installs;
@@ -85,7 +85,7 @@ describe('migrateLegacyOpenClawPluginInstalls', () => {
       runtimeRoot,
       electronNodeRuntimePath: '/electron/node',
       env: {},
-      secretEnvVars: { LOBSTER_APIKEY_0: 'secret' },
+      secretEnvVars: { BAIYING_APIKEY_0: 'secret' },
       runner,
     });
 

@@ -184,7 +184,7 @@ export function getPreviewCardDescriptor(artifact: Artifact): PreviewCardDescrip
     ? PreviewCardOpenAction.Browser
     : PreviewCardOpenAction.Preview;
   const hoverSubtitle = defaultOpenAction === PreviewCardOpenAction.Browser
-    ? t('artifactPreviewCardOpenInLobsterBrowser')
+    ? t('artifactPreviewCardOpenInbaiyingBrowser')
     : t('artifactPreviewCardOpenPreview');
   const iconKind = displayKind === PreviewCardDisplayKind.LocalService
     ? PreviewCardIconKind.Globe

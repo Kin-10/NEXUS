@@ -675,7 +675,7 @@ export const LogReporterActionPrefix = {
   - 额度相关字段只记录是否有额度明细和明细数量，不记录资产金额。
   - 套餐相关字段只记录规范化档位、订阅状态和是否可升级，不记录用户可见套餐名称或权益明细。
 
-#### 2.4.28.1 `lobsterai_daily_check_in_action`
+#### 2.4.28.1 `baiyingai_daily_check_in_action`
 
 - 状态：已实现。
 - 触发时机：用户点击首页右上角或左下角「我的」浮层里的每日积分礼领取入口后发送。领取请求成功、已领取、需登录、活动不可用或领取失败时补充结果事件。
@@ -1076,7 +1076,7 @@ export const LogReporterActionPrefix = {
 - 事件含义：统计 artifact 从生成后的点击、打开、预览、切换、复用、浏览和导出链路。
 - 业务参数：
   - `source`：string，触发来源。当前取值包括 `conversation_artifact_card`、`artifact_panel`、`artifact_browser`。
-  - `actionType`：string，动作类型。当前取值包括 `card_open`、`badge_open`、`open_menu_toggle`、`open_lobster_browser`、`open_external_app`、`open_with_app`、`open_in_browser`、`open_local_service`、`reveal_in_folder`、`panel_toggle`、`panel_expand_toggle`、`panel_add_menu_toggle`、`panel_tab_open`、`panel_tab_switch`、`panel_tab_close`、`file_list_drawer_toggle`、`file_list_select_artifact`、`actions_menu_toggle`、`content_view_change`、`copy_content`、`refresh_preview`、`share_html_click`、`browser_preview_session_create`、`browser_back`、`browser_forward`、`browser_reload`、`browser_stop`、`browser_address_submit`、`browser_open_external`、`browser_more_menu_toggle`、`browser_open_blank_page`、`browser_open_local_service`、`browser_device_toolbar_toggle`、`browser_device_preset_change`、`browser_device_size_change`、`browser_device_rotate`、`browser_device_scale_change`、`browser_zoom_in`、`browser_zoom_out`、`browser_zoom_reset`、`browser_clear_cookies`、`browser_clear_cache`、`browser_screenshot`、`browser_annotate_start`、`browser_annotate_cancel`、`browser_annotate_end`、`browser_annotate_send`。
+  - `actionType`：string，动作类型。当前取值包括 `card_open`、`badge_open`、`open_menu_toggle`、`open_baiying_browser`、`open_external_app`、`open_with_app`、`open_in_browser`、`open_local_service`、`reveal_in_folder`、`panel_toggle`、`panel_expand_toggle`、`panel_add_menu_toggle`、`panel_tab_open`、`panel_tab_switch`、`panel_tab_close`、`file_list_drawer_toggle`、`file_list_select_artifact`、`actions_menu_toggle`、`content_view_change`、`copy_content`、`refresh_preview`、`share_html_click`、`browser_preview_session_create`、`browser_back`、`browser_forward`、`browser_reload`、`browser_stop`、`browser_address_submit`、`browser_open_external`、`browser_more_menu_toggle`、`browser_open_blank_page`、`browser_open_local_service`、`browser_device_toolbar_toggle`、`browser_device_preset_change`、`browser_device_size_change`、`browser_device_rotate`、`browser_device_scale_change`、`browser_zoom_in`、`browser_zoom_out`、`browser_zoom_reset`、`browser_clear_cookies`、`browser_clear_cache`、`browser_screenshot`、`browser_annotate_start`、`browser_annotate_cancel`、`browser_annotate_end`、`browser_annotate_send`。
   - `artifactType`：string，artifact 类型。当前取值包括 `html`、`svg`、`image`、`video`、`mermaid`、`code`、`markdown`、`text`、`document`、`local-service`。
   - `artifactSource`：string，artifact 来源。当前取值包括 `inline`、`tool`、`file`。
   - `artifactTitleLength` / `artifactTitleLengthBucket`：number/string，artifact 标题或文件名长度及分桶。
@@ -1084,7 +1084,7 @@ export const LogReporterActionPrefix = {
   - `hasFilePath` / `hasUrl` / `hasContent`：boolean，artifact 是否有本地文件路径、URL 或内联内容。
   - `contentLengthBucket`：string，artifact 内容长度分桶。
   - `isWebsite`：boolean，是否为网页/本地服务类 artifact。
-  - `openTarget`：string，打开目标。当前取值包括 `preview_panel`、`lobster_browser`、`external_browser`、`external_app`、`folder`。
+  - `openTarget`：string，打开目标。当前取值包括 `preview_panel`、`baiying_browser`、`external_browser`、`external_app`、`folder`。
   - `appName`：string，用户选择的系统 App 名称，例如 `Google Chrome`、`Safari`；不上传 App 路径。
   - `isDefaultApp`：boolean，是否为系统默认 App。
   - `tabType`：string，右侧面板 tab 类型。当前取值包括 `artifact`、`browser`、`file_list`。
@@ -1173,7 +1173,7 @@ export const LogReporterActionPrefix = {
   - 该事件是本文"不上传错误详情"约定的明确例外：只上传经上述规则脱敏和截断后的错误摘要，不上传完整文件路径、完整 URL、子进程日志、provider 配置、API Key 或工作台 URL。
   - 不上传工作台内的会话内容、prompt 或文件内容。
 
-#### 2.4.44 `lobsterai_onboarding_action`
+#### 2.4.44 `baiyingai_onboarding_action`
 
 - 状态：已实现。
 - 触发时机：新用户引导页曝光、点击下一步/跳过/开始体验、浏览器登录跳转结果、登录回调观察、登录后等待/完成 OpenClaw 网关重启、跳转登录但未登录返回客户端、新人任务打开结果、新人任务本地流式动画开始/结束、普通登录引导弹窗开始体验按钮点击，以及新人任务输入框上的二次登录按钮点击和登录跳转结果。

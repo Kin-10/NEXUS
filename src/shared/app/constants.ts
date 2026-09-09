@@ -1,5 +1,6 @@
 export const AppIpcChannel = {
   GetKeyfromAttribution: 'app:getKeyfromAttribution',
+  GetAnalyticsDeviceInfo: 'app:getAnalyticsDeviceInfo',
   OpenSystemNotificationSettings: 'app:openSystemNotificationSettings',
 } as const;
 

@@ -1,6 +1,6 @@
 export const BrowserCredentialGuestChannel = {
-  Command: 'lobster:browser-credential:command',
-  Result: 'lobster:browser-credential:result',
+  Command: 'baiying:browser-credential:command',
+  Result: 'baiying:browser-credential:result',
 } as const;
 
 export const BrowserCredentialGuestCommandType = {

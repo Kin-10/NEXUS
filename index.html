@@ -252,10 +252,10 @@
     </style>
     <script>
       // 在页面加载前预设主题，避免闪烁。
-      // 'lobster-theme-appearance' 由 theme-manager.ts 在每次应用主题时写入。
+      // 'baiying-theme-appearance' 由 theme-manager.ts 在每次应用主题时写入。
       (function () {
         try {
-          var appearance = localStorage.getItem('lobster-theme-appearance');
+          var appearance = localStorage.getItem('baiying-theme-appearance');
           if (appearance !== 'dark' && appearance !== 'light') {
             appearance = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
           }
@@ -488,11 +488,11 @@
     </script>
     <script>
       // 本地化启动屏文案并随机选一条小提示。
-      // 'lobster-language' 由 i18n.ts 在语言确定后写入；首次启动回退到系统语言。
+      // 'baiying-language' 由 i18n.ts 在语言确定后写入；首次启动回退到系统语言。
       // 文案需与 src/renderer/services/i18n.ts 中的 engineStarting* / loading 保持同步。
       (function () {
         try {
-          var lang = localStorage.getItem('lobster-language');
+          var lang = localStorage.getItem('baiying-language');
           if (lang !== 'zh' && lang !== 'en') {
             lang = navigator.language === 'zh-CN' ? 'zh' : 'en';
           }
@@ -540,7 +540,7 @@
               dotButtons[j].className = j === idx ? 'splash-dot splash-dot-active' : 'splash-dot';
             }
             try {
-              sessionStorage.setItem('lobster-splash-tip-index', String(idx));
+              sessionStorage.setItem('baiying-splash-tip-index', String(idx));
             } catch (e) {
               /* storage unavailable */
             }

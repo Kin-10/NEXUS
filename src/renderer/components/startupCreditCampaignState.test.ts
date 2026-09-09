@@ -24,7 +24,7 @@ import {
 } from './startupCreditCampaignState';
 
 const descriptor: StartupCreditDescriptor = {
-  activityCode: 'netease-user-reward-test',
+  activityCode: 'baiying-user-reward-test',
   configRevision: 2,
   activityType: ActivityType.OneTimeCreditReward,
   placement: ActivityPlacement.DesktopStartupModal,
@@ -124,7 +124,7 @@ describe('startupCreditCampaignState', () => {
       'https://nos.example.test/reward.png?width=860#poster',
       2,
     )).toBe(
-      'https://nos.example.test/reward.png?width=860&lobster_activity_revision=2#poster',
+      'https://nos.example.test/reward.png?width=860&baiying_activity_revision=2#poster',
     );
     expect(buildStartupCreditPosterUrl(descriptor.posterUrl, 3))
       .not.toBe(buildStartupCreditPosterUrl(descriptor.posterUrl, 2));

@@ -870,7 +870,7 @@ const INTERNAL_PLUGIN_IDS = [
   'baiying-server',
   'github-copilot',
   'baiying-copilot',
-  'lobster',
+  'baiying',
   'kimi',
 
   // Aliases / legacy IDs for preinstalled channel plugins.

@@ -277,7 +277,7 @@ PPTX 当前走 `LegacyPptxSubRenderer`：
 WebView 使用固定 partition：
 
 ```typescript
-persist:lobster-artifact-browser
+persist:baiying-artifact-browser
 ```
 
 主进程在 `will-attach-webview` 中强制：

@@ -19,17 +19,17 @@
 }
 
 .dark .katex {
-  color: var(--lobster-text-primary);
+  color: var(--baiying-text-primary);
 }
 
 /* Improve code block styles */
 pre {
-  background-color: var(--lobster-surface-raised);
+  background-color: var(--baiying-surface-raised);
   border-radius: 0.75rem !important;
   padding: 1em !important;
   margin: 1em 0 !important;
   overflow-x: auto !important;
-  font-size: var(--lobster-code-font-size);
+  font-size: var(--baiying-code-font-size);
   font-weight: 400;
 }
 
@@ -47,7 +47,7 @@ pre {
 
 code {
   font-family: 'SF Mono', 'Fira Code', Menlo, Monaco, 'Courier New', monospace;
-  font-size: var(--lobster-code-font-size);
+  font-size: var(--baiying-code-font-size);
   font-weight: 400;
 }
 
@@ -59,20 +59,20 @@ table {
 }
 
 th, td {
-  border-color: var(--lobster-border);
+  border-color: var(--baiying-border);
   padding: 0.5em;
 }
 
 th {
-  background-color: var(--lobster-surface-raised);
+  background-color: var(--baiying-surface-raised);
   opacity: 0.8;
-  font-weight: var(--lobster-ui-font-weight-medium, 500);
+  font-weight: var(--baiying-ui-font-weight-medium, 500);
 }
 
 /* Style for blockquotes */
 blockquote {
-  border-left-color: var(--lobster-primary);
-  color: var(--lobster-text-secondary);
+  border-left-color: var(--baiying-primary);
+  color: var(--baiying-text-secondary);
   border-left-width: 3px;
   padding-left: 1em;
   font-style: italic;
@@ -96,7 +96,7 @@ blockquote {
 }
 
 .dark .artifact-preview-card-group {
-  background-color: color-mix(in srgb, var(--lobster-surface) 55%, var(--lobster-background));
+  background-color: color-mix(in srgb, var(--baiying-surface) 55%, var(--baiying-background));
 }
 
 .artifact-preview-card-row {
@@ -115,46 +115,46 @@ blockquote {
   /* Pre-JS fallbacks; must match what applyTypographyPreferences() emits for
      the default preferences (UiFontSizeDefault 15 over the 14px baseline),
      otherwise text visibly resizes right after startup. */
-  --lobster-ui-font-size: 15px;
-  --lobster-code-font-size: 14px;
+  --baiying-ui-font-size: 15px;
+  --baiying-code-font-size: 14px;
   /* Soft UI weights: avoid true Bold (600/700) so chrome stays refined on both
      variable fonts (SF Pro / PingFang) and static CJK faces (YaHei → nearest).
      445 mirrors Codex/VS Code body weight (--vscode-font-weight: 445). */
-  --lobster-ui-font-weight-normal: 445;
-  --lobster-ui-font-weight-medium: 500;
-  --lobster-ui-font-weight-semibold: 510;
-  --lobster-ui-font-weight-bold: 520;
+  --baiying-ui-font-weight-normal: 445;
+  --baiying-ui-font-weight-medium: 500;
+  --baiying-ui-font-weight-semibold: 510;
+  --baiying-ui-font-weight-bold: 520;
   /* Shared chrome icon stroke; keep Lucide / iconPark / SVG icons aligned. */
-  --lobster-icon-stroke-width: 1.5;
-  --lobster-text-xs: 13px;
-  --lobster-text-sm: 15px;
-  --lobster-text-base: 17px;
-  --lobster-text-lg: 19px;
-  --lobster-text-xl: 21px;
-  --lobster-text-2xl: 26px;
-  --lobster-text-3xl: 32px;
-  --lobster-text-4xl: 39px;
-  --lobster-text-markdown: 15px;
-  --lobster-text-markdownH2: 19px;
-  --lobster-text-markdownH3: 17px;
-  --lobster-text-markdownH4: 16px;
-  --lobster-text-promptLarge: 16px;
-  --lobster-text-sidebarCompact: 14px;
-  --lobster-leading-xs: 17px;
-  --lobster-leading-sm: 21px;
-  --lobster-leading-base: 26px;
-  --lobster-leading-lg: 30px;
-  --lobster-leading-xl: 30px;
-  --lobster-leading-2xl: 34px;
-  --lobster-leading-3xl: 39px;
-  --lobster-leading-4xl: 43px;
-  --lobster-leading-markdown: 24px;
-  --lobster-leading-markdownCompact: 23px;
-  --lobster-leading-prompt: 24px;
-  --lobster-leading-promptLarge: 25px;
+  --baiying-icon-stroke-width: 1.5;
+  --baiying-text-xs: 13px;
+  --baiying-text-sm: 15px;
+  --baiying-text-base: 17px;
+  --baiying-text-lg: 19px;
+  --baiying-text-xl: 21px;
+  --baiying-text-2xl: 26px;
+  --baiying-text-3xl: 32px;
+  --baiying-text-4xl: 39px;
+  --baiying-text-markdown: 15px;
+  --baiying-text-markdownH2: 19px;
+  --baiying-text-markdownH3: 17px;
+  --baiying-text-markdownH4: 16px;
+  --baiying-text-promptLarge: 16px;
+  --baiying-text-sidebarCompact: 14px;
+  --baiying-leading-xs: 17px;
+  --baiying-leading-sm: 21px;
+  --baiying-leading-base: 26px;
+  --baiying-leading-lg: 30px;
+  --baiying-leading-xl: 30px;
+  --baiying-leading-2xl: 34px;
+  --baiying-leading-3xl: 39px;
+  --baiying-leading-4xl: 43px;
+  --baiying-leading-markdown: 24px;
+  --baiying-leading-markdownCompact: 23px;
+  --baiying-leading-prompt: 24px;
+  --baiying-leading-promptLarge: 25px;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Helvetica Neue', 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
-  font-weight: var(--lobster-ui-font-weight-normal);
+  font-weight: var(--baiying-ui-font-weight-normal);
   letter-spacing: 0.01em;
 
   font-synthesis: none;
@@ -170,8 +170,8 @@ samp {
 }
 
 .text-code {
-  font-size: var(--lobster-code-font-size);
-  line-height: calc(var(--lobster-code-font-size) + 8px);
+  font-size: var(--baiying-code-font-size);
+  line-height: calc(var(--baiying-code-font-size) + 8px);
   font-weight: 400;
 }
 
@@ -179,44 +179,44 @@ samp {
    title (text-xs), even when the user raises the code font size, so the
    header > row > detail hierarchy always holds. */
 .activity-row-detail {
-  --lobster-activity-detail-font-size: min(
-    var(--lobster-code-font-size),
-    calc(var(--lobster-text-xs) - 1px)
+  --baiying-activity-detail-font-size: min(
+    var(--baiying-code-font-size),
+    calc(var(--baiying-text-xs) - 1px)
   );
-  font-size: var(--lobster-activity-detail-font-size);
+  font-size: var(--baiying-activity-detail-font-size);
 }
 
 .activity-row-detail .text-code {
-  font-size: var(--lobster-activity-detail-font-size);
-  line-height: calc(var(--lobster-activity-detail-font-size) + 8px);
+  font-size: var(--baiying-activity-detail-font-size);
+  line-height: calc(var(--baiying-activity-detail-font-size) + 8px);
 }
 
 .text-markdown-body {
-  font-size: var(--lobster-text-markdown);
-  line-height: var(--lobster-leading-markdown);
+  font-size: var(--baiying-text-markdown);
+  line-height: var(--baiying-leading-markdown);
 }
 
 .text-markdown-body-compact {
-  font-size: var(--lobster-text-markdown);
-  line-height: var(--lobster-leading-markdownCompact);
+  font-size: var(--baiying-text-markdown);
+  line-height: var(--baiying-leading-markdownCompact);
 }
 
 /* Theme colors are driven by CSS variables from themes.css.
  * color-scheme is set by the [data-theme] selectors. */
 body, #root, .App, main {
-  background-color: var(--lobster-background);
-  color: var(--lobster-foreground);
+  background-color: var(--baiying-background);
+  color: var(--baiying-foreground);
 }
 
 /* Conversation column: match design sample #F7F7F7 in light mode */
 html:not(.dark) [data-skin-cowork-frame="true"],
 html:not(.dark) [data-skin-cowork="true"] {
-  --lobster-background: #F7F7F7;
+  --baiying-background: #F7F7F7;
 }
 
 [data-skin-presentation="immersive_shell"] [data-skin-cowork-frame="true"],
 [data-skin-presentation="immersive_shell"] [data-skin-cowork="true"] {
-  --lobster-background: var(--lobster-skin-canvas);
+  --baiying-background: var(--baiying-skin-canvas);
 }
 
 body {
@@ -240,16 +240,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--lobster-scroll-thumb);
+  background-color: var(--baiying-scroll-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--lobster-scroll-thumb-hover);
+  background-color: var(--baiying-scroll-thumb-hover);
 }
 
 .model-selector-scroll {
-  scrollbar-color: var(--lobster-scroll-thumb) transparent;
+  scrollbar-color: var(--baiying-scroll-thumb) transparent;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
@@ -265,13 +265,13 @@ body {
 
 .model-selector-scroll::-webkit-scrollbar-thumb {
   background-clip: content-box;
-  background-color: var(--lobster-scroll-thumb);
+  background-color: var(--baiying-scroll-thumb);
   border: 3px solid transparent;
   border-radius: 999px;
 }
 
 .model-selector-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: var(--lobster-scroll-thumb-hover);
+  background-color: var(--baiying-scroll-thumb-hover);
 }
 
 .scrollbar-hidden {
@@ -564,8 +564,8 @@ body {
 
 /* Style for select options to match theme */
 option {
-  background-color: var(--lobster-surface);
-  color: var(--lobster-foreground);
+  background-color: var(--baiying-surface);
+  color: var(--baiying-foreground);
 }
 
 /* Ensure select elements have proper styling in Firefox */
@@ -600,7 +600,7 @@ select::-ms-expand {
 /* Focus ring */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
-  --tw-ring-offset-color: var(--lobster-background);
+  --tw-ring-offset-color: var(--baiying-background);
 }
 
 /* Button styles */
@@ -609,13 +609,13 @@ select::-ms-expand {
 }
 
 .btn-secondary {
-  background-color: var(--lobster-surface);
-  color: var(--lobster-text-primary);
-  border: 1px solid var(--lobster-border);
+  background-color: var(--baiying-surface);
+  color: var(--baiying-text-primary);
+  border: 1px solid var(--baiying-border);
   @apply font-medium py-2 px-4 rounded-lg transition-colors;
 }
 .btn-secondary:hover {
-  background-color: var(--lobster-surface-raised);
+  background-color: var(--baiying-surface-raised);
 }
 
 /* Sidebar width transition */
@@ -626,7 +626,7 @@ select::-ms-expand {
 
 /* Subtle separator line */
 .separator {
-  border-color: var(--lobster-border-subtle);
+  border-color: var(--baiying-border-subtle);
   border-top-width: 1px;
 }
 
@@ -648,7 +648,7 @@ select::-ms-expand {
 
 /* Skeleton loading */
 .skeleton {
-  background-color: var(--lobster-surface-raised);
+  background-color: var(--baiying-surface-raised);
   @apply rounded;
   position: relative;
   overflow: hidden;
@@ -719,7 +719,7 @@ select::-ms-expand {
   margin-left: 2px;
   vertical-align: -0.12em;
   border-radius: 1px;
-  background: color-mix(in srgb, var(--lobster-primary) 70%, #0f5da7);
+  background: color-mix(in srgb, var(--baiying-primary) 70%, #0f5da7);
   animation: streaming-caret-blink 1s steps(1, end) infinite;
 }
 
@@ -861,7 +861,7 @@ select::-ms-expand {
   height: 2px;
   overflow: hidden;
   border-radius: 1px;
-  background: var(--lobster-primary-muted);
+  background: var(--baiying-primary-muted);
 }
 
 .streaming-bar::before {
@@ -872,10 +872,10 @@ select::-ms-expand {
   height: 100%;
   width: 40%;
   border-radius: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--lobster-primary) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--baiying-primary) 50%, transparent 100%);
   opacity: 0.7;
   animation: streaming-slide 1.2s linear infinite;
-  box-shadow: 0 0 6px var(--lobster-primary-muted);
+  box-shadow: 0 0 6px var(--baiying-primary-muted);
 }
 
 /* BaiYing logo blues/reds — brand-fixed, not theme primary */
@@ -956,11 +956,11 @@ select::-ms-expand {
 .shimmer-text {
   background-image: linear-gradient(
     100deg,
-    var(--lobster-text-secondary) 0%,
-    var(--lobster-text-secondary) 42%,
-    var(--lobster-text-primary) 50%,
-    var(--lobster-text-secondary) 58%,
-    var(--lobster-text-secondary) 100%
+    var(--baiying-text-secondary) 0%,
+    var(--baiying-text-secondary) 42%,
+    var(--baiying-text-primary) 50%,
+    var(--baiying-text-secondary) 58%,
+    var(--baiying-text-secondary) 100%
   );
   background-size: 200% 100%;
   background-clip: text;
@@ -1038,7 +1038,7 @@ select::-ms-expand {
   height: 0.5rem;
   flex-shrink: 0;
   border-radius: 9999px;
-  background: var(--lobster-primary);
+  background: var(--baiying-primary);
   animation: cowork-waiting-dot-pulse 1.2s ease-in-out infinite;
 }
 .cowork-waiting-pulse--sm {
@@ -1141,7 +1141,7 @@ select::-ms-expand {
   height: 3px;
   overflow: hidden;
   border-radius: 9999px;
-  background: var(--lobster-primary-muted);
+  background: var(--baiying-primary-muted);
 }
 
 .context-compaction-progress::before {
@@ -1152,8 +1152,8 @@ select::-ms-expand {
   height: 100%;
   width: 55%;
   border-radius: inherit;
-  background: linear-gradient(90deg, transparent 0%, var(--lobster-primary) 50%, transparent 100%);
-  box-shadow: 0 0 8px var(--lobster-primary);
+  background: linear-gradient(90deg, transparent 0%, var(--baiying-primary) 50%, transparent 100%);
+  box-shadow: 0 0 8px var(--baiying-primary);
   animation: context-compaction-slide 1.1s ease-in-out infinite;
 }
 
@@ -1162,7 +1162,7 @@ select::-ms-expand {
   height: 3px;
   overflow: hidden;
   border-radius: 9999px;
-  background: var(--lobster-primary-muted);
+  background: var(--baiying-primary-muted);
 }
 
 .persistence-operation-progress::before {
@@ -1173,7 +1173,7 @@ select::-ms-expand {
   height: 100%;
   width: 45%;
   border-radius: inherit;
-  background: var(--lobster-primary);
+  background: var(--baiying-primary);
   animation: context-compaction-slide 1.1s ease-in-out infinite;
 }
 

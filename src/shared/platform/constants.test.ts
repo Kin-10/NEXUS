@@ -14,7 +14,7 @@ describe('PlatformRegistry enabled IM channels', () => {
   });
 
   test('keeps retired platforms resolvable but disabled', () => {
-    for (const platform of ['telegram', 'discord', 'popo', 'nim', 'netease-bee', 'email'] as const) {
+    for (const platform of ['telegram', 'discord', 'popo', 'nim', 'baiying-bee', 'email'] as const) {
       expect(PlatformRegistry.isEnabled(platform)).toBe(false);
       expect(PlatformRegistry.allPlatforms).toContain(platform);
       expect(PlatformRegistry.isIMChannel(PlatformRegistry.channelOf(platform))).toBe(true);

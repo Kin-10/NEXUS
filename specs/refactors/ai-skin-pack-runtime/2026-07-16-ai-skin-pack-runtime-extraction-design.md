@@ -26,7 +26,7 @@ AI 皮肤包 MVP 同时涉及可信 Kit 校验、会话事务、媒体工具路�
 
 | 模块 | 单一职责 | 对外接口 |
 |------|----------|----------|
-| `skinRuntimeController.ts` | 组合皮肤 Store、Registry 和 Bridge | `prepareTurn`、`handleToolRequest`、`preflightLobsterImageGeneration`、会话生命周期方法 |
+| `skinRuntimeController.ts` | 组合皮肤 Store、Registry 和 Bridge | `prepareTurn`、`handleToolRequest`、`preflightbaiyingImageGeneration`、会话生命周期方法 |
 | `skinWorkflowRegistry.ts` | 可信 Kit 与会话流程状态 | Turn 准备、父会话解析、draft、完成或清理 |
 | `skinMediaBridge.ts` | 本地工具桥策略 | 皮肤管理工具校验、会员生图前置校验 |
 | `registerSkinElectron.ts` | Electron 边界 | 特权 scheme、协议/IPC 注册、变更广播 |
@@ -48,7 +48,7 @@ AI 皮肤包 MVP 同时涉及可信 Kit 校验、会话事务、媒体工具路�
 
 - 不重构通用媒体生成请求、Cowork session IPC 或 Computer Use Kit。
 - 不改变 SQLite schema。
-- 不改变 Renderer 的 preload API 和 `lobster-skin://` URL 契约。
+- 不改变 Renderer 的 preload API 和 `baiying-skin://` URL 契约。
 - 不让 manifest 控制布局、CSS、透明度或任意文件路径。
 
 ## 4. 实施步骤

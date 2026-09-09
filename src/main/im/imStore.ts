@@ -18,7 +18,7 @@ import {
   DEFAULT_FEISHU_MULTI_INSTANCE_CONFIG,
   DEFAULT_FEISHU_OPENCLAW_CONFIG,
   DEFAULT_IM_SETTINGS,
-  DEFAULT_NETEASE_BEE_CONFIG,
+  DEFAULT_baiying_BEE_CONFIG,
   DEFAULT_NIM_CONFIG,
   DEFAULT_NIM_MULTI_INSTANCE_CONFIG,
   DEFAULT_POPO_CONFIG,
@@ -44,7 +44,7 @@ import {
   IMGatewayConfig,
   IMSessionMapping,
   IMSettings,
-  NeteaseBeeChanConfig,
+  baiyingBeeChanConfig,
   NimConfig,
   NimInstanceConfig,
   NimMultiInstanceConfig,
@@ -672,22 +672,22 @@ export class IMStore {
       }
     }
 
-    // Migrate 'xiaomifeng' config key to 'netease-bee'
+    // Migrate 'xiaomifeng' config key to 'baiying-bee'
     const oldXmfRow = this.db
       .prepare('SELECT value FROM im_config WHERE key = ?')
       .get('xiaomifeng') as { value: string } | undefined;
     const newBeeRow = this.db
       .prepare('SELECT value FROM im_config WHERE key = ?')
-      .get('netease-bee') as { value: string } | undefined;
+      .get('baiying-bee') as { value: string } | undefined;
     if (oldXmfRow && !newBeeRow) {
       try {
-        const oldConfig = JSON.parse(oldXmfRow.value) as Partial<NeteaseBeeChanConfig>;
+        const oldConfig = JSON.parse(oldXmfRow.value) as Partial<baiyingBeeChanConfig>;
         const now = Date.now();
         this.db
           .prepare('INSERT INTO im_config (key, value, updated_at) VALUES (?, ?, ?)')
-          .run('netease-bee', JSON.stringify({ ...DEFAULT_NETEASE_BEE_CONFIG, ...oldConfig }), now);
+          .run('baiying-bee', JSON.stringify({ ...DEFAULT_baiying_BEE_CONFIG, ...oldConfig }), now);
         this.db.prepare('DELETE FROM im_config WHERE key = ?').run('xiaomifeng');
-        console.log('[IMStore] Migrated xiaomifeng config to netease-bee');
+        console.log('[IMStore] Migrated xiaomifeng config to baiying-bee');
       } catch {
         // Ignore parse errors
       }
@@ -918,8 +918,8 @@ export class IMStore {
     const telegramMulti = this.getTelegramMultiInstanceConfig();
     const discordMulti = this.getDiscordMultiInstanceConfig();
     const nimMulti = this.getNimMultiInstanceConfig();
-    const neteaseBeeChan =
-      this.getConfigValue<NeteaseBeeChanConfig>('netease-bee') ?? DEFAULT_NETEASE_BEE_CONFIG;
+    const baiyingBeeChan =
+      this.getConfigValue<baiyingBeeChanConfig>('baiying-bee') ?? DEFAULT_baiying_BEE_CONFIG;
     const qqMulti = this.getQQMultiInstanceConfig();
     const feishuMulti = this.getFeishuMultiInstanceConfig();
     const wecomMulti = this.getWecomMultiInstanceConfig();
@@ -945,7 +945,7 @@ export class IMStore {
       telegram: telegramMulti,
       discord: discordMulti,
       nim: nimMulti,
-      'netease-bee': resolveEnabled(neteaseBeeChan, DEFAULT_NETEASE_BEE_CONFIG),
+      'baiying-bee': resolveEnabled(baiyingBeeChan, DEFAULT_baiying_BEE_CONFIG),
       qq: qqMulti,
       wecom: wecomMulti,
       popo: popoMulti,
@@ -971,8 +971,8 @@ export class IMStore {
     if (config.nim) {
       this.setNimMultiInstanceConfig(config.nim);
     }
-    if (config['netease-bee']) {
-      this.setNeteaseBeeChanConfig(config['netease-bee']);
+    if (config['baiying-bee']) {
+      this.setbaiyingBeeChanConfig(config['baiying-bee']);
     }
     if (config.qq) {
       this.setQQMultiInstanceConfig(config.qq);
@@ -1320,16 +1320,16 @@ export class IMStore {
     }
   }
 
-  // ==================== NeteaseBee Chan Config ====================
+  // ==================== baiyingBee Chan Config ====================
 
-  getNeteaseBeeChanConfig(): NeteaseBeeChanConfig {
-    const stored = this.getConfigValue<NeteaseBeeChanConfig>('netease-bee');
-    return { ...DEFAULT_NETEASE_BEE_CONFIG, ...stored };
+  getbaiyingBeeChanConfig(): baiyingBeeChanConfig {
+    const stored = this.getConfigValue<baiyingBeeChanConfig>('baiying-bee');
+    return { ...DEFAULT_baiying_BEE_CONFIG, ...stored };
   }
 
-  setNeteaseBeeChanConfig(config: Partial<NeteaseBeeChanConfig>): void {
-    const current = this.getNeteaseBeeChanConfig();
-    this.setConfigValue('netease-bee', { ...current, ...config });
+  setbaiyingBeeChanConfig(config: Partial<baiyingBeeChanConfig>): void {
+    const current = this.getbaiyingBeeChanConfig();
+    this.setConfigValue('baiying-bee', { ...current, ...config });
   }
 
   // ==================== Telegram OpenClaw Config ====================
@@ -1741,7 +1741,7 @@ export class IMStore {
     const hasTelegram = config.telegram?.instances?.some(i => !!i.botToken) ?? false;
     const hasDiscord = config.discord?.instances?.some(i => !!i.botToken) ?? false;
     const hasNim = config.nim?.instances?.some(i => !!(i.nimToken || (i.appKey && i.account && i.token))) ?? false;
-    const hasNeteaseBeeChan = !!(config['netease-bee']?.clientId && config['netease-bee']?.secret);
+    const hasbaiyingBeeChan = !!(config['baiying-bee']?.clientId && config['baiying-bee']?.secret);
     const hasQQ = config.qq?.instances?.some(i => !!(i.appId && i.appSecret)) ?? false;
     const hasWecom = config.wecom?.instances?.some(i => !!(i.botId && i.secret)) ?? false;
     return (
@@ -1750,7 +1750,7 @@ export class IMStore {
       hasTelegram ||
       hasDiscord ||
       hasNim ||
-      hasNeteaseBeeChan ||
+      hasbaiyingBeeChan ||
       hasQQ ||
       hasWecom
     );

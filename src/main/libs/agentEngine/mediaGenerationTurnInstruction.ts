@@ -6,9 +6,9 @@ import {
 import type { CoworkMediaSelection } from './types';
 
 const buildSkinPackInstruction = (selection?: CoworkMediaSelection): string => {
-  const useLobsterImageTool = selection?.mode === 'image' || selection?.mode === 'auto';
-  const imageTool = useLobsterImageTool ? 'baiying_image_generate' : 'image_generate';
-  const singleOutputParams = useLobsterImageTool ? 'count=1 or n=1' : 'count=1';
+  const usebaiyingImageTool = selection?.mode === 'image' || selection?.mode === 'auto';
+  const imageTool = usebaiyingImageTool ? 'baiying_image_generate' : 'image_generate';
+  const singleOutputParams = usebaiyingImageTool ? 'count=1 or n=1' : 'count=1';
   const lines = [
     '[AI skin pack workflow: two-asset serial flow]',
     'The structured workflowKind for this turn is skin_pack. These rules override ordinary single-image generation instructions.',
@@ -17,7 +17,7 @@ const buildSkinPackInstruction = (selection?: CoworkMediaSelection): string => {
     'The presentation may style only allow-listed BaiYing surfaces and title bars. Do not choose a color theme ID: BaiYing derives the preferred light or dark appearance from the validated palette and applies it through the existing theme system. Do not change page layout, component positions, or system icons.',
   ];
 
-  if (useLobsterImageTool) {
+  if (usebaiyingImageTool) {
     lines.push('The image backend for this entire pack is locked to baiying_image_generate. Do not use image_generate, seedream, seedance, or any other image tool or skill.');
     const imageModel = selection?.imageModelId?.trim() || selection?.modelId?.trim();
     if (imageModel) {

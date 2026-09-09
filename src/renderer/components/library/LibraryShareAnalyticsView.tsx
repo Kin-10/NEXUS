@@ -111,7 +111,7 @@ const LibraryShareAnalyticsView: React.FC<LibraryShareAnalyticsViewProps> = ({ s
           <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
             {i18nService.t('librarySharePerformance')}
           </h2>
-          <p className={`${MANAGEMENT_META_TEXT} mt-1 leading-[var(--lobster-leading-xs)] text-secondary`}>
+          <p className={`${MANAGEMENT_META_TEXT} mt-1 leading-[var(--baiying-leading-xs)] text-secondary`}>
             {formatAnalyticsDate(analytics?.meta.from ?? requestedDates.from)}
             {' – '}
             {formatAnalyticsDate(analytics?.meta.to ?? requestedDates.to)}
@@ -155,7 +155,7 @@ const LibraryShareAnalyticsView: React.FC<LibraryShareAnalyticsViewProps> = ({ s
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-xl border border-border bg-surface p-4">
-              <p className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-secondary`}>
+              <p className={`${MANAGEMENT_META_TEXT} leading-[var(--baiying-leading-xs)] text-secondary`}>
                 {i18nService.t('libraryShareAnalyticsUniqueVisitors')}
               </p>
               <p className="mt-1.5 text-2xl font-semibold leading-none text-foreground">
@@ -163,7 +163,7 @@ const LibraryShareAnalyticsView: React.FC<LibraryShareAnalyticsViewProps> = ({ s
               </p>
             </div>
             <div className="rounded-xl border border-border bg-surface p-4">
-              <p className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-secondary`}>
+              <p className={`${MANAGEMENT_META_TEXT} leading-[var(--baiying-leading-xs)] text-secondary`}>
                 {i18nService.t('libraryShareAnalyticsAccesses')}
               </p>
               <p className="mt-1.5 text-2xl font-semibold leading-none text-foreground">
@@ -179,7 +179,7 @@ const LibraryShareAnalyticsView: React.FC<LibraryShareAnalyticsViewProps> = ({ s
             volumeLabel={i18nService.t('libraryShareAnalyticsAccesses')}
             ariaLabel={i18nService.t('libraryShareAnalyticsTrend')}
           />
-          <p className={`${MANAGEMENT_META_TEXT} px-1 leading-[var(--lobster-leading-xs)] text-tertiary`}>
+          <p className={`${MANAGEMENT_META_TEXT} px-1 leading-[var(--baiying-leading-xs)] text-tertiary`}>
             {i18nService.t('libraryShareAnalyticsVisitorHint')}
           </p>
         </>

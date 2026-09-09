@@ -40,7 +40,7 @@
 
 ```text
 [GW-RESTART-DIAG] SECRET ENV VARS CHANGED!
-[GW-RESTART-DIAG] added: LOBSTER_DINGTALK_CLIENT_SECRET
+[GW-RESTART-DIAG] added: baiying_DINGTALK_CLIENT_SECRET
 [GW-RESTART-DIAG] needsHardRestart=true
 [GW-RESTART-DIAG] HARD RESTART EXECUTING. reason=app-config-change
 [dingtalk-connector] starting dingtalk-connector[429ee481] (mode: stream)

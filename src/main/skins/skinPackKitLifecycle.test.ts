@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { KitStoreKey } from '../../shared/kit/constants';
-import { SkinWorkflowKind } from '../../shared/skin/constants';
 import {
-  SkinPackKitBundle,
   SkinPackKitId,
   SkinPackSkillId,
 } from '../../shared/skin/kit';
@@ -56,7 +54,7 @@ describe('AI Skin Designer kit lifecycle', () => {
     vi.restoreAllMocks();
   });
 
-  test('adds one current skin kit while preserving remote and additional built-ins', () => {
+  test('strips the retired skin kit while preserving remote and additional built-ins', () => {
     const { lifecycle } = createHarness();
     const additionalKit = { id: 'computer-use', version: 'test' };
     const response = lifecycle.appendToStoreResponse(JSON.stringify({
@@ -75,22 +73,21 @@ describe('AI Skin Designer kit lifecycle', () => {
     const catalog = JSON.parse(envelope.data.value) as { kits: Array<{ id: string; version?: string }> };
     expect(catalog.kits.map(kit => kit.id)).toEqual([
       'remote-kit',
-      SkinPackKitId.BuiltIn,
       additionalKit.id,
     ]);
-    expect(catalog.kits.filter(kit => kit.id === SkinPackKitId.BuiltIn)).toHaveLength(1);
+    expect(catalog.kits.filter(kit => kit.id === SkinPackKitId.BuiltIn)).toHaveLength(0);
     expect(catalog.kits.at(-1)).toEqual(additionalKit);
   });
 
-  test('builds an offline catalog containing the skin kit', () => {
+  test('builds an offline catalog without the retired skin kit', () => {
     const { lifecycle } = createHarness();
     const response = lifecycle.buildOfflineStoreResponse();
     const envelope = JSON.parse(response) as { data: { value: { kits: Array<{ id: string }> } } };
 
-    expect(envelope.data.value.kits.map(kit => kit.id)).toEqual([SkinPackKitId.BuiltIn]);
+    expect(envelope.data.value.kits.map(kit => kit.id)).toEqual([]);
   });
 
-  test('installs the trusted record and enables the bundled skill', async () => {
+  test('rejects new installs of the retired skin kit', async () => {
     const {
       lifecycle,
       notifySkillsChanged,
@@ -101,37 +98,17 @@ describe('AI Skin Designer kit lifecycle', () => {
 
     await expect(lifecycle.installIfHandled({
       kitId: SkinPackKitId.BuiltIn,
-      bundleUrl: SkinPackKitBundle.BuiltIn,
-    })).resolves.toEqual({ success: true, skillIds: [SkinPackSkillId.BuiltIn] });
-
-    expect(skillManager.stopWatching).toHaveBeenCalledOnce();
-    expect(skillManager.syncBundledSkillsToUserData).toHaveBeenCalledOnce();
-    expect(skillManager.setSkillEnabled).toHaveBeenCalledWith(SkinPackSkillId.BuiltIn, true);
-    expect(skillManager.startWatching).toHaveBeenCalledOnce();
-    expect(notifySkillsChanged).toHaveBeenCalledOnce();
-    expect(syncOpenClawConfig).toHaveBeenCalledWith({
-      reason: 'ai-skin-designer-kit-installed',
-      expectedImpact: OpenClawConfigImpact.Sync,
+      bundleUrl: 'builtin://ai-skin-designer',
+    })).resolves.toEqual({
+      success: false,
+      error: 'AI Skin Designer kit is no longer available in Expert Kits',
     });
-    expect(store.get<Record<string, { workflowKind?: string }>>(KitStoreKey.Installed))
-      .toMatchObject({
-        [SkinPackKitId.BuiltIn]: {
-          workflowKind: SkinWorkflowKind.SkinPack,
-        },
-      });
-  });
 
-  test('restores the watcher if the bundled skill is unavailable', async () => {
-    const { lifecycle, notifySkillsChanged, skillManager } = createHarness([]);
-
-    await expect(lifecycle.installIfHandled({
-      kitId: SkinPackKitId.BuiltIn,
-      bundleUrl: SkinPackKitBundle.BuiltIn,
-    })).rejects.toThrow('Bundled AI Skin Creator skill is unavailable');
-
-    expect(skillManager.stopWatching).toHaveBeenCalledOnce();
-    expect(skillManager.startWatching).toHaveBeenCalledOnce();
+    expect(skillManager.stopWatching).not.toHaveBeenCalled();
+    expect(skillManager.setSkillEnabled).not.toHaveBeenCalled();
     expect(notifySkillsChanged).not.toHaveBeenCalled();
+    expect(syncOpenClawConfig).not.toHaveBeenCalled();
+    expect(store.get(KitStoreKey.Installed)).toBeUndefined();
   });
 
   test('uninstalls by disabling, but retaining, the bundled skill', async () => {

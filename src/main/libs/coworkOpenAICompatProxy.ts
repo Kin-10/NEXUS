@@ -2499,7 +2499,7 @@ async function handleRequest(
   }
 
   // OpenClaw sends requests to /v1/chat/completions (OpenAI format) when using
-  // the lobster provider. Transparently proxy these requests to the upstream with
+  // the baiying provider. Transparently proxy these requests to the upstream with
   // IDE headers injected (needed for GitHub Copilot).
   if (method === 'POST' && (url.pathname === '/v1/chat/completions' || url.pathname === '/chat/completions')) {
     if (!upstreamConfig) {

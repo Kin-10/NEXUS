@@ -13,7 +13,7 @@
 与词典侧无关。一次静默安装启动辅助进程 4 到 9 次，分两类机制：
 
 1. **必现闪窗（所有 Windows 版本）**：旧安装目录异步清理（`customInstall`）和回滚清理
-   （`lobsterRollbackOldInstall`）用 NSIS `Exec` 拉起 `powershell.exe -WindowStyle Hidden`。
+   （`baiyingRollbackOldInstall`）用 NSIS `Exec` 拉起 `powershell.exe -WindowStyle Hidden`。
    `Exec` 是裸 `CreateProcess`，没有 `SW_HIDE`；安装器是 GUI 进程，控制台子进程会先弹出一个
    可见的新控制台窗口，PowerShell 初始化完成后才把它藏起来。用户日志证实 2026.8.28 起每次
    dictbind 覆盖安装都记录了 `old-install-cleanup-scheduled dispatch=success`，即这条路径
@@ -32,7 +32,7 @@
 
 ### 2.1 统一的隐藏启动函数
 
-新增 `lobsterExecHiddenProcess` / `un.lobsterExecHiddenProcess`（安装器与卸载器各一份），
+新增 `baiyingExecHiddenProcess` / `un.baiyingExecHiddenProcess`（安装器与卸载器各一份），
 用 System 插件直接调用 `kernel32::CreateProcessW`，`dwCreationFlags = CREATE_NO_WINDOW
 (0x08000000)`：子进程根本没有控制台窗口，conhost 和 Windows Terminal 都无从显示，与系统
 版本无关。这也是 Node `windowsHide` 在 libuv 里的实现方式，应用侧已经在用同一机制。
@@ -45,16 +45,16 @@
 - 创建失败时退出码为字符串 `error`，输出为 `launch-failed win32_error=N`，沿用所有调用点
   已有的 `error` 分支（`process-start-blocked`、`legacy-helper-launch-failed` 等）。
 - 临时文件不可用时退化为不重定向继续执行：输出只用于诊断，退出码才是判定依据。
-- 函数保存并恢复全部寄存器，结果经 `$lobsterHiddenExecExitCode` /
-  `$lobsterHiddenExecOutput` / `$lobsterHiddenExecLaunchError` 传递。
+- 函数保存并恢复全部寄存器，结果经 `$baiyingHiddenExecExitCode` /
+  `$baiyingHiddenExecOutput` / `$baiyingHiddenExecLaunchError` 传递。
 
 三个调用宏复刻原有栈契约，调用点只把 `nsExec::ExecToStack '...'` 改成 `Push '...'` 加宏：
 
 | 宏 | 替代 | 栈结果 |
 |---|---|---|
-| `LobsterExecHiddenToStack` | `nsExec::ExecToStack` | 先 push 输出，再 push 退出码 |
-| `LobsterExecHiddenExitCode` | `nsExec::ExecToLog` | 只 push 退出码 |
-| `LobsterExecHiddenDetached` | `Exec` | 不 push；失败时 `SetErrors` |
+| `baiyingExecHiddenToStack` | `nsExec::ExecToStack` | 先 push 输出，再 push 退出码 |
+| `baiyingExecHiddenExitCode` | `nsExec::ExecToLog` | 只 push 退出码 |
+| `baiyingExecHiddenDetached` | `Exec` | 不 push；失败时 `SetErrors` |
 
 13 处启动点全部改造：停进程循环与幸存者快照、回滚 Defender 清理与残留树清理、Skills 备份、
 安装前 Defender 添加/仅查询两个分支、tar 解压、解压看门狗、Skills 恢复、解压后 Defender
@@ -65,7 +65,7 @@
 
 - 解压后的 Defender "trim" 与 "permanent add" 两次 PowerShell 合并为一次
   `defender-exclusion-rebalance-complete`；`/NoDefenderExclusion` 通过子进程环境变量
-  `LOBSTERAI_DEFENDER_ADD_PERMANENT` 传入，只跳过添加、不跳过移除，语义与之前一致。
+  `baiyingAI_DEFENDER_ADD_PERMANENT` 传入，只跳过添加、不跳过移除，语义与之前一致。
 - `DetectFreshOrPossibleExisting` 改为 System 插件枚举（`FindFirstFileW` /
   `FindNextFileW` 带 `?e`），在同一次调用里拿到结束枚举的 Win32 错误码：`ERROR_NO_MORE_FILES`
   (18) 判定为空；`FindFirstFileW` 失败时 2/3/18 判定为不存在或为空。真正的全新安装从此走
@@ -89,7 +89,7 @@
 
 - `tests/windowsInstallerContract.test.ts`：新增"launches every helper without a console
   window"（脚本中不再出现 `nsExec::` / `Exec`；启动函数使用 `CREATE_NO_WINDOW`；13 个
-  `Push '"$lobsterTrusted...Path"` 之后紧跟启动宏）和"rebalances Defender exclusions in
+  `Push '"$baiyingTrusted...Path"` 之后紧跟启动宏）和"rebalances Defender exclusions in
   one helper launch"；更新 tar、PowerShell 路径、fresh-install 判定相关断言。
 - `release/nsis-console-probe/`（gitignored）：用 electron-builder 自带的 NSIS 编译四个探针
   安装器，在窗口监听脚本下静默运行，对比 `nsExec`、`Exec` 与新启动函数的可见窗口、退出码、

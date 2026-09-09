@@ -221,7 +221,7 @@ async function buildStaticFileEntries(
 }
 
 async function writeZip(entries: StaticFileEntry[]): Promise<{ archivePath: string; sourceSha256: string }> {
-  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'lobster-html-share-'));
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'baiying-html-share-'));
   const archivePath = path.join(tempDir, 'share.zip');
   const zipFile = new yazl.ZipFile();
   console.debug(`[HtmlShare] writing share archive with ${entries.length} files`);

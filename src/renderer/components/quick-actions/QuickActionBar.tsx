@@ -48,7 +48,7 @@ const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions, selectedAction
             onClick={() => onActionSelect(action.id)}
             className={`group inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 text-[12px] font-medium leading-4 transition-colors duration-200 ${
               isSelected
-                ? 'border-[color-mix(in_srgb,var(--lobster-primary)_42%,transparent)] bg-primary-muted text-primary'
+                ? 'border-[color-mix(in_srgb,var(--baiying-primary)_42%,transparent)] bg-primary-muted text-primary'
                 : 'border-border/80 bg-surface text-secondary hover:border-border hover:bg-surface-raised hover:text-foreground'
             }`}
           >
@@ -59,7 +59,7 @@ const QuickActionBar: React.FC<QuickActionBarProps> = ({ actions, selectedAction
                   isSelected ? 'bg-primary/10 text-primary' : 'bg-transparent'
                 }`}
                 style={isSelected ? undefined : {
-                  color: `color-mix(in srgb, ${accent} 68%, var(--lobster-text-secondary, #64748b))`,
+                  color: `color-mix(in srgb, ${accent} 68%, var(--baiying-text-secondary, #64748b))`,
                 }}
               >
                 <IconComponent

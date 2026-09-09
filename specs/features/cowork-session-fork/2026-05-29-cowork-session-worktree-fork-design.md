@@ -170,13 +170,13 @@ export const CoworkForkWorkspaceState = {
 推荐 branch：
 
 ```text
-lobster/fork/{shortSessionId}
+baiying/fork/{shortSessionId}
 ```
 
 如果 branch 已存在：
 
 ```text
-lobster/fork/{shortSessionId}-{shortRandom}
+baiying/fork/{shortSessionId}-{shortRandom}
 ```
 
 Branch 写入 `cowork_sessions.fork_git_branch`。

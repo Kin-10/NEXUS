@@ -30,10 +30,6 @@ const path = require('path');
 
 const { applyOpenClawPluginPatches } = require('./openclaw-plugin-patches/index.cjs');
 const {
-  BEE_PACKAGE_NAME,
-  prepareOpenClawNeteaseBeePackage,
-} = require('./openclaw-plugin-preparers/netease-bee.cjs');
-const {
   NIM_PLUGIN_PACKAGE_ID,
   prepareOpenClawNimPackage,
 } = require('./openclaw-plugin-preparers/nim-channel.cjs');
@@ -590,16 +586,7 @@ function buildPluginInstallEnv(plugin) {
   // Peer handling is not controlled through npm env here: OpenClaw's npm env
   // builder drops npm_config_legacy_peer_deps before spawning npm. The host
   // peer is neutralised in the packed manifest instead (prepareHostPeerPackage).
-  const env = {};
-
-  // npm 12 blocks transitive Git dependencies by default. NetEase Bee's
-  // pinned SDK currently depends on libsignal from GitHub, so opt in only for
-  // this explicitly declared plugin instead of weakening npm globally.
-  if (plugin.id === BEE_PACKAGE_NAME || plugin.npm === BEE_PACKAGE_NAME) {
-    env.npm_config_allow_git = 'all';
-  }
-
-  return env;
+  return {};
 }
 
 // ---------------------------------------------------------------------------
@@ -695,14 +682,6 @@ function main() {
           installSpec = source.installSpec;
         }
 
-        if (id === BEE_PACKAGE_NAME || npmSpec === BEE_PACKAGE_NAME) {
-          log('  Preparing NetEase Bee package for OpenClaw 2026.6 runtime install.');
-          if (!fs.existsSync(installSpec) || fs.statSync(installSpec).isDirectory()) {
-            installSpec = npmPack(`${BEE_PACKAGE_NAME}@${version}`, plugin.registry, stagingDir);
-          }
-          installSpec = prepareOpenClawNeteaseBeePackage(installSpec, stagingDir, { log });
-        }
-
         if (id === NIM_PLUGIN_PACKAGE_ID) {
           log('  Preparing NIM package for OpenClaw 2026.6 runtime install.');
           installSpec = prepareOpenClawNimPackage(installSpec, stagingDir, { log });
@@ -718,9 +697,6 @@ function main() {
         }
 
         const installEnv = buildPluginInstallEnv(plugin);
-        if (installEnv.npm_config_allow_git === 'all') {
-          log('  Allowing Git dependencies for this NetEase Bee installation only.');
-        }
 
         runOpenClawCli(
           ['plugins', 'install', installSpec, '--force', '--dangerously-force-unsafe-install'],

@@ -1293,7 +1293,7 @@ const LibraryShareSettingsView: React.FC<{
             <h1 className={`truncate ${MANAGEMENT_PAGE_TITLE_TEXT} font-semibold text-foreground`}>
               {getLibraryDisplayFileName(item)}
             </h1>
-            <div className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 ${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-secondary`}>
+            <div className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 ${MANAGEMENT_META_TEXT} leading-[var(--baiying-leading-xs)] text-secondary`}>
               <span>{i18nService.t('librarySharedFile')}</span>
               <span aria-hidden="true">·</span>
               <span>{i18nService.t('libraryContentUpdatedAtInline')}: {formatLibraryTime(contentUpdatedAt)}</span>
@@ -1375,12 +1375,12 @@ const LibraryShareSettingsView: React.FC<{
               <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
                 {i18nService.t('libraryShareAccessSetting')}
               </h2>
-              <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--lobster-leading-sm)] text-secondary`}>
+              <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--baiying-leading-sm)] text-secondary`}>
                 {i18nService.t('libraryShareAccessSettingDescription')}
               </p>
 
               <div className="mt-4">
-                <div className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--lobster-leading-xs)] text-secondary`}>
+                <div className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--baiying-leading-xs)] text-secondary`}>
                   {i18nService.t('libraryShareAccessAddress')}
                 </div>
                 <div className="mt-2 overflow-hidden rounded-lg bg-surface-raised">
@@ -1415,7 +1415,7 @@ const LibraryShareSettingsView: React.FC<{
               </div>
 
               <div className="mt-4">
-                <div className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--lobster-leading-xs)] text-secondary`}>
+                <div className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--baiying-leading-xs)] text-secondary`}>
                   {i18nService.t('htmlShareAccessMode')}
                 </div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -1448,7 +1448,7 @@ const LibraryShareSettingsView: React.FC<{
                         </span>
                         {label}
                       </span>
-                      <span className={`${MANAGEMENT_META_TEXT} mt-2 block leading-[var(--lobster-leading-xs)] text-secondary`}>
+                      <span className={`${MANAGEMENT_META_TEXT} mt-2 block leading-[var(--baiying-leading-xs)] text-secondary`}>
                         {hint}
                       </span>
                     </button>
@@ -1513,11 +1513,11 @@ const LibraryShareSettingsView: React.FC<{
               <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
                 {i18nService.t('libraryShareBasicInfo')}
               </h2>
-              <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--lobster-leading-sm)] text-secondary`}>
+              <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--baiying-leading-sm)] text-secondary`}>
                 {i18nService.t('libraryShareBasicInfoHint')}
               </p>
               <div className="mt-4">
-                <div className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--lobster-leading-xs)] text-secondary`}>
+                <div className={`${MANAGEMENT_META_TEXT} font-medium leading-[var(--baiying-leading-xs)] text-secondary`}>
                   {i18nService.t('libraryResourceName')}
                 </div>
                 <div className={`${MANAGEMENT_BODY_TEXT} mt-2 h-9 truncate rounded-lg border border-border bg-surface-raised px-3 py-2 text-secondary`}>
@@ -1526,7 +1526,7 @@ const LibraryShareSettingsView: React.FC<{
               </div>
               <dl className="mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-3">
                 <div>
-                  <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-tertiary`}>
+                  <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--baiying-leading-xs)] text-tertiary`}>
                     {i18nService.t('libraryResourceType')}
                   </dt>
                   <dd className={`${MANAGEMENT_BODY_TEXT} mt-1 text-foreground`}>
@@ -1534,7 +1534,7 @@ const LibraryShareSettingsView: React.FC<{
                   </dd>
                 </div>
                 <div>
-                  <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-tertiary`}>
+                  <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--baiying-leading-xs)] text-tertiary`}>
                     {i18nService.t('libraryShareCreatedAt')}
                   </dt>
                   <dd className={`${MANAGEMENT_BODY_TEXT} mt-1 text-foreground`}>
@@ -1542,7 +1542,7 @@ const LibraryShareSettingsView: React.FC<{
                   </dd>
                 </div>
                 <div>
-                  <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--lobster-leading-xs)] text-tertiary`}>
+                  <dt className={`${MANAGEMENT_META_TEXT} leading-[var(--baiying-leading-xs)] text-tertiary`}>
                     {i18nService.t('libraryContentUpdatedAt')}
                   </dt>
                   <dd className={`${MANAGEMENT_BODY_TEXT} mt-1 text-foreground`}>
@@ -1997,13 +1997,13 @@ const LibraryCloudView: React.FC<LibraryCloudViewProps> = ({
           <h2 className={`${MANAGEMENT_TITLE_TEXT} font-semibold text-foreground`}>
             {i18nService.t('libraryCloudEmptyTitle')}
           </h2>
-          <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--lobster-leading-sm)] text-secondary`}>
+          <p className={`${MANAGEMENT_BODY_TEXT} mt-1 leading-[var(--baiying-leading-sm)] text-secondary`}>
             {i18nService.t('libraryCloudEmptyDescription')}
           </p>
         </div>
       ) : (
         <div className="mt-6 min-w-[900px] border-y border-border">
-          <div className={`grid grid-cols-[minmax(320px,1fr)_180px_120px_120px_44px] items-center gap-4 border-b border-border px-4 py-2.5 ${MANAGEMENT_META_TEXT} font-medium leading-[var(--lobster-leading-xs)] text-tertiary`}>
+          <div className={`grid grid-cols-[minmax(320px,1fr)_180px_120px_120px_44px] items-center gap-4 border-b border-border px-4 py-2.5 ${MANAGEMENT_META_TEXT} font-medium leading-[var(--baiying-leading-xs)] text-tertiary`}>
             <span>{i18nService.t('libraryCloudColumnResource')}</span>
             <span className="text-center">{i18nService.t('librarySharedColumnStatus')}</span>
             <span aria-hidden="true" />
@@ -2035,7 +2035,7 @@ const LibraryCloudView: React.FC<LibraryCloudViewProps> = ({
                   <div className={`truncate ${MANAGEMENT_BODY_TEXT} font-medium text-foreground`}>
                     {getLibraryDisplayFileName(item)}
                   </div>
-                  <div className={`${MANAGEMENT_META_TEXT} mt-0.5 truncate leading-[var(--lobster-leading-xs)] text-tertiary`}>
+                  <div className={`${MANAGEMENT_META_TEXT} mt-0.5 truncate leading-[var(--baiying-leading-xs)] text-tertiary`}>
                     <time
                       dateTime={new Date(item.sortTime).toISOString()}
                       aria-label={`${i18nService.t('libraryLastModifiedAt')}: ${formatLibraryTime(item.sortTime)}`}

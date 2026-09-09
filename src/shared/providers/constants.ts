@@ -71,7 +71,7 @@ export const OpenClawProviderId = {
   BaiyingCopilot: 'baiying-copilot',
   Ollama: 'ollama',
   LmStudio: 'lm-studio',
-  Lobster: 'lobster',
+  baiying: 'baiying',
 } as const;
 export type OpenClawProviderId = typeof OpenClawProviderId[keyof typeof OpenClawProviderId];
 
@@ -727,7 +727,7 @@ class ProviderRegistryImpl {
   }
 
   getOpenClawProviderId(providerName: string): string {
-    return this.idIndex.get(providerName)?.openClawProviderId ?? providerName ?? OpenClawProviderId.Lobster;
+    return this.idIndex.get(providerName)?.openClawProviderId ?? providerName ?? OpenClawProviderId.baiying;
   }
 
   getOpenClawProviderIdForConfig(

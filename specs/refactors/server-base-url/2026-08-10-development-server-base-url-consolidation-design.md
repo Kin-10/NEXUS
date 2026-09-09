@@ -12,7 +12,7 @@
 
 ### 1.2 目标
 
-1. 使用唯一的 `LOBSTER_SERVER_BASE_URL` 覆盖全部 BaiYing server API。
+1. 使用唯一的 `baiying_SERVER_BASE_URL` 覆盖全部 BaiYing server API。
 2. 只允许受信任的本机开发服务作为目标。
 3. 打包版本始终使用生产配置，不受环境变量注入影响。
 4. 不改变任何生产请求路径和默认 endpoint。
@@ -35,7 +35,7 @@
 合法示例：
 
 ```powershell
-$env:LOBSTER_SERVER_BASE_URL = 'http://127.0.0.1:18878'
+$env:baiying_SERVER_BASE_URL = 'http://127.0.0.1:18878'
 ```
 
 `localhost` 不在允许列表中，避免 hosts/DNS 重绑定带来的目标歧义。非法配置直接给出明确错误，不静默回落到部分默认 endpoint。

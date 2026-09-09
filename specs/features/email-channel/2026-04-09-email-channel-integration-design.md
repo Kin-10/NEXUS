@@ -111,7 +111,7 @@ Based on user requirements, the integration will:
 3. IPC call `im:setConfig` with full `IMGatewayConfig` (including email)
 4. Main process writes to SQLite `im_config` table
 5. `syncOpenClawConfig()` generates `openclaw.json` with `channels.email`
-6. `writeEnvFile()` writes `LOBSTER_EMAIL_*_PASSWORD` / `LOBSTER_EMAIL_*_APIKEY`
+6. `writeEnvFile()` writes `baiying_EMAIL_*_PASSWORD` / `baiying_EMAIL_*_APIKEY`
 7. `restartGateway()` reloads OpenClaw with new config
 8. Email channel plugin starts monitoring accounts
 
@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS im_config (
           "name": "Work Email",
           "email": "work@example.com",
           "transport": "imap",
-          "password": "${LOBSTER_EMAIL_EMAIL_1_PASSWORD}",
+          "password": "${baiying_EMAIL_EMAIL_1_PASSWORD}",
           "allowFrom": ["boss@example.com", "*.company.com"],
           "replyMode": "complete",
           "replyTo": "sender"
@@ -256,7 +256,7 @@ CREATE TABLE IF NOT EXISTS im_config (
           "name": "Personal Gmail",
           "email": "personal@gmail.com",
           "transport": "ws",
-          "apiKey": "${LOBSTER_EMAIL_EMAIL_2_APIKEY}",
+          "apiKey": "${baiying_EMAIL_EMAIL_2_APIKEY}",
           "a2a": {
             "enabled": true,
             "agentDomains": ["agents.example.com"],
@@ -272,8 +272,8 @@ CREATE TABLE IF NOT EXISTS im_config (
 Environment variables (`.env`):
 
 ```bash
-LOBSTER_EMAIL_EMAIL_1_PASSWORD=my_imap_password
-LOBSTER_EMAIL_EMAIL_2_APIKEY=ck_live_abc123xyz789
+baiying_EMAIL_EMAIL_1_PASSWORD=my_imap_password
+baiying_EMAIL_EMAIL_2_APIKEY=ck_live_abc123xyz789
 ```
 
 ## Component Details
@@ -350,7 +350,7 @@ if (emailConfig?.instances && emailConfig.instances.length > 0) {
       };
 
       if (inst.transport === 'imap') {
-        accountConfig.password = `\${LOBSTER_EMAIL_${envPrefix}_PASSWORD}`;
+        accountConfig.password = `\${baiying_EMAIL_${envPrefix}_PASSWORD}`;
         if (inst.imapHost) accountConfig.imapHost = inst.imapHost;
         if (inst.imapPort) accountConfig.imapPort = inst.imapPort;
         if (inst.smtpHost) accountConfig.smtpHost = inst.smtpHost;
@@ -358,7 +358,7 @@ if (emailConfig?.instances && emailConfig.instances.length > 0) {
       }
 
       if (inst.transport === 'ws') {
-        accountConfig.apiKey = `\${LOBSTER_EMAIL_${envPrefix}_APIKEY}`;
+        accountConfig.apiKey = `\${baiying_EMAIL_${envPrefix}_APIKEY}`;
       }
 
       if (inst.allowFrom?.length) {
@@ -394,7 +394,7 @@ const emailConfig = this.getEmailOpenClawConfig?.();
 if (emailConfig?.instances) {
   for (const inst of emailConfig.instances) {
     if (!inst.enabled || !inst.email) continue;
-    const envPrefix = `LOBSTER_EMAIL_${inst.instanceId.toUpperCase().replace(/-/g, '_')}`;
+    const envPrefix = `baiying_EMAIL_${inst.instanceId.toUpperCase().replace(/-/g, '_')}`;
     if (inst.transport === 'imap' && inst.password) {
       lines.push(`${envPrefix}_PASSWORD=${inst.password}`);
     }
@@ -926,14 +926,14 @@ export const DEFAULT_EMAIL_MULTI_INSTANCE_CONFIG: EmailMultiInstanceConfig = {
 
 ### 2. Environment Variable Naming Simplification
 
-**Changed:** `LOBSTER_EMAIL_EMAIL_1_PASSWORD` → `LOBSTER_EMAIL_1_PASSWORD`
+**Changed:** `baiying_EMAIL_EMAIL_1_PASSWORD` → `baiying_EMAIL_1_PASSWORD`
 
 Transformation logic updated to:
 
 ```typescript
-const envPrefix = `LOBSTER_EMAIL_${inst.instanceId.replace(/^email-/, '').toUpperCase()}`;
-// email-1 → LOBSTER_EMAIL_1_PASSWORD
-// email-work → LOBSTER_EMAIL_WORK_PASSWORD
+const envPrefix = `baiying_EMAIL_${inst.instanceId.replace(/^email-/, '').toUpperCase()}`;
+// email-1 → baiying_EMAIL_1_PASSWORD
+// email-work → baiying_EMAIL_WORK_PASSWORD
 ```
 
 ### 3. Session Key Format Standardization
@@ -1335,7 +1335,7 @@ export interface IMGatewayConfig {
   qq: QQMultiInstanceConfig;
   discord: DiscordOpenClawConfig;
   nim: NimConfig;
-  'netease-bee': NeteaseBeeChanConfig;
+  'baiying-bee': baiyingBeeChanConfig;
   wecom: WecomOpenClawConfig;
   popo: PopoOpenClawConfig;
   weixin: WeixinOpenClawConfig;
@@ -1356,7 +1356,7 @@ export interface IMGatewayStatus {
   telegram: TelegramGatewayStatus;
   discord: DiscordGatewayStatus;
   nim: NimGatewayStatus;
-  'netease-bee': NeteaseBeeChanGatewayStatus;
+  'baiying-bee': baiyingBeeChanGatewayStatus;
   wecom: WecomGatewayStatus;
   popo: PopoGatewayStatus;
   weixin: WeixinGatewayStatus;
@@ -1376,7 +1376,7 @@ export const DEFAULT_IM_CONFIG: IMGatewayConfig = {
   qq: DEFAULT_QQ_MULTI_INSTANCE_CONFIG,
   discord: DEFAULT_DISCORD_OPENCLAW_CONFIG,
   nim: DEFAULT_NIM_CONFIG,
-  'netease-bee': DEFAULT_NETEASE_BEE_CONFIG,
+  'baiying-bee': DEFAULT_baiying_BEE_CONFIG,
   wecom: DEFAULT_WECOM_CONFIG,
   popo: DEFAULT_POPO_CONFIG,
   weixin: DEFAULT_WEIXIN_CONFIG,
@@ -1404,7 +1404,7 @@ export const DEFAULT_IM_STATUS: IMGatewayStatus = {
   qq: { instances: [] },
   discord: DEFAULT_DISCORD_STATUS,
   nim: DEFAULT_NIM_STATUS,
-  'netease-bee': DEFAULT_NETEASE_BEE_STATUS,
+  'baiying-bee': DEFAULT_baiying_BEE_STATUS,
   wecom: DEFAULT_WECOM_STATUS,
   popo: DEFAULT_POPO_STATUS,
   weixin: DEFAULT_WEIXIN_STATUS,
@@ -1448,7 +1448,7 @@ export type Platform =
   | 'weixin'
   | 'nim'
   | 'popo'
-  | 'netease-bee'
+  | 'baiying-bee'
   | 'email'; // Add this line
 ```
 
@@ -1474,8 +1474,8 @@ static platformOfChannel(channelName: string): Platform | null {
     'openclaw-nim': 'nim',
     'popo': 'popo',
     'moltbot-popo': 'popo',
-    'netease-bee': 'netease-bee',
-    'openclaw-netease-bee': 'netease-bee',
+    'baiying-bee': 'baiying-bee',
+    'openclaw-baiying-bee': 'baiying-bee',
     'email': 'email',             // Add these three lines
     'clawemail': 'email',
     'clawemail-email': 'email',
@@ -1500,7 +1500,7 @@ static channelOf(platform: Platform): string | null {
     weixin: 'weixin',
     nim: 'nim',
     popo: 'popo',
-    'netease-bee': 'netease-bee',
+    'baiying-bee': 'baiying-bee',
     email: 'email',  // Add this line
   };
   return reverseMapping[platform] || null;
@@ -1651,7 +1651,7 @@ if (emailConfig?.instances && emailConfig.instances.length > 0) {
 
       // IMAP/SMTP mode configuration
       if (inst.transport === 'imap') {
-        accountConfig.password = `\${LOBSTER_EMAIL_${envSuffix}_PASSWORD}`;
+        accountConfig.password = `\${baiying_EMAIL_${envSuffix}_PASSWORD}`;
         if (inst.imapHost) accountConfig.imapHost = inst.imapHost;
         if (inst.imapPort) accountConfig.imapPort = inst.imapPort;
         if (inst.smtpHost) accountConfig.smtpHost = inst.smtpHost;
@@ -1660,7 +1660,7 @@ if (emailConfig?.instances && emailConfig.instances.length > 0) {
 
       // WebSocket mode configuration
       if (inst.transport === 'ws') {
-        accountConfig.apiKey = `\${LOBSTER_EMAIL_${envSuffix}_APIKEY}`;
+        accountConfig.apiKey = `\${baiying_EMAIL_${envSuffix}_APIKEY}`;
       }
 
       // Common configuration
@@ -1763,11 +1763,11 @@ if (emailConfig?.instances) {
     const envSuffix = inst.instanceId.replace(/^email-/, '').toUpperCase();
 
     if (inst.transport === 'imap' && inst.password) {
-      lines.push(`LOBSTER_EMAIL_${envSuffix}_PASSWORD=${inst.password}`);
+      lines.push(`baiying_EMAIL_${envSuffix}_PASSWORD=${inst.password}`);
     }
 
     if (inst.transport === 'ws' && inst.apiKey) {
-      lines.push(`LOBSTER_EMAIL_${envSuffix}_APIKEY=${inst.apiKey}`);
+      lines.push(`baiying_EMAIL_${envSuffix}_APIKEY=${inst.apiKey}`);
     }
   }
 }
@@ -1809,7 +1809,7 @@ Find the `getTitlePrefix` method and add email prefix:
       'wecom-openclaw-plugin': t('channelPrefixWecom'),
       nim: t('channelPrefixNim'),
       weixin: t('channelPrefixWeixin'),
-      'netease-bee': t('channelPrefixNeteaseBee'),
+      'baiying-bee': t('channelPrefixbaiyingBee'),
       qq: t('channelPrefixQQ'),
       popo: t('channelPrefixPopo'),
       email: t('channelPrefixEmail'),  // Add this line

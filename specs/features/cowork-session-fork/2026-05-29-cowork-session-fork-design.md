@@ -419,7 +419,7 @@ interface CoworkWorktreeForkResult {
 1. 解析源 session `cwd`。
 2. 使用 `git rev-parse --show-toplevel` 判断 Git repo。
 3. 使用 `git status --porcelain=v1` 判断 dirty 状态。
-4. 生成 branch 名称：`lobster/fork/<short-session-id>`。
+4. 生成 branch 名称：`baiying/fork/<short-session-id>`。
 5. 生成 worktree 路径：`{userData}/worktrees/<session-id>` 或 `{repoParent}/.baiying/worktrees/<session-id>`。
 6. 执行 `git worktree add -b <branch> <worktreePath> HEAD`。
 7. 如果 `includeUncommittedChanges = true`：

@@ -472,7 +472,7 @@ IM:
   channel is OpenClaw-backed.
 - Enabled multi-instance platforms: DingTalk, Feishu/Lark, QQ, WeCom.
 - Weixin uses single-instance style config.
-- Retired IM platforms (Telegram, Discord, NIM, POPO, NetEase Bee, email)
+- Retired IM platforms (Telegram, Discord, NIM, POPO, baiying Bee, email)
   remain in the platform registry for legacy resolution but are disabled.
 - IM session mappings preserve conversation/session/agent relationships.
 

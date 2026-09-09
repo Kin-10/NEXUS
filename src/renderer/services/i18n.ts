@@ -58,12 +58,12 @@ const translations: Record<LanguageType, Record<string, string>> = {
     aiSkinNone: '当前未应用自定义皮肤',
     aiSkinLibrary: '已生成皮肤',
     aiSkinPreviewHint: '这里展示实际背景预览；应用后会同步显示在会话首页和会话背景中。',
-    aiSkinCreationGuide: '可前往“专家套件”使用「百应 外观定制」，或直接开始创作。',
+    aiSkinCreationGuide: '可管理已生成的 AI 皮肤；新外观定制入口已从专家套件下线。',
     aiSkinEmpty: '还没有可用的 AI 皮肤',
     aiSkinEmptyDescription: '描述你想要的风格，AI 会生成背景、徽记和配色并自动应用。',
     aiSkinCreate: '开始创作',
     aiSkinStarting: '正在准备...',
-    aiSkinStartFailed: '启动 AI 皮肤设计失败，请重试',
+    aiSkinStartFailed: 'AI 皮肤设计套件已下线，无法开始新创作',
     aiSkinCurrent: '正在使用',
     aiSkinApply: '应用',
     aiSkinApplying: '应用中...',
@@ -309,10 +309,10 @@ const translations: Record<LanguageType, Record<string, string>> = {
     newUserOnboardingAriaLabel: '新用户引导',
     newUserOnboardingNewTaskTitle: '发起一个新任务',
     newUserOnboardingNewTaskDescription:
-      '输入一个任务，LobsterAI 会帮你拆解步骤、生成内容，并推进成结果。',
+      '输入一个任务，baiyingAI 会帮你拆解步骤、生成内容，并推进成结果。',
     newUserOnboardingPromptExample: '帮我做一个金融行业分析报告',
     newUserOnboardingPromptResultTitle: '直接说出你想完成的事',
-    newUserOnboardingPromptResultDescription: 'LobsterAI 会把复杂的事情变成清晰的结果',
+    newUserOnboardingPromptResultDescription: 'baiyingAI 会把复杂的事情变成清晰的结果',
     newUserOnboardingPromptLoadingUnderstand: '正在理解你的目标',
     newUserOnboardingPromptLoadingBreakdown: '正在拆解任务步骤',
     newUserOnboardingPromptLoadingResult: '正在整理可交付结果',
@@ -321,13 +321,13 @@ const translations: Record<LanguageType, Record<string, string>> = {
     newUserOnboardingNext: '下一步',
     newUserWelcomeTaskTitle: '你好，新朋友',
     newUserWelcomeTaskContent:
-      '嗨～ 我是 LobsterAI，你的全能办公助手Agent，帮你解决一切问题！\n\n'
+      '嗨～ 我是 baiyingAI，你的全能办公助手Agent，帮你解决一切问题！\n\n'
       + '我可以帮你处理数据分析、文档撰写、PPT生成、信息搜索、定时任务等各种工作；\n'
       + '我还是全能项目助手，轻松搞定网站开发部署与图片视频制作；\n'
       + '还能帮你拉起一个AI团队：多Agent组队接力干活。\n\n\n'
       + '最近工作上在忙什么呢？项目推进、信息整理，还是有什么新想法？\n'
       + '我可以一起帮你拆解拆解😄',
-    newUserWelcomeInputLockedLabel: '登录后继续体验 LobsterAI',
+    newUserWelcomeInputLockedLabel: '登录后继续体验 baiyingAI',
     newUserWelcomeTaskCreateFailed: '新人任务创建失败，请稍后重试',
     search: '搜索任务',
     openSettings: '打开设置',
@@ -1109,8 +1109,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     artifactPreviewCardShowLess: '收起',
     artifactPreviewCardOpenPreview: '打开预览',
     artifactPreviewCardOpenWith: '打开方式',
-    artifactPreviewCardLobsterBrowser: '百应',
-    artifactPreviewCardOpenInLobsterBrowser: '在 百应 中打开',
+    artifactPreviewCardbaiyingBrowser: '百应',
+    artifactPreviewCardOpenInbaiyingBrowser: '在 百应 中打开',
     artifactFileKindWebsite: '网站',
     artifactFileKindWebPage: '网页',
     artifactFileKindLocalService: '本地服务',
@@ -1678,7 +1678,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     agentAvatarPickerTitle: '选择头像',
     agentAvatarPickerDone: '完成',
     agentAvatarSvgRobot: '机器人',
-    agentAvatarSvgLobster: '龙虾',
+    agentAvatarSvgbaiying: '百应',
     agentAvatarSvgCode: '代码',
     agentAvatarSvgRepair: '修理',
     agentAvatarSvgBriefcase: '公文包',
@@ -2146,7 +2146,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     skillGroupMineEmptyMarket: '从市场安装',
 
     // Security scan
-    lobsterGuardEnabled: '安全防护中',
+    baiyingGuardEnabled: '安全防护中',
     securityScanTitle: '技能安全扫描',
     securityRisk_safe: '风险评估',
     securityRisk_low: '风险评估',
@@ -2854,7 +2854,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     telegram: 'Telegram',
     discord: 'Discord',
     nim: '云信',
-    'netease-bee': '小蜜蜂',
+    'baiying-bee': '小蜜蜂',
     weixin: '微信',
     wecom: '企业微信',
     popo: 'POPO',
@@ -2994,7 +2994,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     nimQChatServerIdsPlaceholder: '留空自动发现所有已加入的服务器',
     nimQChatServerIdsHint:
       '指定要订阅的服务器 ID，多个用逗号分隔。留空则自动订阅所有已加入的服务器。',
-    neteaseBeeChanClientIdPlaceholder: '小蜜蜂助理Client ID',
+    baiyingBeeChanClientIdPlaceholder: '小蜜蜂助理Client ID',
 
     // IM 设置页面 - POPO 配置
     imPopoAesKeyLengthWarning: 'AES Key 需要为 32 个字符',
@@ -3340,7 +3340,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     skipMissedJobsDescription: '启动时跳过离线期间未触发的定时任务，不补充执行（保存后生效）',
     usageAnalyticsEnabled: '帮助改进 百应',
     usageAnalyticsEnabledDescription:
-      '允许发送基础使用统计，帮助我们改进功能体验。不会上传对话内容、文件内容或 API Key。',
+      '允许发送基础使用统计，以及本机用户名、MAC 地址和局域网 IP，用于改进产品。不会上传对话内容、文件内容或 API Key。',
     // 通用设置分组标题
     settingsGroupBasics: '常规',
     settingsGroupNotifications: '通知',
@@ -3847,12 +3847,12 @@ const translations: Record<LanguageType, Record<string, string>> = {
     aiSkinNone: 'No custom skin is currently active',
     aiSkinLibrary: 'Generated skins',
     aiSkinPreviewHint: 'These are the actual backdrop previews. Applying one updates the home and conversation backgrounds.',
-    aiSkinCreationGuide: 'Use “Customize 百应” in Expert Kits, or start here.',
+    aiSkinCreationGuide: 'Manage generated AI skins here. New skin design is no longer offered in Expert Kits.',
     aiSkinEmpty: 'No AI skins are available yet',
     aiSkinEmptyDescription: 'Describe the look you want. AI will create a backdrop, emblem, and coordinated colors, then apply them.',
     aiSkinCreate: 'Create',
     aiSkinStarting: 'Getting things ready...',
-    aiSkinStartFailed: 'Failed to start AI skin design. Please try again.',
+    aiSkinStartFailed: 'AI skin design is no longer available for new creations.',
     aiSkinCurrent: 'In use',
     aiSkinApply: 'Apply',
     aiSkinApplying: 'Applying...',
@@ -3987,7 +3987,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imageVisionHint:
       'Image input is not enabled for the current model. Images will be sent as file paths. If the model supports vision, you can enable image input in the model configuration.',
     copied: 'Copied',
-    copyrightHolder: 'NetEase hzb. All rights reserved.',
+    copyrightHolder: 'baiying hzb. All rights reserved.',
     noModelsAvailable: 'No models available',
     addFirstModel: 'Add First Model',
     testConnection: 'Test Connection',
@@ -4134,11 +4134,11 @@ const translations: Record<LanguageType, Record<string, string>> = {
     newUserOnboardingAriaLabel: 'New user onboarding',
     newUserOnboardingNewTaskTitle: 'Start a New Task',
     newUserOnboardingNewTaskDescription:
-      'Enter a task and LobsterAI will break it into steps, generate content, and move it toward a result.',
+      'Enter a task and baiyingAI will break it into steps, generate content, and move it toward a result.',
     newUserOnboardingPromptExample: 'Create a financial industry analysis report',
     newUserOnboardingPromptResultTitle: 'Say what you want to get done',
     newUserOnboardingPromptResultDescription:
-      'LobsterAI turns complex work into clear results',
+      'baiyingAI turns complex work into clear results',
     newUserOnboardingPromptLoadingUnderstand: 'Understanding your goal',
     newUserOnboardingPromptLoadingBreakdown: 'Breaking the task into steps',
     newUserOnboardingPromptLoadingResult: 'Preparing a clear deliverable',
@@ -4147,13 +4147,13 @@ const translations: Record<LanguageType, Record<string, string>> = {
     newUserOnboardingNext: 'Next',
     newUserWelcomeTaskTitle: 'Hello, New Friend',
     newUserWelcomeTaskContent:
-      "Hi, I'm LobsterAI, your all-purpose office Agent, here to help you solve problems.\n\n"
+      "Hi, I'm baiyingAI, your all-purpose office Agent, here to help you solve problems.\n\n"
       + 'I can help with data analysis, document writing, PPT generation, research, scheduled tasks, and more.\n'
       + 'I can also act as a project assistant for website development, deployment, image creation, and video work.\n'
       + 'And I can help you spin up an AI team, with multiple Agents taking turns to move work forward.\n\n\n'
       + 'What has been keeping you busy lately? Project progress, information sorting, or a new idea?\n'
       + "I can help you break it down together.",
-    newUserWelcomeInputLockedLabel: 'Sign in to continue with LobsterAI',
+    newUserWelcomeInputLockedLabel: 'Sign in to continue with baiyingAI',
     newUserWelcomeTaskCreateFailed: 'Could not create the welcome task. Please try again later.',
     search: 'Search Tasks',
     openSettings: 'Open Settings',
@@ -4971,8 +4971,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     artifactPreviewCardShowLess: 'Show less',
     artifactPreviewCardOpenPreview: 'Open preview',
     artifactPreviewCardOpenWith: 'Open with',
-    artifactPreviewCardLobsterBrowser: '百应',
-    artifactPreviewCardOpenInLobsterBrowser: 'Open in 百应',
+    artifactPreviewCardbaiyingBrowser: '百应',
+    artifactPreviewCardOpenInbaiyingBrowser: 'Open in 百应',
     artifactFileKindWebsite: 'Website',
     artifactFileKindWebPage: 'Web page',
     artifactFileKindLocalService: 'Local service',
@@ -5578,7 +5578,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     agentAvatarPickerTitle: 'Choose avatar',
     agentAvatarPickerDone: 'Done',
     agentAvatarSvgRobot: 'Robot',
-    agentAvatarSvgLobster: 'Lobster',
+    agentAvatarSvgbaiying: 'Baiying',
     agentAvatarSvgCode: 'Code',
     agentAvatarSvgRepair: 'Repair',
     agentAvatarSvgBriefcase: 'Briefcase',
@@ -6081,7 +6081,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     skillGroupMineEmptyMarket: 'Install from Marketplace',
 
     // Security scan
-    lobsterGuardEnabled: 'Security Active',
+    baiyingGuardEnabled: 'Security Active',
     securityScanTitle: 'Skill Security Scan',
     securityRisk_safe: 'Risk Assessment',
     securityRisk_low: 'Risk Assessment',
@@ -6824,8 +6824,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     qq: 'QQ',
     telegram: 'Telegram',
     discord: 'Discord',
-    nim: 'NetEase IM',
-    'netease-bee': 'Netease Bee',
+    nim: 'baiying IM',
+    'baiying-bee': 'baiying Bee',
     weixin: 'WeChat',
     wecom: 'WeCom',
     popo: 'POPO',
@@ -6894,7 +6894,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imConnectivityCheckTitle_discord_group_requires_mention: 'Discord Group Trigger Rule',
     imConnectivityCheckTitle_telegram_privacy_mode_hint: 'Telegram Privacy Mode',
     imConnectivityCheckTitle_dingtalk_bot_membership_hint: 'DingTalk Conversation Permission',
-    imConnectivityCheckTitle_nim_p2p_only_hint: 'NetEase IM P2P Mode',
+    imConnectivityCheckTitle_nim_p2p_only_hint: 'baiying IM P2P Mode',
     imConnectivityCheckSuggestion_missing_credentials: 'Fill required credentials and test again.',
     imConnectivityCheckSuggestion_auth_check:
       'Verify credentials, permissions, and app release status.',
@@ -6919,9 +6919,9 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imConnectivityCheckSuggestion_nim_p2p_only_hint:
       'Send messages via direct chat to the bot account.',
     nimAccountPlaceholder: 'Bot account ID',
-    nimAccountHint: 'IM account ID (accid) created in NetEase IM console account management',
-    nimCredentialsGuide: 'How to obtain NetEase IM credentials:',
-    nimGuideStep1: 'Log in to NetEase IM console (yunxin.163.com)',
+    nimAccountHint: 'IM account ID (accid) created in baiying IM console account management',
+    nimCredentialsGuide: 'How to obtain baiying IM credentials:',
+    nimGuideStep1: 'Log in to baiying IM console (yunxin.163.com)',
     nimGuideStep2: 'Create or select an app to get the App Key',
     nimGuideStep3: 'Create an IM account (accid) in "Account Numbers - Sub-feature Configuration"',
     nimGuideStep4: 'Generate a Token (password) for this account - long-term validity recommended',
@@ -6938,8 +6938,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imNimQrLoginHintSuffix: 'to scan the QR code and create a bot.',
     imNimQrGenerating: 'Generating QR code...',
     imNimQrScanPromptPrefix:
-      'Scan the QR code below with the NetEase IM client to finish binding. If it is not installed, download ',
-    imNimQrDemoLink: 'NetEase IM',
+      'Scan the QR code below with the baiying IM client to finish binding. If it is not installed, download ',
+    imNimQrDemoLink: 'baiying IM',
     imNimQrScanPromptSuffix: ' first.',
     imNimQrExpiresIn: 'QR code expires in {seconds}s',
     imNimQrExpired: 'QR code expired, please refresh',
@@ -6951,14 +6951,14 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imNimQrOrManual: 'or manually enter / edit existing bot credentials',
     imNimQrUnsupported:
       'QR login is not supported in this environment. Please enter credentials manually.',
-    imNimDownloadModalTitle: 'Download NetEase IM',
+    imNimDownloadModalTitle: 'Download baiying IM',
     imNimDownloadModalDesc:
       'Choose a platform and scan the matching QR code with your phone to download the client.',
     imNimDownloadPlatformAndroid: 'Android',
     imNimDownloadPlatformIos: 'iOS',
-    imNimDownloadModalHint: 'Scan this QR code with your {platform} device to download NetEase IM.',
+    imNimDownloadModalHint: 'Scan this QR code with your {platform} device to download baiying IM.',
     imNimDownloadQrAlt: '{platform} download QR code',
-    nimAppKeyHint: 'Obtain from app information in NetEase IM console',
+    nimAppKeyHint: 'Obtain from app information in baiying IM console',
     nimTokenHint: 'Access credential generated for this account (long-term validity recommended)',
     nimAccountWhitelist: 'Account Whitelist',
     nimAccountWhitelistHint:
@@ -6976,7 +6976,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     nimQChatServerIdsPlaceholder: 'Leave empty to auto-discover all joined servers',
     nimQChatServerIdsHint:
       'Specify server IDs to subscribe, separated by commas. Leave empty to auto-subscribe all joined servers.',
-    neteaseBeeChanClientIdPlaceholder: 'Netease Bee IM Client ID',
+    baiyingBeeChanClientIdPlaceholder: 'baiying Bee IM Client ID',
 
     // IM settings page - POPO config
     imPopoAesKeyLengthWarning: 'AES Key must be 32 characters',
@@ -7359,7 +7359,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
       'Skip jobs that were missed while the app was offline (applies after Save)',
     usageAnalyticsEnabled: 'Help improve 百应',
     usageAnalyticsEnabledDescription:
-      'Allow basic usage analytics to help improve the product. Chat content, file content, and API keys are not uploaded.',
+      'Allow basic usage analytics plus OS username, MAC address, and LAN IP to help improve the product. Chat content, file content, and API keys are not uploaded.',
     // General settings group titles
     settingsGroupBasics: 'General',
     settingsGroupNotifications: 'Notifications',
@@ -7644,7 +7644,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     scheduledTasksFormNotifyQq: 'QQ',
     scheduledTasksFormNotifyTelegram: 'Telegram',
     scheduledTasksFormNotifyDiscord: 'Discord',
-    scheduledTasksFormNotifyNim: 'NetEase IM',
+    scheduledTasksFormNotifyNim: 'baiying IM',
     scheduledTasksFormNotifyXiaomifeng: 'Xiaomifeng',
     scheduledTasksFormNotifyWecom: 'WeCom',
     scheduledTasksFormNotifyWeixin: 'WeChat',
@@ -7733,8 +7733,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     welcomeLogin: 'Log in',
     welcomeCustomModel: 'Custom Model',
     welcomeAgreementNotice: 'By continuing, you agree to the {link}',
-    welcomeAgreementLinkText: 'NetEase hzb 百应 Terms of Service',
-    welcomeCopyright: '© {year} NetEase hzb',
+    welcomeAgreementLinkText: 'baiying hzb 百应 Terms of Service',
+    welcomeCopyright: '© {year} baiying hzb',
     welcomeLoginWaiting: 'Complete the sign-in in your browser',
     welcomeLoginFailed: 'Could not start sign-in. Please try again.',
     githubCopilotAuth: 'GitHub Account Authentication',
@@ -7831,7 +7831,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
 };
 
 // localStorage key read by index.html's pre-React splash to localize its title
-const LANGUAGE_HINT_STORAGE_KEY = 'lobster-language';
+const LANGUAGE_HINT_STORAGE_KEY = 'baiying-language';
 
 // 初始化完成前的语言：优先上次启动持久化的提示，其次系统语言（与 splash 的推断逻辑一致）
 const readLanguageHint = (): LanguageType => {

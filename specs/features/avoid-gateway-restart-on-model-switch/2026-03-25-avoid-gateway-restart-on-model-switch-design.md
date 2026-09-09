@@ -12,12 +12,12 @@ When switching models across provider types, the gateway process is killed and r
 User switches model
   → store:set('app_config')
   → syncOpenClawConfig({ restartGatewayIfRunning: false })
-  → collectSecretEnvVars() returns new LOBSTER_PROVIDER_API_KEY value
+  → collectSecretEnvVars() returns new baiying_PROVIDER_API_KEY value
   → secretEnvVarsChanged = true
   → stopGateway() + startGateway()  ← user-visible disruption
 ```
 
-Root cause: a single `LOBSTER_PROVIDER_API_KEY` env var holds the active provider's apiKey. Switching providers changes this value, and env vars are fixed at process spawn time — forcing a restart.
+Root cause: a single `baiying_PROVIDER_API_KEY` env var holds the active provider's apiKey. Switching providers changes this value, and env vars are fixed at process spawn time — forcing a restart.
 
 ## Design
 
@@ -27,13 +27,13 @@ Pre-register ALL configured provider apiKeys as separate env vars at gateway sta
 
 ```
 Before (single env var):
-  LOBSTER_PROVIDER_API_KEY = <active provider's key>   ← changes on switch
+  baiying_PROVIDER_API_KEY = <active provider's key>   ← changes on switch
 
 After (per-provider env vars):
-  LOBSTER_APIKEY_SERVER    = <accessToken>              ← always set
-  LOBSTER_APIKEY_MOONSHOT  = <moonshot key>             ← always set
-  LOBSTER_APIKEY_ANTHROPIC = <anthropic key>            ← always set
-  LOBSTER_PROVIDER_API_KEY = <active key>               ← legacy fallback
+  baiying_APIKEY_SERVER    = <accessToken>              ← always set
+  baiying_APIKEY_MOONSHOT  = <moonshot key>             ← always set
+  baiying_APIKEY_ANTHROPIC = <anthropic key>            ← always set
+  baiying_PROVIDER_API_KEY = <active key>               ← legacy fallback
 ```
 
 ### Architecture
@@ -44,10 +44,10 @@ resolveAllProviderApiKeys() ─────────────────�
   Enumerates all enabled providers + baiying-server   │
   Returns: { SERVER: token, MOONSHOT: key, ... }        │
                                                         ▼
-collectSecretEnvVars() ◄──── Sets LOBSTER_APIKEY_<NAME> for each provider
+collectSecretEnvVars() ◄──── Sets baiying_APIKEY_<NAME> for each provider
   (openclawConfigSync.ts)    All injected at gateway spawn time
 
-buildProviderSelection() ──► apiKey: '${LOBSTER_APIKEY_<NAME>}'
+buildProviderSelection() ──► apiKey: '${baiying_APIKEY_<NAME>}'
   (openclawConfigSync.ts)    Each provider references its own placeholder
 ```
 
@@ -55,14 +55,14 @@ buildProviderSelection() ──► apiKey: '${LOBSTER_APIKEY_<NAME>}'
 
 | Provider | Env Var Name | Source |
 |----------|-------------|--------|
-| baiying-server | `LOBSTER_APIKEY_SERVER` | accessToken from auth |
-| moonshot | `LOBSTER_APIKEY_MOONSHOT` | provider config apiKey |
-| anthropic | `LOBSTER_APIKEY_ANTHROPIC` | provider config apiKey |
-| ollama | `LOBSTER_APIKEY_OLLAMA` | `sk-baiying-local` (no key needed) |
-| custom | `LOBSTER_APIKEY_CUSTOM` | provider config apiKey |
-| (legacy) | `LOBSTER_PROVIDER_API_KEY` | active provider's key (backward compat) |
+| baiying-server | `baiying_APIKEY_SERVER` | accessToken from auth |
+| moonshot | `baiying_APIKEY_MOONSHOT` | provider config apiKey |
+| anthropic | `baiying_APIKEY_ANTHROPIC` | provider config apiKey |
+| ollama | `baiying_APIKEY_OLLAMA` | `sk-baiying-local` (no key needed) |
+| custom | `baiying_APIKEY_CUSTOM` | provider config apiKey |
+| (legacy) | `baiying_PROVIDER_API_KEY` | active provider's key (backward compat) |
 
-Formula: `LOBSTER_APIKEY_` + `providerName.toUpperCase().replace(/[^A-Z0-9]/g, '_')`
+Formula: `baiying_APIKEY_` + `providerName.toUpperCase().replace(/[^A-Z0-9]/g, '_')`
 
 For baiying-server, hardcoded as `SERVER` (since it's a dynamic provider, not in app_config.providers).
 
@@ -77,13 +77,13 @@ New export `resolveAllProviderApiKeys()`:
 
 #### `src/main/libs/openclawConfigSync.ts`
 
-1. New helper `providerApiKeyEnvVar(providerName)` → `LOBSTER_APIKEY_<NAME>`
+1. New helper `providerApiKeyEnvVar(providerName)` → `baiying_APIKEY_<NAME>`
 2. `buildProviderSelection()` — all 4 cases updated:
-   - baiying-server: `${LOBSTER_APIKEY_SERVER}` (was inline apiKey)
-   - moonshot+codingPlan: `${LOBSTER_APIKEY_MOONSHOT}` (was `${LOBSTER_PROVIDER_API_KEY}`)
-   - moonshot: `${LOBSTER_APIKEY_MOONSHOT}` (was `${LOBSTER_PROVIDER_API_KEY}`)
-   - default: `${LOBSTER_APIKEY_<PROVIDER>}` (was `${LOBSTER_PROVIDER_API_KEY}`)
-3. `collectSecretEnvVars()` — calls `resolveAllProviderApiKeys()` to set all env vars, keeps legacy `LOBSTER_PROVIDER_API_KEY` for backward compat
+   - baiying-server: `${baiying_APIKEY_SERVER}` (was inline apiKey)
+   - moonshot+codingPlan: `${baiying_APIKEY_MOONSHOT}` (was `${baiying_PROVIDER_API_KEY}`)
+   - moonshot: `${baiying_APIKEY_MOONSHOT}` (was `${baiying_PROVIDER_API_KEY}`)
+   - default: `${baiying_APIKEY_<PROVIDER>}` (was `${baiying_PROVIDER_API_KEY}`)
+3. `collectSecretEnvVars()` — calls `resolveAllProviderApiKeys()` to set all env vars, keeps legacy `baiying_PROVIDER_API_KEY` for backward compat
 
 ### When Gateway Still Restarts (Expected)
 
@@ -97,7 +97,7 @@ New export `resolveAllProviderApiKeys()`:
 
 ### Backward Compatibility
 
-- `LOBSTER_PROVIDER_API_KEY` is still set (to active provider's key) as a legacy fallback
+- `baiying_PROVIDER_API_KEY` is still set (to active provider's key) as a legacy fallback
 - Stale `openclaw.json` files referencing the old placeholder will still work
 - After first sync, new placeholder format is written
 

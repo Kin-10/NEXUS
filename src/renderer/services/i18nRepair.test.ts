@@ -19,7 +19,7 @@ test('repair language application refreshes the splash hint without rewriting co
 
   i18nService.setLanguage('en', { persist: false });
 
-  expect(setItem).toHaveBeenCalledWith('lobster-language', 'en');
+  expect(setItem).toHaveBeenCalledWith('baiying-language', 'en');
 });
 
 test('a late older initialization cannot replace the newest locale result', async () => {
@@ -54,7 +54,7 @@ test('a late older initialization cannot replace the newest locale result', asyn
     language: 'zh',
     language_initialized: true,
   });
-  expect(setItem).toHaveBeenLastCalledWith('lobster-language', 'zh');
+  expect(setItem).toHaveBeenLastCalledWith('baiying-language', 'zh');
 });
 
 test('repair language wins over a locale lookup that completes late', async () => {
@@ -82,5 +82,5 @@ test('repair language wins over a locale lookup that completes late', async () =
 
   expect(i18nService.getLanguage()).toBe('zh');
   expect(updateConfig).not.toHaveBeenCalled();
-  expect(setItem).toHaveBeenLastCalledWith('lobster-language', 'zh');
+  expect(setItem).toHaveBeenLastCalledWith('baiying-language', 'zh');
 });

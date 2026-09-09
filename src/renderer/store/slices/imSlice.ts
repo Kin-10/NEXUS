@@ -20,7 +20,7 @@ import type {
   IMGatewayConfig,
   IMGatewayStatus,
   IMSettings,
-  NeteaseBeeChanConfig,
+  baiyingBeeChanConfig,
   NimConfig,
   NimInstanceConfig,
   NimMultiInstanceConfig,
@@ -217,8 +217,8 @@ const imSlice = createSlice({
         i => i.instanceId !== action.payload
       );
     },
-    setNeteaseBeeChanConfig: (state, action: PayloadAction<Partial<NeteaseBeeChanConfig>>) => {
-      state.config['netease-bee'] = { ...state.config['netease-bee'], ...action.payload };
+    setbaiyingBeeChanConfig: (state, action: PayloadAction<Partial<baiyingBeeChanConfig>>) => {
+      state.config['baiying-bee'] = { ...state.config['baiying-bee'], ...action.payload };
     },
     /** @deprecated Use setWecomInstanceConfig instead */
     setWecomConfig: (state, action: PayloadAction<Partial<WecomOpenClawConfig>>) => {
@@ -346,7 +346,7 @@ export const {
   setNimInstanceConfig,
   addNimInstance,
   removeNimInstance,
-  setNeteaseBeeChanConfig,
+  setbaiyingBeeChanConfig,
   setWecomConfig,
   setWecomInstances,
   setWecomMultiInstanceConfig,

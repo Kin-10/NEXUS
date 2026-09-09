@@ -18,14 +18,14 @@ export type BrowserProfileMode = typeof BrowserProfileMode[keyof typeof BrowserP
 
 export const BrowserRuntimeProfile = {
   Managed: 'openclaw',
-  InApp: 'lobster-in-app',
+  InApp: 'baiying-in-app',
   User: 'user',
 } as const;
 
 export type BrowserRuntimeProfile = typeof BrowserRuntimeProfile[keyof typeof BrowserRuntimeProfile];
 
 export const AgentBrowserPartition = {
-  Default: 'persist:lobster-agent-browser',
+  Default: 'persist:baiying-agent-browser',
 } as const;
 
 export type AgentBrowserPartition =

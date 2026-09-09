@@ -81,19 +81,19 @@ const createOpenAICompatAppConfig = () => ({
 const createSessionStore = () => ({
   'agent:main:baiying:current-session': {
     sessionId: 'session-current',
-    modelProvider: 'lobster',
+    modelProvider: 'baiying',
     model: 'kimi-k2.5',
     systemPromptReport: {
-      provider: 'lobster',
+      provider: 'baiying',
       model: 'kimi-k2.5',
     },
   },
   'agent:main:baiying:old-claude-session': {
     sessionId: 'session-old-claude',
-    modelProvider: 'lobster',
+    modelProvider: 'baiying',
     model: 'claude-sonnet-4-5-20250929',
     systemPromptReport: {
-      provider: 'lobster',
+      provider: 'baiying',
       model: 'claude-sonnet-4-5-20250929',
     },
   },
@@ -142,7 +142,7 @@ const createSync = (tmpDir, appConfig, options = {}) => {
     getPopoConfig: () => options.popoConfig ?? null,
     getPopoInstances: () => options.popoInstances ?? [],
     getNimConfig: () => options.nimConfig ?? null,
-    getNeteaseBeeChanConfig: () => null,
+    getbaiyingBeeChanConfig: () => null,
     getWeixinConfig: () => null,
     getSkillsPrompt: () => null,
     getUserPlugins: () => [],
@@ -187,7 +187,7 @@ test('sync writes native moonshot provider config and migrates matching managed 
   assert.equal(sessionStore['agent:main:baiying:current-session'].modelProvider, 'moonshot');
   assert.equal(sessionStore['agent:main:baiying:current-session'].model, 'kimi-k2.5');
   assert.equal(sessionStore['agent:main:baiying:current-session'].systemPromptReport.provider, 'moonshot');
-  assert.equal(sessionStore['agent:main:baiying:old-claude-session'].modelProvider, 'lobster');
+  assert.equal(sessionStore['agent:main:baiying:old-claude-session'].modelProvider, 'baiying');
   assert.equal(sessionStore['agent:main:baiying:old-claude-session'].model, 'claude-sonnet-4-5-20250929');
   assert.equal(sessionStore['agent:main:wecom:direct:wangning'].execSecurity, 'deny');
   assert.equal(sessionStore['agent:main:feishu:dm:ou_123'].execSecurity, 'deny');
@@ -250,7 +250,7 @@ test('sync denies exec for native channel sessions even without provider migrati
   assert.equal(result.changed, true);
 
   const sessionStore = JSON.parse(fs.readFileSync(path.join(sessionsDir, 'sessions.json'), 'utf8'));
-  assert.equal(sessionStore['agent:main:baiying:current-session'].modelProvider, 'lobster');
+  assert.equal(sessionStore['agent:main:baiying:current-session'].modelProvider, 'baiying');
   assert.equal(sessionStore['agent:main:baiying:current-session'].model, 'kimi-k2.5');
   assert.equal(sessionStore['agent:main:wecom:direct:wangning'].execSecurity, 'deny');
   assert.equal(sessionStore['agent:main:feishu:dm:ou_123'].execSecurity, 'deny');
@@ -298,7 +298,7 @@ test('sync writes scheduled-task policy into managed AGENTS.md for native channe
   assert.match(agentsMd, /Always answer in Chinese\./);
 });
 
-test('sync preserves existing AGENTS.md content above the Lobster managed marker', (t) => {
+test('sync preserves existing AGENTS.md content above the baiying managed marker', (t) => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openclaw-config-sync-agents-preserve-'));
   t.after(() => fs.rmSync(tmpDir, { recursive: true, force: true }));
   setElectronPaths(tmpDir);
@@ -324,7 +324,7 @@ test('sync preserves existing AGENTS.md content above the Lobster managed marker
   assert.doesNotMatch(agentsMd, /^# AGENTS\.md - Your Workspace/m);
 });
 
-test('sync backfills the default OpenClaw AGENTS template when an old workspace only has Lobster managed content', (t) => {
+test('sync backfills the default OpenClaw AGENTS template when an old workspace only has baiying managed content', (t) => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openclaw-config-sync-agents-backfill-'));
   t.after(() => fs.rmSync(tmpDir, { recursive: true, force: true }));
   setElectronPaths(tmpDir);
@@ -591,8 +591,8 @@ test('sync writes non-empty placeholder apiKey for providers that do not require
   assert.equal(result.changed, true);
 
   const config = JSON.parse(fs.readFileSync(path.join(tmpDir, 'state', 'openclaw.json'), 'utf8'));
-  const providerConfig = config.models.providers.lobster;
-  assert.ok(providerConfig, 'lobster provider should exist in config');
+  const providerConfig = config.models.providers.baiying;
+  assert.ok(providerConfig, 'baiying provider should exist in config');
   assert.ok(providerConfig.apiKey, 'apiKey must be a non-empty string');
   assert.equal(providerConfig.apiKey, 'sk-baiying-local');
 });

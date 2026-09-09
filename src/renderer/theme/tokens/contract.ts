@@ -1,75 +1,75 @@
 /**
  * Token Contract — defines all semantic variables a theme must provide.
  *
- * Naming: --lobster-{category}-{name}
+ * Naming: --baiying-{category}-{name}
  * Convention: shadcn/ui background/foreground pairing + Radix 12-step gray scale
  *
  * Every theme (ThemeDefinition.tokens) must supply a value for each key.
  */
 export const TOKEN_CONTRACT = {
   // ── Brand ──
-  'primary':            '--lobster-primary',
-  'primary-foreground': '--lobster-primary-foreground',
-  'primary-hover':      '--lobster-primary-hover',
-  'primary-muted':      '--lobster-primary-muted',
+  'primary':            '--baiying-primary',
+  'primary-foreground': '--baiying-primary-foreground',
+  'primary-hover':      '--baiying-primary-hover',
+  'primary-muted':      '--baiying-primary-muted',
 
   // ── Accent ──
-  'accent':             '--lobster-accent',
-  'accent-foreground':  '--lobster-accent-foreground',
+  'accent':             '--baiying-accent',
+  'accent-foreground':  '--baiying-accent-foreground',
 
   // ── Surface / Background ──
-  'background':         '--lobster-background',
-  'foreground':         '--lobster-foreground',
-  'surface':            '--lobster-surface',
-  'surface-foreground': '--lobster-surface-foreground',
-  'surface-raised':     '--lobster-surface-raised',
-  'surface-overlay':    '--lobster-surface-overlay',
+  'background':         '--baiying-background',
+  'foreground':         '--baiying-foreground',
+  'surface':            '--baiying-surface',
+  'surface-foreground': '--baiying-surface-foreground',
+  'surface-raised':     '--baiying-surface-raised',
+  'surface-overlay':    '--baiying-surface-overlay',
 
   // ── Chat bubbles ──
-  'chat-user':              '--lobster-chat-user',
-  'chat-user-foreground':   '--lobster-chat-user-foreground',
-  'chat-bot':               '--lobster-chat-bot',
-  'chat-bot-foreground':    '--lobster-chat-bot-foreground',
+  'chat-user':              '--baiying-chat-user',
+  'chat-user-foreground':   '--baiying-chat-user-foreground',
+  'chat-bot':               '--baiying-chat-bot',
+  'chat-bot-foreground':    '--baiying-chat-bot-foreground',
 
   // ── Text hierarchy ──
-  'text-primary':       '--lobster-text-primary',
-  'text-secondary':     '--lobster-text-secondary',
-  'text-muted':         '--lobster-text-muted',
+  'text-primary':       '--baiying-text-primary',
+  'text-secondary':     '--baiying-text-secondary',
+  'text-muted':         '--baiying-text-muted',
 
   // ── Borders ──
-  'border':             '--lobster-border',
-  'border-subtle':      '--lobster-border-subtle',
-  'input-border':       '--lobster-input-border',
+  'border':             '--baiying-border',
+  'border-subtle':      '--baiying-border-subtle',
+  'input-border':       '--baiying-input-border',
 
   // ── Scrollbar ──
-  'scroll-thumb':       '--lobster-scroll-thumb',
-  'scroll-thumb-hover': '--lobster-scroll-thumb-hover',
+  'scroll-thumb':       '--baiying-scroll-thumb',
+  'scroll-thumb-hover': '--baiying-scroll-thumb-hover',
 
   // ── Decorative gradients ──
-  'gradient-1':         '--lobster-gradient-1',
-  'gradient-2':         '--lobster-gradient-2',
+  'gradient-1':         '--baiying-gradient-1',
+  'gradient-2':         '--baiying-gradient-2',
 
   // ── Status ──
-  'destructive':            '--lobster-destructive',
-  'destructive-foreground': '--lobster-destructive-foreground',
-  'success':                '--lobster-success',
-  'warning':                '--lobster-warning',
+  'destructive':            '--baiying-destructive',
+  'destructive-foreground': '--baiying-destructive-foreground',
+  'success':                '--baiying-success',
+  'warning':                '--baiying-warning',
 
   // ── Gray scale 11 steps (gray-1=lightest → gray-11=darkest, all themes) ──
-  'gray-1':  '--lobster-gray-1',
-  'gray-2':  '--lobster-gray-2',
-  'gray-3':  '--lobster-gray-3',
-  'gray-4':  '--lobster-gray-4',
-  'gray-5':  '--lobster-gray-5',
-  'gray-6':  '--lobster-gray-6',
-  'gray-7':  '--lobster-gray-7',
-  'gray-8':  '--lobster-gray-8',
-  'gray-9':  '--lobster-gray-9',
-  'gray-10': '--lobster-gray-10',
-  'gray-11': '--lobster-gray-11',
+  'gray-1':  '--baiying-gray-1',
+  'gray-2':  '--baiying-gray-2',
+  'gray-3':  '--baiying-gray-3',
+  'gray-4':  '--baiying-gray-4',
+  'gray-5':  '--baiying-gray-5',
+  'gray-6':  '--baiying-gray-6',
+  'gray-7':  '--baiying-gray-7',
+  'gray-8':  '--baiying-gray-8',
+  'gray-9':  '--baiying-gray-9',
+  'gray-10': '--baiying-gray-10',
+  'gray-11': '--baiying-gray-11',
 
   // ── Radius ──
-  'radius':  '--lobster-radius',
+  'radius':  '--baiying-radius',
 } as const;
 
 export type TokenName = keyof typeof TOKEN_CONTRACT;

@@ -192,7 +192,7 @@ HTML、图片、SVG、Markdown、Mermaid、Office/PDF 等普通 Artifact 分享�
 
 - JS、CSS、图片、字体、网站图标、接口和其他资源请求，即使错误地返回 HTML 也不计入；
 - `Sec-Fetch-Dest` 明确不是 `document` 的请求，以及能够确定不是顶层导航的请求；
-- `/favicon.ico` 和 `/_lobster_share/*` 等保留资源或平台内部路径；
+- `/favicon.ico` 和 `/_baiying_share/*` 等保留资源或平台内部路径；
 - 分享码输入页和验证接口；
 - 管理员预览；
 - 健康检查和 BaiYing 内部路径；
@@ -917,7 +917,7 @@ Content-Type: application/json
 平台内部路径至少包括：
 
 ```text
-/_lobster_share/*
+/_baiying_share/*
 /favicon.ico（无条件排除，不依赖响应 Content-Type）
 ```
 
@@ -926,7 +926,7 @@ Content-Type: application/json
 站点 host 设置独立访客 Cookie：
 
 ```text
-名称：lobster_site_vid
+名称：baiying_site_vid
 属性：Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000
 ```
 

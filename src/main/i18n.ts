@@ -29,8 +29,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     trayQuit: '退出',
 
     // Quit confirmation (native dialog shown on user-initiated quit)
-    appQuitConfirmTitle: '退出 LobsterAI？',
-    appQuitConfirmDetail: 'LobsterAI 关闭期间，定时任务不会运行，也无法回复 IM 消息。',
+    appQuitConfirmTitle: '退出 baiyingAI？',
+    appQuitConfirmDetail: 'baiyingAI 关闭期间，定时任务不会运行，也无法回复 IM 消息。',
     appQuitConfirmQuit: '退出',
     appQuitConfirmCancel: '取消',
     taskCompletionNotificationTitle: '任务已完成',
@@ -43,7 +43,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     questionNotificationBody: '需要你回答问题后才能继续',
     browserCredentialApprovalHeader: '保存的登录信息',
     browserCredentialApprovalTitle: '允许 Agent 自动登录',
-    browserCredentialApprovalSubtitle: 'LobsterAI 将在隔离页面中填写，密码不会提供给 Agent。',
+    browserCredentialApprovalSubtitle: 'baiyingAI 将在隔离页面中填写，密码不会提供给 Agent。',
     browserCredentialApprovalQuestion: '是否允许 Agent 使用账号 {username} 登录 {origin}？',
     browserCredentialApprovalReason: 'Agent 给出的原因：{reason}',
     browserCredentialApprovalAllow: '允许并继续',
@@ -52,7 +52,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     browserCredentialApprovalDenyDescription: '不使用保存的登录信息',
     browserCredentialSelectionQuestion: '选择允许 Agent 用于登录 {origin} 的账号',
     browserCredentialSelectionTitle: '选择登录账号',
-    browserCredentialSelectionSubtitle: '选定后，LobsterAI 将自动完成账号密码填写。',
+    browserCredentialSelectionSubtitle: '选定后，baiyingAI 将自动完成账号密码填写。',
     browserCredentialSelectionDescription: '使用该账号继续登录',
     contextMenuCut: '剪切',
     contextMenuCopy: '复制',
@@ -67,7 +67,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     channelPrefixWecom: '企微',
     channelPrefixNim: '云信',
     channelPrefixWeixin: '微信',
-    channelPrefixNeteaseBee: '小蜜蜂',
+    channelPrefixbaiyingBee: '小蜜蜂',
     channelPrefixEmail: '邮件',
     // NIM chat type labels
     nimQChat: '圈组',
@@ -290,7 +290,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imNimP2pOnlySuggestion: '请通过私聊方式向机器人账号发送消息触发对话。',
 
     // Xiaomifeng
-    imNeteaseBeeConfigReady: '小蜜蜂配置已就绪（Client ID: {clientId}）。',
+    imbaiyingBeeConfigReady: '小蜜蜂配置已就绪（Client ID: {clientId}）。',
 
     // POPO
     imPopoFillWebhookCredentials: '请补全 appKey、appSecret、token 和 aesKey 后重新测试连通性。',
@@ -383,8 +383,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     trayQuit: 'Quit',
 
     // Quit confirmation (native dialog shown on user-initiated quit)
-    appQuitConfirmTitle: 'Quit LobsterAI?',
-    appQuitConfirmDetail: 'While LobsterAI is closed, scheduled tasks will not run and IM messages will not be answered.',
+    appQuitConfirmTitle: 'Quit baiyingAI?',
+    appQuitConfirmDetail: 'While baiyingAI is closed, scheduled tasks will not run and IM messages will not be answered.',
     appQuitConfirmQuit: 'Quit',
     appQuitConfirmCancel: 'Cancel',
     taskCompletionNotificationTitle: 'Task Complete',
@@ -397,7 +397,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     questionNotificationBody: 'Waiting for your answer to continue.',
     browserCredentialApprovalHeader: 'Saved login',
     browserCredentialApprovalTitle: 'Allow Agent sign-in',
-    browserCredentialApprovalSubtitle: 'LobsterAI fills the isolated page without revealing the password to the Agent.',
+    browserCredentialApprovalSubtitle: 'baiyingAI fills the isolated page without revealing the password to the Agent.',
     browserCredentialApprovalQuestion: 'Allow the Agent to sign in to {origin} as {username}?',
     browserCredentialApprovalReason: 'Reason from the Agent: {reason}',
     browserCredentialApprovalAllow: 'Allow and continue',
@@ -406,7 +406,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     browserCredentialApprovalDenyDescription: 'Do not use the saved login',
     browserCredentialSelectionQuestion: 'Choose an account the Agent may use to sign in to {origin}',
     browserCredentialSelectionTitle: 'Choose a sign-in account',
-    browserCredentialSelectionSubtitle: 'LobsterAI will fill the selected account automatically.',
+    browserCredentialSelectionSubtitle: 'baiyingAI will fill the selected account automatically.',
     browserCredentialSelectionDescription: 'Continue with this account',
     contextMenuCut: 'Cut',
     contextMenuCopy: 'Copy',
@@ -421,7 +421,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     channelPrefixWecom: 'WeCom',
     channelPrefixNim: 'NIM',
     channelPrefixWeixin: 'WeChat',
-    channelPrefixNeteaseBee: 'Xiaomifeng',
+    channelPrefixbaiyingBee: 'Xiaomifeng',
     channelPrefixEmail: 'Email',
     // NIM chat type labels
     nimQChat: 'QChat',
@@ -688,8 +688,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     imNimP2pOnlySuggestion:
       'Please send a direct message to the bot account to start a conversation.',
 
-    // Netease Bee
-    imNeteaseBeeConfigReady: 'Netease Bee configuration is ready (Client ID: {clientId}).',
+    // baiying Bee
+    imbaiyingBeeConfigReady: 'baiying Bee configuration is ready (Client ID: {clientId}).',
 
     // POPO
     imPopoFillWebhookCredentials:

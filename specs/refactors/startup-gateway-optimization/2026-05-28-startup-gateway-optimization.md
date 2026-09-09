@@ -16,7 +16,7 @@
 
 **问题 1：media-generation 插件配置动态变化**
 
-`lobster-media-generation` 插件的 `enabled` 字段依赖 `canUseMediaGeneration`（订阅状态），导致 entitlement 变化时插件配置发生变更，触发 gateway restart。而实际权限校验在 BaiYing 回调侧已有兜底（`resolveMediaGenerationGate`），插件本身无需动态开关。
+`baiying-media-generation` 插件的 `enabled` 字段依赖 `canUseMediaGeneration`（订阅状态），导致 entitlement 变化时插件配置发生变更，触发 gateway restart。而实际权限校验在 BaiYing 回调侧已有兜底（`resolveMediaGenerationGate`），插件本身无需动态开关。
 
 **问题 2：启动阶段缓存冷启动导致多余 sync**
 
@@ -42,7 +42,7 @@
 
 ### 1.3 目标
 
-1. `lobster-media-generation` 插件配置固定，不因 entitlement 变化触发 gateway restart
+1. `baiying-media-generation` 插件配置固定，不因 entitlement 变化触发 gateway restart
 2. 启动阶段在首次 sync 之前预热 quota 和 model 缓存，使后续 renderer 触发的刷新不产生状态变化
 3. 减少启动阶段插件 register 次数至正常水平（1-2 次）
 
@@ -70,7 +70,7 @@ OpenClaw 侧 `plugins.*` 路径一律触发 gateway restart（`config-reload-pla
 
 ### 3.1 Fix 1：media-generation 插件配置固定化
 
-将 `lobster-media-generation` 的 `enabled` 始终设为 `true`，plugin config 的写入不再依赖 `canUseMediaGeneration` 条件。
+将 `baiying-media-generation` 的 `enabled` 始终设为 `true`，plugin config 的写入不再依赖 `canUseMediaGeneration` 条件。
 
 权限校验由 BaiYing 回调端兜底：
 - `mcpBridgeServer.onMediaGeneration` — handler 未就绪时返回 error

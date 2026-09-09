@@ -284,6 +284,7 @@ import {
   OpenClawRuntimeAdapter,
   type PermissionResult,
 } from './libs/agentEngine';
+import { collectAnalyticsDeviceInfo } from './libs/analyticsDeviceInfo';
 import {
   appQuitConfirmationGate,
   AppQuitRequestVerdict,
@@ -301,6 +302,10 @@ import {
   AuthSessionManager,
   resolveAuthSessionStatusFromError,
 } from './libs/authSessionManager';
+import {
+  resolvebaiyingBrowserMcpCommand,
+  resolvebaiyingBrowserMcpStdioLaunch,
+} from './libs/baiyingBrowserMcpServer';
 import type { BrowserAnnotationAssetIdentity, SaveBrowserAnnotationAssetInput } from './libs/browserAnnotationAssetStore';
 import { BrowserAnnotationAssetStore } from './libs/browserAnnotationAssetStore';
 import {
@@ -410,10 +415,6 @@ import { getKeyfromAttribution, initializeKeyfromAttribution } from './libs/keyf
 import { LibraryThumbnailRenderer } from './libs/libraryThumbnailRenderer';
 import { LibraryThumbnailService } from './libs/libraryThumbnailService';
 import { isLikelyBlankThumbnailBitmap } from './libs/libraryThumbnailValidation';
-import {
-  resolveLobsterBrowserMcpCommand,
-  resolveLobsterBrowserMcpStdioLaunch,
-} from './libs/lobsterBrowserMcpServer';
 import { exportLogsZip } from './libs/logExport';
 import { MainLogReporter } from './libs/mainLogReporter';
 import { inferImageMimeTypeFromDataUrl, type PersistedGeneratedImageAsset, persistGeneratedImageAssets, type PersistGeneratedImageAssetsResult, persistGeneratedVideoAssets, type RemoteGeneratedMediaAsset } from './libs/mediaAssetPersistence';
@@ -2549,13 +2550,6 @@ const getOpenClawConfigSync = (): OpenClawConfigSync => {
           return [];
         }
       },
-      getNeteaseBeeChanConfig: () => {
-        try {
-          return getIMGatewayManager().getConfig()['netease-bee'];
-        } catch {
-          return null;
-        }
-      },
       getWeixinConfig: () => {
         try {
           return getIMGatewayManager().getConfig().weixin;
@@ -2583,13 +2577,12 @@ const getOpenClawConfigSync = (): OpenClawConfigSync => {
         return getMcpRuntime().getResolvedServersCache();
       },
       getAskUserCallbackUrl: () => getMcpRuntime().getAskUserCallbackUrl(),
-      getMediaCallbackUrl: () => getMcpRuntime().getMediaCallbackUrl(),
       getBrowserCallbackUrl: () => getMcpRuntime().getBrowserCallbackUrl(),
-      getLobsterBrowserMcpCommand: () => {
+      getbaiyingBrowserMcpCommand: () => {
         const mcpRuntime = getMcpRuntime();
         const bridgeUrl = mcpRuntime.getBrowserCallbackUrl();
         if (!bridgeUrl) return null;
-        return resolveLobsterBrowserMcpCommand(
+        return resolvebaiyingBrowserMcpCommand(
           path.join(getOpenClawEngineManager().getStateDir(), 'generated'),
           {
             electronNodeRuntimePath: getElectronNodeRuntimePath(),
@@ -2598,11 +2591,11 @@ const getOpenClawConfigSync = (): OpenClawConfigSync => {
           },
         );
       },
-      getLobsterBrowserMcpStdioLaunch: () => {
+      getbaiyingBrowserMcpStdioLaunch: () => {
         const mcpRuntime = getMcpRuntime();
         const bridgeUrl = mcpRuntime.getBrowserCallbackUrl();
         if (!bridgeUrl) return null;
-        return resolveLobsterBrowserMcpStdioLaunch(
+        return resolvebaiyingBrowserMcpStdioLaunch(
           path.join(getOpenClawEngineManager().getStateDir(), 'generated'),
           {
             electronNodeRuntimePath: getElectronNodeRuntimePath(),
@@ -2618,7 +2611,6 @@ const getOpenClawConfigSync = (): OpenClawConfigSync => {
           .listUserPlugins()
           .filter(p => !isHiddenUserPluginId(p.pluginId))
           .map(p => ({ pluginId: p.pluginId, enabled: p.enabled, config: p.config })),
-      canUseMediaGeneration: () => cachedMediaGenerationEntitled,
     });
   }
   return openClawConfigSync;
@@ -5032,6 +5024,7 @@ if (!gotTheLock) {
   ipcMain.handle('app:getVersion', () => app.getVersion());
   ipcMain.handle('app:getSystemLocale', () => app.getLocale());
   ipcMain.handle(AppIpcChannel.GetKeyfromAttribution, () => getKeyfromAttribution(getStore()));
+  ipcMain.handle(AppIpcChannel.GetAnalyticsDeviceInfo, () => collectAnalyticsDeviceInfo());
 
   ipcMain.handle(AppIpcChannel.OpenSystemNotificationSettings, async () => {
     try {
@@ -5826,7 +5819,7 @@ if (!gotTheLock) {
     let selectedModelSource = explicitModel ? 'tool' : resolvedModelFromSelection ? 'selection' : 'none';
 
     if (action === 'generate' && tool === MediaGenerationTool.Image) {
-      const skinPreflight = await skinRuntime.preflightLobsterImageGeneration(
+      const skinPreflight = await skinRuntime.preflightbaiyingImageGeneration(
         sessionId,
         selection,
       );
@@ -8740,7 +8733,7 @@ if (!gotTheLock) {
     try {
       return { success: true, state: await action() };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'LobsterAI in-app browser action failed.';
+      const message = error instanceof Error ? error.message : 'baiyingAI in-app browser action failed.';
       return {
         success: false,
         state: {

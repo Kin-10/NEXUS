@@ -57,12 +57,12 @@ describe('skin protocol URL', () => {
 
   test('rejects unsupported hosts, slots, traversal, credentials, and query parameters', () => {
     expect(parseSkinProtocolUrl('https://asset/skin-one/workspace.backdrop')).toBeNull();
-    expect(parseSkinProtocolUrl('lobster-skin://other/skin-one/workspace.backdrop')).toBeNull();
-    expect(parseSkinProtocolUrl('lobster-skin://asset/skin-one/unknown.slot')).toBeNull();
-    expect(parseSkinProtocolUrl('lobster-skin://asset/%2e%2e/workspace.backdrop')).toBeNull();
-    expect(parseSkinProtocolUrl('lobster-skin://asset/skin-one/workspace%2fbackdrop')).toBeNull();
-    expect(parseSkinProtocolUrl('lobster-skin://user@asset/skin-one/workspace.backdrop')).toBeNull();
-    expect(parseSkinProtocolUrl('lobster-skin://asset/skin-one/workspace.backdrop?path=local')).toBeNull();
+    expect(parseSkinProtocolUrl('baiying-skin://other/skin-one/workspace.backdrop')).toBeNull();
+    expect(parseSkinProtocolUrl('baiying-skin://asset/skin-one/unknown.slot')).toBeNull();
+    expect(parseSkinProtocolUrl('baiying-skin://asset/%2e%2e/workspace.backdrop')).toBeNull();
+    expect(parseSkinProtocolUrl('baiying-skin://asset/skin-one/workspace%2fbackdrop')).toBeNull();
+    expect(parseSkinProtocolUrl('baiying-skin://user@asset/skin-one/workspace.backdrop')).toBeNull();
+    expect(parseSkinProtocolUrl('baiying-skin://asset/skin-one/workspace.backdrop?path=local')).toBeNull();
   });
 });
 

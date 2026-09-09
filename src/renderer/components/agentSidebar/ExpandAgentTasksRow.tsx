@@ -18,7 +18,7 @@ const ExpandAgentTasksRow: React.FC<ExpandAgentTasksRowProps> = ({
       type="button"
       onClick={onClick}
       disabled={isLoading}
-      className="-ml-[6px] flex h-7 w-[calc(100%+12px)] items-center rounded-md pl-[38px] pr-2.5 text-left text-[length:var(--lobster-text-sidebarCompact)] font-normal text-secondary transition-colors hover:bg-black/[0.03] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-white/[0.04]"
+      className="-ml-[6px] flex h-7 w-[calc(100%+12px)] items-center rounded-md pl-[38px] pr-2.5 text-left text-[length:var(--baiying-text-sidebarCompact)] font-normal text-secondary transition-colors hover:bg-black/[0.03] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-white/[0.04]"
     >
       {isLoading ? i18nService.t('loading') : label}
     </button>

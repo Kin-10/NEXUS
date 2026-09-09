@@ -59,7 +59,7 @@ resolveAgentRoute({
 
 同类风险也存在于：
 
-- 单实例平台级绑定：`weixin`、`netease-bee`。
+- 单实例平台级绑定：`weixin`、`baiying-bee`。
 - 多实例平台的 legacy 平台级 binding fallback：例如 `telegram` / `discord` / `dingtalk` 等如果存在 `platformAgentBindings[platform]`。
 
 per-instance 绑定当前已经带 `accountId`，不属于同一个根因。

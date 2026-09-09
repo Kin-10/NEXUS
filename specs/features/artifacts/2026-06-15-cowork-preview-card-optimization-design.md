@@ -369,8 +369,8 @@ HTML 页面标题来源优先级：
 | `artifactPreviewCardShowLess` | 收起 | Show less |
 | `artifactPreviewCardOpenPreview` | 打开预览 | Open preview |
 | `artifactPreviewCardOpenWith` | 打开方式 | Open with |
-| `artifactPreviewCardLobsterBrowser` | 有道龙虾浏览器 | BaiYing Browser |
-| `artifactPreviewCardOpenInLobsterBrowser` | 在有道龙虾浏览器中打开 | Open in BaiYing Browser |
+| `artifactPreviewCardbaiyingBrowser` | 有道龙虾浏览器 | BaiYing Browser |
+| `artifactPreviewCardOpenInbaiyingBrowser` | 在有道龙虾浏览器中打开 | Open in BaiYing Browser |
 | `artifactTypeHtml` | 网页 | Web page |
 | `artifactTypeLocalService` | 本地服务 | Local service |
 | `artifactFileKindWebsite` | 网站 | Website |

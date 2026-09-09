@@ -1,7 +1,7 @@
 /**
  * IM Gateway Manager
  * Unified manager for DingTalk, Feishu, NIM gateways
- * and Telegram, Discord, QQ, WeCom, Weixin, POPO, NeteaseBee via OpenClaw
+ * and Telegram, Discord, QQ, WeCom, Weixin, POPO, baiyingBee via OpenClaw
  */
 
 import Database from 'better-sqlite3';
@@ -197,7 +197,7 @@ export class IMGatewayManager extends EventEmitter {
 
     // NIM runs via OpenClaw; no direct gateway events to forward
 
-    // netease-bee runs via OpenClaw; no direct gateway events to forward
+    // baiying-bee runs via OpenClaw; no direct gateway events to forward
 
     // QQ runs via OpenClaw; no direct gateway events to forward
 
@@ -219,7 +219,7 @@ export class IMGatewayManager extends EventEmitter {
 
     // NIM runs via OpenClaw; no direct reconnect needed
 
-    // netease-bee runs via OpenClaw; no direct reconnect needed
+    // baiying-bee runs via OpenClaw; no direct reconnect needed
 
     // QQ runs via OpenClaw; no direct reconnection needed
 
@@ -416,17 +416,17 @@ export class IMGatewayManager extends EventEmitter {
     // Feishu now runs via OpenClaw; config sync is handled by IPC handler
 
 
-    // Hot-update netease-bee config: sync OpenClaw config when credentials change.
+    // Hot-update baiying-bee config: sync OpenClaw config when credentials change.
     // Only perform sync when syncGateway is explicitly true (i.e. user clicked Save).
-    if (options?.syncGateway && config['netease-bee']) {
-      const oldNb = previousConfig['netease-bee'];
-      const newNb = { ...oldNb, ...config['netease-bee'] };
+    if (options?.syncGateway && config['baiying-bee']) {
+      const oldNb = previousConfig['baiying-bee'];
+      const newNb = { ...oldNb, ...config['baiying-bee'] };
       const credentialsChanged =
         newNb.clientId !== oldNb?.clientId ||
         newNb.secret !== oldNb?.secret;
       if (credentialsChanged) {
-        console.log('[IMGatewayManager] netease-bee credentials changed, syncing OpenClaw config...');
-        this.syncOpenClawConfig?.('im-config-change:netease-bee', {
+        console.log('[IMGatewayManager] baiying-bee credentials changed, syncing OpenClaw config...');
+        this.syncOpenClawConfig?.('im-config-change:baiying-bee', {
           restartGatewayIfRunning: options?.restartGatewayIfRunning,
         });
       }
@@ -532,8 +532,8 @@ export class IMGatewayManager extends EventEmitter {
           lastOutboundAt: null as number | null,
         })),
       },
-      'netease-bee': (() => {
-        const beeConfig = config['netease-bee'];
+      'baiying-bee': (() => {
+        const beeConfig = config['baiying-bee'];
         return {
           connected: Boolean(beeConfig?.enabled && beeConfig?.clientId && beeConfig?.secret),
           startedAt: null as number | null,
@@ -719,8 +719,8 @@ export class IMGatewayManager extends EventEmitter {
       return this.testQQOpenClawConnectivity(configOverride);
     }
 
-    // NetEase Bee is an internal relay channel with no standalone gateway to test
-    if (platform === 'netease-bee') {
+    // baiying Bee is an internal relay channel with no standalone gateway to test
+    if (platform === 'baiying-bee') {
       return {
         platform,
         testedAt: Date.now(),
@@ -728,7 +728,7 @@ export class IMGatewayManager extends EventEmitter {
         checks: [{
           code: 'gateway_running',
           level: 'info',
-          message: 'NetEase Bee channel does not support standalone connectivity testing.',
+          message: 'baiying Bee channel does not support standalone connectivity testing.',
         }],
       };
     }
@@ -941,10 +941,10 @@ export class IMGatewayManager extends EventEmitter {
       await this.syncOpenClawConfig?.('im-gateway-start:nim');
       await this.ensureOpenClawGatewayConnected?.();
       return;
-    } else if (platform === 'netease-bee') {
-      // netease-bee runs via OpenClaw gateway
-      console.log('[IMGatewayManager] netease-bee in OpenClaw mode, syncing config instead of starting direct gateway');
-      await this.syncOpenClawConfig?.('im-gateway-start:netease-bee');
+    } else if (platform === 'baiying-bee') {
+      // baiying-bee runs via OpenClaw gateway
+      console.log('[IMGatewayManager] baiying-bee in OpenClaw mode, syncing config instead of starting direct gateway');
+      await this.syncOpenClawConfig?.('im-gateway-start:baiying-bee');
       await this.ensureOpenClawGatewayConnected?.();
       return;
     } else if (platform === 'qq') {
@@ -1003,10 +1003,10 @@ export class IMGatewayManager extends EventEmitter {
       console.log('[IMGatewayManager] NIM in OpenClaw mode, syncing disabled config');
       await this.syncOpenClawConfig?.('im-gateway-stop:nim');
       return;
-    } else if (platform === 'netease-bee') {
-      // netease-bee runs via OpenClaw gateway
-      console.log('[IMGatewayManager] netease-bee in OpenClaw mode, syncing disabled config');
-      await this.syncOpenClawConfig?.('im-gateway-stop:netease-bee');
+    } else if (platform === 'baiying-bee') {
+      // baiying-bee runs via OpenClaw gateway
+      console.log('[IMGatewayManager] baiying-bee in OpenClaw mode, syncing disabled config');
+      await this.syncOpenClawConfig?.('im-gateway-stop:baiying-bee');
       return;
     } else if (platform === 'qq') {
       // QQ runs via OpenClaw gateway
@@ -1132,10 +1132,10 @@ export class IMGatewayManager extends EventEmitter {
       const nimInstances = config.nim?.instances || [];
       return nimInstances.some(i => i.enabled && ((i.nimToken && i.nimToken.trim()) || (i.appKey && i.account && i.token)));
     }
-    if (platform === 'netease-bee') {
-      // netease-bee runs via OpenClaw; status comes from OpenClaw
+    if (platform === 'baiying-bee') {
+      // baiying-bee runs via OpenClaw; status comes from OpenClaw
       const config = this.getConfig();
-      return Boolean(config['netease-bee']?.enabled && config['netease-bee']?.clientId && config['netease-bee']?.secret);
+      return Boolean(config['baiying-bee']?.enabled && config['baiying-bee']?.clientId && config['baiying-bee']?.secret);
     }
     if (platform === 'qq') {
       // QQ runs via OpenClaw; consider it connected when any instance is enabled and configured
@@ -1184,9 +1184,9 @@ export class IMGatewayManager extends EventEmitter {
       } else if (platform === 'popo') {
         // POPO runs via OpenClaw; notifications are handled by the moltbot-popo plugin
         console.log('[IMGatewayManager] POPO notification via OpenClaw not yet supported');
-      } else if (platform === 'netease-bee') {
-        // netease-bee runs via OpenClaw; notifications not yet supported
-        console.log('[IMGatewayManager] netease-bee notification via OpenClaw not yet supported');
+      } else if (platform === 'baiying-bee') {
+        // baiying-bee runs via OpenClaw; notifications not yet supported
+        console.log('[IMGatewayManager] baiying-bee notification via OpenClaw not yet supported');
       }
       return true;
     } catch (error: any) {
@@ -1217,9 +1217,9 @@ export class IMGatewayManager extends EventEmitter {
       } else if (platform === 'popo') {
         // POPO runs via OpenClaw; notifications are handled by the moltbot-popo plugin
         console.log('[IMGatewayManager] POPO notification with media via OpenClaw not yet supported');
-      } else if (platform === 'netease-bee') {
-        // netease-bee runs via OpenClaw; notifications not yet supported
-        console.log('[IMGatewayManager] netease-bee notification via OpenClaw not yet supported');
+      } else if (platform === 'baiying-bee') {
+        // baiying-bee runs via OpenClaw; notifications not yet supported
+        console.log('[IMGatewayManager] baiying-bee notification via OpenClaw not yet supported');
       }
       return true;
     } catch (error: any) {
@@ -1722,11 +1722,11 @@ export class IMGatewayManager extends EventEmitter {
   // ---------------------------------------------------------------------------
 
   private static readonly POPO_QRCODE_BASE_URL =
-    'https://f2e.popo.netease.com/polymers/lobster-bot-h5/?pp_htb=1&pp_back_type=cross&taskToken=';
+    'https://f2e.popo.baiying.com/polymers/baiying-bot-h5/?pp_htb=1&pp_back_type=cross&taskToken=';
   private static readonly POPO_POLLING_API =
-    'https://open.popo.netease.com/open-apis/no-auth/openclaw/v1/polling';
+    'https://open.popo.baiying.com/open-apis/no-auth/openclaw/v1/polling';
   private static readonly POPO_COMPLETE_API =
-    'https://open.popo.netease.com/open-apis/no-auth/openclaw/v1/completed';
+    'https://open.popo.baiying.com/open-apis/no-auth/openclaw/v1/completed';
   private static readonly POPO_POLLING_INTERVAL_MS = 5_000;
   private static readonly POPO_POLLING_TIMEOUT_MS = 10 * 60_000;
 
@@ -2010,7 +2010,7 @@ export class IMGatewayManager extends EventEmitter {
       telegram: configOverride.telegram || current.telegram,
       discord: configOverride.discord || current.discord,
       nim: { ...current.nim, ...(configOverride.nim || {}) },
-      'netease-bee': { ...current['netease-bee'], ...(configOverride['netease-bee'] || {}) },
+      'baiying-bee': { ...current['baiying-bee'], ...(configOverride['baiying-bee'] || {}) },
       wecom: configOverride.wecom || current.wecom,
       weixin: { ...current.weixin, ...(configOverride.weixin || {}) },
       popo: configOverride.popo || current.popo,
@@ -2055,10 +2055,10 @@ export class IMGatewayManager extends EventEmitter {
       }
       return fields;
     }
-    if (platform === 'netease-bee') {
+    if (platform === 'baiying-bee') {
       const fields: string[] = [];
-      if (!config['netease-bee']?.clientId) fields.push('clientId');
-      if (!config['netease-bee']?.secret) fields.push('secret');
+      if (!config['baiying-bee']?.clientId) fields.push('clientId');
+      if (!config['baiying-bee']?.secret) fields.push('secret');
       return fields;
     }
     if (platform === 'qq') {
@@ -2147,14 +2147,14 @@ export class IMGatewayManager extends EventEmitter {
       return t('imNimConfigReady', { account: nimInst.account });
     }
 
-    if (platform === 'netease-bee') {
-      const nbConfig = config['netease-bee'];
+    if (platform === 'baiying-bee') {
+      const nbConfig = config['baiying-bee'];
       const clientId = nbConfig?.clientId;
       const secret = nbConfig?.secret;
       if (!clientId || !secret) {
         throw new Error(t('imConfigIncomplete'));
       }
-      return t('imNeteaseBeeConfigReady', { clientId });
+      return t('imbaiyingBeeConfigReady', { clientId });
     }
 
     if (platform === 'wecom') {
@@ -2655,7 +2655,7 @@ export class IMGatewayManager extends EventEmitter {
     if (platform === 'dingtalk') return status.dingtalk.instances?.[0]?.startedAt ?? null;
     if (platform === 'telegram') return status.telegram.instances?.[0]?.startedAt ?? null;
     if (platform === 'nim') return status.nim.instances?.[0]?.startedAt ?? null;
-    if (platform === 'netease-bee') return status['netease-bee'].startedAt;
+    if (platform === 'baiying-bee') return status['baiying-bee'].startedAt;
     if (platform === 'qq') return status.qq.instances?.[0]?.startedAt ?? null;
     if (platform === 'wecom') return status.wecom.instances?.[0]?.startedAt ?? null;
     if (platform === 'weixin') return status.weixin.startedAt;
@@ -2668,7 +2668,7 @@ export class IMGatewayManager extends EventEmitter {
     if (platform === 'feishu') return status.feishu.instances?.[0]?.lastInboundAt ?? null;
     if (platform === 'telegram') return status.telegram.instances?.[0]?.lastInboundAt ?? null;
     if (platform === 'nim') return status.nim.instances?.[0]?.lastInboundAt ?? null;
-    if (platform === 'netease-bee') return status['netease-bee'].lastInboundAt;
+    if (platform === 'baiying-bee') return status['baiying-bee'].lastInboundAt;
     if (platform === 'qq') return status.qq.instances?.[0]?.lastInboundAt ?? null;
     if (platform === 'wecom') return status.wecom.instances?.[0]?.lastInboundAt ?? null;
     if (platform === 'weixin') return status.weixin.lastInboundAt;
@@ -2681,7 +2681,7 @@ export class IMGatewayManager extends EventEmitter {
     if (platform === 'feishu') return status.feishu.instances?.[0]?.lastOutboundAt ?? null;
     if (platform === 'telegram') return status.telegram.instances?.[0]?.lastOutboundAt ?? null;
     if (platform === 'nim') return status.nim.instances?.[0]?.lastOutboundAt ?? null;
-    if (platform === 'netease-bee') return status['netease-bee'].lastOutboundAt;
+    if (platform === 'baiying-bee') return status['baiying-bee'].lastOutboundAt;
     if (platform === 'qq') return status.qq.instances?.[0]?.lastOutboundAt ?? null;
     if (platform === 'wecom') return status.wecom.instances?.[0]?.lastOutboundAt ?? null;
     if (platform === 'weixin') return status.weixin.lastOutboundAt;
@@ -2694,7 +2694,7 @@ export class IMGatewayManager extends EventEmitter {
     if (platform === 'feishu') return status.feishu.instances?.[0]?.error ?? null;
     if (platform === 'telegram') return status.telegram.instances?.[0]?.lastError ?? null;
     if (platform === 'nim') return status.nim.instances?.[0]?.lastError ?? null;
-    if (platform === 'netease-bee') return status['netease-bee'].lastError;
+    if (platform === 'baiying-bee') return status['baiying-bee'].lastError;
     if (platform === 'qq') return status.qq.instances?.[0]?.lastError ?? null;
     if (platform === 'wecom') return status.wecom.instances?.[0]?.lastError ?? null;
     if (platform === 'weixin') return status.weixin.lastError;

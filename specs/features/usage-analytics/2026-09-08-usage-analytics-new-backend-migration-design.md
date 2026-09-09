@@ -9,7 +9,7 @@
 ## 接口地址
 
 ```text
-http://127.0.0.1:8899/api/client/analytics/rlog
+http://192.168.101.24:8899/api/client/analytics/rlog
 ```
 
 常量：`LogReporterEndpoint.hzbAnalyzer`（`src/shared/analytics/constants.ts`）
@@ -46,12 +46,17 @@ http://127.0.0.1:8899/api/client/analytics/rlog
 | `uuid` | 本机安装 ID（`installation_uuid`） |
 | `firstKeyfrom` | 首次渠道归因 |
 | `latestKeyfrom` | 最近渠道归因 |
+| `os_username` | 本机操作系统用户名 |
+| `mac_address` | 本机主网卡 MAC（小写冒号分隔） |
+| `local_ip` | 本机局域网 IPv4 |
 | `is_logged_in` | 是否登录 |
 | `log_Usid` | 用户 `yid`；未登录为空 |
 | `identityType` | `free` / `subscription` / `enterprise`（**仅渲染进程**） |
 | `is_subscriber` | 是否订阅中（**仅渲染进程**） |
 | `subscriptionStatus` | 订阅状态，有值才带（**仅渲染进程**） |
 | `uts` | 事件时间戳（毫秒） |
+
+公网 IP 由服务端从连接侧获取，客户端不报送。
 
 公共参数在业务参数之后写入，业务字段不得覆盖上述公共键。
 
@@ -67,13 +72,14 @@ http://127.0.0.1:8899/api/client/analytics/rlog
 
 ### 门禁（客户端）
 
+- 默认开启；设置项「帮助改进百应」默认隐藏，在设置侧栏连续点击「通用」7 次后显示（会话内解锁，不持久化）
 - 设置开关 `usageAnalyticsEnabled === false` 时不发送
 - `action` 为空或不以 `baiying_` 开头时不发送
 
 ### 请求示例
 
 ```http
-GET http://127.0.0.1:8899/api/client/analytics/rlog?action=baiying_prompt_submit&_npid=wisdom&_ncat=actions&app_version=2026.9.8&os_platform=win32&os_arch=x64&language=zh&environment=production&eventId=...&uuid=...&is_logged_in=true&log_Usid=...&identityType=free&is_subscriber=false&uts=1710000000000&surface=home&hasPrompt=true
+GET http://192.168.101.24:8899/api/client/analytics/rlog?action=baiying_prompt_submit&_npid=wisdom&_ncat=actions&app_version=2026.9.8&os_platform=win32&os_arch=x64&language=zh&environment=production&eventId=...&uuid=...&is_logged_in=true&log_Usid=...&identityType=free&is_subscriber=false&uts=1710000000000&surface=home&hasPrompt=true
 ```
 
 ---
@@ -104,5 +110,6 @@ Main:     src/main/libs/mainLogReporter.ts     → MainLogReporter.report()
 
 | 日期 | 说明 |
 |------|------|
-| 2026-09-08 | 接口切换为 `http://127.0.0.1:8899/api/client/analytics/rlog` |
+| 2026-09-08 | 接口切换为 `http://192.168.101.24:8899/api/client/analytics/rlog` |
 | 2026-09-08 | 精简为：地址、方法、参数、返回结果 |
+| 2026-09-08 | 公共参数增加 `os_username` / `mac_address` / `local_ip`；开关默认隐藏（通用 7 次解锁） |

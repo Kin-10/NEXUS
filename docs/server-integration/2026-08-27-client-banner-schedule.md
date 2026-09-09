@@ -2,7 +2,7 @@
 
 ## Change Summary
 
-lobsterai-server now schedules sidebar banners with second-precision UTC online and offline times and supports an optional minimum client version per banner. LobsterAI persists the latest server-confirmed snapshot, removes expired or incompatible banners locally, and reconciles Admin changes at least every five minutes while active.
+baiyingai-server now schedules sidebar banners with second-precision UTC online and offline times and supports an optional minimum client version per banner. baiyingAI persists the latest server-confirmed snapshot, removes expired or incompatible banners locally, and reconciles Admin changes at least every five minutes while active.
 
 ## Endpoint Details
 

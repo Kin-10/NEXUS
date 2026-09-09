@@ -83,11 +83,11 @@
 
 - 只统计站点 Host 上确认为顶层文档导航的 `GET`：真实响应为成功 HTML，或浏览器缓存刷新返回 `304 Not Modified`。
 - `Sec-Fetch-Dest` 存在时仅接受 `document`；缺失时依次使用 `Sec-Fetch-Mode: navigate + Accept: text/html` 和旧浏览器的 `Accept: text/html` 兼容规则。
-- 不统计 `image`、`script`、`style`、`font`、`empty`、`iframe`、prefetch/prerender、管理员预览、分享码页面、`/_lobster_share/*`、健康检查和机器人；资源请求即使错误返回 `200 text/html` 也不计数。
+- 不统计 `image`、`script`、`style`、`font`、`empty`、`iframe`、prefetch/prerender、管理员预览、分享码页面、`/_baiying_share/*`、健康检查和机器人；资源请求即使错误返回 `200 text/html` 也不计数。
 - `/favicon.ico` 无条件排除。静态文件缺失时，只有文档导航允许回退入口 HTML；缺失的 favicon、图片、脚本等资源返回 404。
 - PV 是 HTML 页面浏览次数，包括命中条件缓存的顶层文档刷新；资源和接口的 `304` 不计数。
 - 日趋势 UV 为当日访客数；汇总 UV 使用所选日期范围内 `visitor_hash` 再去重，不能累加每日 UV。
-- Cookie 为 `lobster_site_vid`，属性为 `Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000`。
+- Cookie 为 `baiying_site_vid`，属性为 `Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000`。
 - 数据库只保存访客 HMAC、path 和 path SHA-256，不保存原始 IP、query、fragment 或 Referer。
 - 分析异步写入，失败不得影响站点响应。
 

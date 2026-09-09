@@ -6,19 +6,19 @@ import {
   BrowserCredentialMcpServer,
 } from '../../shared/browserCredentials/constants';
 
-const SERVER_FILE_NAME = 'lobster-browser-mcp-server.mjs';
-const RUNTIME_CONFIG_FILE_NAME = 'lobster-browser-mcp-runtime.json';
-const WINDOWS_LAUNCHER_FILE_NAME = 'lobster-browser-mcp.cmd';
-const POSIX_LAUNCHER_FILE_NAME = 'lobster-browser-mcp';
+const SERVER_FILE_NAME = 'baiying-browser-mcp-server.mjs';
+const RUNTIME_CONFIG_FILE_NAME = 'baiying-browser-mcp-runtime.json';
+const WINDOWS_LAUNCHER_FILE_NAME = 'baiying-browser-mcp.cmd';
+const POSIX_LAUNCHER_FILE_NAME = 'baiying-browser-mcp';
 
-export interface LobsterBrowserMcpLaunchOptions {
+export interface baiyingBrowserMcpLaunchOptions {
   electronNodeRuntimePath: string;
   bridgeUrl: string;
   bridgeSecret: string;
   platform?: NodeJS.Platform;
 }
 
-export interface LobsterBrowserMcpStdioLaunch {
+export interface baiyingBrowserMcpStdioLaunch {
   command: string;
   args: string[];
   env: Record<string, string>;
@@ -33,7 +33,7 @@ function formatDiagnosticError(error) {
 }
 
 function writeDiagnostic(message) {
-  process.stderr.write('[LobsterBrowserMcp] ' + message + '\n');
+  process.stderr.write('[baiyingBrowserMcp] ' + message + '\n');
 }
 
 function formatBridgeEndpoint(value) {
@@ -74,9 +74,9 @@ const runtimeConfig = await fs.readFile(
   return null;
 });
 
-const bridgeUrlArg = process.argv.find((arg) => arg.startsWith('--lobster-bridge-url='));
+const bridgeUrlArg = process.argv.find((arg) => arg.startsWith('--baiying-bridge-url='));
 const bridgeUrl = bridgeUrlArg
-  ? bridgeUrlArg.slice('--lobster-bridge-url='.length)
+  ? bridgeUrlArg.slice('--baiying-bridge-url='.length)
   : runtimeConfig?.bridgeUrl || '';
 const bridgeSecret = runtimeConfig?.bridgeSecret || '';
 
@@ -116,13 +116,13 @@ const toolDefinitions = [
     pageId: { type: 'number' },
     accountHint: { type: 'string' },
     reason: { type: 'string' },
-  }, 'Sign in through an isolated LobsterAI login view with a credential saved for the current website. The password is never returned to the Agent. This may ask the user for approval; after approval, continue the task without asking the user to type or paste the password.'],
+  }, 'Sign in through an isolated baiyingAI login view with a credential saved for the current website. The password is never returned to the Agent. This may ask the user for approval; after approval, continue the task without asking the user to type or paste the password.'],
 ];
 const tools = toolDefinitions
   .filter(([name]) => !credentialOnly || name === '${BrowserCredentialLoginTool.Name}')
   .map(([name, properties, description]) => ({
   name,
-  description: description || 'Operate the LobsterAI in-app browser.',
+  description: description || 'Operate the baiyingAI in-app browser.',
   inputSchema: { type: 'object', properties, additionalProperties: true },
   }));
 
@@ -144,7 +144,7 @@ async function callBridge(name, args) {
       + ' bridge=' + formatBridgeEndpoint(bridgeUrl)
       + ' bridgeSecretConfigured=' + Boolean(bridgeSecret),
     );
-    return errorResult('LobsterAI browser bridge is not configured.');
+    return errorResult('baiyingAI browser bridge is not configured.');
   }
   let response;
   try {
@@ -175,7 +175,7 @@ async function callBridge(name, args) {
   if (!response.ok) {
     const message = payload && typeof payload.error === 'string'
       ? payload.error
-      : 'LobsterAI browser bridge returned HTTP ' + response.status + '.';
+      : 'baiyingAI browser bridge returned HTTP ' + response.status + '.';
     writeDiagnostic(
       'bridge-http-error tool=' + JSON.stringify(name)
       + ' bridge=' + formatBridgeEndpoint(bridgeUrl)
@@ -197,7 +197,7 @@ async function callTool(name, args) {
   const format = result?.structuredContent?.format === 'jpeg' ? 'jpeg' : 'png';
   const filePath = typeof args?.filePath === 'string' ? args.filePath : '';
   if (!imageBase64 || !filePath) {
-    return errorResult('LobsterAI browser screenshot data or destination path is missing.');
+    return errorResult('baiyingAI browser screenshot data or destination path is missing.');
   }
   await fs.writeFile(filePath + '.' + format, Buffer.from(imageBase64, 'base64'));
   return {
@@ -215,14 +215,14 @@ async function handleRequest(message) {
     result = {
       protocolVersion: message.params?.protocolVersion || '2025-03-26',
       capabilities: { tools: {} },
-      serverInfo: { name: 'lobster-browser', version: '1.0.0' },
+      serverInfo: { name: 'baiying-browser', version: '1.0.0' },
     };
   } else if (message.method === 'tools/list') {
     result = { tools };
   } else if (message.method === 'tools/call') {
     const name = message.params?.name;
     if (typeof name !== 'string' || !tools.some((tool) => tool.name === name)) {
-      result = errorResult('Unknown LobsterAI browser tool.');
+      result = errorResult('Unknown baiyingAI browser tool.');
     } else {
       result = await callTool(name, message.params?.arguments || {});
     }
@@ -317,23 +317,23 @@ const writeFileIfChanged = (filePath: string, contents: string, mode?: number): 
   }
 };
 
-interface PreparedLobsterBrowserMcpRuntime {
+interface PreparedbaiyingBrowserMcpRuntime {
   serverDir: string;
   serverPath: string;
 }
 
-const prepareLobsterBrowserMcpRuntime = (
+const preparebaiyingBrowserMcpRuntime = (
   baseDir: string,
-  options: LobsterBrowserMcpLaunchOptions,
-): PreparedLobsterBrowserMcpRuntime => {
+  options: baiyingBrowserMcpLaunchOptions,
+): PreparedbaiyingBrowserMcpRuntime => {
   if (!options.electronNodeRuntimePath.trim()) {
-    throw new Error('LobsterAI browser MCP requires an Electron Node runtime path.');
+    throw new Error('baiyingAI browser MCP requires an Electron Node runtime path.');
   }
   if (!options.bridgeUrl.trim() || !options.bridgeSecret) {
-    throw new Error('LobsterAI browser MCP requires an active browser bridge.');
+    throw new Error('baiyingAI browser MCP requires an active browser bridge.');
   }
 
-  const serverDir = path.join(baseDir, 'lobster-browser-mcp');
+  const serverDir = path.join(baseDir, 'baiying-browser-mcp');
   fs.mkdirSync(serverDir, { recursive: true, mode: 0o700 });
   if (process.platform !== 'win32') {
     fs.chmodSync(serverDir, 0o700);
@@ -353,11 +353,11 @@ const prepareLobsterBrowserMcpRuntime = (
   return { serverDir, serverPath };
 };
 
-export const resolveLobsterBrowserMcpCommand = (
+export const resolvebaiyingBrowserMcpCommand = (
   baseDir: string,
-  options: LobsterBrowserMcpLaunchOptions,
+  options: baiyingBrowserMcpLaunchOptions,
 ): string => {
-  const { serverDir } = prepareLobsterBrowserMcpRuntime(baseDir, options);
+  const { serverDir } = preparebaiyingBrowserMcpRuntime(baseDir, options);
 
   if ((options.platform ?? process.platform) === 'win32') {
     const launcherPath = path.join(serverDir, WINDOWS_LAUNCHER_FILE_NAME);
@@ -366,7 +366,7 @@ export const resolveLobsterBrowserMcpCommand = (
       buildWindowsLauncherSource(options.electronNodeRuntimePath),
       0o700,
     );
-    console.log('[LobsterBrowserMcp] Prepared browser MCP launcher', {
+    console.log('[baiyingBrowserMcp] Prepared browser MCP launcher', {
       platform: options.platform ?? process.platform,
       launcherPath,
       launcherExists: fs.existsSync(launcherPath),
@@ -383,7 +383,7 @@ export const resolveLobsterBrowserMcpCommand = (
     buildPosixLauncherSource(options.electronNodeRuntimePath),
     0o700,
   );
-  console.log('[LobsterBrowserMcp] Prepared browser MCP launcher', {
+  console.log('[baiyingBrowserMcp] Prepared browser MCP launcher', {
     platform: options.platform ?? process.platform,
     launcherPath,
     launcherExists: fs.existsSync(launcherPath),
@@ -394,12 +394,12 @@ export const resolveLobsterBrowserMcpCommand = (
   return launcherPath;
 };
 
-export const resolveLobsterBrowserMcpStdioLaunch = (
+export const resolvebaiyingBrowserMcpStdioLaunch = (
   baseDir: string,
-  options: LobsterBrowserMcpLaunchOptions,
-): LobsterBrowserMcpStdioLaunch => {
-  const { serverPath } = prepareLobsterBrowserMcpRuntime(baseDir, options);
-  console.log('[LobsterBrowserMcp] Prepared browser MCP stdio launch', {
+  options: baiyingBrowserMcpLaunchOptions,
+): baiyingBrowserMcpStdioLaunch => {
+  const { serverPath } = preparebaiyingBrowserMcpRuntime(baseDir, options);
+  console.log('[baiyingBrowserMcp] Prepared browser MCP stdio launch', {
     platform: options.platform ?? process.platform,
     serverPath,
     serverExists: fs.existsSync(serverPath),

@@ -155,122 +155,122 @@ const NewUserOnboardingHeroAnimation: React.FC = () => (
   <div className="relative h-[116px] overflow-hidden rounded-lg bg-[#eef3ff] dark:bg-surface" aria-hidden="true">
     <style>
       {`
-        @keyframes lobster-onboarding-create-frame {
+        @keyframes baiying-onboarding-create-frame {
           0%, 36% { opacity: 1; transform: translate(-50%, 0) scale(1); }
           45%, 86% { opacity: 0; transform: translate(-50%, -8px) scale(0.96); }
           96%, 100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        @keyframes lobster-onboarding-result-frame {
+        @keyframes baiying-onboarding-result-frame {
           0%, 36% { opacity: 0; transform: translateY(10px) scale(0.92); filter: blur(1px); }
           48%, 84% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
           94%, 100% { opacity: 0; transform: translateY(10px) scale(0.92); filter: blur(1px); }
         }
 
-        @keyframes lobster-onboarding-cursor {
+        @keyframes baiying-onboarding-cursor {
           0%, 32% { transform: translate3d(224px, 61px, 0) rotate(-12deg); }
           48%, 84% { transform: translate3d(248px, 68px, 0) rotate(-10deg); }
           96%, 100% { transform: translate3d(224px, 61px, 0) rotate(-12deg); }
         }
 
-        @keyframes lobster-onboarding-card-doc {
+        @keyframes baiying-onboarding-card-doc {
           0%, 39% { transform: translate3d(67px, 44px, 0) rotate(-20deg) scale(0.94); }
           52%, 84% { transform: translate3d(57px, 37px, 0) rotate(-22deg) scale(1); }
           96%, 100% { transform: translate3d(67px, 44px, 0) rotate(-20deg) scale(0.94); }
         }
 
-        @keyframes lobster-onboarding-card-image {
+        @keyframes baiying-onboarding-card-image {
           0%, 39% { transform: translate3d(119px, 36px, 0) scale(0.94); }
           52%, 84% { transform: translate3d(116px, 24px, 0) scale(1); }
           96%, 100% { transform: translate3d(119px, 36px, 0) scale(0.94); }
         }
 
-        @keyframes lobster-onboarding-card-pdf {
+        @keyframes baiying-onboarding-card-pdf {
           0%, 39% { transform: translate3d(168px, 42px, 0) rotate(13deg) scale(0.94); }
           52%, 84% { transform: translate3d(174px, 34px, 0) rotate(15deg) scale(1); }
           96%, 100% { transform: translate3d(168px, 42px, 0) rotate(13deg) scale(0.94); }
         }
 
-        .lobster-onboarding-create-frame {
-          animation: lobster-onboarding-create-frame 4.8s ease-in-out infinite;
+        .baiying-onboarding-create-frame {
+          animation: baiying-onboarding-create-frame 4.8s ease-in-out infinite;
         }
 
-        .lobster-onboarding-result-frame {
-          animation: lobster-onboarding-result-frame 4.8s ease-in-out infinite;
+        .baiying-onboarding-result-frame {
+          animation: baiying-onboarding-result-frame 4.8s ease-in-out infinite;
         }
 
-        .lobster-onboarding-cursor {
-          animation: lobster-onboarding-cursor 4.8s ease-in-out infinite;
+        .baiying-onboarding-cursor {
+          animation: baiying-onboarding-cursor 4.8s ease-in-out infinite;
         }
 
-        .lobster-onboarding-card-doc {
-          animation: lobster-onboarding-card-doc 4.8s ease-in-out infinite;
+        .baiying-onboarding-card-doc {
+          animation: baiying-onboarding-card-doc 4.8s ease-in-out infinite;
         }
 
-        .lobster-onboarding-card-image {
-          animation: lobster-onboarding-card-image 4.8s ease-in-out infinite;
+        .baiying-onboarding-card-image {
+          animation: baiying-onboarding-card-image 4.8s ease-in-out infinite;
         }
 
-        .lobster-onboarding-card-pdf {
-          animation: lobster-onboarding-card-pdf 4.8s ease-in-out infinite;
+        .baiying-onboarding-card-pdf {
+          animation: baiying-onboarding-card-pdf 4.8s ease-in-out infinite;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .lobster-onboarding-create-frame {
+          .baiying-onboarding-create-frame {
             animation: none;
             opacity: 0;
           }
 
-          .lobster-onboarding-result-frame,
-          .lobster-onboarding-cursor,
-          .lobster-onboarding-card-doc,
-          .lobster-onboarding-card-image,
-          .lobster-onboarding-card-pdf {
+          .baiying-onboarding-result-frame,
+          .baiying-onboarding-cursor,
+          .baiying-onboarding-card-doc,
+          .baiying-onboarding-card-image,
+          .baiying-onboarding-card-pdf {
             animation: none;
           }
 
-          .lobster-onboarding-result-frame {
+          .baiying-onboarding-result-frame {
             opacity: 1;
             transform: none;
             filter: none;
           }
 
-          .lobster-onboarding-card-doc {
+          .baiying-onboarding-card-doc {
             transform: translate3d(57px, 37px, 0) rotate(-22deg) scale(1);
           }
 
-          .lobster-onboarding-card-image {
+          .baiying-onboarding-card-image {
             transform: translate3d(116px, 24px, 0) scale(1);
           }
 
-          .lobster-onboarding-card-pdf {
+          .baiying-onboarding-card-pdf {
             transform: translate3d(174px, 34px, 0) rotate(15deg) scale(1);
           }
 
-          .lobster-onboarding-cursor {
+          .baiying-onboarding-cursor {
             transform: translate3d(248px, 68px, 0) rotate(-10deg);
           }
         }
       `}
     </style>
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.78),rgba(238,243,255,0)_58%)] dark:bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.1),rgba(255,255,255,0)_58%)]" />
-    <div className="lobster-onboarding-create-frame absolute left-1/2 top-[35px] flex h-8 w-[198px] items-center justify-center rounded-lg bg-white text-xs font-medium text-foreground shadow-[0_8px_22px_rgba(35,56,109,0.12)] dark:bg-surface-raised dark:shadow-[0_8px_22px_rgba(0,0,0,0.28)]">
+    <div className="baiying-onboarding-create-frame absolute left-1/2 top-[35px] flex h-8 w-[198px] items-center justify-center rounded-lg bg-white text-xs font-medium text-foreground shadow-[0_8px_22px_rgba(35,56,109,0.12)] dark:bg-surface-raised dark:shadow-[0_8px_22px_rgba(0,0,0,0.28)]">
       {i18nService.t('newChat')}
     </div>
-    <div className="lobster-onboarding-result-frame absolute inset-0">
-      <div className="lobster-onboarding-card-doc absolute h-[62px] w-[54px] rounded-lg border border-white/90 bg-white/90 shadow-[0_10px_24px_rgba(53,83,139,0.14)] dark:border-border dark:bg-surface-raised/90 dark:shadow-[0_10px_24px_rgba(0,0,0,0.26)]">
+    <div className="baiying-onboarding-result-frame absolute inset-0">
+      <div className="baiying-onboarding-card-doc absolute h-[62px] w-[54px] rounded-lg border border-white/90 bg-white/90 shadow-[0_10px_24px_rgba(53,83,139,0.14)] dark:border-border dark:bg-surface-raised/90 dark:shadow-[0_10px_24px_rgba(0,0,0,0.26)]">
         <div className="absolute left-[-9px] top-3 rounded bg-[#6f9cf7] px-1.5 py-0.5 text-[13px] font-semibold leading-4 text-white shadow-sm">
           DOC
         </div>
         <div className="absolute left-5 top-8 h-1.5 w-6 rounded-full bg-[#9dbdf8]" />
         <div className="absolute left-5 top-[44px] h-1.5 w-4 rounded-full bg-[#c1d3fb]" />
       </div>
-      <div className="lobster-onboarding-card-image absolute h-[66px] w-[64px] rounded-lg border-[3px] border-white bg-[#dfeaff] shadow-[0_11px_26px_rgba(53,83,139,0.17)] dark:border-border dark:bg-[#223047] dark:shadow-[0_11px_26px_rgba(0,0,0,0.28)]">
+      <div className="baiying-onboarding-card-image absolute h-[66px] w-[64px] rounded-lg border-[3px] border-white bg-[#dfeaff] shadow-[0_11px_26px_rgba(53,83,139,0.17)] dark:border-border dark:bg-[#223047] dark:shadow-[0_11px_26px_rgba(0,0,0,0.28)]">
         <div className="absolute left-4 top-4 h-3.5 w-3.5 rounded-full bg-[#ffdf69]" />
         <div className="absolute bottom-2.5 left-2.5 h-8 w-10 rounded-[9px] bg-[#b7d5f4]" />
         <div className="absolute bottom-2.5 right-1.5 h-10 w-9 rounded-[10px] bg-[#c7ddf8]" />
       </div>
-      <div className="lobster-onboarding-card-pdf absolute h-[68px] w-[65px] rounded-lg border border-white/90 bg-white/95 shadow-[0_11px_26px_rgba(53,83,139,0.16)] dark:border-border dark:bg-surface-raised/95 dark:shadow-[0_11px_26px_rgba(0,0,0,0.28)]">
+      <div className="baiying-onboarding-card-pdf absolute h-[68px] w-[65px] rounded-lg border border-white/90 bg-white/95 shadow-[0_11px_26px_rgba(53,83,139,0.16)] dark:border-border dark:bg-surface-raised/95 dark:shadow-[0_11px_26px_rgba(0,0,0,0.28)]">
         <div className="absolute left-2.5 top-[-8px] rounded bg-[#ff7e9f] px-2 py-0.5 text-[15px] font-semibold leading-5 text-white shadow-sm">
           PDF
         </div>
@@ -278,7 +278,7 @@ const NewUserOnboardingHeroAnimation: React.FC = () => (
         <div className="absolute left-[34px] top-7 h-4 w-[17px] rounded-bl-[7px] bg-white/80 dark:bg-surface-raised/85" />
       </div>
     </div>
-    <OnboardingCursorIcon className="lobster-onboarding-cursor absolute left-0 top-0 h-7 w-7 drop-shadow-[0_5px_5px_rgba(0,0,0,0.25)]" />
+    <OnboardingCursorIcon className="baiying-onboarding-cursor absolute left-0 top-0 h-7 w-7 drop-shadow-[0_5px_5px_rgba(0,0,0,0.25)]" />
   </div>
 );
 
@@ -344,81 +344,81 @@ const TypewriterPromptPreview: React.FC<{
     <div className="pointer-events-none absolute inset-0" aria-hidden="true">
       <style>
         {`
-        @keyframes lobster-onboarding-caret {
+        @keyframes baiying-onboarding-caret {
           0%, 48% { opacity: 1; }
           49%, 100% { opacity: 0; }
         }
 
-        @keyframes lobster-onboarding-send-pulse {
+        @keyframes baiying-onboarding-send-pulse {
           0% { opacity: 0; transform: scale(0.58); }
           24% { opacity: 0.95; transform: scale(0.84); }
           62% { opacity: 0.5; transform: scale(1.22); }
           100% { opacity: 0; transform: scale(1.55); }
         }
 
-        @keyframes lobster-onboarding-send-flash {
+        @keyframes baiying-onboarding-send-flash {
           0%, 38% { opacity: 0; transform: scale(0.88); }
           48% { opacity: 0.28; transform: scale(1); }
           68%, 100% { opacity: 0; transform: scale(1.2); }
         }
 
-        @keyframes lobster-onboarding-send-cursor {
+        @keyframes baiying-onboarding-send-cursor {
           0% { opacity: 0; transform: translate3d(46px, 34px, 0) scale(1); }
           30% { opacity: 1; transform: translate3d(2px, 2px, 0) scale(1); }
           46% { opacity: 1; transform: translate3d(2px, 2px, 0) scale(0.78); }
           64%, 100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
 
-        @keyframes lobster-onboarding-send-press {
+        @keyframes baiying-onboarding-send-press {
           0%, 38% { transform: scale(1); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
           48% { transform: scale(0.9); box-shadow: 0 0 0 5px rgba(255,255,255,0.72), 0 8px 18px rgba(0,0,0,0.24); }
           66%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
         }
 
-        @keyframes lobster-onboarding-send-active {
+        @keyframes baiying-onboarding-send-active {
           0% { opacity: 0; transform: scale(0.82); }
           100% { opacity: 1; transform: scale(1); }
         }
 
-        .lobster-onboarding-caret {
-          animation: lobster-onboarding-caret 0.8s step-end infinite;
+        .baiying-onboarding-caret {
+          animation: baiying-onboarding-caret 0.8s step-end infinite;
         }
 
-        .lobster-onboarding-send-pulse {
-          animation: lobster-onboarding-send-pulse 1.18s ease-out 0.28s both;
+        .baiying-onboarding-send-pulse {
+          animation: baiying-onboarding-send-pulse 1.18s ease-out 0.28s both;
         }
 
-        .lobster-onboarding-send-pulse-delayed {
+        .baiying-onboarding-send-pulse-delayed {
           animation-delay: 0.46s;
         }
 
-        .lobster-onboarding-send-flash {
-          animation: lobster-onboarding-send-flash 1.18s ease-out both;
+        .baiying-onboarding-send-flash {
+          animation: baiying-onboarding-send-flash 1.18s ease-out both;
         }
 
-        .lobster-onboarding-send-cursor {
-          animation: lobster-onboarding-send-cursor 1.18s cubic-bezier(0.2, 0.85, 0.22, 1) both;
+        .baiying-onboarding-send-cursor {
+          animation: baiying-onboarding-send-cursor 1.18s cubic-bezier(0.2, 0.85, 0.22, 1) both;
         }
 
-        .lobster-onboarding-send-active {
-          animation: lobster-onboarding-send-active 0.18s ease-out both;
+        .baiying-onboarding-send-active {
+          animation: baiying-onboarding-send-active 0.18s ease-out both;
         }
 
-        .lobster-onboarding-send-press {
-          animation: lobster-onboarding-send-press 1.18s ease-out both;
+        .baiying-onboarding-send-press {
+          animation: baiying-onboarding-send-press 1.18s ease-out both;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .lobster-onboarding-caret,
-          .lobster-onboarding-send-pulse,
-          .lobster-onboarding-send-flash,
-          .lobster-onboarding-send-cursor,
-          .lobster-onboarding-send-active,
-          .lobster-onboarding-send-press {
+          .baiying-onboarding-caret,
+          .baiying-onboarding-send-pulse,
+          .baiying-onboarding-send-flash,
+          .baiying-onboarding-send-cursor,
+          .baiying-onboarding-send-active,
+          .baiying-onboarding-send-press {
             animation: none;
           }
 
-          .lobster-onboarding-caret {
+          .baiying-onboarding-caret {
             opacity: 0;
           }
         }
@@ -434,7 +434,7 @@ const TypewriterPromptPreview: React.FC<{
         }}
       />
       <div
-        className="absolute flex items-center text-sm font-normal leading-[var(--lobster-leading-prompt)] text-foreground"
+        className="absolute flex items-center text-sm font-normal leading-[var(--baiying-leading-prompt)] text-foreground"
         style={{
           top: textRect.top + PROMPT_TEXTAREA_PADDING_TOP,
           left: textRect.left + PROMPT_TEXTAREA_PADDING_LEFT,
@@ -444,11 +444,11 @@ const TypewriterPromptPreview: React.FC<{
         <span className="inline-block max-w-full overflow-hidden whitespace-nowrap">
           {visiblePrompt}
         </span>
-        <span className="lobster-onboarding-caret ml-1 h-5 w-px bg-foreground" />
+        <span className="baiying-onboarding-caret ml-1 h-5 w-px bg-foreground" />
       </div>
       {isTypingStarted && (
         <div
-          className={`lobster-onboarding-send-active absolute z-10 flex items-center justify-center rounded-full bg-foreground text-background shadow-subtle ${showSendEffect ? 'lobster-onboarding-send-press' : ''}`}
+          className={`baiying-onboarding-send-active absolute z-10 flex items-center justify-center rounded-full bg-foreground text-background shadow-subtle ${showSendEffect ? 'baiying-onboarding-send-press' : ''}`}
           style={{
             top: sendRect.top,
             left: sendRect.left,
@@ -476,15 +476,15 @@ const TypewriterPromptPreview: React.FC<{
       >
         {showSendEffect && (
           <>
-            <div className="lobster-onboarding-send-flash absolute inset-2 rounded-full bg-foreground" />
-            <div className="lobster-onboarding-send-pulse absolute inset-0 rounded-full border-2 border-background/95 bg-background/25 shadow-[0_0_0_1px_rgba(0,0,0,0.06)]" />
-            <div className="lobster-onboarding-send-pulse lobster-onboarding-send-pulse-delayed absolute inset-0 rounded-full border border-background/80 bg-background/15" />
+            <div className="baiying-onboarding-send-flash absolute inset-2 rounded-full bg-foreground" />
+            <div className="baiying-onboarding-send-pulse absolute inset-0 rounded-full border-2 border-background/95 bg-background/25 shadow-[0_0_0_1px_rgba(0,0,0,0.06)]" />
+            <div className="baiying-onboarding-send-pulse baiying-onboarding-send-pulse-delayed absolute inset-0 rounded-full border border-background/80 bg-background/15" />
           </>
         )}
       </div>
       {showSendEffect && (
         <OnboardingCursorIcon
-          className="lobster-onboarding-send-cursor absolute z-30 h-7 w-7 drop-shadow-[0_6px_7px_rgba(0,0,0,0.3)]"
+          className="baiying-onboarding-send-cursor absolute z-30 h-7 w-7 drop-shadow-[0_6px_7px_rgba(0,0,0,0.3)]"
           style={{
             top: sendCenterY - 3,
             left: sendCenterX - 3,
@@ -521,42 +521,42 @@ const PromptLoadingSequence: React.FC = () => {
     <div className="mt-5 h-[110px]" aria-hidden="true">
       <style>
         {`
-          @keyframes lobster-onboarding-loading-row {
+          @keyframes baiying-onboarding-loading-row {
             0% { opacity: 0; transform: translateY(8px); }
             100% { opacity: 1; transform: translateY(0); }
           }
 
-          @keyframes lobster-onboarding-loading-progress {
+          @keyframes baiying-onboarding-loading-progress {
             0% { transform: scaleX(0); }
             100% { transform: scaleX(1); }
           }
 
-          @keyframes lobster-onboarding-loading-dot {
+          @keyframes baiying-onboarding-loading-dot {
             0%, 100% { transform: scale(0.82); opacity: 0.55; }
             45% { transform: scale(1); opacity: 1; }
           }
 
-          .lobster-onboarding-loading-row {
-            animation: lobster-onboarding-loading-row 0.22s ease-out both;
+          .baiying-onboarding-loading-row {
+            animation: baiying-onboarding-loading-row 0.22s ease-out both;
           }
 
-          .lobster-onboarding-loading-progress {
-            animation: lobster-onboarding-loading-progress ${PROMPT_LOADING_STEP_DURATION_MS}ms linear both;
+          .baiying-onboarding-loading-progress {
+            animation: baiying-onboarding-loading-progress ${PROMPT_LOADING_STEP_DURATION_MS}ms linear both;
             transform-origin: left center;
           }
 
-          .lobster-onboarding-loading-dot {
-            animation: lobster-onboarding-loading-dot 0.9s ease-in-out infinite;
+          .baiying-onboarding-loading-dot {
+            animation: baiying-onboarding-loading-dot 0.9s ease-in-out infinite;
           }
 
           @media (prefers-reduced-motion: reduce) {
-            .lobster-onboarding-loading-row,
-            .lobster-onboarding-loading-progress,
-            .lobster-onboarding-loading-dot {
+            .baiying-onboarding-loading-row,
+            .baiying-onboarding-loading-progress,
+            .baiying-onboarding-loading-dot {
               animation: none;
             }
 
-            .lobster-onboarding-loading-progress {
+            .baiying-onboarding-loading-progress {
               transform: scaleX(1);
             }
           }
@@ -568,9 +568,9 @@ const PromptLoadingSequence: React.FC = () => {
           const progressKey = `${cycleIndex}-${messageKey}-${isActive ? 'active' : 'done'}`;
 
           return (
-            <div key={`${cycleIndex}-${messageKey}`} className="lobster-onboarding-loading-row flex items-start gap-2">
+            <div key={`${cycleIndex}-${messageKey}`} className="baiying-onboarding-loading-row flex items-start gap-2">
               <span className="mt-px flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-surface-raised dark:bg-surface">
-                <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'lobster-onboarding-loading-dot bg-secondary' : 'bg-tertiary'}`} />
+                <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'baiying-onboarding-loading-dot bg-secondary' : 'bg-tertiary'}`} />
               </span>
               <span className="min-w-0">
                 <span className="block text-[13px] leading-[18px] text-secondary">
@@ -579,7 +579,7 @@ const PromptLoadingSequence: React.FC = () => {
                 <span className="mt-1 block h-1 w-[136px] overflow-hidden rounded-full bg-surface-raised dark:bg-surface">
                   <span
                     key={progressKey}
-                    className={`block h-full rounded-full bg-tertiary ${isActive ? 'lobster-onboarding-loading-progress' : ''}`}
+                    className={`block h-full rounded-full bg-tertiary ${isActive ? 'baiying-onboarding-loading-progress' : ''}`}
                     style={{ width: '100%' }}
                   />
                 </span>
@@ -636,7 +636,7 @@ const PromptResultPopover: React.FC<{
 
   return (
     <section
-      className="lobster-onboarding-result-popover absolute rounded-xl bg-background p-6 text-foreground shadow-[0_18px_52px_rgba(0,0,0,0.18)] ring-1 ring-border/0 dark:bg-surface-raised dark:ring-border/70 dark:shadow-[0_18px_52px_rgba(0,0,0,0.44)]"
+      className="baiying-onboarding-result-popover absolute rounded-xl bg-background p-6 text-foreground shadow-[0_18px_52px_rgba(0,0,0,0.18)] ring-1 ring-border/0 dark:bg-surface-raised dark:ring-border/70 dark:shadow-[0_18px_52px_rgba(0,0,0,0.44)]"
       style={{
         top: popoverTop,
         left: popoverLeft,
@@ -646,20 +646,20 @@ const PromptResultPopover: React.FC<{
     >
       <style>
         {`
-        @keyframes lobster-onboarding-result-popover {
+        @keyframes baiying-onboarding-result-popover {
           0% { opacity: 0; transform: translateY(8px) scale(0.99); }
           72% { opacity: 1; transform: translateY(-1px) scale(1); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .lobster-onboarding-result-popover {
-          animation: lobster-onboarding-result-popover 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+        .baiying-onboarding-result-popover {
+          animation: baiying-onboarding-result-popover 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
           transform-origin: top center;
           will-change: opacity, transform;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .lobster-onboarding-result-popover {
+          .baiying-onboarding-result-popover {
             animation: none;
           }
         }

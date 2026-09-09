@@ -8,7 +8,7 @@
 
 关联文档：
 
-- [跨系统详细方案与接口、构建、验收契约](../../../../lobsterai-server/docs/specs/html-share/feature-2026-09-03-markdown-share-rendering-parity.md)
+- [跨系统详细方案与接口、构建、验收契约](../../../../baiyingai-server/docs/specs/html-share/feature-2026-09-03-markdown-share-rendering-parity.md)
 - [2026-06-17 原 Markdown/Mermaid 分享设计](./2026-06-17-markdown-mermaid-share-preview-design.md)
 - [既有接口集成说明](../../../docs/server-integration/2026-06-17-markdown-mermaid-share.md)
 
@@ -18,7 +18,7 @@
 
 ### 1.1 问题与根因
 
-示例分享：[AI-Agent 扩展机制文档](https://lobsterai-server.inner.hzb.com/s/shr_8997a99103904147)。
+示例分享：[AI-Agent 扩展机制文档](https://baiyingai-server.inner.hzb.com/s/shr_8997a99103904147)。
 
 原文 `tool_calls` 和 `tool` 使用单反引号，客户端显示为行内代码，分享页却显示成带工具栏的代码块。只读排查确认文件为 21,414 个 UTF-8 字节、12,149 个 JavaScript UTF-16 码元，32 字符样例也能复现。
 
@@ -65,7 +65,7 @@
 
 ### 4.1 共享模块
 
-新增 `packages/markdown-renderer/`，拟名 `@lobsterai/markdown-renderer`。模块只包含文档展示能力：
+新增 `packages/markdown-renderer/`，拟名 `@baiyingai/markdown-renderer`。模块只包含文档展示能力：
 
 | 入口/文件 | 职责 |
 | --- | --- |
@@ -117,7 +117,7 @@ CSS 限定在正文容器，包含字体回退、代码主题和弹层变量，�
 
 ### 4.5 图片快照与精确重写
 
-扩展 `artifactFileSharePackager.ts`，保留入口 MD + `_lobster_assets/` + version=1 manifest 结构：
+扩展 `artifactFileSharePackager.ts`，保留入口 MD + `_baiying_assets/` + version=1 manifest 结构：
 
 1. 使用与渲染一致的 AST 识别 image、imageReference、definition，排除代码示例与未使用定义。
 2. 预处理若改变文本长度，保留到原文的区间映射；用同版本 tokenizer 定位 URL 源区间，按位置倒序修改。不能拿 mdast 整个节点 position 当 URL 范围，不能全局替换或重新序列化全文。
@@ -125,7 +125,7 @@ CSS 限定在正文容器，包含字体回退、代码主题和弹层变量，�
 4. 覆盖中文、空格、括号、编码、title、完整/折叠/快捷引用式图片。定位失败给出 warning，不猜测替换。
 5. 本地图仍按 MD 所在目录和 realpath 边界校验；允许目录内绝对路径，禁止扩大到目录外或公开本机路径。
 6. 公开 HTTP(S) 图片在发布时下载；支持的 data URL 解码、校验后打包；鉴权资源、blob 和不支持的类型给出遗漏原因。
-7. 新路径使用 `_lobster_assets/<sha256>.<ext>` 的 ASCII 内容 hash，同字节去重；manifest/log 去除绝对路径、URL 用户信息和敏感查询值。
+7. 新路径使用 `_baiying_assets/<sha256>.<ext>` 的 ASCII 内容 hash，同字节去重；manifest/log 去除绝对路径、URL 用户信息和敏感查询值。
 8. 最终入口重写后重新检查大小，再计算现有 sourceSha256 和 zip。源码、图片、路径均以最终上传包为准。
 
 远程下载复用已有能力并补齐限额：不携带 Cookie/Authorization，每跳检查 HTTP(S) 和目的地址，最多 3 次重定向、15 秒单项超时、建议并发 3；地址检查约束实际连接，排除回环/私网/保留地址。流式限制单图大小，不仅信 Content-Length；再做 MIME、魔数、SVG 校验。

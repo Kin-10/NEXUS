@@ -377,7 +377,7 @@ document_file -> documentShareShellPage()
 `documentShareShellPage()` 在返回 HTML 前读取入口文件元数据并计算预览策略。可预览时输出配置 JSON：
 
 ```html
-<script type="application/json" id="lobster-share-config">
+<script type="application/json" id="baiying-share-config">
 {
   "shareId": "shr_xxx",
   "title": "report.docx",

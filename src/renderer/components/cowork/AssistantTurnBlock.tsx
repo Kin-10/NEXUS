@@ -135,7 +135,7 @@ const ContextCompactionDivider: React.FC<{ label: string; active?: boolean }> = 
   >
     <div className="h-px min-w-0 flex-1 bg-border" />
     <div className="flex max-w-[min(100%,360px)] flex-col items-center gap-1.5 bg-background px-2">
-      <div className="inline-flex max-w-full items-center gap-2 text-sm font-normal leading-[var(--lobster-leading-promptLarge)] text-foreground/95">
+      <div className="inline-flex max-w-full items-center gap-2 text-sm font-normal leading-[var(--baiying-leading-promptLarge)] text-foreground/95">
         <ContextCompressionIcon className={`h-3.5 w-3.5 flex-shrink-0 text-foreground/70 ${active ? 'animate-pulse' : ''}`} />
         <span className="truncate">{label}</span>
       </div>

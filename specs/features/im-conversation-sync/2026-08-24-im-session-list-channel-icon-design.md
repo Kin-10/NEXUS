@@ -128,7 +128,7 @@ imPlatform?: Platform | null;
 | `wecom` | `wecom.png` | `[企微]`、`[企业微信]` |
 | `qq` | `qq_bot.jpeg` | `[QQ]` |
 | `nim` | `nim.png` | `[云信]`、`云信-P2P-`、`云信-群聊-`、`云信-圈组-` |
-| `netease-bee` | `netease-bee.png` | `[小蜜蜂]` |
+| `baiying-bee` | `baiying-bee.png` | `[小蜜蜂]` |
 | `popo` | `popo.png` | `[POPO]` |
 | `telegram` | `telegram.svg` | `[TG]`、`[Telegram]` |
 | `discord` | `discord.svg` | `[Discord]` |

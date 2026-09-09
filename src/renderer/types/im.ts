@@ -240,7 +240,7 @@ export interface DiscordMultiInstanceStatus {
   instances: DiscordInstanceStatus[];
 }
 
-// ==================== NIM (NetEase IM) Types ====================
+// ==================== NIM (baiying IM) Types ====================
 
 export type NimTeamPolicy = 'open' | 'allowlist' | 'disabled';
 
@@ -320,16 +320,16 @@ export interface NimMultiInstanceStatus {
 /** @deprecated Use NimOpenClawConfig instead. */
 export type NimConfig = NimOpenClawConfig;
 
-// ==================== NetEase Bee Types ====================
+// ==================== baiying Bee Types ====================
 
-export interface NeteaseBeeChanConfig {
+export interface baiyingBeeChanConfig {
   enabled: boolean;
   clientId: string;    // 小蜜蜂平台的 NIM 账号 ID
   secret: string;      // 用于 token 中继的密钥
   debug?: boolean;
 }
 
-export interface NeteaseBeeChanGatewayStatus {
+export interface baiyingBeeChanGatewayStatus {
   connected: boolean;
   startedAt: number | null;
   lastError: string | null;
@@ -574,7 +574,7 @@ export interface IMGatewayConfig {
   qq: QQMultiInstanceConfig;
   discord: DiscordMultiInstanceConfig;
   nim: NimMultiInstanceConfig;
-  'netease-bee': NeteaseBeeChanConfig;
+  'baiying-bee': baiyingBeeChanConfig;
   wecom: WecomMultiInstanceConfig;
   popo: PopoMultiInstanceConfig;
   weixin: WeixinOpenClawConfig;
@@ -596,7 +596,7 @@ export interface IMGatewayStatus {
   telegram: TelegramMultiInstanceStatus;
   discord: DiscordMultiInstanceStatus;
   nim: NimMultiInstanceStatus;
-  'netease-bee': NeteaseBeeChanGatewayStatus;
+  'baiying-bee': baiyingBeeChanGatewayStatus;
   wecom: WecomMultiInstanceStatus;
   popo: PopoMultiInstanceStatus;
   weixin: WeixinGatewayStatus;
@@ -781,7 +781,7 @@ export const DEFAULT_NIM_MULTI_INSTANCE_CONFIG: NimMultiInstanceConfig = {
 /** @deprecated Use DEFAULT_NIM_OPENCLAW_CONFIG instead. */
 export const DEFAULT_NIM_CONFIG = DEFAULT_NIM_OPENCLAW_CONFIG;
 
-export const DEFAULT_NETEASE_BEE_CONFIG: NeteaseBeeChanConfig = {
+export const DEFAULT_baiying_BEE_CONFIG: baiyingBeeChanConfig = {
   enabled: false,
   clientId: '',
   secret: '',
@@ -890,7 +890,7 @@ export const DEFAULT_IM_CONFIG: IMGatewayConfig = {
   qq: DEFAULT_QQ_MULTI_INSTANCE_CONFIG,
   discord: DEFAULT_DISCORD_MULTI_INSTANCE_CONFIG,
   nim: DEFAULT_NIM_MULTI_INSTANCE_CONFIG,
-  'netease-bee': DEFAULT_NETEASE_BEE_CONFIG,
+  'baiying-bee': DEFAULT_baiying_BEE_CONFIG,
   wecom: DEFAULT_WECOM_MULTI_INSTANCE_CONFIG,
   popo: DEFAULT_POPO_MULTI_INSTANCE_CONFIG,
   weixin: DEFAULT_WEIXIN_CONFIG,
@@ -912,7 +912,7 @@ export const DEFAULT_IM_STATUS: IMGatewayStatus = {
   nim: {
     instances: [],
   },
-  'netease-bee': {
+  'baiying-bee': {
     connected: false,
     startedAt: null,
     lastError: null,

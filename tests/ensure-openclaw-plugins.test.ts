@@ -27,50 +27,50 @@ describe('ensure-openclaw-plugins', () => {
   });
 
   test('detects git specs from GitHub', () => {
-    expect(isGitSpec('git+https://github.com/netease-im/openclaw-nim-channel.git')).toBe(true);
-    expect(isGitSpec('https://github.com/netease-im/openclaw-nim-channel.git')).toBe(true);
-    expect(isGitSpec('github:netease-im/openclaw-nim-channel')).toBe(true);
+    expect(isGitSpec('git+https://github.com/baiying-im/openclaw-nim-channel.git')).toBe(true);
+    expect(isGitSpec('https://github.com/baiying-im/openclaw-nim-channel.git')).toBe(true);
+    expect(isGitSpec('github:baiying-im/openclaw-nim-channel')).toBe(true);
     expect(isGitSpec('@scope/openclaw-plugin')).toBe(false);
   });
 
   test('appends version as git ref when the spec has no hash', () => {
     expect(resolveGitPackSpec(
-      'git+https://github.com/netease-im/openclaw-nim-channel.git',
+      'git+https://github.com/baiying-im/openclaw-nim-channel.git',
       '1.0.3',
-    )).toBe('git+https://github.com/netease-im/openclaw-nim-channel.git#1.0.3');
+    )).toBe('git+https://github.com/baiying-im/openclaw-nim-channel.git#1.0.3');
 
     expect(resolveGitPackSpec(
-      'git+https://github.com/netease-im/openclaw-nim-channel.git#main',
+      'git+https://github.com/baiying-im/openclaw-nim-channel.git#main',
       '1.0.3',
-    )).toBe('git+https://github.com/netease-im/openclaw-nim-channel.git#main');
+    )).toBe('git+https://github.com/baiying-im/openclaw-nim-channel.git#main');
   });
 
   test('resolves git sources to packed installs', () => {
     expect(resolvePluginInstallSource({
       id: 'openclaw-nim-channel',
-      npm: 'git+https://github.com/netease-im/openclaw-nim-channel.git',
+      npm: 'git+https://github.com/baiying-im/openclaw-nim-channel.git',
       version: '1.0.3',
     })).toEqual({
       kind: 'git',
-      gitSpec: 'git+https://github.com/netease-im/openclaw-nim-channel.git#1.0.3',
-      pinnedDisplaySpec: 'git+https://github.com/netease-im/openclaw-nim-channel.git#1.0.3',
+      gitSpec: 'git+https://github.com/baiying-im/openclaw-nim-channel.git#1.0.3',
+      pinnedDisplaySpec: 'git+https://github.com/baiying-im/openclaw-nim-channel.git#1.0.3',
     });
   });
 
   test('parses git specs into clone url and ref', () => {
     expect(parseGitSpec(
-      'git+https://github.com/netease-im/openclaw-nim-channel.git',
+      'git+https://github.com/baiying-im/openclaw-nim-channel.git',
       '1.1.0',
     )).toEqual({
-      cloneUrl: 'https://github.com/netease-im/openclaw-nim-channel.git',
+      cloneUrl: 'https://github.com/baiying-im/openclaw-nim-channel.git',
       ref: '1.1.0',
     });
 
     expect(parseGitSpec(
-      'github:netease-im/openclaw-nim-channel#main',
+      'github:baiying-im/openclaw-nim-channel#main',
       '1.1.0',
     )).toEqual({
-      cloneUrl: 'https://github.com/netease-im/openclaw-nim-channel.git',
+      cloneUrl: 'https://github.com/baiying-im/openclaw-nim-channel.git',
       ref: 'main',
     });
   });
@@ -120,12 +120,12 @@ describe('ensure-openclaw-plugins', () => {
       id: 'moltbot-popo',
       npm: 'moltbot-popo',
       version: '2.0.7',
-      registry: 'https://npm.nie.netease.com',
+      registry: 'https://npm.nie.baiying.com',
     })).toEqual({
       kind: 'packed',
       packSpec: 'moltbot-popo@2.0.7',
       pinnedDisplaySpec: 'moltbot-popo@2.0.7',
-      registry: 'https://npm.nie.netease.com',
+      registry: 'https://npm.nie.baiying.com',
     });
 
     expect(resolvePluginInstallSource({
@@ -151,14 +151,7 @@ describe('ensure-openclaw-plugins', () => {
     });
   });
 
-  test('allows transitive Git dependencies only for the NetEase Bee plugin', () => {
-    expect(buildPluginInstallEnv({
-      id: 'netease-bee-alias',
-      npm: 'openclaw-netease-bee',
-    })).toEqual({
-      npm_config_allow_git: 'all',
-    });
-
+  test('does not enable Git dependencies for ordinary plugins', () => {
     expect(buildPluginInstallEnv({
       id: 'openclaw-weixin',
       npm: '@tencent-weixin/openclaw-weixin',

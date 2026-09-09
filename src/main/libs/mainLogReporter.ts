@@ -9,6 +9,7 @@ import {
   LogReporterStoreKey,
 } from '../../shared/analytics/constants';
 import type { SqliteStore } from '../sqliteStore';
+import { type AnalyticsDeviceInfo,collectAnalyticsDeviceInfo } from './analyticsDeviceInfo';
 import { getKeyfromAttribution } from './keyfromAttribution';
 
 type LogParamValue = string | number | boolean | null | undefined;
@@ -32,6 +33,7 @@ export interface MainLogReporterOptions {
   platform?: string;
   now?: () => number;
   createInstallationId?: () => string;
+  getDeviceInfo?: () => AnalyticsDeviceInfo;
   maxConcurrentRequests?: number;
   requestTimeoutMs?: number;
 }
@@ -43,6 +45,9 @@ export interface MainLogUrlContext {
   installationId: string | null;
   language: string;
   latestKeyfrom: string;
+  localIp: string;
+  macAddress: string;
+  osUsername: string;
   platform: string;
   timestamp: number;
   userId: string;
@@ -80,6 +85,9 @@ export const buildMainLogUrl = (
     uuid: context.installationId,
     firstKeyfrom: context.firstKeyfrom,
     latestKeyfrom: context.latestKeyfrom,
+    os_username: context.osUsername,
+    mac_address: context.macAddress,
+    local_ip: context.localIp,
     is_logged_in: context.userId.length > 0,
     log_Usid: context.userId,
     uts: context.timestamp,
@@ -97,6 +105,7 @@ export const buildMainLogUrl = (
 export class MainLogReporter {
   private readonly options: MainLogReporterOptions;
   private activeRequestCount = 0;
+  private cachedDeviceInfo: AnalyticsDeviceInfo | null = null;
 
   constructor(options: MainLogReporterOptions) {
     this.options = options;
@@ -190,6 +199,7 @@ export class MainLogReporter {
     const authUser = this.options.store.get<Record<string, unknown>>(LogReporterStoreKey.AuthUser);
     const userId = getTrimmedString(authUser?.yid) || getTrimmedString(authUser?.userId);
     const { firstKeyfrom, latestKeyfrom } = getKeyfromAttribution(this.options.store);
+    const deviceInfo = this.getDeviceInfo();
 
     return {
       appVersion: this.options.appVersion,
@@ -198,10 +208,24 @@ export class MainLogReporter {
       installationId: this.getOrCreateInstallationId(),
       language: getTrimmedString(config?.language),
       latestKeyfrom,
+      localIp: deviceInfo.localIp,
+      macAddress: deviceInfo.macAddress,
+      osUsername: deviceInfo.osUsername,
       platform: this.options.platform ?? process.platform,
       timestamp: this.options.now?.() ?? Date.now(),
       userId,
     };
+  }
+
+  private getDeviceInfo(): AnalyticsDeviceInfo {
+    if (this.cachedDeviceInfo) return this.cachedDeviceInfo;
+    try {
+      this.cachedDeviceInfo = this.options.getDeviceInfo?.() ?? collectAnalyticsDeviceInfo();
+    } catch (error) {
+      console.warn(`[MainLogReporter] failed to collect device info (${getErrorName(error)})`);
+      this.cachedDeviceInfo = { osUsername: '', macAddress: '', localIp: '' };
+    }
+    return this.cachedDeviceInfo;
   }
 
   private getOrCreateInstallationId(): string | null {

@@ -67,7 +67,7 @@ describe('kit capability helpers', () => {
         id: 'design',
         name: 'Design',
         uri: 'kit://design@baiying-kits',
-        source: KitReferenceSource.LobsterAiKits,
+        source: KitReferenceSource.baiyingAiKits,
       },
     ]);
   });

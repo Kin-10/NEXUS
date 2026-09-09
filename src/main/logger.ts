@@ -35,10 +35,10 @@ function logDir(): string {
 
 /**
  * Default info keeps local/test runs from writing huge debug files.
- * Override with LOBSTER_LOG_LEVEL=debug when diagnosing.
+ * Override with baiying_LOG_LEVEL=debug when diagnosing.
  */
 function resolveMainLogLevel(
-  envValue: string | undefined = process.env.LOBSTER_LOG_LEVEL,
+  envValue: string | undefined = process.env.baiying_LOG_LEVEL,
 ): MainLogLevel {
   const trimmed = envValue?.trim().toLowerCase();
   if (trimmed && (MAIN_LOG_LEVELS as readonly string[]).includes(trimmed)) {

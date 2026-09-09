@@ -247,8 +247,8 @@ if (enabledDingTalkInstances.length > 0) {
   for (let idx = 0; idx < enabledDingTalkInstances.length; idx++) {
     const inst = enabledDingTalkInstances[idx];
     const secretVar = idx === 0
-      ? 'LOBSTER_DINGTALK_CLIENT_SECRET'
-      : `LOBSTER_DINGTALK_CLIENT_SECRET_${idx}`;
+      ? 'baiying_DINGTALK_CLIENT_SECRET'
+      : `baiying_DINGTALK_CLIENT_SECRET_${idx}`;
     accounts[inst.instanceId.slice(0, 8)] = buildDingTalkAccountConfig(inst, secretVar);
   }
   managedConfig.channels.dingtalk = { accounts };
@@ -263,9 +263,9 @@ Secrets 通过环境变量注入，每个实例使用独立的变量名：
 
 | 实例序号 | 钉钉 | 飞书 | QQ |
 |----------|------|------|-----|
-| 第 1 个 | `LOBSTER_DINGTALK_CLIENT_SECRET` | `LOBSTER_FEISHU_APP_SECRET` | `LOBSTER_QQ_CLIENT_SECRET` |
-| 第 2 个 | `LOBSTER_DINGTALK_CLIENT_SECRET_1` | `LOBSTER_FEISHU_APP_SECRET_1` | `LOBSTER_QQ_CLIENT_SECRET_1` |
-| 第 N 个 | `LOBSTER_DINGTALK_CLIENT_SECRET_N` | `LOBSTER_FEISHU_APP_SECRET_N` | `LOBSTER_QQ_CLIENT_SECRET_N` |
+| 第 1 个 | `baiying_DINGTALK_CLIENT_SECRET` | `baiying_FEISHU_APP_SECRET` | `baiying_QQ_CLIENT_SECRET` |
+| 第 2 个 | `baiying_DINGTALK_CLIENT_SECRET_1` | `baiying_FEISHU_APP_SECRET_1` | `baiying_QQ_CLIENT_SECRET_1` |
+| 第 N 个 | `baiying_DINGTALK_CLIENT_SECRET_N` | `baiying_FEISHU_APP_SECRET_N` | `baiying_QQ_CLIENT_SECRET_N` |
 
 注意：序号基于 **启用实例** 的过滤结果，而非全部实例。`sync()` 和 `buildEnv()` 必须使用相同的过滤和排序逻辑。
 

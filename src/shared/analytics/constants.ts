@@ -1,7 +1,10 @@
 export const LogReporterEndpoint = {
   /** BaiYing Server analytics beacon (GET query params). */
-  hzbAnalyzer: 'http://127.0.0.1:8899/api/client/analytics/rlog',
+  hzbAnalyzer: 'http://192.168.101.24:8899/api/client/analytics/rlog',
 } as const;
+
+/** Sidebar "General" clicks required before the usage-analytics toggle is shown. */
+export const UsageAnalyticsUnlockClickCount = 7 as const;
 
 export const LogReporterProduct = {
   BaiYing: 'wisdom',

@@ -8,9 +8,9 @@
 >
 > 关联主规格：[`2026-08-17-library-design.md`](../../features/library/2026-08-17-library-design.md)
 >
-> 涉及仓库：LobsterAI 客户端
+> 涉及仓库：baiyingAI 客户端
 >
-> 不涉及：lobsterai-server、lobsterai-portal、lobsterai-admin、MySQL 表结构与数据迁移
+> 不涉及：baiyingai-server、baiyingai-portal、baiyingai-admin、MySQL 表结构与数据迁移
 
 ## 1. 结论
 

@@ -840,7 +840,7 @@ describe('enterprise quota period boundary refresh', () => {
 describe('auth state restoration', () => {
   const user = {
     yid: 'user@example.com',
-    nickname: 'Lobster User',
+    nickname: 'baiying User',
     avatarUrl: null,
   };
   const quota = {

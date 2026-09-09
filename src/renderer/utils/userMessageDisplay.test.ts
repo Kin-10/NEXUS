@@ -76,14 +76,14 @@ describe('Pattern A: NIM/DingTalk', () => {
   test('[图片] with URL and [附件信息] → strip metadata, preserve URL as text', () => {
     const imgPath = fileImg(WIN_INBOUND, 'abc123.jpg');
     const input = [
-      '[图片] https://nos.netease.com/xxx.jpg',
+      '[图片] https://nos.baiying.com/xxx.jpg',
       '',
       '[附件信息]',
       `- 类型: image, 路径: ${imgPath}, MIME: image/jpeg, 尺寸: 1920x1080`,
     ].join('\n');
 
     const result = parseUserMessageForDisplay(input);
-    expect(result).toBe('https://nos.netease.com/xxx.jpg');
+    expect(result).toBe('https://nos.baiying.com/xxx.jpg');
     expect(result).not.toContain('[图片]');
     expect(result).not.toContain('[附件信息]');
   });
@@ -103,7 +103,7 @@ describe('Pattern A: NIM/DingTalk', () => {
   test('user text + [图片] → preserve user text and URL', () => {
     const input = [
       '看看这张图',
-      '[图片] https://nos.netease.com/xxx.jpg',
+      '[图片] https://nos.baiying.com/xxx.jpg',
       '',
       '[附件信息]',
       `- 类型: image, 路径: ${fileImg(WIN_INBOUND, 'abc123.jpg')}, MIME: image/jpeg`,
@@ -111,7 +111,7 @@ describe('Pattern A: NIM/DingTalk', () => {
 
     const result = parseUserMessageForDisplay(input);
     expect(result).toContain('看看这张图');
-    expect(result).toContain('https://nos.netease.com/xxx.jpg');
+    expect(result).toContain('https://nos.baiying.com/xxx.jpg');
     expect(result).not.toContain('[图片]');
   });
 
@@ -129,9 +129,9 @@ describe('Pattern A: NIM/DingTalk', () => {
   });
 
   test('[文件] with URL → preserve URL', () => {
-    const input = '[文件] https://nos.netease.com/file.pdf';
+    const input = '[文件] https://nos.baiying.com/file.pdf';
     const result = parseUserMessageForDisplay(input);
-    expect(result).toBe('https://nos.netease.com/file.pdf');
+    expect(result).toBe('https://nos.baiying.com/file.pdf');
   });
 
   test('[文件] without URL → strip', () => {
@@ -361,14 +361,14 @@ describe('\\r\\n handling', () => {
 
   test('NIM format with \\r\\n line endings', () => {
     const input = [
-      '[图片] https://nos.netease.com/xxx.jpg',
+      '[图片] https://nos.baiying.com/xxx.jpg',
       '',
       '[附件信息]',
       `- 类型: image, 路径: ${fileImg(WIN_INBOUND, 'abc123.jpg')}, MIME: image/jpeg`,
     ].join('\r\n');
 
     const result = parseUserMessageForDisplay(input);
-    expect(result).toBe('https://nos.netease.com/xxx.jpg');
+    expect(result).toBe('https://nos.baiying.com/xxx.jpg');
   });
 });
 

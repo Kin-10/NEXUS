@@ -60,6 +60,9 @@ test('builds a hzb Analyzer URL with common action parameters', () => {
       installationId: 'installation-uuid',
       language: 'en',
       latestKeyfrom: 'partner_a',
+      localIp: '192.168.1.8',
+      macAddress: 'aa:bb:cc:dd:ee:ff',
+      osUsername: 'alice',
       platform: 'darwin',
       userId: 'test-user',
       timestamp: 123456789,
@@ -78,6 +81,9 @@ test('builds a hzb Analyzer URL with common action parameters', () => {
   expect(result.searchParams.get('uuid')).toBe('installation-uuid');
   expect(result.searchParams.get('firstKeyfrom')).toBe('bilibili');
   expect(result.searchParams.get('latestKeyfrom')).toBe('partner_a');
+  expect(result.searchParams.get('os_username')).toBe('alice');
+  expect(result.searchParams.get('mac_address')).toBe('aa:bb:cc:dd:ee:ff');
+  expect(result.searchParams.get('local_ip')).toBe('192.168.1.8');
   expect(result.searchParams.get('is_logged_in')).toBe('true');
   expect(result.searchParams.get('action')).toBe('baiying_skill_enabled');
   expect(result.searchParams.get('skillId')).toBe('xlsx');
@@ -103,6 +109,9 @@ test('does not allow event parameters to override common parameters', () => {
       uuid: 'unexpected-uuid',
       firstKeyfrom: 'unexpected-first-keyfrom',
       latestKeyfrom: 'unexpected-latest-keyfrom',
+      os_username: 'unexpected-username',
+      mac_address: 'unexpected-mac',
+      local_ip: 'unexpected-ip',
       is_logged_in: false,
       identityType: 'free',
       is_subscriber: false,
@@ -121,6 +130,9 @@ test('does not allow event parameters to override common parameters', () => {
       isSubscriber: true,
       language: 'trusted-language',
       latestKeyfrom: 'trusted-latest-keyfrom',
+      localIp: '10.0.0.2',
+      macAddress: '11:22:33:44:55:66',
+      osUsername: 'trusted-user-name',
       platform: 'trusted-platform',
       subscriptionStatus: 'active',
       userId: 'trusted-user',
@@ -139,6 +151,9 @@ test('does not allow event parameters to override common parameters', () => {
   expect(result.searchParams.get('uuid')).toBe('trusted-uuid');
   expect(result.searchParams.get('firstKeyfrom')).toBe('trusted-first-keyfrom');
   expect(result.searchParams.get('latestKeyfrom')).toBe('trusted-latest-keyfrom');
+  expect(result.searchParams.get('os_username')).toBe('trusted-user-name');
+  expect(result.searchParams.get('mac_address')).toBe('11:22:33:44:55:66');
+  expect(result.searchParams.get('local_ip')).toBe('10.0.0.2');
   expect(result.searchParams.get('is_logged_in')).toBe('true');
   expect(result.searchParams.get('identityType')).toBe('subscription');
   expect(result.searchParams.get('is_subscriber')).toBe('true');
@@ -198,6 +213,11 @@ test('reports an event through the Electron API bridge', async () => {
           latestKeyfrom: 'partner_a',
           updatedAt: 123456789,
         }),
+        getAnalyticsDeviceInfo: vi.fn().mockResolvedValue({
+          osUsername: 'alice',
+          macAddress: 'aa:bb:cc:dd:ee:ff',
+          localIp: '192.168.1.8',
+        }),
       },
       api: {
         fetch: fetchMock,
@@ -223,6 +243,9 @@ test('reports an event through the Electron API bridge', async () => {
   expect(requestUrl.searchParams.get('uuid')).toBe('installation-uuid');
   expect(requestUrl.searchParams.get('firstKeyfrom')).toBe('bilibili');
   expect(requestUrl.searchParams.get('latestKeyfrom')).toBe('partner_a');
+  expect(requestUrl.searchParams.get('os_username')).toBe('alice');
+  expect(requestUrl.searchParams.get('mac_address')).toBe('aa:bb:cc:dd:ee:ff');
+  expect(requestUrl.searchParams.get('local_ip')).toBe('192.168.1.8');
 });
 
 test('allows only an explicit touchpoint identity override during event capture', async () => {

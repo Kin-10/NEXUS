@@ -10,7 +10,7 @@ export const AgentAvatarIconSeparator = {
 
 export const AgentAvatarSvg = {
   Robot: 'robot',
-  Lobster: 'lobster',
+  Baiying: 'baiying',
   Code: 'code',
   Repair: 'repair',
   Briefcase: 'briefcase',
@@ -52,16 +52,26 @@ const AGENT_AVATAR_PART_COUNT = 2;
 
 const AGENT_AVATAR_SVGS = new Set<string>(Object.values(AgentAvatarSvg));
 
+/** Historical id kept in older installs; treated as Baiying. */
+const LEGACY_AGENT_AVATAR_SVG_ALIASES: Record<string, AgentAvatarSvg> = {
+  lobster: AgentAvatarSvg.Baiying,
+};
+
 export const DefaultAgentAvatar = {
   svg: AgentAvatarSvg.Robot,
 } as const satisfies DesignedAgentAvatar;
 
 const LegacyDefaultAgentAvatar = {
-  svg: AgentAvatarSvg.Lobster,
+  svg: AgentAvatarSvg.Baiying,
 } as const satisfies DesignedAgentAvatar;
 
 export const isAgentAvatarSvg = (value: string): value is AgentAvatarSvg => {
   return AGENT_AVATAR_SVGS.has(value);
+};
+
+const resolveAgentAvatarSvg = (value: string): AgentAvatarSvg | null => {
+  if (isAgentAvatarSvg(value)) return value;
+  return LEGACY_AGENT_AVATAR_SVG_ALIASES[value] ?? null;
 };
 
 const LegacyAgentAvatarIconFormat = {
@@ -90,9 +100,10 @@ export const parseAgentAvatarIcon = (value: string | null | undefined): Designed
 
   const [format, svg] = parts;
   if (format !== AgentAvatarIconFormat.Svg) return null;
-  if (!isAgentAvatarSvg(svg)) return null;
+  const resolvedSvg = resolveAgentAvatarSvg(svg);
+  if (!resolvedSvg) return null;
 
-  return { svg };
+  return { svg: resolvedSvg };
 };
 
 export const isDesignedAgentAvatarIcon = (value: string | null | undefined): boolean => {

@@ -52,7 +52,7 @@
 
 | 场景 | 服务端 `NODE_ENV` | Overmind 路径 `{env}` | 直连 API 数据（Banner/活动/安装） | 典型 Base URL |
 | --- | --- | --- | --- | --- |
-| **本地开发** | `development` | `test`（推荐） | `test` | `http://127.0.0.1:8899` |
+| **本地开发** | `development` | `test`（推荐） | `test` | `http://192.168.101.24:8899` |
 | **测试 / Staging** | `test` | `test` | `test` | `https://baiying-server-test.example.com` |
 | **生产** | `production` | `prod` | `prod` | `https://baiying-server.example.com` |
 
@@ -67,9 +67,9 @@
 **本地（`.env` 或客户端 config）：**
 
 ```env
-BAIYING_SERVER_BASE_URL=http://127.0.0.1:8899
-BAIYING_OVERMIND_BASE_URL=http://127.0.0.1:8899
-BAIYING_PORTAL_BASE_URL=http://127.0.0.1:8899
+BAIYING_SERVER_BASE_URL=http://192.168.101.24:8899
+BAIYING_OVERMIND_BASE_URL=http://192.168.101.24:8899
+BAIYING_PORTAL_BASE_URL=http://192.168.101.24:8899
 # Overmind 请求使用 /openapi/.../baiying/test/...
 ```
 
@@ -99,9 +99,9 @@ npm run db:seed
 npm run dev
 ```
 
-- API：`http://127.0.0.1:8899`
-- Swagger：`http://127.0.0.1:8899/docs`
-- 管理台：`http://127.0.0.1:8899/admin`（运营用，非客户端）
+- API：`http://192.168.101.24:8899`
+- Swagger：`http://192.168.101.24:8899/docs`
+- 管理台：`http://192.168.101.24:8899/admin`（运营用，非客户端）
 
 ---
 
@@ -614,24 +614,24 @@ sequenceDiagram
 
 ```bash
 # 市场
-curl -sS "http://127.0.0.1:8899/openapi/get/luna/hardware/baiying/test/kit-store"
+curl -sS "http://192.168.101.24:8899/openapi/get/luna/hardware/baiying/test/kit-store"
 
 # 更新
-curl -sS "http://127.0.0.1:8899/openapi/get/luna/hardware/baiying/test/update?version=2026.8.21&uuid=50000000-0000-4000-8000-000000000001"
+curl -sS "http://192.168.101.24:8899/openapi/get/luna/hardware/baiying/test/update?version=2026.8.21&uuid=50000000-0000-4000-8000-000000000001"
 
 # Banner
-curl -sS "http://127.0.0.1:8899/api/client-banners/active-list?placement=desktop_sidebar"
+curl -sS "http://192.168.101.24:8899/api/client-banners/active-list?placement=desktop_sidebar"
 
 # 活动 slot
-curl -sS "http://127.0.0.1:8899/api/client-activities/slot?placement=desktop_sidebar&clientVersion=2026.8.21&containerApiVersion=2&platform=win32"
+curl -sS "http://192.168.101.24:8899/api/client-activities/slot?placement=desktop_sidebar&clientVersion=2026.8.21&containerApiVersion=2&platform=win32"
 
 # 匿名安装注册
-curl -sS -X POST http://127.0.0.1:8899/api/client/installations/register \
+curl -sS -X POST http://192.168.101.24:8899/api/client/installations/register \
   -H 'content-type: application/json' \
   -d '{"installationId":"50000000-0000-4000-8000-000000000001","hostname":"DEV","platform":"win32","osVersion":"Win11","appVersion":"2026.8.21"}'
 
 # 开发登录 + exchange
-curl -sS -X POST http://127.0.0.1:8899/api/auth/dev/test-login \
+curl -sS -X POST http://192.168.101.24:8899/api/auth/dev/test-login \
   -H 'content-type: application/json' \
   -d '{"redirectUri":"http://127.0.0.1:54321/cb","state":"s1"}'
 ```

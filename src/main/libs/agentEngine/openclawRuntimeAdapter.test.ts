@@ -3645,7 +3645,7 @@ test('continueSession strips NUL characters from the persisted message and chat.
 });
 
 test('continueSession blocks an oversized active transcript before gateway requests', async () => {
-  const stateDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'lobster-runtime-transcript-'));
+  const stateDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'baiying-runtime-transcript-'));
   try {
     const sessionsDir = path.join(stateDir, 'agents', 'main', 'sessions');
     const transcriptPath = path.join(sessionsDir, 'openclaw-session-1.jsonl');

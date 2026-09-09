@@ -25,7 +25,7 @@ export const CAPABILITIES_TAB_ROW_CLASS =
   'flex items-center gap-0.5 border-b border-border';
 
 export const capabilitiesTabButtonClass = (active: boolean): string =>
-  `relative cursor-pointer px-3 pb-2.5 pt-1 text-[length:calc(var(--lobster-ui-font-size)_-_0.5px)] font-semibold transition-colors duration-200 ${
+  `relative cursor-pointer px-3 pb-2.5 pt-1 text-[length:calc(var(--baiying-ui-font-size)_-_0.5px)] font-semibold transition-colors duration-200 ${
     active ? 'text-foreground' : 'text-secondary hover:text-foreground'
   }`;
 

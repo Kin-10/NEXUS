@@ -296,13 +296,13 @@ NAS 文件用量不能通过当前管理 API 低成本实时读取，因此默�
 3. 客户端保存到默认目录：
 
 ```text
-<project>/.lobster/persistence/<shareId>/<yyyyMMdd-HHmmss>/<shareId>-service-data.zip
+<project>/.baiying/persistence/<shareId>/<yyyyMMdd-HHmmss>/<shareId>-service-data.zip
 ```
 
 4. 下载完成后显示：
 
 ```text
-线上服务数据已下载到 .lobster/persistence/shr_xxx/20260709-153000/shr_xxx-service-data.zip
+线上服务数据已下载到 .baiying/persistence/shr_xxx/20260709-153000/shr_xxx-service-data.zip
 ```
 
 下载完成后只提供 `在 Finder 中显示`。下载操作只生成备份，不修改当前项目。
@@ -602,7 +602,7 @@ V1 不做用户自定义额度。后续可按套餐或后台配置下发。
 - 服务详情展示 `服务数据` 面板。
 - 已存在部署时，点击分享优先打开部署状态页。
 - 支持下载线上服务数据 zip。
-- 支持下载后保存到 `.lobster/persistence/...`。
+- 支持下载后保存到 `.baiying/persistence/...`。
 - 支持“在 Finder 中显示”。
 
 ### Phase 3：覆盖部署
@@ -650,7 +650,7 @@ SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessK
 2026-07-13 本地验证结果：客户端 23 个相关测试、变更文件 ESLint、Electron TypeScript
 编译均通过；`brotato-clone` 真实云闭环耗时约 135 秒，单次临时函数业务操作约
 15.6 到 15.9 秒。闭环完成后再次调用 `ListFunctions`，未发现
-`lobster-persistence-op-` 前缀的遗留函数。
+`baiying-persistence-op-` 前缀的遗留函数。
 
 ## 验收标准
 
@@ -659,7 +659,7 @@ SHARE_DEPLOYMENT_VOLCENGINE_CREDENTIAL_JSON='{"accessKeyId":"...","secretAccessK
 3. 用户取消 `data/` 后，manifest 不包含 `persistence` 配置。
 4. 用户选择 `data/` 后，部署 response 返回 `persistence.enabled=true`。
 5. 线上写入排行榜后，更新服务仍保留排行榜数据。
-6. 点击 `下载线上服务数据` 后，本地生成 `.lobster/persistence/<shareId>/<timestamp>/<shareId>-service-data.zip`，且不会自动覆盖当前项目。
+6. 点击 `下载线上服务数据` 后，本地生成 `.baiying/persistence/<shareId>/<timestamp>/<shareId>-service-data.zip`，且不会自动覆盖当前项目。
 7. 本地数据文件被选择时，部署确认弹窗显示“数据保存方式发生变化”的迁移提示，不默认出现 SQLite/schema。
 8. 重新部署时默认不勾选“用本地数据替换线上数据”。
 9. 用户无法选择项目外路径、`.env`、`node_modules`。

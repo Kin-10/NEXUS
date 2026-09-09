@@ -75,13 +75,13 @@ export const applyTypographyPreferences = (config: TypographyConfig): void => {
   const root = document.documentElement;
   const scale = uiFontSize / UI_FONT_SCALE_BASELINE;
 
-  root.style.setProperty('--lobster-ui-font-size', `${uiFontSize}px`);
-  root.style.setProperty('--lobster-code-font-size', `${codeFontSize}px`);
+  root.style.setProperty('--baiying-ui-font-size', `${uiFontSize}px`);
+  root.style.setProperty('--baiying-code-font-size', `${codeFontSize}px`);
 
   Object.entries(TEXT_SIZE_BASE).forEach(([key, value]) => {
-    setPxVariable(root, `--lobster-text-${key}`, value * scale);
+    setPxVariable(root, `--baiying-text-${key}`, value * scale);
   });
   Object.entries(LINE_HEIGHT_BASE).forEach(([key, value]) => {
-    setPxVariable(root, `--lobster-leading-${key}`, value * scale);
+    setPxVariable(root, `--baiying-leading-${key}`, value * scale);
   });
 };

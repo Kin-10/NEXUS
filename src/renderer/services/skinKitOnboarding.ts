@@ -25,7 +25,7 @@ export async function prepareSkinKitOnboarding(
   ]);
   const skinKit = marketplaceKits.find(kit => kit.id === SkinPackKitId.BuiltIn);
   if (!skinKit) {
-    throw new Error('AI Skin Designer kit is unavailable');
+    throw new Error('AI Skin Designer kit is no longer available in Expert Kits');
   }
 
   const prompt = resolveLocalizedText(skinKit.tryAsking?.[0] ?? '').trim();

@@ -30,6 +30,9 @@ describe('MainLogReporter', () => {
       installationId: 'installation-1',
       language: 'zh',
       latestKeyfrom: 'campaign',
+      localIp: '192.168.1.8',
+      macAddress: 'aa:bb:cc:dd:ee:ff',
+      osUsername: 'alice',
       platform: 'darwin',
       timestamp: 1234,
       userId: 'user-1',
@@ -46,6 +49,9 @@ describe('MainLogReporter', () => {
     expect(result.searchParams.get('uuid')).toBe('installation-1');
     expect(result.searchParams.get('firstKeyfrom')).toBe('official');
     expect(result.searchParams.get('latestKeyfrom')).toBe('campaign');
+    expect(result.searchParams.get('os_username')).toBe('alice');
+    expect(result.searchParams.get('mac_address')).toBe('aa:bb:cc:dd:ee:ff');
+    expect(result.searchParams.get('local_ip')).toBe('192.168.1.8');
     expect(result.searchParams.get('is_logged_in')).toBe('true');
     expect(result.searchParams.get('log_Usid')).toBe('user-1');
     expect(result.searchParams.get('uts')).toBe('1234');
@@ -85,6 +91,11 @@ describe('MainLogReporter', () => {
       appVersion: '2.0.0',
       arch: 'x64',
       fetch,
+      getDeviceInfo: () => ({
+        osUsername: 'bob',
+        macAddress: '11:22:33:44:55:66',
+        localIp: '10.0.0.5',
+      }),
       now: () => 5678,
       platform: 'win32',
       store,
@@ -103,6 +114,9 @@ describe('MainLogReporter', () => {
     expect(url.searchParams.get('uuid')).toBe('installation-2');
     expect(url.searchParams.get('log_Usid')).toBe('user-2');
     expect(url.searchParams.get('latestKeyfrom')).toBe('partner');
+    expect(url.searchParams.get('os_username')).toBe('bob');
+    expect(url.searchParams.get('mac_address')).toBe('11:22:33:44:55:66');
+    expect(url.searchParams.get('local_ip')).toBe('10.0.0.5');
   });
 
   test('returns false when the analyzer request fails', async () => {

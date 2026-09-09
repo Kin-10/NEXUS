@@ -71,13 +71,13 @@ describe('Windows installer hardening contracts', () => {
     const setSilent = init.indexOf('SetSilent silent');
     const initLog = init.indexOf('phase=custom-init-start');
 
-    expect(installerInclude).toContain('Var lobsterSilentSource');
+    expect(installerInclude).toContain('Var baiyingSilentSource');
     expect(init).toContain('$%BAIYING_CHANNEL_BUILD%');
     expect(init).toContain('$%BAIYING_SILENT_ON_DOUBLE_CLICK%');
-    expect(init).toContain('StrCpy $lobsterSilentSource "argv"');
-    expect(init).toContain('StrCpy $lobsterSilentSource "build-flag"');
+    expect(init).toContain('StrCpy $baiyingSilentSource "argv"');
+    expect(init).toContain('StrCpy $baiyingSilentSource "build-flag"');
     expect(init).toContain('${If} ${isUpdated}');
-    expect(init).toContain('silent_source=$lobsterSilentSource');
+    expect(init).toContain('silent_source=$baiyingSilentSource');
     expect(setSilent).toBeGreaterThan(-1);
     expect(initLog).toBeGreaterThan(setSilent);
   });
@@ -113,7 +113,7 @@ describe('Windows installer hardening contracts', () => {
   test('releases the installer current-directory lock before the old-install rename', () => {
     const switchOutPath = installerInclude.indexOf('SetOutPath "$PLUGINSDIR"');
     const rename = installerInclude.indexOf(
-      'MoveFileW(w "$lobsterOldInstallOriginalPath", w "$lobsterOldInstallBackupPath")',
+      'MoveFileW(w "$baiyingOldInstallOriginalPath", w "$baiyingOldInstallBackupPath")',
     );
 
     expect(switchOutPath).toBeGreaterThan(-1);
@@ -122,7 +122,7 @@ describe('Windows installer hardening contracts', () => {
     expect(installerInclude).toContain('"ambiguous-dual-registration"');
     expect(installerInclude).toContain('phase=old-install-rename-attempt');
     expect(installerInclude).toContain('phase=old-install-rename-complete attempt_id=');
-    expect(installerInclude).toContain('status=$lobsterOldInstallRenameStatus');
+    expect(installerInclude).toContain('status=$baiyingOldInstallRenameStatus');
     expect(installerInclude).not.toContain('phase=old-install-cleanup-complete');
   });
 
@@ -181,7 +181,7 @@ describe('Windows installer hardening contracts', () => {
     expect(installerInclude).toContain('Remove-MpPreference -ExclusionPath $$targets');
     expect(installerInclude).toContain('phase=old-install-cleanup-scheduled');
     expect(installerInclude).toContain(
-      '${If} $lobsterOldInstallRenameStatus == "committed"',
+      '${If} $baiyingOldInstallRenameStatus == "committed"',
     );
     expect(installerInclude).toContain('target=exact-current-backup');
     expect(installerInclude).not.toContain('target_pattern=$INSTDIR.old');
@@ -214,14 +214,14 @@ describe('Windows installer hardening contracts', () => {
   });
 
   test('rolls a renamed installation back before every controlled failure exit', () => {
-    expect(installerInclude).toContain('Function lobsterRollbackOldInstall');
+    expect(installerInclude).toContain('Function baiyingRollbackOldInstall');
     expect(installerInclude).toContain('phase=old-install-rollback-start');
     expect(installerInclude).toContain('phase=old-install-rollback-complete');
     expect(installerInclude).toContain('phase=old-install-commit-complete');
     expect(installerInclude).toContain('phase=skill-backup-failed-abort');
     expect(installerInclude).toContain('phase=skill-restore-failed');
     expect(installerInclude).toContain(
-      'StrCmp $lobsterOldInstallRollbackStatus "success"',
+      'StrCmp $baiyingOldInstallRollbackStatus "success"',
     );
     expect(installerInclude).toContain('!macro customBeforeInstallerQuit REASON');
     expect(rootInstallerTemplate).toContain('!define MUI_CUSTOMFUNCTION_ABORT');
@@ -488,7 +488,7 @@ describe('Windows installer hardening contracts', () => {
     );
     const quitMacroEnd = installerInclude.indexOf('!macroend', quitMacroStart);
     const quitMacro = installerInclude.slice(quitMacroStart, quitMacroEnd);
-    const quitLog = quitMacro.indexOf('!insertmacro LobsterLogInstallerQuit "${REASON}"');
+    const quitLog = quitMacro.indexOf('!insertmacro baiyingLogInstallerQuit "${REASON}"');
     const quitRollback = quitMacro.indexOf('customRollbackOldInstall');
     expect(quitLog).toBeGreaterThan(-1);
     expect(quitRollback).toBeGreaterThan(quitLog);
@@ -516,7 +516,7 @@ describe('Windows installer hardening contracts', () => {
       '!insertmacro customRollbackOldInstall "rename-verification-failed"',
     );
     expect(failure).toContain(
-      'StrCmp $lobsterOldInstallRollbackStatus "success" OldInstallRenameVerificationRestored',
+      'StrCmp $baiyingOldInstallRollbackStatus "success" OldInstallRenameVerificationRestored',
     );
     expect(failure).toContain('outcome=recovery-required');
     expect(failure).toContain('outcome=restored');
@@ -542,7 +542,7 @@ describe('Windows installer hardening contracts', () => {
     expect(stop).toBeGreaterThan(resolver);
     expect(backup).toBeGreaterThan(stop);
     expect(check).toContain(
-      'StrCmp $lobsterInstallScenario "fresh-install" CustomCheckFreshInstall',
+      'StrCmp $baiyingInstallScenario "fresh-install" CustomCheckFreshInstall',
     );
     expect(check).toContain('phase=fresh-install-old-flow-skipped');
     expect(check).toContain('"legacy-not-applicable-fresh-install"');
@@ -577,7 +577,7 @@ describe('Windows installer hardening contracts', () => {
       String.raw`SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "$APPDATA\BaiYing\install-timing.log")`,
     );
     expect(stopMacro).toContain(
-      'SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "$lobsterInstallerAttemptId")',
+      'SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "$baiyingInstallerAttemptId")',
     );
     expect(stopMacro).toContain('SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "")');
     expect(stopMacro).toContain('SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "")');
@@ -596,18 +596,18 @@ describe('Windows installer hardening contracts', () => {
     // path-prefix based, must never match the invoking process (the stock
     // fallback can run the old uninstaller in place from $INSTDIR), and is
     // skipped for drive-root paths where the prefix would match everything.
-    const start = installerInclude.indexOf('!macro stopLobsterAIProcesses');
+    const start = installerInclude.indexOf('!macro stopbaiyingAIProcesses');
     const end = installerInclude.indexOf('!macroend', start);
     const stopMacro = installerInclude.slice(start, end);
 
     expect(stopMacro).toContain(
-      'SetEnvironmentVariable(t "LOBSTERAI_STOP_ROOT", t "$INSTDIR")',
+      'SetEnvironmentVariable(t "baiyingAI_STOP_ROOT", t "$INSTDIR")',
     );
     expect(stopMacro).toContain(
-      'SetEnvironmentVariable(t "LOBSTERAI_STOP_SELF_PID", t "$lobsterCurrentProcessPid")',
+      'SetEnvironmentVariable(t "baiyingAI_STOP_SELF_PID", t "$baiyingCurrentProcessPid")',
     );
-    expect(stopMacro).toContain('SetEnvironmentVariable(t "LOBSTERAI_STOP_ROOT", t "")');
-    expect(stopMacro).toContain('SetEnvironmentVariable(t "LOBSTERAI_STOP_SELF_PID", t "")');
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "baiyingAI_STOP_ROOT", t "")');
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "baiyingAI_STOP_SELF_PID", t "")');
 
     // Both the kill loop and the survivor snapshot must use the same sweep so
     // diagnostics describe the same process set the kill acted on.
@@ -621,10 +621,10 @@ describe('Windows installer hardening contracts', () => {
     expect(rootGuards).toHaveLength(2);
     // The env-var clear must sit on the shared exit label so the non-survivor
     // paths clear it too.
-    const logLabel = stopMacro.indexOf('StopLobsterAIProcessesLog:');
+    const logLabel = stopMacro.indexOf('StopbaiyingAIProcessesLog:');
     expect(logLabel).toBeGreaterThan(-1);
     expect(
-      stopMacro.indexOf('SetEnvironmentVariable(t "LOBSTERAI_STOP_ROOT", t "")'),
+      stopMacro.indexOf('SetEnvironmentVariable(t "baiyingAI_STOP_ROOT", t "")'),
     ).toBeGreaterThan(logLabel);
   });
 
@@ -689,9 +689,9 @@ describe('Windows installer hardening contracts', () => {
     expect(detector).toContain(String.raw`kernel32::FindNextFileW(p r4, p r6) i .r0 ?e`);
     expect(detector).toContain('StrCmp $5 "."');
     expect(detector).toContain('StrCmp $5 ".."');
-    expect(detector).toContain('IntCmp $5 2 LobsterInstallPreflightFresh');
-    expect(detector).toContain('IntCmp $5 3 LobsterInstallPreflightFresh');
-    expect(detector).toContain('IntCmp $5 18 LobsterInstallPreflightFresh');
+    expect(detector).toContain('IntCmp $5 2 baiyingInstallPreflightFresh');
+    expect(detector).toContain('IntCmp $5 3 baiyingInstallPreflightFresh');
+    expect(detector).toContain('IntCmp $5 18 baiyingInstallPreflightFresh');
     expect(detector).toContain('System::Free $6');
     expect(detector).not.toContain('FindNext $4 $5');
     expect(detector).not.toContain('kernel32::GetLastError()');
@@ -709,7 +709,7 @@ describe('Windows installer hardening contracts', () => {
     expect(installerInclude).toContain(String.raw`$WINDIR\Sysnative\tar.exe`);
     expect(installerInclude).toContain(String.raw`$WINDIR\System32\tar.exe`);
     expect(installerInclude).toContain(
-      String.raw`Push '"$lobsterTrustedTarPath" -xf`,
+      String.raw`Push '"$baiyingTrustedTarPath" -xf`,
     );
     expect(installerInclude).not.toMatch(
       /(?:nsExec::\w+|Exec|Push)\s+['"][^'"\n]*\bpowershell(?:\.exe)?\b/i,
@@ -724,8 +724,8 @@ describe('Windows installer hardening contracts', () => {
       .filter((line) => /^\s*Push\s+'.*-Command/.test(line));
     expect(interpretedCommands.length).toBeGreaterThan(0);
     for (const command of interpretedCommands) {
-      expect(command).toContain('$lobsterTrustedPowerShellPath');
-      expect(command).not.toMatch(/\$(?:INSTDIR|APPDATA|lobsterOldInstall\w*)/);
+      expect(command).toContain('$baiyingTrustedPowerShellPath');
+      expect(command).not.toMatch(/\$(?:INSTDIR|APPDATA|baiyingOldInstall\w*)/);
     }
   });
 
@@ -745,10 +745,10 @@ describe('Windows installer hardening contracts', () => {
     expect(code).not.toMatch(/^\s*Exec(?:Wait|Shell|Dos)?\s/m);
     expect(code).not.toContain('-WindowStyle Hidden');
 
-    expect(installerInclude).toContain('Var lobsterHiddenExecExitCode');
-    expect(installerInclude).toContain('Var lobsterHiddenExecOutput');
-    expect(installerInclude).toContain('Function un.lobsterExecHiddenProcess');
-    const launcherStart = installerInclude.indexOf('Function lobsterExecHiddenProcess');
+    expect(installerInclude).toContain('Var baiyingHiddenExecExitCode');
+    expect(installerInclude).toContain('Var baiyingHiddenExecOutput');
+    expect(installerInclude).toContain('Function un.baiyingExecHiddenProcess');
+    const launcherStart = installerInclude.indexOf('Function baiyingExecHiddenProcess');
     const launcher = installerInclude.slice(
       launcherStart,
       installerInclude.indexOf('FunctionEnd', launcherStart),
@@ -766,27 +766,27 @@ describe('Windows installer hardening contracts', () => {
     expect(launcher).toContain('GetExitCodeProcess(p r4, *i .r5)');
     // Launch failures keep the "error" verdict every call site already
     // dispatches on (formerly nsExec's), with the Win32 error in the output.
-    expect(launcher).toContain('StrCpy $lobsterHiddenExecExitCode "error"');
-    expect(launcher).toContain('launch-failed win32_error=$lobsterHiddenExecLaunchError');
+    expect(launcher).toContain('StrCpy $baiyingHiddenExecExitCode "error"');
+    expect(launcher).toContain('launch-failed win32_error=$baiyingHiddenExecLaunchError');
     // The exit code is authoritative; a capture-file failure only drops the
     // diagnostic output.
-    expect(launcher).toContain('LobsterHiddenExecCaptureUnavailable:');
+    expect(launcher).toContain('baiyingHiddenExecCaptureUnavailable:');
     // The detached macro re-raises the Exec error flag for launch failures.
-    const detachedStart = installerInclude.indexOf('!macro LobsterExecHiddenDetached');
+    const detachedStart = installerInclude.indexOf('!macro baiyingExecHiddenDetached');
     const detached = installerInclude.slice(
       detachedStart,
       installerInclude.indexOf('!macroend', detachedStart),
     );
-    expect(detached).toContain('!insertmacro LobsterExecHidden "detach"');
+    expect(detached).toContain('!insertmacro baiyingExecHidden "detach"');
     expect(detached).toContain('SetErrors');
 
     // Every pushed helper command line is consumed by a launcher macro as the
     // very next instruction, so no stack contract can drift.
     const lines = installerInclude.split(/\r?\n/);
-    const launcherMacro = /^\s*!insertmacro LobsterExecHidden(?:ToStack|ExitCode|Detached)\s*$/;
+    const launcherMacro = /^\s*!insertmacro baiyingExecHidden(?:ToStack|ExitCode|Detached)\s*$/;
     let helperLaunches = 0;
     for (let index = 0; index < lines.length; index += 1) {
-      if (!/^\s*Push\s+'"\$lobsterTrusted(?:PowerShell|Tar)Path"/.test(lines[index])) {
+      if (!/^\s*Push\s+'"\$baiyingTrusted(?:PowerShell|Tar)Path"/.test(lines[index])) {
         continue;
       }
       helperLaunches += 1;
@@ -817,16 +817,16 @@ describe('Windows installer hardening contracts', () => {
     );
     expect(rebalance).toContain('${GetOptions} $R9 "/NoDefenderExclusion" $R8');
     expect(rebalance).toContain(
-      'SetEnvironmentVariable(t "LOBSTERAI_DEFENDER_ADD_PERMANENT", t "$R7")',
+      'SetEnvironmentVariable(t "baiyingAI_DEFENDER_ADD_PERMANENT", t "$R7")',
     );
     expect(rebalance).toContain(
-      'SetEnvironmentVariable(t "LOBSTERAI_DEFENDER_ADD_PERMANENT", t "")',
+      'SetEnvironmentVariable(t "baiyingAI_DEFENDER_ADD_PERMANENT", t "")',
     );
     expect(rebalance).toContain(
       'Remove-MpPreference -ExclusionPath $$trimTargets -ErrorAction SilentlyContinue',
     );
     expect(rebalance).toContain(
-      String.raw`if ($$env:LOBSTERAI_DEFENDER_ADD_PERMANENT -ne \"1\") { $$permanent = \"skipped:opt-out\" }`,
+      String.raw`if ($$env:baiyingAI_DEFENDER_ADD_PERMANENT -ne \"1\") { $$permanent = \"skipped:opt-out\" }`,
     );
     expect(rebalance).toContain('Add-MpPreference -ExclusionPath $$addTargets -ErrorAction Stop');
     for (const entry of [
@@ -839,7 +839,7 @@ describe('Windows installer hardening contracts', () => {
     ]) {
       expect(rebalance).toContain(entry);
     }
-    expect(rebalance.match(/!insertmacro LobsterExecHiddenToStack/g)).toHaveLength(1);
+    expect(rebalance.match(/!insertmacro baiyingExecHiddenToStack/g)).toHaveLength(1);
     expect(installerInclude).toContain('permanent_requested=$R7');
     expect(installerInclude).not.toContain('phase=defender-exclusion-trim-complete');
     expect(installerInclude).not.toContain('phase=defender-exclusion-permanent-complete');
@@ -859,7 +859,7 @@ describe('Windows installer hardening contracts', () => {
     expect(watchdog).toContain('"process-termination-failed"');
     expect(watchdog).toContain('BAIYING_WATCHDOG_TIMEOUT');
     expect(watchdog).toContain('BAIYING_WATCHDOG_TERMINATION_FAILED');
-    expect(watchdog).toContain('function Write-LobsterWatchdogMarker');
+    expect(watchdog).toContain('function Write-baiyingWatchdogMarker');
     expect(watchdog).toContain(
       'BAIYING_WATCHDOG_MARKER_WRITE_FAILED:',
     );
@@ -969,22 +969,22 @@ describe('Windows installer hardening contracts', () => {
     expect(installerInclude).toContain('Get-FileHash -LiteralPath');
     expect(installerInclude).toContain('$$verified.validation.status = \\"verified\\"');
     expect(installerInclude).toContain(
-      'StrCmp $lobsterLegacySkillsStatus "legacy-backup-succeeded" 0 SkipSkillRestore',
+      'StrCmp $baiyingLegacySkillsStatus "legacy-backup-succeeded" 0 SkipSkillRestore',
     );
     expect(installerInclude).toContain('if ($$manifest.attemptId -ne $$attempt)');
     expect(installerInclude).toContain('if ($$manifest.source -ne $$source)');
     expect(installerInclude).toContain(
-      String.raw`skills-backup\$lobsterInstallerAttemptId`,
+      String.raw`skills-backup\$baiyingInstallerAttemptId`,
     );
     expect(installerInclude).not.toContain(String.raw`skills-backup\*.*`);
 
     const restoreStart = installerInclude.indexOf(
-      'StrCmp $lobsterLegacySkillsStatus "legacy-backup-succeeded" 0 SkipSkillRestore',
+      'StrCmp $baiyingLegacySkillsStatus "legacy-backup-succeeded" 0 SkipSkillRestore',
     );
     const restoreEnd = installerInclude.indexOf('SkipSkillRestore:', restoreStart);
     const restore = installerInclude.slice(restoreStart, restoreEnd);
     expect(restore).toContain(
-      'IfFileExists "$APPDATA\\BaiYing\\skills-backup\\$lobsterInstallerAttemptId\\backup-manifest.json" SkillRestoreAttemptBackupReady',
+      'IfFileExists "$APPDATA\\BaiYing\\skills-backup\\$baiyingInstallerAttemptId\\backup-manifest.json" SkillRestoreAttemptBackupReady',
     );
     expect(restore).toContain('"legacy-restore-backup-missing"');
     expect(restore).toContain('Write-Output (\\"name-conflict:\\"');
@@ -1000,16 +1000,16 @@ describe('Windows installer hardening contracts', () => {
   test('drives Skills backup state from helper exit codes, never stdout text', () => {
     const defines: Record<string, string> = {};
     for (const match of installerInclude.matchAll(
-      /!define (LOBSTER_SKILL_BACKUP_EXIT_\w+) "(\d+)"/g,
+      /!define (baiying_SKILL_BACKUP_EXIT_\w+) "(\d+)"/g,
     )) {
       defines[match[1]] = match[2];
     }
     expect(defines).toEqual({
-      LOBSTER_SKILL_BACKUP_EXIT_VERIFIED: '0',
-      LOBSTER_SKILL_BACKUP_EXIT_INSPECT_FAILED: '10',
-      LOBSTER_SKILL_BACKUP_EXIT_COPY_FAILED: '11',
-      LOBSTER_SKILL_BACKUP_EXIT_VERIFY_FAILED: '12',
-      LOBSTER_SKILL_BACKUP_EXIT_NO_USER_SKILLS: '13',
+      baiying_SKILL_BACKUP_EXIT_VERIFIED: '0',
+      baiying_SKILL_BACKUP_EXIT_INSPECT_FAILED: '10',
+      baiying_SKILL_BACKUP_EXIT_COPY_FAILED: '11',
+      baiying_SKILL_BACKUP_EXIT_VERIFY_FAILED: '12',
+      baiying_SKILL_BACKUP_EXIT_NO_USER_SKILLS: '13',
     });
     expect(new Set(Object.values(defines)).size).toBe(Object.keys(defines).length);
 
@@ -1029,7 +1029,7 @@ describe('Windows installer hardening contracts', () => {
   test('re-checks the attempt manifest after a verified backup before replacing the old install', () => {
     const backupComplete = installerInclude.indexOf('phase=skill-backup-complete');
     const postcheck = installerInclude.indexOf(
-      'IfFileExists "$APPDATA\\BaiYing\\skills-backup\\$lobsterInstallerAttemptId\\backup-manifest.json" SkillBackupValidated',
+      'IfFileExists "$APPDATA\\BaiYing\\skills-backup\\$baiyingInstallerAttemptId\\backup-manifest.json" SkillBackupValidated',
     );
     const postcheckLog = installerInclude.indexOf(
       'phase=skill-backup-manifest-postcheck-missing',
@@ -1045,7 +1045,7 @@ describe('Windows installer hardening contracts', () => {
     // A missing manifest downgrades to the existing fail-closed abort path
     // while the old install is still intact.
     expect(installerInclude.slice(postcheck, failedAbort)).toContain(
-      'StrCpy $lobsterLegacySkillsStatus "legacy-backup-verify-failed"',
+      'StrCpy $baiyingLegacySkillsStatus "legacy-backup-verify-failed"',
     );
   });
 
@@ -1077,7 +1077,7 @@ describe('Windows installer hardening contracts', () => {
     expect(degraded).toContain('action=continue-with-attempt-backup-preserved');
     expect(degraded).toContain('action=continue-no-backup-found');
     expect(degraded).toContain(
-      'The recovery backup was preserved at $APPDATA\\BaiYing\\skills-backup\\$lobsterInstallerAttemptId',
+      'The recovery backup was preserved at $APPDATA\\BaiYing\\skills-backup\\$baiyingInstallerAttemptId',
     );
     expect(degraded).not.toContain('was not deleted');
   });
@@ -1101,11 +1101,11 @@ describe('Windows installer hardening contracts', () => {
     expect(init).not.toContain(
       'FileOpen $9 "$APPDATA\\BaiYing\\install-timing.log" w',
     );
-    expect(init).toContain('StrCpy $lobsterInvocationSource "unknown"');
+    expect(init).toContain('StrCpy $baiyingInvocationSource "unknown"');
     expect(init).toContain('${If} ${isUpdated}');
     expect(init).toContain('${AndIf} ${isForceRun}');
-    expect(init).toContain('StrCpy $lobsterInvocationSource "app-update"');
-    expect(init).toContain('launcher_fallback=$lobsterLauncherFallback');
+    expect(init).toContain('StrCpy $baiyingInvocationSource "app-update"');
+    expect(init).toContain('launcher_fallback=$baiyingLauncherFallback');
 
     const phaseWrites = installerInclude
       .split('\n')
@@ -1145,7 +1145,7 @@ describe('Windows installer hardening contracts', () => {
     expect(prevalidated).toBeLessThan(finalizeMacro);
     expect(committed).toBeGreaterThan(finalizeMacro);
     expect(installerInclude).toContain(
-      'StrCmp $lobsterOldInstallRenameStatus "prevalidated" 0 LobsterRollbackDone',
+      'StrCmp $baiyingOldInstallRenameStatus "prevalidated" 0 baiyingRollbackDone',
     );
     expect(installerInclude).toContain('registration=not-written');
   });
@@ -1174,28 +1174,28 @@ describe('Windows installer hardening contracts', () => {
   });
 
   test('relaunches a verified old app only for interactive update intent', () => {
-    const start = installerInclude.indexOf('Function lobsterTryRelaunchOldApp');
+    const start = installerInclude.indexOf('Function baiyingTryRelaunchOldApp');
     const end = installerInclude.indexOf('FunctionEnd', start);
     const relaunch = installerInclude.slice(start, end);
 
     expect(relaunch).toContain('${StdUtils.TestParameter} $0 "updated"');
     expect(relaunch).toContain('${StdUtils.TestParameter} $0 "force-run"');
-    expect(relaunch).toContain('IfSilent 0 LobsterOldAppRelaunchInteractive');
+    expect(relaunch).toContain('IfSilent 0 baiyingOldAppRelaunchInteractive');
     expect(relaunch).toContain(
-      'StrCmp $lobsterTargetProcessesStopStatus "success"',
+      'StrCmp $baiyingTargetProcessesStopStatus "success"',
     );
     expect(installerInclude).toContain(
-      'StrCpy $lobsterOldAppAsarPath "$INSTDIR\\resources\\app.asar"',
+      'StrCpy $baiyingOldAppAsarPath "$INSTDIR\\resources\\app.asar"',
     );
-    expect(relaunch).toContain('$lobsterOldAppAsarPath');
+    expect(relaunch).toContain('$baiyingOldAppAsarPath');
     expect(relaunch).toContain('IntOp $1 $0 & 0x410');
     expect(relaunch).toContain(
-      '${StdUtils.ExecShellAsUser} $0 "$lobsterOldAppExecutablePath" "open" ""',
+      '${StdUtils.ExecShellAsUser} $0 "$baiyingOldAppExecutablePath" "open" ""',
     );
-    expect(relaunch).toContain('StrCmp $0 "0" LobsterOldAppRelaunchSucceeded');
+    expect(relaunch).toContain('StrCmp $0 "0" baiyingOldAppRelaunchSucceeded');
     expect(relaunch).toContain('"old-app-relaunch-failed"');
     expect(installerInclude).toContain(
-      'StrCmp $lobsterOldInstallRollbackStatus "success" 0 LobsterRollbackDone',
+      'StrCmp $baiyingOldInstallRollbackStatus "success" 0 baiyingRollbackDone',
     );
   });
 
@@ -1267,7 +1267,7 @@ describe('Windows installer hardening contracts', () => {
     // extractUsing7za still stages the extracted tree in
     // $appPackageStagingDir\7z-out, so the same default-init -> selection
     // hook ordering must run before extraction. This is also what keeps
-    // lobsterSelectPayloadStagingDir referenced in nsis-web compiles: with
+    // baiyingSelectPayloadStagingDir referenced in nsis-web compiles: with
     // the hook only in the embedded path, makensis failed the WebSetup build
     // with warning 6010 (unreferenced install function) treated as an error.
     const installFilesStart = installerTemplate.indexOf('!macro installApplicationFiles');
@@ -1290,7 +1290,7 @@ describe('Windows installer hardening contracts', () => {
   });
 
   test('preflights staging drive space and relocates or aborts before materialize', () => {
-    const start = installerInclude.indexOf('Function lobsterSelectPayloadStagingDir');
+    const start = installerInclude.indexOf('Function baiyingSelectPayloadStagingDir');
     const end = installerInclude.indexOf('FunctionEnd', start);
     const select = installerInclude.slice(start, end);
 
@@ -1300,9 +1300,9 @@ describe('Windows installer hardening contracts', () => {
       "System::Call 'kernel32::GetDiskFreeSpaceExW(w r0, *l .r1, p 0, p 0) i .r2'",
     );
     expect(select).toContain('System::Int64Op $0 / 1048576');
-    expect(select).toContain('IntOp $1 $0 + ${LOBSTER_PAYLOAD_UNPACKED_MB}');
-    expect(select).toContain('IntOp $1 $1 + ${LOBSTER_STAGING_MARGIN_MB}');
-    expect(select).toContain('IntOp $6 $6 + ${LOBSTER_WIN_RESOURCES_TAR_MB}');
+    expect(select).toContain('IntOp $1 $0 + ${baiying_PAYLOAD_UNPACKED_MB}');
+    expect(select).toContain('IntOp $1 $1 + ${baiying_STAGING_MARGIN_MB}');
+    expect(select).toContain('IntOp $6 $6 + ${baiying_WIN_RESOURCES_TAR_MB}');
 
     // Decision phases: healthy default, relocation, probe failure (fail-open),
     // and the only abort -- when no drive has room.
@@ -1313,7 +1313,7 @@ describe('Windows installer hardening contracts', () => {
     expect(select).toContain('result=relocate-create-failed');
     expect(select).toContain('free_mb=');
     expect(select).toContain('needed_mb=');
-    expect(select).toContain('CreateDirectory "$INSTDIR\\.lobsterai-staging"');
+    expect(select).toContain('CreateDirectory "$INSTDIR\\.baiyingai-staging"');
     expect(select).toContain('phase=staging-preflight-insufficient');
     expect(select).toContain(
       '!insertmacro customBeforeInstallerQuit "staging-space-insufficient"',
@@ -1322,29 +1322,29 @@ describe('Windows installer hardening contracts', () => {
 
     // Relocated staging is removed on the success path (before tar
     // extraction needs the space) and from every controlled failure exit.
-    expect(installerInclude).toContain('Function lobsterCleanupRelocatedPayloadStaging');
+    expect(installerInclude).toContain('Function baiyingCleanupRelocatedPayloadStaging');
     expect(installerInclude).toContain('phase=staging-relocated-cleanup');
     expect(
-      installerInclude.match(/Call lobsterCleanupRelocatedPayloadStaging/g)?.length,
+      installerInclude.match(/Call baiyingCleanupRelocatedPayloadStaging/g)?.length,
     ).toBeGreaterThanOrEqual(4);
     const quitMacro = installerInclude.slice(
       installerInclude.indexOf('!macro customBeforeInstallerQuit REASON'),
       installerInclude.indexOf('!macro customInstallerFailed'),
     );
-    expect(quitMacro).toContain('Call lobsterCleanupRelocatedPayloadStaging');
+    expect(quitMacro).toContain('Call baiyingCleanupRelocatedPayloadStaging');
     const beforeRegistry = installerInclude.slice(
       installerInclude.indexOf('!macro customBeforeRegistryAddInstallInfo'),
       installerInclude.indexOf('phase=tar-extract-start'),
     );
-    expect(beforeRegistry).toContain('Call lobsterCleanupRelocatedPayloadStaging');
+    expect(beforeRegistry).toContain('Call baiyingCleanupRelocatedPayloadStaging');
 
     // The staging functions reference the installer.nsi-declared variable, so
     // they must be emitted from customHeader, not at include parse time.
     const header = installerInclude.slice(
       installerInclude.indexOf('!macro customHeader'),
-      installerInclude.indexOf('!macro stopLobsterAIProcesses'),
+      installerInclude.indexOf('!macro stopbaiyingAIProcesses'),
     );
-    expect(header).toContain('!insertmacro DefineLobsterPayloadStagingFunctions');
+    expect(header).toContain('!insertmacro DefinebaiyingPayloadStagingFunctions');
   });
 
   test('validates the staged payload against build-time sizes before CopyFiles', () => {
@@ -1361,14 +1361,14 @@ describe('Windows installer hardening contracts', () => {
 
     // The nsh wires validation into the extract-end hook for both the staged
     // and the fallback-direct trees.
-    expect(installerInclude).toContain('!macro LobsterValidateStagedPayload MODE');
+    expect(installerInclude).toContain('!macro baiyingValidateStagedPayload MODE');
     expect(installerInclude).toContain(
-      '!insertmacro LobsterValidateStagedPayload "${MODE}"',
+      '!insertmacro baiyingValidateStagedPayload "${MODE}"',
     );
 
     const validate = installerInclude.slice(
-      installerInclude.indexOf('!macro LobsterValidateStagedPayload MODE'),
-      installerInclude.indexOf('!macroend', installerInclude.indexOf('!macro LobsterValidateStagedPayload MODE')),
+      installerInclude.indexOf('!macro baiyingValidateStagedPayload MODE'),
+      installerInclude.indexOf('!macroend', installerInclude.indexOf('!macro baiyingValidateStagedPayload MODE')),
     );
     expect(validate).toContain(String.raw`"$0\${APP_EXECUTABLE_FILENAME}"`);
     expect(validate).toContain(String.raw`"$0\resources\win-resources.tar"`);
@@ -1377,7 +1377,7 @@ describe('Windows installer hardening contracts', () => {
     expect(validate).toContain('"resources-tar-size-mismatch"');
     // The exact byte compare stays 64-bit safe: a decimal string comparison
     // against the build-time size, never 32-bit IntCmp arithmetic.
-    expect(validate).toContain('${ElseIf} $2 != "${LOBSTER_WIN_RESOURCES_TAR_BYTES}"');
+    expect(validate).toContain('${ElseIf} $2 != "${baiying_WIN_RESOURCES_TAR_BYTES}"');
     expect(validate).toContain('phase=payload-staging-validation-failed');
     expect(validate).toContain('found_bytes=$2 expected_bytes=$3');
     expect(validate).toContain('action=abort-install');
@@ -1390,7 +1390,7 @@ describe('Windows installer hardening contracts', () => {
     expect(validate).toContain('"size-query-failed"');
 
     // 64-bit file size probe used for the compare.
-    expect(installerInclude).toContain('Function lobsterQueryFileSizeBytes');
+    expect(installerInclude).toContain('Function baiyingQueryFileSizeBytes');
     expect(installerInclude).toContain('kernel32::GetFileSizeEx');
 
     // The expected size comes from the generated build fragment; packaging
@@ -1402,9 +1402,9 @@ describe('Windows installer hardening contracts', () => {
 
   test('generates the payload size fragment during Windows packaging', () => {
     expect(builderHooks).toContain('function writeWindowsPayloadSizeFragment');
-    expect(builderHooks).toContain('LOBSTER_WIN_RESOURCES_TAR_BYTES');
-    expect(builderHooks).toContain('LOBSTER_WIN_RESOURCES_TAR_MB');
-    expect(builderHooks).toContain('LOBSTER_PAYLOAD_UNPACKED_MB');
+    expect(builderHooks).toContain('baiying_WIN_RESOURCES_TAR_BYTES');
+    expect(builderHooks).toContain('baiying_WIN_RESOURCES_TAR_MB');
+    expect(builderHooks).toContain('baiying_PAYLOAD_UNPACKED_MB');
     expect(builderHooks).toContain("'win-installer-payload-size.nsh'");
 
     // afterPack is the generation point: extraResources are in place and the
@@ -1420,17 +1420,17 @@ describe('Windows installer hardening contracts', () => {
 
   test('captures a bounded tar failure tail without changing exit semantics', () => {
     expect(installerInclude).not.toContain(
-      String.raw`nsExec::ExecToLog '"$lobsterTrustedTarPath"`,
+      String.raw`nsExec::ExecToLog '"$baiyingTrustedTarPath"`,
     );
     const tarStart = installerInclude.indexOf(
-      String.raw`Push '"$lobsterTrustedTarPath" -xf`,
+      String.raw`Push '"$baiyingTrustedTarPath" -xf`,
     );
     const tarEnd = installerInclude.indexOf('TarExtractElectron:', tarStart);
     const tar = installerInclude.slice(tarStart, tarEnd);
 
     // Exit code and output are always both popped (stack balance), and the
     // original exit-code dispatch survives verbatim.
-    expect(tar).toContain('!insertmacro LobsterExecHiddenToStack');
+    expect(tar).toContain('!insertmacro baiyingExecHiddenToStack');
     expect(tar).toContain('Pop $0');
     expect(tar).toContain('Pop $R6');
     expect(tar).toContain('IntCmp $R2 0 TarExtractVerify TarExtractElectron TarExtractElectron');
@@ -1439,7 +1439,7 @@ describe('Windows installer hardening contracts', () => {
     // electron fallback, from the same non-success condition.
     const capture = tar.indexOf('phase=tar-extract-output');
     expect(capture).toBeGreaterThan(-1);
-    expect(tar.slice(0, capture)).toContain('Call lobsterBuildSingleLineTail');
+    expect(tar.slice(0, capture)).toContain('Call baiyingBuildSingleLineTail');
     expect(capture).toBeLessThan(
       tar.indexOf('IntCmp $R2 0 TarExtractVerify TarExtractElectron TarExtractElectron'),
     );
@@ -1447,12 +1447,12 @@ describe('Windows installer hardening contracts', () => {
 
     // The sanitizer bounds the text and collapses it to one line.
     const sanitizer = installerInclude.slice(
-      installerInclude.indexOf('Function lobsterBuildSingleLineTail'),
-      installerInclude.indexOf('FunctionEnd', installerInclude.indexOf('Function lobsterBuildSingleLineTail')),
+      installerInclude.indexOf('Function baiyingBuildSingleLineTail'),
+      installerInclude.indexOf('FunctionEnd', installerInclude.indexOf('Function baiyingBuildSingleLineTail')),
     );
     expect(sanitizer).toContain('StrCpy $0 $0 512 $1');
-    expect(sanitizer).toContain('StrCmp $2 "$\\r" LobsterTailBlank');
-    expect(sanitizer).toContain('StrCmp $2 "$\\n" LobsterTailBlank');
+    expect(sanitizer).toContain('StrCmp $2 "$\\r" baiyingTailBlank');
+    expect(sanitizer).toContain('StrCmp $2 "$\\n" baiyingTailBlank');
   });
 
   test('records Win32 error and destination free space for failed cache copies', () => {
@@ -1462,7 +1462,7 @@ describe('Windows installer hardening contracts', () => {
 
     expect(macro).toContain("System::Call 'kernel32::GetLastError() i .r2'");
     expect(macro).toContain('win32_error=$2 dest_free_mb=$3');
-    expect(macro).toContain('Call lobsterQueryFreeMegabytes');
+    expect(macro).toContain('Call baiyingQueryFreeMegabytes');
     // The success line keeps its original shape; only the error line grows
     // the diagnostic keys, and the failure stays non-fatal (no Quit/abort).
     expect(macro).toContain('result=${RESULT} elapsed_ms=$1');

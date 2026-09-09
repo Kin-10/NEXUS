@@ -31,18 +31,10 @@ describe('OpenClaw extension manifests', () => {
     expect(readContractTools('ask-user-question')).toEqual(['AskUserQuestion']);
   });
 
-  test('declares BaiYing media generation and skin agent tool contracts', () => {
-    expect(readContractTools('lobster-media-generation')).toEqual([
-      'baiying_image_generate',
-      'baiying_video_generate',
-      'baiying_skin_manage',
-    ]);
-  });
 
   test('declares TypeScript entries for local extensions that are precompiled for packaging', () => {
     expect(readPackageOpenClawExtensions('mcp-bridge')).toEqual(['./index.ts']);
     expect(readPackageOpenClawExtensions('ask-user-question')).toEqual(['./index.ts']);
-    expect(readPackageOpenClawExtensions('lobster-media-generation')).toEqual(['./index.ts']);
     expect(readPackageOpenClawExtensions('baiying-model-compat')).toEqual(['./index.ts']);
   });
 

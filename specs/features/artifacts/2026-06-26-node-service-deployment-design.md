@@ -473,7 +473,7 @@ NodeServiceDeploymentProxyService
 3. 读取 `HtmlShare`，确认 `source_type=node_service_deployment` 且分享未关闭。
 4. 如分享码模式且无有效 cookie：
    - `/` GET 返回分享码页面；
-   - `/_lobster_share/verify` 校验分享码并写 cookie；
+   - `/_baiying_share/verify` 校验分享码并写 cookie；
    - 其他路径返回 403。
 5. 读取 active deployment。
 6. deployment 为 `live` 且存在 `providerRuntimeUrl` 时，反向代理到云运行时。
@@ -490,7 +490,7 @@ GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS
 - 保留请求 path 和 query。
 - 透传请求 body。
 - 跳过 hop-by-hop headers 和 `Authorization`。
-- 添加 `X-Forwarded-For`、`X-Forwarded-Host`、`X-Forwarded-Proto`、`X-Lobster-Share-Id`。
+- 添加 `X-Forwarded-For`、`X-Forwarded-Host`、`X-Forwarded-Proto`、`X-baiying-Share-Id`。
 - 响应侧过滤 hop-by-hop headers。
 - `Set-Cookie` 去掉 Domain，确保 Path 默认 `/`。
 - `Location` 按运行时 URL 做 share host 语义重写。

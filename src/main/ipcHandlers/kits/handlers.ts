@@ -18,6 +18,7 @@ import type {
   LocalizedText,
 } from '../../../shared/kit/constants';
 import { KitStoreKey as KitStoreKeyValue } from '../../../shared/kit/constants';
+import { SkinPackKitId } from '../../../shared/skin/kit';
 import {
   buildComputerUseMarketplaceKit,
   buildInstalledComputerUseKitRecord,
@@ -239,7 +240,9 @@ export function registerKitHandlers(deps: KitHandlerDeps): void {
   ipcMain.handle('kits:listInstalled', () => {
     try {
       const map = getStore().get<InstalledKitsMap>(KITS_INSTALLED_KEY) ?? {};
-      return { success: true, installed: map };
+      // AI Skin Designer is retired from Expert Kits; hide any leftover install record.
+      const { [SkinPackKitId.BuiltIn]: _retiredSkinPackKit, ...installed } = map;
+      return { success: true, installed };
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : 'Failed to list installed kits' };
     }

@@ -30,7 +30,7 @@ import {
 const tempRoots: string[] = [];
 
 const createArchiveFile = async (): Promise<string> => {
-  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'lobster-html-share-client-test-'));
+  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'baiying-html-share-client-test-'));
   tempRoots.push(root);
   const archivePath = path.join(root, 'share.zip');
   await fs.promises.writeFile(archivePath, 'zip-content');
@@ -48,8 +48,8 @@ describe('htmlShareClient', () => {
     let requestedUrl = '';
     let requestedBody = '';
     const result = await createGeneratedVideoShare(
-      'https://lobsterai-server.inner.hzb.com',
-      'https://lobsterai-server.inner.hzb.com/s',
+      'https://baiyingai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com/s',
       async (url, options) => {
         requestedUrl = url;
         requestedBody = String(options?.body || '');
@@ -80,7 +80,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://lobsterai-server.inner.hzb.com/api/html-shares/generated-videos',
+      'https://baiyingai-server.inner.hzb.com/api/html-shares/generated-videos',
     );
     expect(JSON.parse(requestedBody)).toEqual({
       taskId: '123',
@@ -96,8 +96,8 @@ describe('htmlShareClient', () => {
 
   test('preserves the server video size limit for renderer messaging', async () => {
     const result = await createGeneratedVideoShare(
-      'https://lobsterai-server.inner.hzb.com',
-      'https://lobsterai-server.inner.hzb.com/s',
+      'https://baiyingai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com/s',
       async () => new Response(JSON.stringify({
         code: HtmlShareErrorCode.TooLarge,
         message: '分享视频超过文件大小限制',
@@ -129,8 +129,8 @@ describe('htmlShareClient', () => {
   test('looks up generated video share state by task and output', async () => {
     let requestedUrl = '';
     const result = await getGeneratedVideoShareSource(
-      'https://lobsterai-server.inner.hzb.com',
-      'https://lobsterai-server.inner.hzb.com/s',
+      'https://baiyingai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com/s',
       async url => {
         requestedUrl = url;
         return new Response(JSON.stringify({
@@ -149,7 +149,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://lobsterai-server.inner.hzb.com/api/html-shares/generated-videos/source?taskId=123&outputIndex=0',
+      'https://baiyingai-server.inner.hzb.com/api/html-shares/generated-videos/source?taskId=123&outputIndex=0',
     );
     expect(result).toMatchObject({
       success: true,
@@ -162,8 +162,8 @@ describe('htmlShareClient', () => {
   test('maps a background video download size failure to the shared file limit error', async () => {
     let requestCount = 0;
     const result = await createGeneratedVideoShare(
-      'https://lobsterai-server.inner.hzb.com',
-      'https://lobsterai-server.inner.hzb.com/s',
+      'https://baiyingai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com/s',
       async () => {
         requestCount += 1;
         if (requestCount === 1) {
@@ -211,7 +211,7 @@ describe('htmlShareClient', () => {
   test('resolves legacy video provenance using a URL hash only', async () => {
     let requestedBody = '';
     const result = await resolveLegacyGeneratedVideoSource(
-      'https://lobsterai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com',
       async (_url, options) => {
         requestedBody = String(options?.body || '');
         return new Response(JSON.stringify({
@@ -230,7 +230,7 @@ describe('htmlShareClient', () => {
     let requestedUrl = '';
     let requestedMethod = '';
     const result = await deleteHtmlSharePermanently(
-      'https://lobsterai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com',
       async (url, options) => {
         requestedUrl = url;
         requestedMethod = options?.method || '';
@@ -243,7 +243,7 @@ describe('htmlShareClient', () => {
     );
 
     expect(requestedUrl).toBe(
-      'https://lobsterai-server.inner.hzb.com/api/html-shares/shr_file%2Fwith%20space/permanent',
+      'https://baiyingai-server.inner.hzb.com/api/html-shares/shr_file%2Fwith%20space/permanent',
     );
     expect(requestedMethod).toBe('DELETE');
     expect(result).toEqual({ success: true, httpStatus: 200 });
@@ -251,7 +251,7 @@ describe('htmlShareClient', () => {
 
   test('preserves server deletion errors for renderer recovery', async () => {
     const result = await deleteHtmlSharePermanently(
-      'https://lobsterai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com',
       async () => new Response(JSON.stringify({
         code: 41315,
         message: '请先停止分享，再永久删除',
@@ -721,8 +721,8 @@ describe('htmlShareClient', () => {
 
   test('preserves missing and explicit null access expiry from share lookup responses', async () => {
     const lookup = (data: Record<string, unknown>) => getHtmlShareBySource(
-      'https://lobsterai-server.inner.hzb.com',
-      'https://lobsterai-server.inner.hzb.com/s',
+      'https://baiyingai-server.inner.hzb.com',
+      'https://baiyingai-server.inner.hzb.com/s',
       async () => new Response(
         JSON.stringify({ code: 0, data }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },

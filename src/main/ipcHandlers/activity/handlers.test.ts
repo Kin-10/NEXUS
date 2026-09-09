@@ -68,7 +68,7 @@ const activityContext: ActivityContextResponse = {
 };
 
 const startupDescriptor = {
-  activityCode: 'netease-user-welcome',
+  activityCode: 'baiying-user-welcome',
   configRevision: 1,
   activityType: ActivityType.OneTimeCreditReward,
   placement: ActivityPlacement.DesktopStartupModal,

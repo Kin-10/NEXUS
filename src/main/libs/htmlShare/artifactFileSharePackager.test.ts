@@ -17,7 +17,7 @@ const tempRoots: string[] = [];
 const archiveRoots: string[] = [];
 
 async function createTempRoot(): Promise<string> {
-  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'lobster-artifact-share-packager-test-'));
+  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'baiying-artifact-share-packager-test-'));
   tempRoots.push(root);
   return root;
 }
@@ -101,13 +101,13 @@ describe('artifactFileSharePackager', () => {
     const zip = await loadZip(packaged.archivePath);
     const entries = Object.keys(zip.files).filter(name => !zip.files[name].dir).sort();
     const markdown = await zip.file('README.md')!.async('string');
-    const manifest = JSON.parse(await zip.file('_lobster_share_manifest.json')!.async('string'));
+    const manifest = JSON.parse(await zip.file('_baiying_share_manifest.json')!.async('string'));
 
     expect(entries).toHaveLength(3);
     expect(entries).toContain('README.md');
-    expect(entries).toContain('_lobster_share_manifest.json');
-    expect(entries.some(entry => entry.startsWith('_lobster_assets/') && entry.endsWith('arch.png'))).toBe(true);
-    expect(markdown).toContain('_lobster_assets/');
+    expect(entries).toContain('_baiying_share_manifest.json');
+    expect(entries.some(entry => entry.startsWith('_baiying_assets/') && entry.endsWith('arch.png'))).toBe(true);
+    expect(markdown).toContain('_baiying_assets/');
     expect(markdown).toContain('Plain text path: images/arch.png');
     expect(markdown).not.toContain('![arch](images/arch.png)');
     expect(manifest.assets).toHaveLength(1);
@@ -145,15 +145,15 @@ describe('artifactFileSharePackager', () => {
     const zip = await loadZip(packaged.archivePath);
     const entries = Object.keys(zip.files).filter(name => !zip.files[name].dir).sort();
     const markdown = await zip.file('pets.md')!.async('string');
-    const manifestText = await zip.file('_lobster_share_manifest.json')!.async('string');
+    const manifestText = await zip.file('_baiying_share_manifest.json')!.async('string');
     const manifest = JSON.parse(manifestText);
 
     expect(entries).toHaveLength(3);
     expect(entries.some(entry =>
-      entry.startsWith('_lobster_assets/') &&
+      entry.startsWith('_baiying_assets/') &&
       entry.endsWith('generated-image-20260617-163944-1.png'),
     )).toBe(true);
-    expect(markdown).toContain('_lobster_assets/');
+    expect(markdown).toContain('_baiying_assets/');
     expect(markdown).not.toContain(imageUrl);
     expect(manifest.assets).toHaveLength(1);
     expect(manifest.assets[0].originalUrl).toBe('generated-image-20260617-163944-1.png');
@@ -167,7 +167,7 @@ describe('artifactFileSharePackager', () => {
     let packagingTempDir = '';
     const mkdtempSpy = vi.spyOn(fs.promises, 'mkdtemp').mockImplementation(async (prefix, options) => {
       const created = await originalMkdtemp(prefix, options as BufferEncoding);
-      if (prefix.includes('lobster-artifact-share-')) packagingTempDir = created;
+      if (prefix.includes('baiying-artifact-share-')) packagingTempDir = created;
       return created;
     });
     const statSpy = vi.spyOn(fs.promises, 'stat').mockImplementation(async (target, options) => {

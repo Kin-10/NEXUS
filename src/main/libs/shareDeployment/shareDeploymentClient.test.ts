@@ -116,7 +116,7 @@ describe('deployment response normalization', () => {
 
 describe('deployment persistence data management client', () => {
   test('downloads service data as a zip archive', async () => {
-    const tempDirectory = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'lobster-persistence-client-test-'));
+    const tempDirectory = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'baiying-persistence-client-test-'));
 
     try {
       const archiveContent = Buffer.from(
@@ -142,7 +142,7 @@ describe('deployment persistence data management client', () => {
       expect(downloadResult.success).toBe(true);
       expect(downloadCalls).toEqual(['https://server.test/api/share-deployments/dep_data/persistence/archive']);
       expect(path.dirname(path.dirname(downloadResult.filePath ?? ''))).toBe(
-        path.join(tempDirectory, '.lobster', 'persistence', 'shr_data'),
+        path.join(tempDirectory, '.baiying', 'persistence', 'shr_data'),
       );
       expect(path.basename(downloadResult.filePath ?? '')).toBe('shr_data-service-data.zip');
       expect(await fs.promises.readFile(downloadResult.filePath ?? '')).toEqual(Buffer.from(archiveContent));
@@ -153,7 +153,7 @@ describe('deployment persistence data management client', () => {
 
   test('sends replace mode in the persistence manifest when redeploying', async () => {
     const tempDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), 'lobster-persistence-replace-test-'),
+      path.join(os.tmpdir(), 'baiying-persistence-replace-test-'),
     );
     const archivePath = path.join(tempDirectory, 'deployment.zip');
     await fs.promises.writeFile(
@@ -265,7 +265,7 @@ describe('deployment persistence data management client', () => {
     },
   ])('omits persistence from the manifest when it is $name', async ({ persistence }) => {
     const tempDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), 'lobster-persistence-disabled-test-'),
+      path.join(os.tmpdir(), 'baiying-persistence-disabled-test-'),
     );
     const archivePath = path.join(tempDirectory, 'deployment.zip');
     await fs.promises.writeFile(
@@ -345,7 +345,7 @@ describe('deployment persistence data management client', () => {
 
   test('rejects an HTTP 200 business error instead of saving it as a zip archive', async () => {
     const tempDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), 'lobster-persistence-client-error-test-'),
+      path.join(os.tmpdir(), 'baiying-persistence-client-error-test-'),
     );
 
     try {
@@ -368,7 +368,7 @@ describe('deployment persistence data management client', () => {
         code: 41505,
         error: 'Service data management is not configured on the server.',
       });
-      expect(fs.existsSync(path.join(tempDirectory, '.lobster'))).toBe(false);
+      expect(fs.existsSync(path.join(tempDirectory, '.baiying'))).toBe(false);
     } finally {
       await fs.promises.rm(tempDirectory, { recursive: true, force: true });
     }
@@ -376,7 +376,7 @@ describe('deployment persistence data management client', () => {
 
   test('reports an empty online data directory without writing an archive', async () => {
     const tempDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), 'lobster-persistence-client-empty-test-'),
+      path.join(os.tmpdir(), 'baiying-persistence-client-empty-test-'),
     );
 
     try {
@@ -394,7 +394,7 @@ describe('deployment persistence data management client', () => {
         success: true,
         empty: true,
       });
-      expect(fs.existsSync(path.join(tempDirectory, '.lobster'))).toBe(false);
+      expect(fs.existsSync(path.join(tempDirectory, '.baiying'))).toBe(false);
     } finally {
       await fs.promises.rm(tempDirectory, { recursive: true, force: true });
     }
@@ -402,7 +402,7 @@ describe('deployment persistence data management client', () => {
 
   test('reports a missing cloud data directory without saving an error response', async () => {
     const tempDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), 'lobster-persistence-client-missing-test-'),
+      path.join(os.tmpdir(), 'baiying-persistence-client-missing-test-'),
     );
 
     try {
@@ -425,7 +425,7 @@ describe('deployment persistence data management client', () => {
         success: true,
         empty: true,
       });
-      expect(fs.existsSync(path.join(tempDirectory, '.lobster'))).toBe(false);
+      expect(fs.existsSync(path.join(tempDirectory, '.baiying'))).toBe(false);
     } finally {
       await fs.promises.rm(tempDirectory, { recursive: true, force: true });
     }

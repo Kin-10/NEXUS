@@ -46,9 +46,10 @@ import {
 import type { ModelThinkingConfig } from '../../shared/providers/modelThinking';
 import type { Agent, CoworkConfig, CoworkExecutionMode } from '../coworkStore';
 import type { DiscordInstanceConfig, IMSettings, TelegramInstanceConfig } from '../im/types';
-import type { DingTalkInstanceConfig, EmailMultiInstanceConfig, FeishuInstanceConfig, NeteaseBeeChanConfig, NimInstanceConfig, PopoInstanceConfig, QQInstanceConfig, WecomInstanceConfig, WeixinOpenClawConfig } from '../im/types';
+import type { DingTalkInstanceConfig, EmailMultiInstanceConfig, FeishuInstanceConfig, NimInstanceConfig, PopoInstanceConfig, QQInstanceConfig, WecomInstanceConfig, WeixinOpenClawConfig } from '../im/types';
 import { OpenClawSessionKeepAlive } from '../openclawSessionPolicy/constants';
 import { buildOpenClawSessionConfig } from '../openclawSessionPolicy/store';
+import type { baiyingBrowserMcpStdioLaunch } from './baiyingBrowserMcpServer';
 import {
   getAllServerModelMetadata,
   listProviderSourceEntries,
@@ -60,7 +61,6 @@ import {
   getCoworkOpenAICompatProxyBaseURL,
   getCoworkOpenAICompatProxyToken,
 } from './coworkOpenAICompatProxy';
-import type { LobsterBrowserMcpStdioLaunch } from './lobsterBrowserMcpServer';
 import {
   buildAgentEntry,
   buildManagedAgentEntries,
@@ -380,7 +380,7 @@ const DISABLED_MANAGED_SKILL_NAMES = Object.entries(MANAGED_SKILL_ENTRY_OVERRIDE
  */
 const providerApiKeyEnvVar = (providerName: string): string => {
   const envName = providerName.toUpperCase().replace(/[^A-Z0-9]/g, '_');
-  return `LOBSTER_APIKEY_${envName}`;
+  return `BAIYING_APIKEY_${envName}`;
 };
 
 const MANAGED_WEB_SEARCH_POLICY_PROMPT = [
@@ -408,9 +408,9 @@ const MANAGED_BROWSER_POLICY_PROMPT = [
   '- For every `browser` tool call, set `target="host"` explicitly.',
   '- Do not use `target="sandbox"` or `target="node"` unless a future BaiYing version explicitly enables it.',
   '- If a browser call fails because the sandbox browser is unavailable, retry the same action with `target="host"`.',
-  '- The `lobster-in-app` profile is LobsterAI\'s own browser bridge. If it is unavailable, report an internal LobsterAI browser startup failure; never tell the user to enable Chrome remote debugging or launch Chrome with debugging flags.',
+  '- The `baiying-in-app` profile is baiyingAI\'s own browser bridge. If it is unavailable, report an internal baiyingAI browser startup failure; never tell the user to enable Chrome remote debugging or launch Chrome with debugging flags.',
   `- When a page requires a password and \`${BrowserCredentialMcpServer.ModelToolName}\` is available, call it before asking the user to sign in manually. The tool can use an encrypted saved login without revealing its password to you.`,
-  '- If no saved login is available, ask the user to sign in directly in the visible LobsterAI browser. Never ask the user to send a password in chat, and never search files, memory, or logs for passwords.',
+  '- If no saved login is available, ask the user to sign in directly in the visible baiyingAI browser. Never ask the user to send a password in chat, and never search files, memory, or logs for passwords.',
 ].join('\n');
 
 const MANAGED_EXEC_SAFETY_PROMPT = [
@@ -957,7 +957,7 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
     },
     resolveApiKey: () => {
       const proxyPort = getOpenClawTokenProxyPort();
-      return proxyPort ? '${LOBSTER_PROXY_TOKEN}' : `\${${providerApiKeyEnvVar('server')}}`;
+      return proxyPort ? '${BAIYING_PROXY_TOKEN}' : `\${${providerApiKeyEnvVar('server')}}`;
     },
   },
 
@@ -1103,12 +1103,12 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
       const proxyBase = getCoworkOpenAICompatProxyBaseURL('local');
       return proxyBase ? `${proxyBase}/v1/copilot` : null;
     },
-    resolveApiKey: () => '${LOBSTER_PROXY_TOKEN}',
+    resolveApiKey: () => '${BAIYING_PROXY_TOKEN}',
   },
 };
 
 const DEFAULT_DESCRIPTOR: ProviderDescriptor = {
-  providerId: OpenClawProviderId.Lobster,
+  providerId: OpenClawProviderId.baiying,
   resolveApi: ({ apiType, baseURL }) => mapApiTypeToOpenClawApi(apiType, undefined, baseURL),
   normalizeBaseUrl: stripChatCompletionsSuffix,
 };
@@ -1138,7 +1138,7 @@ const resolveDescriptor = (
   }
   return {
     ...DEFAULT_DESCRIPTOR,
-    providerId: providerName || OpenClawProviderId.Lobster,
+    providerId: providerName || OpenClawProviderId.baiying,
   };
 };
 
@@ -1852,20 +1852,17 @@ type OpenClawConfigSyncDeps = {
   getPopoInstances: () => PopoInstanceConfig[];
   getEmailOpenClawConfig?: () => EmailMultiInstanceConfig;
   getNimInstances?: () => NimInstanceConfig[];
-  getNeteaseBeeChanConfig: () => NeteaseBeeChanConfig | null;
   getWeixinConfig: () => WeixinOpenClawConfig | null;
   getIMSettings?: () => IMSettings | null;
   getResolvedMcpServers?: () => ResolvedMcpServer[];
   getAskUserCallbackUrl?: () => string | null;
-  getMediaCallbackUrl?: () => string | null;
   getBrowserCallbackUrl?: () => string | null;
-  getLobsterBrowserMcpCommand?: () => string | null;
-  getLobsterBrowserMcpStdioLaunch?: () => LobsterBrowserMcpStdioLaunch | null;
+  getbaiyingBrowserMcpCommand?: () => string | null;
+  getbaiyingBrowserMcpStdioLaunch?: () => baiyingBrowserMcpStdioLaunch | null;
   getMcpBridgeSecret?: () => string;
   getSkillsList?: () => Array<{ id: string; name: string; enabled: boolean }>;
   getAgents?: () => Agent[];
   getUserPlugins?: () => Array<{ pluginId: string; enabled: boolean; config?: Record<string, unknown> }>;
-  canUseMediaGeneration?: () => boolean;
 };
 
 export class OpenClawConfigSync {
@@ -1883,20 +1880,17 @@ export class OpenClawConfigSync {
   private readonly getPopoInstances: () => PopoInstanceConfig[];
   private readonly getEmailOpenClawConfig?: () => EmailMultiInstanceConfig;
   private readonly getNimInstances: () => NimInstanceConfig[];
-  private readonly getNeteaseBeeChanConfig: () => NeteaseBeeChanConfig | null;
   private readonly getWeixinConfig: () => WeixinOpenClawConfig | null;
   private readonly getIMSettings?: () => IMSettings | null;
   private readonly getResolvedMcpServers?: () => ResolvedMcpServer[];
   private readonly getAskUserCallbackUrl?: () => string | null;
-  private readonly getMediaCallbackUrl?: () => string | null;
   private readonly getBrowserCallbackUrl?: () => string | null;
-  private readonly getLobsterBrowserMcpCommand?: () => string | null;
-  private readonly getLobsterBrowserMcpStdioLaunch?: () => LobsterBrowserMcpStdioLaunch | null;
+  private readonly getbaiyingBrowserMcpCommand?: () => string | null;
+  private readonly getbaiyingBrowserMcpStdioLaunch?: () => baiyingBrowserMcpStdioLaunch | null;
   private readonly getMcpBridgeSecret?: () => string;
   private readonly getSkillsList?: () => Array<{ id: string; name: string; enabled: boolean }>;
   private readonly getAgents?: () => Agent[];
   private readonly getUserPlugins: () => Array<{ pluginId: string; enabled: boolean; config?: Record<string, unknown> }>;
-  private readonly canUseMediaGeneration: () => boolean;
   private previousBindingsJson?: string;
   private currentBindingsObj: { bindings?: Array<Record<string, unknown>> } = {};
 
@@ -1915,20 +1909,17 @@ export class OpenClawConfigSync {
     this.getPopoInstances = deps.getPopoInstances;
     this.getEmailOpenClawConfig = deps.getEmailOpenClawConfig;
     this.getNimInstances = deps.getNimInstances ?? (() => []);
-    this.getNeteaseBeeChanConfig = deps.getNeteaseBeeChanConfig;
     this.getWeixinConfig = deps.getWeixinConfig;
     this.getIMSettings = deps.getIMSettings;
     this.getResolvedMcpServers = deps.getResolvedMcpServers;
     this.getAskUserCallbackUrl = deps.getAskUserCallbackUrl;
-    this.getMediaCallbackUrl = deps.getMediaCallbackUrl;
     this.getBrowserCallbackUrl = deps.getBrowserCallbackUrl;
-    this.getLobsterBrowserMcpCommand = deps.getLobsterBrowserMcpCommand;
-    this.getLobsterBrowserMcpStdioLaunch = deps.getLobsterBrowserMcpStdioLaunch;
+    this.getbaiyingBrowserMcpCommand = deps.getbaiyingBrowserMcpCommand;
+    this.getbaiyingBrowserMcpStdioLaunch = deps.getbaiyingBrowserMcpStdioLaunch;
     this.getMcpBridgeSecret = deps.getMcpBridgeSecret;
     this.getSkillsList = deps.getSkillsList;
     this.getAgents = deps.getAgents;
     this.getUserPlugins = deps.getUserPlugins ?? (() => []);
-    this.canUseMediaGeneration = deps.canUseMediaGeneration ?? (() => false);
   }
 
   /**
@@ -1992,7 +1983,7 @@ export class OpenClawConfigSync {
 
     if (browserWebAccess.displayMode === BrowserDisplayMode.InApp) {
       const callbackUrl = this.getBrowserCallbackUrl?.();
-      const mcpCommand = this.getLobsterBrowserMcpCommand?.();
+      const mcpCommand = this.getbaiyingBrowserMcpCommand?.();
       if (callbackUrl && mcpCommand) {
         return {
           ...commonConfig,
@@ -2003,7 +1994,7 @@ export class OpenClawConfigSync {
               attachOnly: true,
               color: '#D7A514',
               mcpCommand,
-              mcpArgs: [`--lobster-bridge-url=${callbackUrl}`],
+              mcpArgs: [`--baiying-bridge-url=${callbackUrl}`],
             },
           },
         };
@@ -2342,7 +2333,6 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       preinstalledPlugins.some((plugin) => pluginMatches(plugin, ...ids))
     );
     const hasAskUserPlugin = isBundledPluginAvailable('ask-user-question');
-    const hasMediaGenPlugin = isBundledPluginAvailable('lobster-media-generation');
     // Runtime-bundled xai extension (dist/extensions/xai): provides the Grok
     // model compat hooks (e.g. only grok-4.3 accepts reasoningEffort) plus the
     // OAuth refresh hook for credentials in the auth-profiles store. Declare
@@ -2411,10 +2401,6 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       ? this.getNimInstances()
       : [];
 
-    const neteaseBeeChanConfig = PlatformRegistry.isEnabled('netease-bee')
-      ? this.getNeteaseBeeChanConfig()
-      : null;
-
     const weixinConfig = PlatformRegistry.isEnabled('weixin')
       ? this.getWeixinConfig()
       : null;
@@ -2428,8 +2414,6 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     const bindingsChanged = this.previousBindingsJson !== undefined
       && bindingsJson !== this.previousBindingsJson;
     this.previousBindingsJson = bindingsJson;
-
-    this.canUseMediaGeneration();
 
     const managedConfig: Record<string, unknown> = {
       gateway: {
@@ -2558,6 +2542,11 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
           'clawemail-email',
           'qwen-portal-auth',
           'openclaw-qqbot',
+          // Removed BaiYing plugins — strip leftover entries from older installs.
+          'openclaw-netease-bee',
+          'openclaw-baiying-bee',
+          'lobster-media-generation',
+          'baiying-media-generation',
           ...packageAliasPluginIds,
         ];
         const transientPluginIds = [
@@ -2602,10 +2591,6 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
                   return PlatformRegistry.isEnabled('nim')
                     && nimInstances.some(isEnabledNimRuntimeInstance);
                 }
-                if (pluginMatches(plugin, 'openclaw-netease-bee')) {
-                  return PlatformRegistry.isEnabled('netease-bee')
-                    && !!(neteaseBeeChanConfig?.enabled && neteaseBeeChanConfig.clientId && neteaseBeeChanConfig.secret);
-                }
                 if (pluginMatches(plugin, 'openclaw-weixin')) return true; // Always keep enabled for QR login discovery
                 if (pluginMatches(plugin, 'clawemail-email', EMAIL_PLUGIN_ID)) {
                   return PlatformRegistry.isEnabled('email')
@@ -2620,7 +2605,6 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
             ? { feishu: { enabled: false } }
             : {}),
           ...(hasAskUserPlugin ? { 'ask-user-question': { enabled: true } } : {}),
-          ...(hasMediaGenPlugin ? { 'lobster-media-generation': { enabled: true } } : {}),
           ...(hasModelCompatConfig
             ? {
                 [OPENCLAW_MODEL_COMPAT_PLUGIN_ID]: {
@@ -2714,7 +2698,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     const resolvedMcpServers = this.getResolvedMcpServers?.() ?? [];
     const nativeMcpServers = buildOpenClawMcpServers(resolvedMcpServers);
     if (browserWebAccess.displayMode === BrowserDisplayMode.InApp) {
-      const browserMcpLaunch = this.getLobsterBrowserMcpStdioLaunch?.();
+      const browserMcpLaunch = this.getbaiyingBrowserMcpStdioLaunch?.();
       if (browserMcpLaunch) {
         nativeMcpServers[BrowserCredentialMcpServer.Name] = {
           command: browserMcpLaunch.command,
@@ -2745,22 +2729,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
         enabled: true,
         config: {
           callbackUrl: askUserCallbackUrl,
-          secret: '${LOBSTER_MCP_BRIDGE_SECRET}',
-        },
-      };
-    }
-
-    // Sync LobsterMediaGeneration plugin config — uses media callback endpoint
-    const mediaCallbackUrl = this.getMediaCallbackUrl?.();
-    if (hasMediaGenPlugin && mediaCallbackUrl && managedConfig.plugins) {
-      const plugins = managedConfig.plugins as Record<string, unknown>;
-      const entries = plugins.entries as Record<string, Record<string, unknown>>;
-      entries['lobster-media-generation'] = {
-        enabled: true,
-        config: {
-          callbackUrl: mediaCallbackUrl,
-          secret: '${LOBSTER_MCP_BRIDGE_SECRET}',
-          requestTimeoutMs: 150000,
+          secret: '${BAIYING_MCP_BRIDGE_SECRET}',
         },
       };
     }
@@ -2806,8 +2775,8 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       const accounts: Record<string, unknown> = {};
       for (let idx = 0; idx < enabledTelegramInstances.length; idx++) {
         const inst = enabledTelegramInstances[idx];
-        const tokenVar = idx === 0 ? 'LOBSTER_TG_BOT_TOKEN' : `LOBSTER_TG_BOT_TOKEN_${idx}`;
-        const webhookSecretVar = idx === 0 ? 'LOBSTER_TG_WEBHOOK_SECRET' : `LOBSTER_TG_WEBHOOK_SECRET_${idx}`;
+        const tokenVar = idx === 0 ? 'BAIYING_TG_BOT_TOKEN' : `BAIYING_TG_BOT_TOKEN_${idx}`;
+        const webhookSecretVar = idx === 0 ? 'BAIYING_TG_WEBHOOK_SECRET' : `BAIYING_TG_WEBHOOK_SECRET_${idx}`;
         const account: Record<string, unknown> = {
           enabled: true,
           name: inst.instanceName,
@@ -2858,7 +2827,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       const accounts: Record<string, unknown> = {};
       for (let idx = 0; idx < enabledDiscordInstances.length; idx++) {
         const inst = enabledDiscordInstances[idx];
-        const tokenVar = idx === 0 ? 'LOBSTER_DC_BOT_TOKEN' : `LOBSTER_DC_BOT_TOKEN_${idx}`;
+        const tokenVar = idx === 0 ? 'BAIYING_DC_BOT_TOKEN' : `BAIYING_DC_BOT_TOKEN_${idx}`;
         const account: Record<string, unknown> = {
           enabled: true,
           name: inst.instanceName,
@@ -2953,7 +2922,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       for (let idx = 0; idx < enabledFeishuInstances.length; idx++) {
         const inst = enabledFeishuInstances[idx];
         const secretVar =
-          idx === 0 ? 'LOBSTER_FEISHU_APP_SECRET' : `LOBSTER_FEISHU_APP_SECRET_${idx}`;
+          idx === 0 ? 'BAIYING_FEISHU_APP_SECRET' : `BAIYING_FEISHU_APP_SECRET_${idx}`;
         accounts[inst.instanceId.slice(0, 8)] = buildFeishuAccountConfig(inst, secretVar);
       }
 
@@ -2988,7 +2957,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       for (let idx = 0; idx < enabledDingTalkInstances.length; idx++) {
         const inst = enabledDingTalkInstances[idx];
         const secretVar =
-          idx === 0 ? 'LOBSTER_DINGTALK_CLIENT_SECRET' : `LOBSTER_DINGTALK_CLIENT_SECRET_${idx}`;
+          idx === 0 ? 'BAIYING_DINGTALK_CLIENT_SECRET' : `BAIYING_DINGTALK_CLIENT_SECRET_${idx}`;
         accounts[inst.instanceId.slice(0, 8)] = buildDingTalkAccountConfig(inst, secretVar);
       }
 
@@ -3032,7 +3001,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       for (let idx = 0; idx < enabledQQInstances.length; idx++) {
         const inst = enabledQQInstances[idx];
         const secretVar =
-          idx === 0 ? 'LOBSTER_QQ_CLIENT_SECRET' : `LOBSTER_QQ_CLIENT_SECRET_${idx}`;
+          idx === 0 ? 'BAIYING_QQ_CLIENT_SECRET' : `BAIYING_QQ_CLIENT_SECRET_${idx}`;
         accounts[inst.instanceId.slice(0, 8)] = buildQQAccountConfig(inst, secretVar);
       }
 
@@ -3045,7 +3014,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       const accounts: Record<string, unknown> = {};
       for (let idx = 0; idx < enabledWecomInstances.length; idx++) {
         const inst = enabledWecomInstances[idx];
-        const secretVar = idx === 0 ? 'LOBSTER_WECOM_SECRET' : `LOBSTER_WECOM_SECRET_${idx}`;
+        const secretVar = idx === 0 ? 'BAIYING_WECOM_SECRET' : `BAIYING_WECOM_SECRET_${idx}`;
         accounts[inst.instanceId.slice(0, 8)] = {
           enabled: true,
           name: inst.instanceName,
@@ -3083,7 +3052,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
         const effectiveConnectionMode =
           inst.connectionMode || (inst.token ? 'webhook' : 'websocket');
         const isWebSocket = effectiveConnectionMode === 'websocket';
-        const secretVar = idx === 0 ? 'LOBSTER_POPO_APP_SECRET' : `LOBSTER_POPO_APP_SECRET_${idx}`;
+        const secretVar = idx === 0 ? 'BAIYING_POPO_APP_SECRET' : `BAIYING_POPO_APP_SECRET_${idx}`;
         const account: Record<string, unknown> = {
           enabled: true,
           name: inst.instanceName,
@@ -3106,7 +3075,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
         };
         // Webhook-only fields
         if (!isWebSocket) {
-          const tokenVar = idx === 0 ? 'LOBSTER_POPO_TOKEN' : `LOBSTER_POPO_TOKEN_${idx}`;
+          const tokenVar = idx === 0 ? 'BAIYING_POPO_TOKEN' : `BAIYING_POPO_TOKEN_${idx}`;
           account.token = `\${${tokenVar}}`;
           account.webhookPort = inst.webhookPort || 3100;
           if (inst.webhookBaseUrl) {
@@ -3151,7 +3120,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
 
           // IMAP/SMTP mode configuration
           if (inst.transport === 'imap') {
-            accountConfig.password = `\${LOBSTER_EMAIL_${envSuffix}_PASSWORD}`;
+            accountConfig.password = `\${BAIYING_EMAIL_${envSuffix}_PASSWORD}`;
             if (inst.imapHost) accountConfig.imapHost = inst.imapHost;
             if (inst.imapPort) accountConfig.imapPort = inst.imapPort;
             if (inst.smtpHost) accountConfig.smtpHost = inst.smtpHost;
@@ -3160,7 +3129,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
 
           // WebSocket mode configuration
           if (inst.transport === 'ws') {
-            accountConfig.apiKey = `\${LOBSTER_EMAIL_${envSuffix}_APIKEY}`;
+            accountConfig.apiKey = `\${BAIYING_EMAIL_${envSuffix}_APIKEY}`;
           }
 
           // Common configuration
@@ -3204,7 +3173,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     if (configuredNimInstances.length > 0) {
       const accounts: Record<string, Record<string, unknown>> = {};
       configuredNimInstances.forEach((inst, idx) => {
-        const tokenEnvVar = idx === 0 ? 'LOBSTER_NIM_TOKEN' : `LOBSTER_NIM_TOKEN_${idx}`;
+        const tokenEnvVar = idx === 0 ? 'BAIYING_NIM_TOKEN' : `BAIYING_NIM_TOKEN_${idx}`;
         const nimToken = inst.nimToken?.trim()
           ? inst.nimToken.trim()
           : `${inst.appKey}|${inst.account}|\${${tokenEnvVar}}`;
@@ -3222,22 +3191,6 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
         accounts[accountKey] = nimInstance;
       });
       managedConfig.channels = { ...(managedConfig.channels as Record<string, unknown> || {}), nim: { accounts } };
-    }
-
-    // Sync NeteaseBee OpenClaw channel config (via openclaw-netease-bee plugin)
-    if (
-      neteaseBeeChanConfig?.enabled &&
-      neteaseBeeChanConfig.clientId &&
-      neteaseBeeChanConfig.secret
-    ) {
-      managedConfig.channels = {
-        ...((managedConfig.channels as Record<string, unknown>) || {}),
-        'netease-bee': {
-          enabled: true,
-          clientId: neteaseBeeChanConfig.clientId,
-          secret: neteaseBeeChanConfig.secret,
-        },
-      };
     }
 
     // Sync Weixin OpenClaw channel config (via openclaw-weixin plugin)
@@ -3399,22 +3352,22 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     // never changes env vars and avoids gateway process restarts.
     const allApiKeys = resolveAllProviderApiKeys();
     for (const [envSuffix, apiKey] of Object.entries(allApiKeys)) {
-      console.info(`[OpenClawConfigSync] set secret env var LOBSTER_APIKEY_${envSuffix} for provider ${envSuffix}`);
-      env[`LOBSTER_APIKEY_${envSuffix}`] = apiKey;
+      console.info(`[OpenClawConfigSync] set secret env var BAIYING_APIKEY_${envSuffix} for provider ${envSuffix}`);
+      env[`BAIYING_APIKEY_${envSuffix}`] = apiKey;
     }
-    // Legacy fallback: keep LOBSTER_PROVIDER_API_KEY set to a stable value so stale
+    // Legacy fallback: keep BAIYING_PROVIDER_API_KEY set to a stable value so stale
     // openclaw.json files with the old placeholder don't crash the gateway.
     // Use the active provider's key if available, but ONLY for the first sync —
     // after that, openclaw.json uses provider-specific placeholders and this var
     // is never resolved. Use a fixed value to avoid secretEnvVarsChanged on switch.
-    env.LOBSTER_PROVIDER_API_KEY = 'legacy-unused';
+    env.BAIYING_PROVIDER_API_KEY = 'legacy-unused';
 
-    env.LOBSTER_PROXY_TOKEN = getCoworkOpenAICompatProxyToken() || 'unconfigured';
+    env.BAIYING_PROXY_TOKEN = getCoworkOpenAICompatProxyToken() || 'unconfigured';
 
     // MCP Bridge Secret — always set so stale openclaw.json with
-    // ${LOBSTER_MCP_BRIDGE_SECRET} placeholder doesn't crash the gateway.
+    // ${BAIYING_MCP_BRIDGE_SECRET} placeholder doesn't crash the gateway.
     // Used by the ask-user-question plugin.
-    env.LOBSTER_MCP_BRIDGE_SECRET = this.getMcpBridgeSecret?.() || 'unconfigured';
+    env.BAIYING_MCP_BRIDGE_SECRET = this.getMcpBridgeSecret?.() || 'unconfigured';
 
     // Telegram — per-instance secrets (must match sync() indexing: enabled instances only)
     if (PlatformRegistry.isEnabled('telegram')) {
@@ -3423,11 +3376,11 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       for (let idx = 0; idx < enabledTelegram.length; idx++) {
         const inst = enabledTelegram[idx];
         if (idx === 0) {
-          env.LOBSTER_TG_BOT_TOKEN = inst.botToken;
-          if (inst.webhookSecret) env.LOBSTER_TG_WEBHOOK_SECRET = inst.webhookSecret;
+          env.BAIYING_TG_BOT_TOKEN = inst.botToken;
+          if (inst.webhookSecret) env.BAIYING_TG_WEBHOOK_SECRET = inst.webhookSecret;
         } else {
-          env[`LOBSTER_TG_BOT_TOKEN_${idx}`] = inst.botToken;
-          if (inst.webhookSecret) env[`LOBSTER_TG_WEBHOOK_SECRET_${idx}`] = inst.webhookSecret;
+          env[`BAIYING_TG_BOT_TOKEN_${idx}`] = inst.botToken;
+          if (inst.webhookSecret) env[`BAIYING_TG_WEBHOOK_SECRET_${idx}`] = inst.webhookSecret;
         }
       }
     }
@@ -3438,9 +3391,9 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       const enabledDiscord = dcInstances.filter(i => i.enabled && i.botToken);
       for (let idx = 0; idx < enabledDiscord.length; idx++) {
         if (idx === 0) {
-          env.LOBSTER_DC_BOT_TOKEN = enabledDiscord[idx].botToken;
+          env.BAIYING_DC_BOT_TOKEN = enabledDiscord[idx].botToken;
         } else {
-          env[`LOBSTER_DC_BOT_TOKEN_${idx}`] = enabledDiscord[idx].botToken;
+          env[`BAIYING_DC_BOT_TOKEN_${idx}`] = enabledDiscord[idx].botToken;
         }
       }
     }
@@ -3450,9 +3403,9 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     const enabledFeishu = feishuInstances.filter(i => i.enabled && i.appSecret);
     for (let idx = 0; idx < enabledFeishu.length; idx++) {
       if (idx === 0) {
-        env.LOBSTER_FEISHU_APP_SECRET = enabledFeishu[idx].appSecret;
+        env.BAIYING_FEISHU_APP_SECRET = enabledFeishu[idx].appSecret;
       } else {
-        env[`LOBSTER_FEISHU_APP_SECRET_${idx}`] = enabledFeishu[idx].appSecret;
+        env[`BAIYING_FEISHU_APP_SECRET_${idx}`] = enabledFeishu[idx].appSecret;
       }
     }
 
@@ -3461,15 +3414,15 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     const enabledDingTalk = dingTalkInstances.filter(i => i.enabled && i.clientSecret);
     for (let idx = 0; idx < enabledDingTalk.length; idx++) {
       if (idx === 0) {
-        env.LOBSTER_DINGTALK_CLIENT_SECRET = enabledDingTalk[idx].clientSecret;
+        env.BAIYING_DINGTALK_CLIENT_SECRET = enabledDingTalk[idx].clientSecret;
       } else {
-        env[`LOBSTER_DINGTALK_CLIENT_SECRET_${idx}`] = enabledDingTalk[idx].clientSecret;
+        env[`BAIYING_DINGTALK_CLIENT_SECRET_${idx}`] = enabledDingTalk[idx].clientSecret;
       }
     }
     // Gateway token is shared (not per-instance)
     const gatewayToken = this.engineManager.getGatewayToken();
     if (gatewayToken) {
-      env.LOBSTER_DINGTALK_GW_TOKEN = gatewayToken;
+      env.BAIYING_DINGTALK_GW_TOKEN = gatewayToken;
     }
 
     // QQ — per-instance secrets (must match sync() indexing: enabled instances only)
@@ -3477,9 +3430,9 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     const enabledQQ = qqInstances.filter(i => i.enabled && i.appSecret);
     for (let idx = 0; idx < enabledQQ.length; idx++) {
       if (idx === 0) {
-        env.LOBSTER_QQ_CLIENT_SECRET = enabledQQ[idx].appSecret;
+        env.BAIYING_QQ_CLIENT_SECRET = enabledQQ[idx].appSecret;
       } else {
-        env[`LOBSTER_QQ_CLIENT_SECRET_${idx}`] = enabledQQ[idx].appSecret;
+        env[`BAIYING_QQ_CLIENT_SECRET_${idx}`] = enabledQQ[idx].appSecret;
       }
     }
 
@@ -3488,9 +3441,9 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     const enabledWecom = wecomInstances.filter(i => i.enabled && i.secret);
     for (let idx = 0; idx < enabledWecom.length; idx++) {
       if (idx === 0) {
-        env.LOBSTER_WECOM_SECRET = enabledWecom[idx].secret;
+        env.BAIYING_WECOM_SECRET = enabledWecom[idx].secret;
       } else {
-        env[`LOBSTER_WECOM_SECRET_${idx}`] = enabledWecom[idx].secret;
+        env[`BAIYING_WECOM_SECRET_${idx}`] = enabledWecom[idx].secret;
       }
     }
 
@@ -3499,21 +3452,21 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       const enabledPopo = this.getPopoInstances().filter(i => i.enabled && i.appSecret);
       for (let idx = 0; idx < enabledPopo.length; idx++) {
         if (idx === 0) {
-          env.LOBSTER_POPO_APP_SECRET = enabledPopo[idx].appSecret;
+          env.BAIYING_POPO_APP_SECRET = enabledPopo[idx].appSecret;
           if (enabledPopo[idx].token) {
-            env.LOBSTER_POPO_TOKEN = enabledPopo[idx].token;
+            env.BAIYING_POPO_TOKEN = enabledPopo[idx].token;
           } else {
             // Provide non-empty fallback so stale openclaw.json files that still
-            // contain ${LOBSTER_POPO_TOKEN} from a previous webhook config
+            // contain ${BAIYING_POPO_TOKEN} from a previous webhook config
             // don't crash the gateway with MissingEnvVarError.
-            env.LOBSTER_POPO_TOKEN = 'unconfigured';
+            env.BAIYING_POPO_TOKEN = 'unconfigured';
           }
         } else {
-          env[`LOBSTER_POPO_APP_SECRET_${idx}`] = enabledPopo[idx].appSecret;
+          env[`BAIYING_POPO_APP_SECRET_${idx}`] = enabledPopo[idx].appSecret;
           if (enabledPopo[idx].token) {
-            env[`LOBSTER_POPO_TOKEN_${idx}`] = enabledPopo[idx].token;
+            env[`BAIYING_POPO_TOKEN_${idx}`] = enabledPopo[idx].token;
           } else {
-            env[`LOBSTER_POPO_TOKEN_${idx}`] = 'unconfigured';
+            env[`BAIYING_POPO_TOKEN_${idx}`] = 'unconfigured';
           }
         }
       }
@@ -3530,11 +3483,11 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
         const envSuffix = inst.instanceId.replace(/^email-/, '').replace(/-/g, '_').toUpperCase();
 
         if (inst.transport === 'imap' && inst.password) {
-          env[`LOBSTER_EMAIL_${envSuffix}_PASSWORD`] = inst.password;
+          env[`BAIYING_EMAIL_${envSuffix}_PASSWORD`] = inst.password;
         }
 
         if (inst.transport === 'ws' && inst.apiKey) {
-          env[`LOBSTER_EMAIL_${envSuffix}_APIKEY`] = inst.apiKey;
+          env[`BAIYING_EMAIL_${envSuffix}_APIKEY`] = inst.apiKey;
         }
       }
     }
@@ -3545,7 +3498,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       for (let idx = 0; idx < nimInstances.length; idx++) {
         const inst = nimInstances[idx];
         if (inst.nimToken?.trim() || !inst.token) continue;
-        const key = idx === 0 ? 'LOBSTER_NIM_TOKEN' : `LOBSTER_NIM_TOKEN_${idx}`;
+        const key = idx === 0 ? 'BAIYING_NIM_TOKEN' : `BAIYING_NIM_TOKEN_${idx}`;
         env[key] = inst.token;
       }
     }
@@ -3615,7 +3568,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     availableProviders: Record<string, OpenClawProviderSelection['providerConfig']>,
   ): boolean {
     const shouldMigrateManagedModelRefs = !(
-      selection.providerId === 'lobster' && selection.sessionModelId === selection.legacyModelId
+      selection.providerId === 'baiying' && selection.sessionModelId === selection.legacyModelId
     );
     const fallbackTarget = parsePrimaryModelRef(selection.primaryModel) ?? {
       providerId: selection.providerId,
@@ -4024,7 +3977,6 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       channel: string;
       platform: string;
     }> = [
-      { getter: () => this.getNeteaseBeeChanConfig(), channel: 'netease-bee', platform: 'netease-bee' },
       { getter: () => this.getWeixinConfig(), channel: 'openclaw-weixin', platform: 'weixin' },
     ];
 
@@ -4171,7 +4123,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
     // Build the config to write: start from the base minimal config, then
     // selectively preserve non-provider sections from the existing file.
     // Critically, we do NOT preserve existing.models — it may contain
-    // ${LOBSTER_APIKEY_X} placeholders for providers that are no longer
+    // ${BAIYING_APIKEY_X} placeholders for providers that are no longer
     // configured, causing the gateway to fail to start because those env
     // vars are no longer injected.
     let mergedConfig: Record<string, unknown> = { ...baseMinimalConfig };
@@ -4179,7 +4131,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
       try {
         const existing = JSON.parse(currentContent);
         // Preserve IM channel plugin entries — these reference their own env
-        // vars (${LOBSTER_TG_BOT_TOKEN} etc.) that are still injected when
+        // vars (${BAIYING_TG_BOT_TOKEN} etc.) that are still injected when
         // the corresponding IM channels remain enabled. Plugin-index-managed
         // keys (`installs`) are filtered out — see omitPluginIndexManagedKeys.
         if (existing.plugins) {
@@ -4190,7 +4142,7 @@ loopDetection: MANAGED_TOOL_LOOP_DETECTION,
           mergedConfig.gateway = existing.gateway;
         }
         // existing.models is intentionally NOT preserved — it references
-        // ${LOBSTER_APIKEY_*} env vars that may no longer be set.
+        // ${BAIYING_APIKEY_*} env vars that may no longer be set.
       } catch {
         // Malformed JSON — overwrite with base minimal config.
       }

@@ -120,7 +120,7 @@ OpenClaw 官方文档列出了以下 BaiYing 目前不支持但 OpenClaw 已支�
 | `qianfan` | 百度千帆 | 中 |
 | `modelstudio` | 阿里云 Model Studio | 中（可能对应 qwen） |
 
-这不是 bug，只是功能覆盖差距。但如果用户在 BaiYing 中配置了这些 provider，当前的 fallback 逻辑会将其路由到 `lobster` provider ID，这可能不是用户预期的行为。
+这不是 bug，只是功能覆盖差距。但如果用户在 BaiYing 中配置了这些 provider，当前的 fallback 逻辑会将其路由到 `baiying` provider ID，这可能不是用户预期的行为。
 
 ---
 

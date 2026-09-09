@@ -30,7 +30,7 @@ import { i18nService } from '../../services/i18n';
 import { imService } from '../../services/im';
 import { LogReporterAction, reportYdAnalyzer } from '../../services/logReporter';
 import { RootState } from '../../store';
-import { clearError,setDingTalkConfig, setDingTalkInstanceConfig, setDiscordConfig, setDiscordInstanceConfig, setEmailInstanceConfig, setFeishuConfig, setFeishuInstanceConfig, setNeteaseBeeChanConfig, setNimConfig, setNimInstanceConfig, setPopoInstanceConfig, setQQConfig, setQQInstanceConfig, setTelegramInstanceConfig, setTelegramOpenClawConfig, setWecomConfig, setWecomInstanceConfig, setWeixinConfig } from '../../store/slices/imSlice';
+import { clearError,setDingTalkConfig, setDingTalkInstanceConfig, setDiscordConfig, setDiscordInstanceConfig, setEmailInstanceConfig, setFeishuConfig, setFeishuInstanceConfig, setbaiyingBeeChanConfig, setNimConfig, setNimInstanceConfig, setPopoInstanceConfig, setQQConfig, setQQInstanceConfig, setTelegramInstanceConfig, setTelegramOpenClawConfig, setWecomConfig, setWecomInstanceConfig, setWeixinConfig } from '../../store/slices/imSlice';
 import type { EmailInstanceConfig, IMConnectivityCheck, IMConnectivityTestResult, IMGatewayConfig, WeixinOpenClawConfig } from '../../types/im';
 import { MAX_DINGTALK_INSTANCES, MAX_DISCORD_INSTANCES, MAX_EMAIL_INSTANCES, MAX_FEISHU_INSTANCES, MAX_NIM_INSTANCES, MAX_POPO_INSTANCES, MAX_QQ_INSTANCES, MAX_TELEGRAM_INSTANCES, MAX_WECOM_INSTANCES } from '../../types/im';
 import { getPlatformLogoSrc } from '../../utils/platformLogo';
@@ -722,9 +722,9 @@ const IMSettings: React.FC = () => {
 
   const discordMultiConfig = config.discord;
 
-  // Handle NetEase Bee config change
-  const handleNeteaseBeeChanChange = (field: 'clientId' | 'secret', value: string) => {
-    dispatch(setNeteaseBeeChanConfig({ [field]: value }));
+  // Handle baiying Bee config change
+  const handlebaiyingBeeChanChange = (field: 'clientId' | 'secret', value: string) => {
+    dispatch(setbaiyingBeeChanConfig({ [field]: value }));
   };
 
   // Handle Weixin OpenClaw config
@@ -1029,7 +1029,7 @@ const IMSettings: React.FC = () => {
   const telegramConnected = status.telegram?.instances?.some(i => i.connected) ?? false;
   const discordConnected = status.discord?.instances?.some(i => i.connected) ?? false;
   const nimConnected = status.nim?.instances?.some(i => i.connected) ?? false;
-  const neteaseBeeChanConnected = status['netease-bee']?.connected ?? false;
+  const baiyingBeeChanConnected = status['baiying-bee']?.connected ?? false;
   const qqConnected = status.qq?.instances?.some(i => i.connected) ?? false;
   const wecomConnected = status.wecom?.instances?.some(i => i.connected) ?? false;
   const weixinConnected = Boolean(weixinOpenClawConfig.enabled && status.weixin?.connected);
@@ -1072,8 +1072,8 @@ const IMSettings: React.FC = () => {
     if (platform === 'nim') {
       return config.nim.instances.some(i => !!(i.nimToken || (i.appKey && i.account && i.token)));
     }
-    if (platform === 'netease-bee') {
-      return !!(config['netease-bee'].clientId && config['netease-bee'].secret);
+    if (platform === 'baiying-bee') {
+      return !!(config['baiying-bee'].clientId && config['baiying-bee'].secret);
     }
     if (platform === 'qq') {
       return config.qq.instances.some(i => !!(i.appId && i.appSecret));
@@ -1128,7 +1128,7 @@ const IMSettings: React.FC = () => {
     if (platform === 'telegram') return telegramConnected;
     if (platform === 'discord') return discordConnected;
     if (platform === 'nim') return nimConnected;
-    if (platform === 'netease-bee') return neteaseBeeChanConnected;
+    if (platform === 'baiying-bee') return baiyingBeeChanConnected;
     if (platform === 'qq') return qqConnected;
     if (platform === 'wecom') return wecomConnected;
     if (platform === 'weixin') return weixinConnected;
@@ -1516,7 +1516,7 @@ const IMSettings: React.FC = () => {
       qq: setQQConfig,
       discord: setDiscordConfig,
       nim: setNimConfig,
-      'netease-bee': setNeteaseBeeChanConfig,
+      'baiying-bee': setbaiyingBeeChanConfig,
       wecom: setWecomConfig,
       weixin: setWeixinConfig,
       popo: null, // POPO is multi-instance; toggle handled per-instance in PopoInstanceSettings
@@ -2165,7 +2165,7 @@ const IMSettings: React.FC = () => {
       {/* Platform Settings - Right Side */}
       <div className="min-w-0 flex-1 space-y-4 overflow-y-auto pl-3 pr-4 [scrollbar-gutter:stable]">
         {/* Header with status (only for single-instance platforms without per-instance headers) */}
-        {(activePlatform === 'weixin' || activePlatform === 'netease-bee') && (
+        {(activePlatform === 'weixin' || activePlatform === 'baiying-bee') && (
           <div className="flex items-center gap-3 border-b border-border-subtle pb-4">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-medium text-foreground">
@@ -2764,7 +2764,7 @@ const IMSettings: React.FC = () => {
           );
         })()}
 
-        {/* NIM (NetEase IM) Settings */}
+        {/* NIM (baiying IM) Settings */}
         {activePlatform === 'nim' && !activeNimInstanceId && renderMultiInstanceOverview('nim')}
         {activePlatform === 'nim' && activeNimInstanceId && (() => {
           const selectedInstance = config.nim.instances.find(i => i.instanceId === activeNimInstanceId);
@@ -2813,7 +2813,7 @@ const IMSettings: React.FC = () => {
         })()}
 
         {/* 小蜜蜂设置*/}
-        {activePlatform === 'netease-bee' && (
+        {activePlatform === 'baiying-bee' && (
           <div className="space-y-3">
             {/* Client ID */}
             <div className="space-y-1.5">
@@ -2823,17 +2823,17 @@ const IMSettings: React.FC = () => {
               <div className="relative">
                 <input
                   type="text"
-                  value={config['netease-bee'].clientId}
-                  onChange={(e) => handleNeteaseBeeChanChange('clientId', e.target.value)}
+                  value={config['baiying-bee'].clientId}
+                  onChange={(e) => handlebaiyingBeeChanChange('clientId', e.target.value)}
                   onBlur={handleSaveConfig}
                   className="block w-full rounded-lg bg-surface border-border-subtle border focus:border-primary focus:ring-1 focus:ring-primary/30 text-foreground px-3 py-2 pr-8 text-sm transition-colors"
-                  placeholder={i18nService.t('neteaseBeeChanClientIdPlaceholder') || '您的Client ID'}
+                  placeholder={i18nService.t('baiyingBeeChanClientIdPlaceholder') || '您的Client ID'}
                 />
-                {config['netease-bee'].clientId && (
+                {config['baiying-bee'].clientId && (
                   <div className="absolute right-2 inset-y-0 flex items-center">
                     <button
                       type="button"
-                      onClick={() => { handleNeteaseBeeChanChange('clientId', ''); void imService.persistConfig({ 'netease-bee': { ...config['netease-bee'], clientId: '' } }); }}
+                      onClick={() => { handlebaiyingBeeChanChange('clientId', ''); void imService.persistConfig({ 'baiying-bee': { ...config['baiying-bee'], clientId: '' } }); }}
                       className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                       title={i18nService.t('clear') || 'Clear'}
                     >
@@ -2851,18 +2851,18 @@ const IMSettings: React.FC = () => {
               </label>
               <div className="relative">
                 <input
-                  type={showSecrets['netease-bee.secret'] ? 'text' : 'password'}
-                  value={config['netease-bee'].secret}
-                  onChange={(e) => handleNeteaseBeeChanChange('secret', e.target.value)}
+                  type={showSecrets['baiying-bee.secret'] ? 'text' : 'password'}
+                  value={config['baiying-bee'].secret}
+                  onChange={(e) => handlebaiyingBeeChanChange('secret', e.target.value)}
                   onBlur={handleSaveConfig}
                   className="block w-full rounded-lg bg-surface border-border-subtle border focus:border-primary focus:ring-1 focus:ring-primary/30 text-foreground px-3 py-2 pr-16 text-sm transition-colors"
                   placeholder="••••••••••••"
                 />
                 <div className="absolute right-2 inset-y-0 flex items-center gap-1">
-                  {config['netease-bee'].secret && (
+                  {config['baiying-bee'].secret && (
                     <button
                       type="button"
-                      onClick={() => { handleNeteaseBeeChanChange('secret', ''); void imService.persistConfig({ 'netease-bee': { ...config['netease-bee'], secret: '' } }); }}
+                      onClick={() => { handlebaiyingBeeChanChange('secret', ''); void imService.persistConfig({ 'baiying-bee': { ...config['baiying-bee'], secret: '' } }); }}
                       className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
                       title={i18nService.t('clear') || 'Clear'}
                     >
@@ -2871,33 +2871,33 @@ const IMSettings: React.FC = () => {
                   )}
                   <button
                     type="button"
-                    onClick={() => setShowSecrets(prev => ({ ...prev, 'netease-bee.secret': !prev['netease-bee.secret'] }))}
+                    onClick={() => setShowSecrets(prev => ({ ...prev, 'baiying-bee.secret': !prev['baiying-bee.secret'] }))}
                     className="p-0.5 rounded text-secondary hover:text-primary transition-colors"
-                    title={showSecrets['netease-bee.secret'] ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
+                    title={showSecrets['baiying-bee.secret'] ? (i18nService.t('hide') || 'Hide') : (i18nService.t('show') || 'Show')}
                   >
-                    {showSecrets['netease-bee.secret'] ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
+                    {showSecrets['baiying-bee.secret'] ? <Eye className="h-4 w-4" /> : <EyeSlash className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
             </div>
 
             <div className="pt-1">
-              {renderConnectivityTestButton('netease-bee')}
+              {renderConnectivityTestButton('baiying-bee')}
             </div>
 
-            {renderPlatformRuntimeNotice('netease-bee')}
+            {renderPlatformRuntimeNotice('baiying-bee')}
 
             {/* Bot account display */}
-            {status['netease-bee']?.botAccount && (
+            {status['baiying-bee']?.botAccount && (
               <div className="text-xs text-green-600 dark:text-green-400 bg-green-500/10 px-3 py-2 rounded-lg">
-                Account: {status['netease-bee'].botAccount}
+                Account: {status['baiying-bee'].botAccount}
               </div>
             )}
 
             {/* Error display */}
-            {status['netease-bee']?.lastError && (
+            {status['baiying-bee']?.lastError && (
               <div className="text-xs text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">
-                {translateIMError(status['netease-bee'].lastError)}
+                {translateIMError(status['baiying-bee'].lastError)}
               </div>
             )}
           </div>
@@ -3174,7 +3174,7 @@ const IMSettings: React.FC = () => {
                     setWecomQuickSetupStatus('pending');
                     setWecomQuickSetupError('');
                     try {
-                      const bot = await WecomAIBotSDK.openBotInfoAuthWindow({ source: 'lobster-ai' });
+                      const bot = await WecomAIBotSDK.openBotInfoAuthWindow({ source: 'baiying-ai' });
                       if (!isMountedRef.current) return;
                       dispatch(setWecomInstanceConfig({ instanceId: activeWecomInstanceId!, config: { botId: bot.botid, secret: bot.secret, enabled: true } }));
                       dispatch(clearError());

@@ -127,7 +127,7 @@ function sqlString(value) {
 }
 
 function createPayloadBytes(targetBytes) {
-  const line = 'The quick brown lobster benchmarks SQLite backup throughput with wide message payloads.\n';
+  const line = 'The quick brown baiying benchmarks SQLite backup throughput with wide message payloads.\n';
   return line.repeat(Math.max(1, Math.ceil(targetBytes / Buffer.byteLength(line))));
 }
 

@@ -108,7 +108,7 @@ BaiYing-WebSetup-x64-${version}-${keyfrom}-silent.exe
 !endif
 
 ${If} ${Silent}
-  StrCpy $lobsterUiMode "silent"
+  StrCpy $baiyingUiMode "silent"
 ${EndIf}
 ```
 
@@ -173,4 +173,4 @@ ${EndIf}
 8. 传入 `dist:win:web -- --keyfrom dictbind --silent` 时，最终 WebSetup 产物名包含 `-silent`，双击后下载与安装过程均不展示 BaiYing 安装器 UI；Windows UAC 不在此约束内。
 9. WebSetup 静默下载失败时使用非交互默认选项退出，不因错误弹窗阻塞无人值守流程。
 10. macOS、Linux 和应用运行时 UI 不受该功能影响。
-11. 任何静默安装（双击静默包或命令行 `/S`）均不显示 LobsterAI 自有窗口；交互式安装向导与 `--updated` 更新进度页保持既有 UI。
+11. 任何静默安装（双击静默包或命令行 `/S`）均不显示 baiyingAI 自有窗口；交互式安装向导与 `--updated` 更新进度页保持既有 UI。

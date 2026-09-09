@@ -9,7 +9,7 @@ let loggedDevelopmentServerBaseUrl: string | null = null;
 let loggedDevelopmentOvermindBaseUrl: string | null = null;
 
 /** Local BYServer default for unpackaged dev builds (API + Overmind + Portal). */
-export const LOCAL_BAIYING_BASE_URL = 'http://127.0.0.1:8899';
+export const LOCAL_BAIYING_BASE_URL = 'http://192.168.101.24:8899';
 
 /** @deprecated Use {@link LOCAL_BAIYING_BASE_URL}. */
 export const LOCAL_OVERMIND_BASE_URL = LOCAL_BAIYING_BASE_URL;

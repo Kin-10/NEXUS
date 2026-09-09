@@ -4,8 +4,8 @@
 </h1>
 
 <p align="center">
-  <a href="https://github.com/netease-hzb/BaiYing/stargazers"><img src="https://badgen.net/github/stars/netease-hzb/BaiYing?label=%E2%98%85" alt="GitHub stars" /></a>
-  <a href="LICENSE"><img src="https://badgen.net/github/license/netease-hzb/BaiYing" alt="License" /></a>
+  <a href="https://github.com/baiying-hzb/BaiYing/stargazers"><img src="https://badgen.net/github/stars/baiying-hzb/BaiYing?label=%E2%98%85" alt="GitHub stars" /></a>
+  <a href="LICENSE"><img src="https://badgen.net/github/license/baiying-hzb/BaiYing" alt="License" /></a>
   <a href="https://x.com/BaiYinghzb"><img src="https://img.shields.io/badge/-000000?logo=x&logoColor=white" alt="Follow BaiYing on X" /></a>
   <a href="https://shared.ydstatic.com/market/souti/fihserChatWeb/online/2.0.7/dist/assets/wechat_group-B34qRm1G.png"><img src="https://img.shields.io/badge/-000000?logo=wechat&logoColor=white" alt="Follow BaiYing on X" /></a>
   <br>
@@ -104,7 +104,7 @@ BaiYing 在 `SKILLs/skills.config.json` 中配置了 28 个内置技能，包括
 
 ### 桌面端
 
-从[官网](https://baiying.hzb.com/)或[GitHub Releases](https://github.com/netease-hzb/BaiYing/releases) 下载最新 macOS 和 Windows 安装包。
+从[官网](https://baiying.hzb.com/)或[GitHub Releases](https://github.com/baiying-hzb/BaiYing/releases) 下载最新 macOS 和 Windows 安装包。
 
 ### 从源码运行
 
@@ -115,7 +115,7 @@ BaiYing 在 `SKILLs/skills.config.json` 中配置了 28 个内置技能，包括
 - git 与 pnpm，首次启动时用于从同级目录 `../openclaw` 构建锁定版本的 OpenClaw runtime
 
 ```bash
-git clone https://github.com/netease-hzb/BaiYing.git
+git clone https://github.com/baiying-hzb/BaiYing.git
 cd BaiYing
 npm install
 ```
@@ -332,7 +332,7 @@ Bug 和功能建议请使用仓库 issue 模板。提交 PR 时请包含简要�
 
 ## Star History
 
-[![Star History Chart](docs/res/star-history-202677.png)](https://www.star-history.com/?repos=netease-hzb%2Fbaiying&type=date&legend=bottom-right)
+[![Star History Chart](docs/res/star-history-202677.png)](https://www.star-history.com/?repos=baiying-hzb%2Fbaiying&type=date&legend=bottom-right)
 
 
 ## 许可证

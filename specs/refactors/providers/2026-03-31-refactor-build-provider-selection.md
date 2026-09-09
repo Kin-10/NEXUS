@@ -16,19 +16,19 @@
 | `moonshot` + codingPlan | 专用分支（kimi-coding） | ✅ 已覆盖 |
 | `moonshot` | 专用分支 | ✅ 已覆盖 |
 | `gemini` | 专用分支（google-generative-ai） | ✅ 已覆盖 |
-| `anthropic` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `openai` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `deepseek` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `qwen` | 落入 default `lobster` | ⚠️ 无 codingPlan URL 切换 |
-| `zhipu` | 落入 default `lobster` | ⚠️ 无 codingPlan URL 切换 |
-| `volcengine` | 落入 default `lobster` | ⚠️ 无 codingPlan URL 切换 |
-| `minimax` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `hzbzhiyun` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `stepfun` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `xiaomi` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `openrouter` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `ollama` | 落入 default `lobster` | ⚠️ providerId 错误 |
-| `custom` | 落入 default `lobster` | ✅ 合理兜底 |
+| `anthropic` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `openai` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `deepseek` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `qwen` | 落入 default `baiying` | ⚠️ 无 codingPlan URL 切换 |
+| `zhipu` | 落入 default `baiying` | ⚠️ 无 codingPlan URL 切换 |
+| `volcengine` | 落入 default `baiying` | ⚠️ 无 codingPlan URL 切换 |
+| `minimax` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `hzbzhiyun` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `stepfun` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `xiaomi` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `openrouter` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `ollama` | 落入 default `baiying` | ⚠️ providerId 错误 |
+| `custom` | 落入 default `baiying` | ✅ 合理兜底 |
 
 > **双重 baseURL 切换问题**：上游函数 `resolveMatchedProvider`（`src/main/libs/claudeSettings.ts`，搜索 `function resolveMatchedProvider` 定位）对 moonshot codingPlan 做了 baseURL 切换（`MOONSHOT_CODING_PLAN_OPENAI_BASE_URL` / `MOONSHOT_CODING_PLAN_ANTHROPIC_BASE_URL`）。这意味着传入 `buildProviderSelection` 的 `baseURL` 已经是切换后的值。但 `buildProviderSelection` 自身又独立调用 `normalizeKimiCodingBaseUrl` 做了第二次处理。两层不同的切换逻辑容易导致混淆和维护隐患。
 >
@@ -53,7 +53,7 @@
 | 类别 | 散落的字符串 | 出现位置 |
 |------|-------------|---------|
 | Provider Name | `'baiying-server'`, `'moonshot'`, `'gemini'` 等 | `buildProviderSelection` 的 if 条件、`claudeSettings.ts` 的 `getEffectiveProviderApiFormat`、renderer `config.ts` 的 key |
-| OpenClaw Provider ID | `'lobster'`, `'kimi-coding'`, `'google'` 等 | `buildProviderSelection` 返回值、`syncManagedSessionStore` 迁移逻辑 |
+| OpenClaw Provider ID | `'baiying'`, `'kimi-coding'`, `'google'` 等 | `buildProviderSelection` 返回值、`syncManagedSessionStore` 迁移逻辑 |
 | OpenClaw API 协议 | `'anthropic-messages'`, `'openai-completions'`, `'openai-responses'`, `'google-generative-ai'` | `buildProviderSelection` 每个分支、`mapApiTypeToOpenClawApi` |
 | API Format | `'openai'`, `'anthropic'`, `'gemini'` | `claudeSettings.ts`、renderer config、shared ProviderDef |
 | 特殊值 | `'proxy-managed'`, `'api-key'`, `'k2p5'`, `'thinking'` | `buildProviderSelection` 内部 |
@@ -112,7 +112,7 @@ export const OpenClawProviderId = {
   Xiaomi: 'xiaomi',
   OpenRouter: 'openrouter',
   Ollama: 'ollama',
-  Lobster: 'lobster',  // 兜底 ID
+  baiying: 'baiying',  // 兜底 ID
 } as const;
 export type OpenClawProviderId = typeof OpenClawProviderId[keyof typeof OpenClawProviderId];
 
@@ -278,7 +278,7 @@ type ProviderDescriptor = {
   /**
    * Resolve the API key placeholder or literal value.
    * Most providers use env var placeholders; baiying-server may use 'proxy-managed'.
-   * Default: returns '${LOBSTER_APIKEY_<PROVIDER>}'.
+   * Default: returns '${baiying_APIKEY_<PROVIDER>}'.
    */
   resolveApiKey?: (options: { apiKey: string; providerName: string }) => string;
 
@@ -450,7 +450,7 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
  * maps API type normally, strips /chat/completions from baseUrl.
  */
 const DEFAULT_DESCRIPTOR: ProviderDescriptor = {
-  providerId: '', // 会被运行时动态设置为 providerName 或 'lobster'
+  providerId: '', // 会被运行时动态设置为 providerName 或 'baiying'
   resolveApi: ({ apiType }) => mapApiTypeToOpenClawApi(apiType),
   normalizeBaseUrl: stripChatCompletionsSuffix,
 };
@@ -476,10 +476,10 @@ const resolveDescriptor = (
   }
 
   // Unknown provider: use providerName as providerId,
-  // or 'lobster' for empty names
+  // or 'baiying' for empty names
   return {
     ...DEFAULT_DESCRIPTOR,
-    providerId: providerName || 'lobster',
+    providerId: providerName || 'baiying',
   };
 };
 
@@ -568,7 +568,7 @@ const buildProviderSelection = (options: {
 | Provider 覆盖 | 4 个显式 + 1 个兜底 | 15 个显式 + 1 个兜底 |
 | 新增 provider | 复制整个 if 分支（~30 行） | 添加 1 个 registry 条目（~5 行） |
 | 核心函数行数 | ~160 行（if-else 链） | ~50 行（查表 + 组装） |
-| providerId 正确性 | 11 个 provider 被错误映射为 'lobster' | 所有 provider 使用正确的 ID |
+| providerId 正确性 | 11 个 provider 被错误映射为 'baiying' | 所有 provider 使用正确的 ID |
 | 测试难度 | 需要 mock 整个函数 | 可独立测试每个 descriptor |
 | 耦合度 | 核心函数直接包含所有 provider 逻辑 | 核心函数不感知具体 provider |
 
@@ -635,9 +635,9 @@ const buildProviderSelection = (options: {
 **QA**:
 1. `npx tsc -p electron-tsconfig.json --noEmit` 通过，无新增类型错误
 2. 运行 `npm test -- openclawConfigSync`（Vitest），验证以下行为保持不变（这些测试在 Step 4 编写，但 Step 2 完成后即可运行）：
-   - 场景 5: `buildProviderSelection({ providerName: 'anthropic', ... })` → `providerId === 'anthropic'`（不再是 `'lobster'`）
+   - 场景 5: `buildProviderSelection({ providerName: 'anthropic', ... })` → `providerId === 'anthropic'`（不再是 `'baiying'`）
    - 场景 9: `buildProviderSelection({ providerName: 'ollama', ... })` → `providerId === 'ollama'`
-   - 场景 11: `buildProviderSelection({ providerName: '', ... })` → `providerId === 'lobster'`（兜底行为保持）
+   - 场景 11: `buildProviderSelection({ providerName: '', ... })` → `providerId === 'baiying'`（兜底行为保持）
 
 ### Step 3: 保留 `baiying-server` 的日志
 
@@ -721,17 +721,17 @@ mockGetProxyPort.mockReturnValue(undefined);
 //   baseUrl 不包含 '/openai' 后缀
 //   reasoning === true
 
-// 场景 5: anthropic (之前落入 lobster 兜底的 provider)
+// 场景 5: anthropic (之前落入 baiying 兜底的 provider)
 // 输入: providerName='anthropic', modelId='claude-sonnet-4-6', apiType='anthropic', baseURL='https://api.anthropic.com'
 // 断言:
-//   providerId === 'anthropic' (不再是 'lobster')
+//   providerId === 'anthropic' (不再是 'baiying')
 //   api === 'anthropic-messages'
-//   apiKey === '${LOBSTER_APIKEY_ANTHROPIC}'
+//   apiKey === '${baiying_APIKEY_ANTHROPIC}'
 
 // 场景 6: openai (Responses API 路由)
 // 输入: providerName='openai', modelId='gpt-5.2', apiType='openai', baseURL='https://api.openai.com/v1'
 // 断言:
-//   providerId === 'openai' (不再是 'lobster')
+//   providerId === 'openai' (不再是 'baiying')
 //   api === 'openai-responses' (因为是 api.openai.com)
 
 // 场景 7: openai (非官方端点 → Completions API)
@@ -754,13 +754,13 @@ mockGetProxyPort.mockReturnValue(undefined);
 // 场景 10: unknown/custom provider (兜底)
 // 输入: providerName='my-custom-provider', modelId='some-model', apiType='openai', baseURL='https://example.com/v1'
 // 断言:
-//   providerId === 'my-custom-provider' (使用 providerName，不再是 'lobster')
+//   providerId === 'my-custom-provider' (使用 providerName，不再是 'baiying')
 //   api === 'openai-completions'
 
 // 场景 11: 空 providerName (兜底)
 // 输入: providerName='', modelId='some-model', apiType='openai', baseURL='https://example.com/v1'
 // 断言:
-//   providerId === 'lobster'
+//   providerId === 'baiying'
 
 // 场景 12: baseUrl 带 /chat/completions 后缀的 strip 验证
 // 输入: providerName='deepseek', baseURL='https://api.deepseek.com/v1/chat/completions'
@@ -774,8 +774,8 @@ mockGetProxyPort.mockReturnValue(undefined);
 
 | 风险 | 影响 | 缓解措施 |
 |------|------|----------|
-| providerId 变更导致 session 迁移失效 | 已有 session 的 `modelProvider` 字段与新 providerId 不匹配 | `syncManagedSessionStore` 仅迁移 `lobster` → 新 ID 的 session，不影响已正确映射的 session |
-| Registry 遗漏 provider | 落入 DEFAULT_DESCRIPTOR | DEFAULT_DESCRIPTOR 使用 providerName 作为 providerId，比原来的 'lobster' 更准确 |
+| providerId 变更导致 session 迁移失效 | 已有 session 的 `modelProvider` 字段与新 providerId 不匹配 | `syncManagedSessionStore` 仅迁移 `baiying` → 新 ID 的 session，不影响已正确映射的 session |
+| Registry 遗漏 provider | 落入 DEFAULT_DESCRIPTOR | DEFAULT_DESCRIPTOR 使用 providerName 作为 providerId，比原来的 'baiying' 更准确 |
 | `moonshot:codingPlan` 组合键约定 | 未来其他 provider 的 codingPlan 需同样处理 | 已在 `resolveDescriptor` 中统一处理，添加新组合键即可 |
 | OpenClaw gateway 不认识新的 providerId | gateway 可能拒绝配置 | OpenClaw 的 provider registry 是开放式的，自定义 ID 不会报错 |
 

@@ -250,7 +250,7 @@ function getChannelTitlePrefix(platform: string): string {
     'wecom-openclaw-plugin': t('channelPrefixWecom'),
     nim: t('channelPrefixNim'),
     weixin: t('channelPrefixWeixin'),
-    'netease-bee': t('channelPrefixNeteaseBee'),
+    'baiying-bee': t('channelPrefixbaiyingBee'),
   };
   const staticMap: Record<string, string> = {
     telegram: 'TG',
@@ -274,7 +274,7 @@ const PEER_KIND_LABELS: Record<string, string> = {
  *
  * conversationId formats (from parseChannelSessionKey):
  *   - "{peerKind}:{peerId}"                  e.g. "direct:alice@corp.example.com"
- *   - "{accountId}:{peerKind}:{peerId}"      e.g. "bot1:group:12345@popo.netease.com"
+ *   - "{accountId}:{peerKind}:{peerId}"      e.g. "bot1:group:12345@popo.baiying.com"
  *   - plain id                               e.g. "123456789"
  *
  * Steps:

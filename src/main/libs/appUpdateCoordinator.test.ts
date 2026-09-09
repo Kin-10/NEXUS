@@ -496,7 +496,7 @@ describe('AppUpdateCoordinator', () => {
           value: {
             version: READY_VERSION,
             windowsX64: {
-              url: `https://updates.example.com/LobsterAI-${READY_VERSION}.exe`,
+              url: `https://updates.example.com/baiyingAI-${READY_VERSION}.exe`,
             },
           },
         },

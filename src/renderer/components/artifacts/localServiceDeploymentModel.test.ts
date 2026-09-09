@@ -446,10 +446,10 @@ describe('canCopyLocalServiceDeploymentLink', () => {
 
 describe('getLocalServiceDeploymentProjectName', () => {
   test.each([
-    ['/Users/admin/projects/lobster-app', 'lobster-app'],
-    ['/Users/admin/projects/lobster-app///', 'lobster-app'],
-    ['C:\\Users\\admin\\projects\\lobster-app', 'lobster-app'],
-    ['C:\\Users\\admin\\projects\\lobster-app\\', 'lobster-app'],
+    ['/Users/admin/projects/baiying-app', 'baiying-app'],
+    ['/Users/admin/projects/baiying-app///', 'baiying-app'],
+    ['C:\\Users\\admin\\projects\\baiying-app', 'baiying-app'],
+    ['C:\\Users\\admin\\projects\\baiying-app\\', 'baiying-app'],
     ['relative\\nested/project', 'project'],
     ['standalone-project', 'standalone-project'],
   ])('gets the project name from %s', (directory, expected) => {

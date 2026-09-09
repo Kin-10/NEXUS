@@ -8,24 +8,24 @@ import {
 
 const providerApiKeyEnvVar = (providerName: string): string => {
   const envName = providerName.toUpperCase().replace(/[^A-Z0-9]/g, '_');
-  return `LOBSTER_APIKEY_${envName}`;
+  return `BAIYING_APIKEY_${envName}`;
 };
 
 describe('providerApiKeyEnvVar', () => {
   test('converts simple provider names', () => {
-    expect(providerApiKeyEnvVar(ProviderName.Moonshot)).toBe('LOBSTER_APIKEY_MOONSHOT');
-    expect(providerApiKeyEnvVar(ProviderName.Anthropic)).toBe('LOBSTER_APIKEY_ANTHROPIC');
-    expect(providerApiKeyEnvVar(ProviderName.OpenAI)).toBe('LOBSTER_APIKEY_OPENAI');
-    expect(providerApiKeyEnvVar(ProviderName.Ollama)).toBe('LOBSTER_APIKEY_OLLAMA');
+    expect(providerApiKeyEnvVar(ProviderName.Moonshot)).toBe('BAIYING_APIKEY_MOONSHOT');
+    expect(providerApiKeyEnvVar(ProviderName.Anthropic)).toBe('BAIYING_APIKEY_ANTHROPIC');
+    expect(providerApiKeyEnvVar(ProviderName.OpenAI)).toBe('BAIYING_APIKEY_OPENAI');
+    expect(providerApiKeyEnvVar(ProviderName.Ollama)).toBe('BAIYING_APIKEY_OLLAMA');
   });
 
   test('replaces hyphens and special chars with underscores', () => {
-    expect(providerApiKeyEnvVar(ProviderName.BaiyingServer)).toBe('LOBSTER_APIKEY_BAIYING_SERVER');
-    expect(providerApiKeyEnvVar('my.provider')).toBe('LOBSTER_APIKEY_MY_PROVIDER');
+    expect(providerApiKeyEnvVar(ProviderName.BaiyingServer)).toBe('BAIYING_APIKEY_BAIYING_SERVER');
+    expect(providerApiKeyEnvVar('my.provider')).toBe('BAIYING_APIKEY_MY_PROVIDER');
   });
 
   test('server key matches hardcoded convention', () => {
-    expect(providerApiKeyEnvVar('server')).toBe('LOBSTER_APIKEY_SERVER');
+    expect(providerApiKeyEnvVar('server')).toBe('BAIYING_APIKEY_SERVER');
   });
 });
 
@@ -34,13 +34,13 @@ describe('env var stability on model switch', () => {
     const env: Record<string, string> = {};
 
     if (serverToken) {
-      env.LOBSTER_APIKEY_SERVER = serverToken;
+      env.BAIYING_APIKEY_SERVER = serverToken;
     }
 
     for (const [name, config] of Object.entries(providers)) {
       if (!config.enabled) continue;
       const envName = name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
-      env[`LOBSTER_APIKEY_${envName}`] = config.apiKey;
+      env[`BAIYING_APIKEY_${envName}`] = config.apiKey;
     }
 
     return env;
@@ -68,8 +68,8 @@ describe('env var stability on model switch', () => {
     const envAfter = simulateCollectEnvVars(providers);
 
     expect(JSON.stringify(envBefore)).toBe(JSON.stringify(envAfter));
-    expect(envBefore.LOBSTER_APIKEY_MOONSHOT).toBe('sk-moon-123');
-    expect(envBefore.LOBSTER_APIKEY_ANTHROPIC).toBe('sk-ant-456');
+    expect(envBefore.BAIYING_APIKEY_MOONSHOT).toBe('sk-moon-123');
+    expect(envBefore.BAIYING_APIKEY_ANTHROPIC).toBe('sk-ant-456');
   });
 
   test('only editing apiKey value causes env var change', () => {
@@ -224,7 +224,7 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
 };
 
 const DEFAULT_DESCRIPTOR: ProviderDescriptor = {
-  providerId: OpenClawProviderId.Lobster,
+  providerId: OpenClawProviderId.baiying,
   resolveApi: ({ apiType }) => mapApiTypeToOpenClawApi(apiType),
   normalizeBaseUrl: stripChatCompletionsSuffix,
 };
@@ -244,7 +244,7 @@ const resolveDescriptor = (
   }
   return {
     ...DEFAULT_DESCRIPTOR,
-    providerId: providerName || OpenClawProviderId.Lobster,
+    providerId: providerName || OpenClawProviderId.baiying,
   };
 };
 
@@ -317,14 +317,14 @@ describe('resolveDescriptor', () => {
     expect(d.resolveApi({ apiType: undefined, baseURL: '' })).toBe(OpenClawApi.OpenAICompletions);
   });
 
-  test('unknown provider falls back to lobster providerId', () => {
+  test('unknown provider falls back to baiying providerId', () => {
     const d = resolveDescriptor('some-unknown', false);
     expect(d.providerId).toBe('some-unknown');
   });
 
-  test('empty provider name falls back to lobster', () => {
+  test('empty provider name falls back to baiying', () => {
     const d = resolveDescriptor('', false);
-    expect(d.providerId).toBe(OpenClawProviderId.Lobster);
+    expect(d.providerId).toBe(OpenClawProviderId.baiying);
   });
 
   test('codingPlan flag is ignored for providers without codingPlan entry', () => {
@@ -367,10 +367,10 @@ describe('provider registry coverage', () => {
     }
   });
 
-  test('no provider resolves to lobster fallback', () => {
+  test('no provider resolves to baiying fallback', () => {
     for (const name of allRegistryProviders) {
       const d = resolveDescriptor(name, false);
-      expect(d.providerId).not.toBe(OpenClawProviderId.Lobster);
+      expect(d.providerId).not.toBe(OpenClawProviderId.baiying);
     }
   });
 

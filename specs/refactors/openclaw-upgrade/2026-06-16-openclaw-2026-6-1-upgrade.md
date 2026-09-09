@@ -69,11 +69,11 @@ OPENCLAW_PREPACK_PREPARED=1 npm pack --pack-destination "$PACK_DIR"
 
 ```text
 [plugins] ask-user-question failed to load ... Error: Cannot find module '@sinclair/typebox'
-[plugins] lobster-media-generation failed to load ... Error: Cannot find module '@sinclair/typebox'
+[plugins] baiying-media-generation failed to load ... Error: Cannot find module '@sinclair/typebox'
 [plugins] mcp-bridge failed to load ... Error: Cannot find module '@sinclair/typebox'
 ```
 
-复核后确认这不是偶发编译失败，也不是最后迁移的 OpenClaw patch 引入。`v2026.4.14` 的 OpenClaw 根 `package.json` 直接依赖 `@sinclair/typebox@0.34.49`，BaiYing 本地扩展即使没有声明依赖，也能从 runtime 根 `node_modules` 向上解析到该包。`v2026.6.1` 根依赖中不再包含 `@sinclair/typebox`；6.1 虽在 `src/agents/sessions/extensions/loader.ts` 中为 session extension loader 内置 TypeBox alias，但 BaiYing 的 `ask-user-question`、`lobster-media-generation`、`mcp-bridge` 是通过 gateway plugin loader 的 `plugins.load.paths` 从 `third-party-extensions` 加载，预编译后的 `.js` 还会优先走 native load，因此不会吃到 session extension loader 的 alias。
+复核后确认这不是偶发编译失败，也不是最后迁移的 OpenClaw patch 引入。`v2026.4.14` 的 OpenClaw 根 `package.json` 直接依赖 `@sinclair/typebox@0.34.49`，BaiYing 本地扩展即使没有声明依赖，也能从 runtime 根 `node_modules` 向上解析到该包。`v2026.6.1` 根依赖中不再包含 `@sinclair/typebox`；6.1 虽在 `src/agents/sessions/extensions/loader.ts` 中为 session extension loader 内置 TypeBox alias，但 BaiYing 的 `ask-user-question`、`baiying-media-generation`、`mcp-bridge` 是通过 gateway plugin loader 的 `plugins.load.paths` 从 `third-party-extensions` 加载，预编译后的 `.js` 还会优先走 native load，因此不会吃到 session extension loader 的 alias。
 
 BaiYing 侧修复策略：
 
@@ -83,10 +83,10 @@ BaiYing 侧修复策略：
 
 ### 2.1.3 本地扩展 agent tool contract
 
-TypeBox 修复后，`lobster-media-generation` 能成功加载并打印：
+TypeBox 修复后，`baiying-media-generation` 能成功加载并打印：
 
 ```text
-[lobster-media-generation] registered baiying_image_generate and baiying_video_generate tools.
+[baiying-media-generation] registered baiying_image_generate and baiying_video_generate tools.
 ```
 
 但端侧图片生成仍实际调用 OpenClaw 原生 `image_generate`。复核 OpenClaw 6.1 的 `src/plugins/registry.ts` 后确认，6.1 已要求插件在 manifest `contracts.tools` 中声明 agent tool 名称；否则 `api.registerTool()` 会被拒绝并记录诊断：`plugin must declare contracts.tools before registering agent tools`。旧版 BaiYing 本地扩展没有该字段，因此会出现“插件模块已加载、register() 已执行，但工具未进入有效工具列表”的状态。
@@ -94,7 +94,7 @@ TypeBox 修复后，`lobster-media-generation` 能成功加载并打印：
 BaiYing 侧处理：
 
 1. `ask-user-question/openclaw.plugin.json` 声明 `contracts.tools: ["AskUserQuestion"]`。
-2. `lobster-media-generation/openclaw.plugin.json` 声明 `contracts.tools: ["baiying_image_generate", "baiying_video_generate"]`。
+2. `baiying-media-generation/openclaw.plugin.json` 声明 `contracts.tools: ["baiying_image_generate", "baiying_video_generate"]`。
 3. 不将 OpenClaw 原生 `image_generate` / `video_generate` 加入 deny。当前目标是让 BaiYing 工具正确暴露；原生媒体工具仍保留给 OpenClaw/skill 兼容场景。
 4. `mcp-bridge` 不按同样方式修复：MCP 已迁移到 OpenClaw 原生 `mcp.servers`，当前生成的 `openclaw.json` 不包含 `plugins.entries["mcp-bridge"]`，实际工具由 OpenClaw 原生 MCP runtime 物化。旧 `mcp-bridge` 的工具名来自运行时 MCP 配置，不能用静态 `contracts.tools` 正确枚举；后续若彻底清理旧桥接，应移除扩展同步或保留为不可配置兼容项，而不是伪造静态 contract。
 
@@ -291,9 +291,9 @@ npm run build
 | `scripts/build-openclaw-runtime.sh` | runtime 构建与完整性检查 |
 | `scripts/precompile-openclaw-extensions.cjs` | 本地 OpenClaw 扩展预编译；无 `node_modules` 的本地扩展内联普通 npm 依赖 |
 | `openclaw-extensions/ask-user-question/openclaw.plugin.json` | 声明 `AskUserQuestion` agent tool contract，适配 OpenClaw 6.1 插件工具注册要求 |
-| `openclaw-extensions/lobster-media-generation/openclaw.plugin.json` | 声明 `baiying_image_generate` / `baiying_video_generate` agent tool contracts，确保工具进入有效工具列表 |
+| `openclaw-extensions/baiying-media-generation/openclaw.plugin.json` | 声明 `baiying_image_generate` / `baiying_video_generate` agent tool contracts，确保工具进入有效工具列表 |
 | `openclaw-extensions/ask-user-question/package.json` | 显式声明 `@sinclair/typebox` 依赖 |
-| `openclaw-extensions/lobster-media-generation/package.json` | 显式声明 `@sinclair/typebox` 依赖 |
+| `openclaw-extensions/baiying-media-generation/package.json` | 显式声明 `@sinclair/typebox` 依赖 |
 | `openclaw-extensions/mcp-bridge/package.json` | 显式声明 `@sinclair/typebox` 依赖 |
 | `src/main/libs/openclawConfigSync.ts` | BaiYing 生成 OpenClaw 配置的核心逻辑 |
 | `src/main/libs/openclawConfigSync.runtime.test.ts` | 配置输出测试 |
@@ -357,7 +357,7 @@ npx vitest run src/main/libs/openclawPatches
 node scripts/test-projects.mjs src/agents/tool-loop-detection.test.ts src/agents/embedded-agent-runner/sanitize-session-history.tool-result-details.test.ts src/shared/runtime-import.test.ts src/agents/subagent-registry-lifecycle.test.ts
 npm run openclaw:extensions:local
 npm run openclaw:precompile
-node -e "Promise.all(['ask-user-question','lobster-media-generation','mcp-bridge'].map(async id=>{ const p='file:///'+process.cwd().replace(/\\\\/g,'/')+'/vendor/openclaw-runtime/current/third-party-extensions/'+id+'/index.js'; const m=await import(p); console.log(id, Object.keys(m).join(',')); }))"
+node -e "Promise.all(['ask-user-question','baiying-media-generation','mcp-bridge'].map(async id=>{ const p='file:///'+process.cwd().replace(/\\\\/g,'/')+'/vendor/openclaw-runtime/current/third-party-extensions/'+id+'/index.js'; const m=await import(p); console.log(id, Object.keys(m).join(',')); }))"
 npx vitest run src/main/libs/openclawExtensionManifests.test.ts
 ```
 
@@ -368,8 +368,8 @@ npx vitest run src/main/libs/openclawExtensionManifests.test.ts
 | OpenClaw 目标测试 | 通过 | `tool-loop-detection`、`sanitize-session-history`、`runtime-import`、`subagent-registry-lifecycle` 相关目标测试通过 |
 | `npm run openclaw:extensions:local` | 通过 | 三个本地扩展同步到当前 runtime |
 | `npm run openclaw:precompile` | 通过 | 3 个本地扩展编译、8 个已有 `node_modules` 的第三方插件跳过、0 errors |
-| 直接 import 三个 runtime 插件 | 通过 | `ask-user-question`、`lobster-media-generation`、`mcp-bridge` 均可加载，未再触发 `Cannot find module '@sinclair/typebox'` |
-| `npx vitest run src/main/libs/openclawExtensionManifests.test.ts` | 通过 | 覆盖 `ask-user-question` 与 `lobster-media-generation` 的 `contracts.tools` 声明；`mcp-bridge` 为已迁移前的旧动态桥接路径，当前 MCP 走 `mcp.servers`，不声明静态工具 contract |
+| 直接 import 三个 runtime 插件 | 通过 | `ask-user-question`、`baiying-media-generation`、`mcp-bridge` 均可加载，未再触发 `Cannot find module '@sinclair/typebox'` |
+| `npx vitest run src/main/libs/openclawExtensionManifests.test.ts` | 通过 | 覆盖 `ask-user-question` 与 `baiying-media-generation` 的 `contracts.tools` 声明；`mcp-bridge` 为已迁移前的旧动态桥接路径，当前 MCP 走 `mcp.servers`，不声明静态工具 contract |
 
 后续每迁移一个 patch，应至少完成：
 

@@ -63,7 +63,7 @@ const PromptPanel: React.FC<PromptPanelProps> = ({ action, onPromptSelect, onClo
               onClick={() => handlePromptClick(prompt)}
               className={`group relative flex cursor-pointer flex-col items-start gap-1.5 rounded-xl border px-3.5 py-3 text-left transition-colors duration-200 ${
                 isPromptSelected
-                  ? 'border-[color-mix(in_srgb,var(--lobster-primary)_50%,transparent)] bg-primary-muted'
+                  ? 'border-[color-mix(in_srgb,var(--baiying-primary)_50%,transparent)] bg-primary-muted'
                   : 'border-border bg-surface hover:border-primary/25 hover:bg-surface-raised'
               }`}
             >

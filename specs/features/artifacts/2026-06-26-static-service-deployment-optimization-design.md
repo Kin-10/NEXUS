@@ -133,7 +133,7 @@ export type ShareDeploymentKind = typeof ShareDeploymentKind[keyof typeof ShareD
 
 ### FR-3: 静态构建打包不生成运行时
 
-静态部署禁止生成 `.lobster-static-runtime/server.js`，也不上传 `startCommand = node server.js`。
+静态部署禁止生成 `.baiying-static-runtime/server.js`，也不上传 `startCommand = node server.js`。
 
 静态部署包只包含构建输出目录中的静态文件和 manifest：
 

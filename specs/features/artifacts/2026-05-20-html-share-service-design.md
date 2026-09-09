@@ -128,7 +128,7 @@ selectedArtifact.filePath 存在
 | 入口文件   | 当前 HTML 文件名                                            |
 | 上传内容   | 根目录下符合白名单的静态文件，递归扫描                      |
 | 依赖分析   | HTML/CSS 依赖扫描只用于缺失资源提示，不作为唯一上传依据     |
-| 临时文件   | zip 写入系统临时目录 `lobster-html-share-*`，上传后异步清理 |
+| 临时文件   | zip 写入系统临时目录 `baiying-html-share-*`，上传后异步清理 |
 
 客户端打包限制：
 

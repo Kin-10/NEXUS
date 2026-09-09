@@ -1,5 +1,5 @@
 /**
- * Tailwind CSS v3 plugin — bridges --lobster-* CSS variables into Tailwind utility classes.
+ * Tailwind CSS v3 plugin — bridges --baiying-* CSS variables into Tailwind utility classes.
  *
  * Usage in tailwind.config.js:
  *   plugins: [require('./src/renderer/theme/tailwind/plugin.cjs')]
@@ -24,73 +24,73 @@ module.exports = plugin(function () {
     extend: {
       colors: {
         // === Semantic theme colors (driven by CSS variables) ===
-        background:    withAlpha('--lobster-background'),
-        foreground:    withAlpha('--lobster-foreground'),
+        background:    withAlpha('--baiying-background'),
+        foreground:    withAlpha('--baiying-foreground'),
         primary: {
-          DEFAULT:     withAlpha('--lobster-primary'),
-          foreground:  withAlpha('--lobster-primary-foreground'),
-          hover:       withAlpha('--lobster-primary-hover'),
-          muted:       withAlpha('--lobster-primary-muted'),
-          dark:        withAlpha('--lobster-primary-hover'),  // backward compat alias
+          DEFAULT:     withAlpha('--baiying-primary'),
+          foreground:  withAlpha('--baiying-primary-foreground'),
+          hover:       withAlpha('--baiying-primary-hover'),
+          muted:       withAlpha('--baiying-primary-muted'),
+          dark:        withAlpha('--baiying-primary-hover'),  // backward compat alias
         },
         accent: {
-          DEFAULT:     withAlpha('--lobster-accent'),
-          foreground:  withAlpha('--lobster-accent-foreground'),
+          DEFAULT:     withAlpha('--baiying-accent'),
+          foreground:  withAlpha('--baiying-accent-foreground'),
         },
         surface: {
-          DEFAULT:     withAlpha('--lobster-surface'),
-          foreground:  withAlpha('--lobster-surface-foreground'),
-          raised:      withAlpha('--lobster-surface-raised'),
-          overlay:     withAlpha('--lobster-surface-overlay'),
-          inset:       withAlpha('--lobster-surface-raised'),  // alias
+          DEFAULT:     withAlpha('--baiying-surface'),
+          foreground:  withAlpha('--baiying-surface-foreground'),
+          raised:      withAlpha('--baiying-surface-raised'),
+          overlay:     withAlpha('--baiying-surface-overlay'),
+          inset:       withAlpha('--baiying-surface-raised'),  // alias
         },
         border: {
-          DEFAULT:     withAlpha('--lobster-border'),
-          subtle:      withAlpha('--lobster-border-subtle'),
-          input:       withAlpha('--lobster-input-border'),
+          DEFAULT:     withAlpha('--baiying-border'),
+          subtle:      withAlpha('--baiying-border-subtle'),
+          input:       withAlpha('--baiying-input-border'),
         },
-        muted:         withAlpha('--lobster-text-muted'),
+        muted:         withAlpha('--baiying-text-muted'),
         destructive: {
-          DEFAULT:     withAlpha('--lobster-destructive'),
-          foreground:  withAlpha('--lobster-destructive-foreground'),
+          DEFAULT:     withAlpha('--baiying-destructive'),
+          foreground:  withAlpha('--baiying-destructive-foreground'),
         },
-        success:       withAlpha('--lobster-success'),
-        warning:       withAlpha('--lobster-warning'),
+        success:       withAlpha('--baiying-success'),
+        warning:       withAlpha('--baiying-warning'),
 
-        // === Legacy claude.* aliases (map to --lobster-* for backward compat) ===
+        // === Legacy claude.* aliases (map to --baiying-* for backward compat) ===
         claude: {
-          bg:                withAlpha('--lobster-background'),
-          surface:           withAlpha('--lobster-surface'),
-          surfaceHover:      withAlpha('--lobster-surface-raised'),
-          surfaceMuted:      withAlpha('--lobster-surface-raised'),
-          surfaceInset:      withAlpha('--lobster-surface-raised'),
-          border:            withAlpha('--lobster-border'),
-          borderLight:       withAlpha('--lobster-border-subtle'),
-          text:              withAlpha('--lobster-text-primary'),
-          textSecondary:     withAlpha('--lobster-text-secondary'),
+          bg:                withAlpha('--baiying-background'),
+          surface:           withAlpha('--baiying-surface'),
+          surfaceHover:      withAlpha('--baiying-surface-raised'),
+          surfaceMuted:      withAlpha('--baiying-surface-raised'),
+          surfaceInset:      withAlpha('--baiying-surface-raised'),
+          border:            withAlpha('--baiying-border'),
+          borderLight:       withAlpha('--baiying-border-subtle'),
+          text:              withAlpha('--baiying-text-primary'),
+          textSecondary:     withAlpha('--baiying-text-secondary'),
           // dark.* aliases point to the same vars — theme handles light/dark
-          darkBg:            withAlpha('--lobster-background'),
-          darkSurface:       withAlpha('--lobster-surface'),
-          darkSurfaceHover:  withAlpha('--lobster-surface-raised'),
-          darkSurfaceMuted:  withAlpha('--lobster-surface-raised'),
-          darkSurfaceInset:  withAlpha('--lobster-surface-raised'),
-          darkBorder:        withAlpha('--lobster-border'),
-          darkBorderLight:   withAlpha('--lobster-border-subtle'),
-          darkText:          withAlpha('--lobster-text-primary'),
-          darkTextSecondary: withAlpha('--lobster-text-secondary'),
+          darkBg:            withAlpha('--baiying-background'),
+          darkSurface:       withAlpha('--baiying-surface'),
+          darkSurfaceHover:  withAlpha('--baiying-surface-raised'),
+          darkSurfaceMuted:  withAlpha('--baiying-surface-raised'),
+          darkSurfaceInset:  withAlpha('--baiying-surface-raised'),
+          darkBorder:        withAlpha('--baiying-border'),
+          darkBorderLight:   withAlpha('--baiying-border-subtle'),
+          darkText:          withAlpha('--baiying-text-primary'),
+          darkTextSecondary: withAlpha('--baiying-text-secondary'),
           // Accent
-          accent:            withAlpha('--lobster-primary'),
-          accentHover:       withAlpha('--lobster-primary-hover'),
-          accentLight:       withAlpha('--lobster-primary'),
-          accentMuted:       withAlpha('--lobster-primary-muted'),
+          accent:            withAlpha('--baiying-primary'),
+          accentHover:       withAlpha('--baiying-primary-hover'),
+          accentLight:       withAlpha('--baiying-primary'),
+          accentMuted:       withAlpha('--baiying-primary-muted'),
         },
         secondary: {
-          DEFAULT: withAlpha('--lobster-text-secondary'),
-          dark:    withAlpha('--lobster-border'),
+          DEFAULT: withAlpha('--baiying-text-secondary'),
+          dark:    withAlpha('--baiying-border'),
         },
       },
       borderRadius: {
-        theme: 'var(--lobster-radius)',
+        theme: 'var(--baiying-radius)',
       },
     },
   },

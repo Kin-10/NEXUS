@@ -477,7 +477,7 @@ const StartupCreditCampaign: React.FC<StartupCreditCampaignProps> = ({
           current.descriptor,
           {
             source: StartupCreditCampaignSource.LoginReturn,
-            return_to: 'netease_user_bonus_activity',
+            return_to: 'baiying_user_bonus_activity',
             login_method: 'browser',
           },
         );
@@ -737,7 +737,7 @@ const StartupCreditCampaign: React.FC<StartupCreditCampaignProps> = ({
           {
             source: offerSourceRef.current,
             redirect_url: loginResult.redirectUrl,
-            return_to: 'netease_user_bonus_activity',
+            return_to: 'baiying_user_bonus_activity',
             reason: 'claim_requires_login',
           },
         );

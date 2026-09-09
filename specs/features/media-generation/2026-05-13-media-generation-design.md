@@ -21,13 +21,13 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 
 **新建 BaiYing 托管工具，但复用 OpenClaw 原生 media generation 语义。**
 
-即客户端新增 `lobster_image_generate` / `lobster_video_generate` 两个 BaiYing 管理的内置工具，工具名称明确表达它们走 `baiying-server`，但参数、action、返回结构和运行语义尽量与 OpenClaw 原生 `image_generate` / `video_generate` 对齐。
+即客户端新增 `baiying_image_generate` / `baiying_video_generate` 两个 BaiYing 管理的内置工具，工具名称明确表达它们走 `baiying-server`，但参数、action、返回结构和运行语义尽量与 OpenClaw 原生 `image_generate` / `video_generate` 对齐。
 
 ### 1.2 核心定义
 
 “新建 BaiYing 托管 tool，但复用 OpenClaw 原生语义”指：
 
-- **tool 名称归 BaiYing**：使用 `lobster_image_generate` / `lobster_video_generate`，明确走 BaiYing 登录态和计费系统
+- **tool 名称归 BaiYing**：使用 `baiying_image_generate` / `baiying_video_generate`，明确走 BaiYing 登录态和计费系统
 - **参数语义复用 OpenClaw**：沿用 `prompt`、`images`、`videos`、`durationSeconds`、`resolution`、`aspectRatio`、`action=list|generate|status` 等字段
 - **模型路由归 server**：客户端不直接接阿里百炼、火山、MiniMax、Kling、Vidu 等供应商
 - **异步和计费归 server**：额度冻结、扣费、失败退款、任务状态、资产存储、数据看板均由 `baiying-server` 负责
@@ -36,7 +36,7 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 
 ### 1.3 目标
 
-1. 在 BaiYing 客户端内置 `lobster_image_generate` / `lobster_video_generate` 工具
+1. 在 BaiYing 客户端内置 `baiying_image_generate` / `baiying_video_generate` 工具
 2. 工具调用统一带上当前用户的 access token 请求 `baiying-server`
 3. 对话框下方提供 Image / Video / Auto 的模型选择 UI
 4. 用户选择生成模型后，agent 当前 turn 使用对应 BaiYing 托管工具
@@ -58,19 +58,19 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 
 **Given** 用户打开 Cowork 对话输入框  
 **When** 用户点击模型选择器，选择 Image tab 下的某个图片模型，并输入“生成一张海边龙虾吉祥物海报”  
-**Then** 当前 turn 中 agent 调用 `lobster_image_generate`，工具带 access token 调用 `baiying-server`，server 完成生成、扣费并返回图片资产，客户端在会话中展示生成结果
+**Then** 当前 turn 中 agent 调用 `baiying_image_generate`，工具带 access token 调用 `baiying-server`，server 完成生成、扣费并返回图片资产，客户端在会话中展示生成结果
 
 ### 场景 2: 选择视频模型生成视频
 
 **Given** 用户在模型选择器中选择 Video tab 下的 `doubao-seedance-2-0-260128`  
 **When** 用户输入“生成一个 5 秒的龙虾冲浪短片，16:9，1080P”  
-**Then** 当前 turn 中 agent 调用 `lobster_video_generate`，server 创建视频异步任务并冻结预计额度，任务完成后客户端将视频结果回填到原会话
+**Then** 当前 turn 中 agent 调用 `baiying_video_generate`，server 创建视频异步任务并冻结预计额度，任务完成后客户端将视频结果回填到原会话
 
 ### 场景 3: Auto 模式
 
 **Given** 用户启用模型选择器中的 Auto  
 **When** 用户输入“把这张图变成一个 10 秒的视频”并附带图片  
-**Then** 客户端根据输入和服务端默认策略选择合适的 BaiYing 视频模型，agent 当前 turn 使用 `lobster_video_generate`
+**Then** 客户端根据输入和服务端默认策略选择合适的 BaiYing 视频模型，agent 当前 turn 使用 `baiying_video_generate`
 
 ### 场景 4: 普通聊天不触发媒体扣费
 
@@ -81,7 +81,7 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 ### 场景 5: 额度不足
 
 **Given** 用户剩余额度不足以提交视频任务  
-**When** agent 调用 `lobster_video_generate`  
+**When** agent 调用 `baiying_video_generate`  
 **Then** server 返回额度不足错误，tool 将错误转为可读结果，客户端刷新 quota，并提示用户升级套餐、联系商务或等待额度重置
 
 ### 场景 5a: 非订阅加油包用户尝试生成媒体
@@ -106,13 +106,13 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 
 **Given** 用户在输入框上传了多张图片、视频或音频，附件区显示 `图片1`、`图片2`、`视频1` 等编号  
 **When** 用户在 prompt 中输入 `@` 并选择某个附件，例如“参考@视频1 中的动作，生成@图片2 和@图片3 中的角色打斗的视频”  
-**Then** 输入框插入可视化引用 token，发送时客户端将这些引用解析为结构化 media references，并传给 `lobster_video_generate`
+**Then** 输入框插入可视化引用 token，发送时客户端将这些引用解析为结构化 media references，并传给 `baiying_video_generate`
 
 ## 3. 功能需求
 
 ### FR-1: BaiYing 图片生成工具
 
-新增内置工具 `lobster_image_generate`。
+新增内置工具 `baiying_image_generate`。
 
 工具支持：
 
@@ -126,7 +126,7 @@ OpenClaw 已经提供原生 `image_generate` 和 `video_generate` 工具，包�
 参数尽量兼容 OpenClaw `image_generate`：
 
 ```ts
-type LobsterImageGenerateInput = {
+type baiyingImageGenerateInput = {
   action?: 'generate' | 'list' | 'status';
   prompt?: string;
   model?: string;
@@ -144,7 +144,7 @@ type LobsterImageGenerateInput = {
 
 ### FR-2: BaiYing 视频生成工具
 
-新增内置工具 `lobster_video_generate`。
+新增内置工具 `baiying_video_generate`。
 
 工具支持：
 
@@ -159,7 +159,7 @@ type LobsterImageGenerateInput = {
 参数尽量兼容 OpenClaw `video_generate`：
 
 ```ts
-type LobsterVideoGenerateInput = {
+type baiyingVideoGenerateInput = {
   action?: 'generate' | 'list' | 'status' | 'cancel';
   prompt?: string;
   model?: string;
@@ -217,8 +217,8 @@ type LobsterVideoGenerateInput = {
 
 | 用户选择 | 工具策略 |
 |---------|----------|
-| Image 模型 | 开放 `lobster_image_generate`，隐藏或 deny 原生 `image_generate` |
-| Video 模型 | 开放 `lobster_video_generate`，隐藏或 deny 原生 `video_generate` |
+| Image 模型 | 开放 `baiying_image_generate`，隐藏或 deny 原生 `image_generate` |
+| Video 模型 | 开放 `baiying_video_generate`，隐藏或 deny 原生 `video_generate` |
 | Auto | 根据输入/附件/server 默认策略开放对应 BaiYing tool |
 | 普通聊天 | 不主动暴露 BaiYing media tool |
 
@@ -398,7 +398,7 @@ type MediaAttachmentRef = {
 工具参数映射：
 
 ```ts
-lobster_video_generate({
+baiying_video_generate({
   prompt: '参考@视频1 中的动作，生成@图片2 和@图片3 中的角色打斗的视频。',
   videos: ['/path/to/action.mp4'],
   videoRoles: ['reference_video'],
@@ -422,7 +422,7 @@ flowchart LR
   UI["Cowork 输入框模型选择"] --> Renderer["Renderer coworkService"]
   Renderer --> Main["Main IPC / CoworkEngineRouter"]
   Main --> Gateway["OpenClaw Gateway"]
-  Gateway --> Tool["lobster_image_generate / lobster_video_generate"]
+  Gateway --> Tool["baiying_image_generate / baiying_video_generate"]
   Tool --> Server["baiying-server"]
   Server --> Provider["Aliyun / Volcengine / MiniMax / Kling / Vidu"]
   Server --> Billing["Quota / Billing / Dashboard"]
@@ -445,7 +445,7 @@ flowchart LR
 新增本地 OpenClaw extension：
 
 ```text
-openclaw-extensions/lobster-media-generation/
+openclaw-extensions/baiying-media-generation/
 ├── index.ts
 ├── openclaw.plugin.json
 └── package.json
@@ -453,8 +453,8 @@ openclaw-extensions/lobster-media-generation/
 
 插件注册两个 tool：
 
-- `lobster_image_generate`
-- `lobster_video_generate`
+- `baiying_image_generate`
+- `baiying_video_generate`
 
 插件 config 由 `openclawConfigSync.ts` 注入：
 
@@ -463,7 +463,7 @@ openclaw-extensions/lobster-media-generation/
   enabled: true,
   config: {
     callbackUrl: 'http://127.0.0.1:<port>/media-generation/tool',
-    secret: '${LOBSTER_MCP_BRIDGE_SECRET}',
+    secret: '${baiying_MCP_BRIDGE_SECRET}',
     requestTimeoutMs: 120000
   }
 }
@@ -482,11 +482,11 @@ openclaw-extensions/lobster-media-generation/
 ```http
 POST /media-generation/tool
 Headers:
-  x-lobster-media-secret: <secret>
+  x-baiying-media-secret: <secret>
 
 Body:
 {
-  "tool": "lobster_video_generate",
+  "tool": "baiying_video_generate",
   "args": {},
   "context": {
     "sessionKey": "...",
@@ -594,7 +594,7 @@ Content-Type: application/json
 {
   "type": "video",
   "model": "doubao-seedance-2-0-260128",
-  "prompt": "Generate a 5 second lobster surfing video.",
+  "prompt": "Generate a 5 second baiying surfing video.",
   "inputs": {
     "images": [],
     "videos": []
@@ -676,7 +676,7 @@ Authorization: Bearer <accessToken>
 OpenClaw tool result 使用结构化 text + details：
 
 ```ts
-type LobsterMediaToolResult = {
+type baiyingMediaToolResult = {
   content: Array<{ type: 'text'; text: string }>;
   isError?: boolean;
   details: {
@@ -780,10 +780,10 @@ main process 将该 metadata 用于：
 
 推荐第一阶段实现：
 
-- `lobster_image_generate` / `lobster_video_generate` 作为插件常驻注册
+- `baiying_image_generate` / `baiying_video_generate` 作为插件常驻注册
 - 插件 tool execute 阶段检查 main process 当前 turn media selection
 - 如果当前 turn 未选择对应 mode，返回 `isError=true` 且提示工具不可用于当前 turn
-- 同时在 prompt 中明确：“当用户选择 BaiYing Image/Video 模型时，必须使用 lobster_* 工具”
+- 同时在 prompt 中明确：“当用户选择 BaiYing Image/Video 模型时，必须使用 baiying_* 工具”
 
 后续优化为真正的 turn 级工具可见性控制。
 
@@ -868,9 +868,9 @@ admin 后台基于这些数据做流量、成本、收入和失败率看板。
 
 | 文件 | 操作 |
 |------|------|
-| `openclaw-extensions/lobster-media-generation/openclaw.plugin.json` | 新建，声明 BaiYing media generation 插件 |
-| `openclaw-extensions/lobster-media-generation/index.ts` | 新建，注册 `lobster_image_generate` / `lobster_video_generate` |
-| `openclaw-extensions/lobster-media-generation/package.json` | 新建，插件包配置 |
+| `openclaw-extensions/baiying-media-generation/openclaw.plugin.json` | 新建，声明 BaiYing media generation 插件 |
+| `openclaw-extensions/baiying-media-generation/index.ts` | 新建，注册 `baiying_image_generate` / `baiying_video_generate` |
+| `openclaw-extensions/baiying-media-generation/package.json` | 新建，插件包配置 |
 | `src/main/libs/openclawConfigSync.ts` | 修改，启用插件并注入 callback config |
 | `src/main/main.ts` | 修改，新增 media generation callback route / IPC / entitlement refresh |
 | `src/main/preload.ts` | 修改，暴露模型列表、媒体权益和选择相关 IPC |
@@ -891,14 +891,14 @@ admin 后台基于这些数据做流量、成本、收入和失败率看板。
 ### Phase 1: Server contract 和工具骨架
 
 1. 与 `baiying-server` 对齐 `/api/media/models`、`/api/media/entitlement`、`/api/media/generations`、status、cancel API
-2. 新建 `lobster-media-generation` OpenClaw extension
+2. 新建 `baiying-media-generation` OpenClaw extension
 3. 注册两个工具，schema 对齐 OpenClaw 原生语义
 4. main process 增加 callback route，完成 token 鉴权和 server 调用
 5. 支持 `action=list` 和图片同步生成最小闭环
 
 ### Phase 2: 视频异步任务
 
-1. 实现 `lobster_video_generate action=generate`
+1. 实现 `baiying_video_generate action=generate`
 2. main process 持久化 task 映射
 3. 轮询任务状态
 4. 成功后回填视频结果到原会话
@@ -923,8 +923,8 @@ admin 后台基于这些数据做流量、成本、收入和失败率看板。
 ## 8. 验收标准
 
 1. 输入框模型选择器可以显示 server 返回的图片和视频模型
-2. 用户选择图片模型后，当前 turn 调用 `lobster_image_generate`
-3. 用户选择视频模型后，当前 turn 调用 `lobster_video_generate`
+2. 用户选择图片模型后，当前 turn 调用 `baiying_image_generate`
+3. 用户选择视频模型后，当前 turn 调用 `baiying_video_generate`
 4. 普通聊天 turn 不主动触发 BaiYing media tool
 5. 工具请求携带 access token，且 token 不出现在日志、消息和 tool result 中
 6. 额度不足时生成失败且提示清晰，quota 自动刷新

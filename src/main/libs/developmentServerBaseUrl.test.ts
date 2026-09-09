@@ -5,7 +5,7 @@ import { resolveDevelopmentServerBaseUrl } from './developmentServerBaseUrl';
 const defaultBaseUrl = 'https://baiying-server.inner.hzb.com';
 
 describe('developmentServerBaseUrl', () => {
-  test('uses a literal loopback server with an explicit port in development', () => {
+  test('uses a literal loopback or private LAN server with an explicit port in development', () => {
     expect(resolveDevelopmentServerBaseUrl({
       defaultBaseUrl,
       developmentOverride: ' http://127.0.0.1:18878/ ',
@@ -19,6 +19,13 @@ describe('developmentServerBaseUrl', () => {
       isDev: true,
       isPackaged: false,
     })).toBe('https://[::1]:18878');
+
+    expect(resolveDevelopmentServerBaseUrl({
+      defaultBaseUrl,
+      developmentOverride: 'http://192.168.101.24:8899',
+      isDev: true,
+      isPackaged: false,
+    })).toBe('http://192.168.101.24:8899');
   });
 
   test('keeps the default server outside an unpackaged development build', () => {
@@ -37,10 +44,11 @@ describe('developmentServerBaseUrl', () => {
     })).toBe(defaultBaseUrl);
   });
 
-  test('rejects hostnames, remote hosts, non-HTTP URLs and missing ports', () => {
+  test('rejects hostnames, public hosts, non-HTTP URLs and missing ports', () => {
     for (const developmentOverride of [
       'http://localhost:18878',
       'https://server.example:18878',
+      'http://8.8.8.8:18878',
       'file:///tmp/server',
     ]) {
       expect(() => resolveDevelopmentServerBaseUrl({
@@ -48,7 +56,7 @@ describe('developmentServerBaseUrl', () => {
         developmentOverride,
         isDev: true,
         isPackaged: false,
-      })).toThrow('literal loopback HTTP(S) address');
+      })).toThrow('literal loopback or private LAN HTTP(S) address');
     }
 
     expect(() => resolveDevelopmentServerBaseUrl({

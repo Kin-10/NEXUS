@@ -2,11 +2,11 @@
 
 日期：2026-09-01
 
-状态：服务端与 LobsterAI 客户端已接入，功能默认关闭，待迁移、环境联调和灰度启用。
+状态：服务端与 baiyingAI 客户端已接入，功能默认关闭，待迁移、环境联调和灰度启用。
 
 ## Change Summary
 
-`lobsterai-server` 新增模型生成视频专用分享链路。客户端只能用当前账号拥有的成功视频任务 `taskId + outputIndex` 创建分享，不能通过通用 multipart 接口上传本地视频，也不能把文件路径、结果 URL 或 NOS URL作为来源凭证。
+`baiyingai-server` 新增模型生成视频专用分享链路。客户端只能用当前账号拥有的成功视频任务 `taskId + outputIndex` 创建分享，不能通过通用 multipart 接口上传本地视频，也不能把文件路径、结果 URL 或 NOS URL作为来源凭证。
 
 服务端会在新视频任务成功后异步把结果持久化到 NOS。历史任务首次分享时按需补存：先读取原结果地址，地址失效时重新查询原供应商任务；两种方式都失败则返回明确错误。分享创建、额度、订阅过期、访问方式、分享码、状态、统计和生命周期继续复用其他文件分享策略。
 
@@ -178,7 +178,7 @@ Range: bytes=<start>-<end>
 
 ## Frontend Action Items
 
-LobsterAI 已按以下契约接入：
+baiyingAI 已按以下契约接入：
 
 1. 视频生成成功消息和本地持久化资产保留 `taskId + outputIndex`；
 2. 只有拥有明确生成来源或可安全反查的旧工具结果才显示分享入口；普通本地视频不可分享；
@@ -188,7 +188,7 @@ LobsterAI 已按以下契约接入：
 6. 视频分享记录会出现在“我的文件”的媒体分类中，列表和详情均不返回 NOS 地址；
 7. 权益与额度继续走现有文件分享预检和服务端最终校验，客户端不硬编码订阅或普通用户规则。
 
-`lobsterai-portal` 不需要改动，也不能增加视频分享入口。
+`baiyingai-portal` 不需要改动，也不能增加视频分享入口。
 
 ## Auth Requirements
 
@@ -199,10 +199,10 @@ LobsterAI 已按以下契约接入：
 
 ## Migration and Rollout
 
-1. 在服务端先执行 `lobsterai-server/sql/V84__generated_video_share.sql`。迁移兼容 MySQL 5.7，不使用外键、`CHECK`、窗口函数或 MySQL 8 专属 JSON 表函数。
+1. 在服务端先执行 `baiyingai-server/sql/V84__generated_video_share.sql`。迁移兼容 MySQL 5.7，不使用外键、`CHECK`、窗口函数或 MySQL 8 专属 JSON 表函数。
 2. 部署服务端。视频下载和 NOS 持久化不依赖 `ffprobe` 或 `ffmpeg`；启用视频内容审核时，审核环境仍需单独提供 `ffmpeg`。
 3. 视频下载不需要配置供应商域名白名单；服务端只接受视频任务 `taskId + outputIndex`，并对供应商返回地址及每一跳重定向执行 HTTPS 和公网 IP 校验。
-4. 部署 `lobsterai-admin`，再部署 LobsterAI 客户端。
+4. 部署 `baiyingai-admin`，再部署 baiyingAI 客户端。
 5. 完成 NOS 持久化、供应商过期地址刷新、内容审核、分享码和 Range 联调后，将 `HTML_SHARE_GENERATED_VIDEO_ENABLED` 从默认 `false` 灰度开启。
 6. 可选配置 `HTML_SHARE_GENERATED_VIDEO_AUTO_PERSIST_CREATED_AFTER=YYYY-MM-DDTHH:mm:ss`，只补偿指定时间之后的成功任务；上线前历史任务默认在分享时按需补存。
 

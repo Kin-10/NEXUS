@@ -14,7 +14,7 @@ BaiYing 在 OpenClaw `v2026.6.1` 基线上预装多个 IM 相关第三方插件�
 | POPO | `2.1.8` | `2.1.13` | 升级 |
 | Weixin | `2.4.3` | `2.4.3` | 不改动 |
 | ClawEmail | `0.9.12` | `0.9.12` | 不改动 |
-| NetEase Bee | `0.1.3` | `0.1.3` | 不升级，但需要安装兼容 |
+| baiying Bee | `0.1.3` | `0.1.3` | 不升级，但需要安装兼容 |
 | NIM channel | git tag `1.1.1` | git tag `1.1.1` | 不升级，仍为 optional |
 
 实际从零安装时暴露出四个和插件安装链路相关的问题：
@@ -22,7 +22,7 @@ BaiYing 在 OpenClaw `v2026.6.1` 基线上预装多个 IM 相关第三方插件�
 1. OpenClaw `v2026.6.1` 的 npm 插件安装布局发生变化，新版 CLI 会把 npm 插件放入临时 state 目录的 `npm/projects/.../node_modules/...`，而旧脚本只查找 `extensions/...`，导致“下载成功但被误判为失败”。
 2. 新版 npm project 布局下，插件依赖位于 project 级 `node_modules`，例如 `image-size`、`dingtalk-stream` 是插件包目录的 sibling dependency。只复制插件包目录会导致 gateway runtime 加载时缺依赖。
 3. OpenClaw CLI 在 BaiYing 的构建子进程中没有稳定识别 bundled channel 目录，日志出现 `imessage` / `telegram` 的 `missing generated module` warning。Telegram 实际产物存在，但 setup/bundled metadata 扫描路径不确定。
-4. `openclaw-netease-bee@0.1.3` npm 包只发布了 TypeScript runtime entry `./index.ts`，没有发布 `index.js` / `dist/index.js` 等编译产物。OpenClaw `v2026.6.1` 对 npm 包安装不再接受 TypeScript runtime fallback，因此从零构建会在 Bee 插件安装阶段失败。
+4. `openclaw-baiying-bee@0.1.3` npm 包只发布了 TypeScript runtime entry `./index.ts`，没有发布 `index.js` / `dist/index.js` 等编译产物。OpenClaw `v2026.6.1` 对 npm 包安装不再接受 TypeScript runtime fallback，因此从零构建会在 Bee 插件安装阶段失败。
 
 ### 1.2 目标
 
@@ -109,7 +109,7 @@ vendor/openclaw-runtime/current/dist/extensions/telegram/setup-entry.js
 
 ### 2.5 Bee 包发布形态不满足 OpenClaw 6.1 npm 安装要求
 
-`openclaw-netease-bee@0.1.3` 的 npm 包内容包含：
+`openclaw-baiying-bee@0.1.3` 的 npm 包内容包含：
 
 ```text
 index.ts
@@ -162,7 +162,7 @@ Also not a valid hook pack: Error: package.json missing openclaw.hooks
 
 - `@tencent-weixin/openclaw-weixin@2.4.3`
 - `@clawemail/email@0.9.12`
-- `openclaw-netease-bee@0.1.3`
+- `openclaw-baiying-bee@0.1.3`
 - `openclaw-nim-channel` git tag `1.1.1`
 
 ### 3.2 兼容新旧安装布局
@@ -222,15 +222,15 @@ scripts/openclaw-plugin-preparers/typescript-plugin.cjs
 两个插件分别通过薄包装声明允许处理的 npm 包名：
 
 ```text
-scripts/openclaw-plugin-preparers/netease-bee.cjs
+scripts/openclaw-plugin-preparers/baiying-bee.cjs
 scripts/openclaw-plugin-preparers/nim-channel.cjs
 ```
 
-主安装脚本只对 `openclaw-netease-bee` 和 `openclaw-nim-channel` 调用兼容脚本，不自动修改其他第三方插件包。
+主安装脚本只对 `openclaw-baiying-bee` 和 `openclaw-nim-channel` 调用兼容脚本，不自动修改其他第三方插件包。
 
 兼容流程：
 
-1. Bee 通过 `npm pack openclaw-netease-bee@0.1.3` 得到原始 tgz；NIM 从固定 Git ref clone 后执行 `npm pack`。
+1. Bee 通过 `npm pack openclaw-baiying-bee@0.1.3` 得到原始 tgz；NIM 从固定 Git ref clone 后执行 `npm pack`。
 2. 解压 tgz 到临时目录。
 3. 校验包内 `package.json#name`，并读取 `package.json.openclaw.extensions`。
 4. 如果 runtime entry 已经是 JavaScript，则不处理。
@@ -269,10 +269,10 @@ scripts/openclaw-plugin-preparers/nim-channel.cjs
 | `package.json` | 更新指定 OpenClaw IM 插件版本 |
 | `scripts/ensure-openclaw-plugins.cjs` | 插件安装主流程；兼容新旧布局；设置 bundled plugins 目录；接入 Bee/NIM 预处理 |
 | `scripts/openclaw-plugin-preparers/typescript-plugin.cjs` | TypeScript runtime entry 的通用编译、元数据修正和重打包逻辑 |
-| `scripts/openclaw-plugin-preparers/netease-bee.cjs` | Bee 包名约束与通用准备器包装 |
+| `scripts/openclaw-plugin-preparers/baiying-bee.cjs` | Bee 包名约束与通用准备器包装 |
 | `scripts/openclaw-plugin-preparers/nim-channel.cjs` | NIM 包名约束与通用准备器包装 |
 | `tests/ensure-openclaw-plugins.test.ts` | 覆盖安装布局查找与 peer 链接过滤 |
-| `tests/prepare-openclaw-netease-bee.test.ts` | 覆盖 Bee 预处理脚本 |
+| `tests/prepare-openclaw-baiying-bee.test.ts` | 覆盖 Bee 预处理脚本 |
 | `tests/prepare-openclaw-nim-channel.test.ts` | 覆盖 NIM 预处理脚本与 scoped 包名校验 |
 
 ## 6. 验证计划
@@ -282,14 +282,14 @@ scripts/openclaw-plugin-preparers/nim-channel.cjs
 ```bash
 node --check scripts/ensure-openclaw-plugins.cjs
 node --check scripts/openclaw-plugin-preparers/typescript-plugin.cjs
-node --check scripts/openclaw-plugin-preparers/netease-bee.cjs
+node --check scripts/openclaw-plugin-preparers/baiying-bee.cjs
 node --check scripts/openclaw-plugin-preparers/nim-channel.cjs
 ```
 
 ### 6.2 单元测试
 
 ```bash
-npm test -- ensure-openclaw-plugins prepare-openclaw-netease-bee prepare-openclaw-nim-channel
+npm test -- ensure-openclaw-plugins prepare-openclaw-baiying-bee prepare-openclaw-nim-channel
 ```
 
 预期：
@@ -311,8 +311,8 @@ npm run openclaw:plugins
 - Bee 安装成功，最终 runtime 中：
 
 ```text
-third-party-extensions/openclaw-netease-bee/package.json
-third-party-extensions/openclaw-netease-bee/index.mjs
+third-party-extensions/openclaw-baiying-bee/package.json
+third-party-extensions/openclaw-baiying-bee/index.mjs
 ```
 
 并且 `package.json.openclaw.extensions` 指向：

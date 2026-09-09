@@ -50,6 +50,9 @@ export interface BuildLogUrlOptions {
   isSubscriber?: boolean;
   language?: string;
   latestKeyfrom?: string;
+  localIp?: string;
+  macAddress?: string;
+  osUsername?: string;
   platform?: string;
   subscriptionStatus?: string;
   userId?: string;
@@ -61,12 +64,20 @@ type LogKeyfromAttribution = {
   latestKeyfrom: string;
 };
 
+type AnalyticsDeviceInfoSnapshot = {
+  osUsername: string;
+  macAddress: string;
+  localIp: string;
+};
+
 let cachedAppVersion = '';
 let appVersionPromise: Promise<string> | null = null;
 let cachedInstallationId: string | null = null;
 let installationIdPromise: Promise<string | null> | null = null;
 let cachedKeyfromAttribution: LogKeyfromAttribution | null = null;
 let keyfromAttributionPromise: Promise<LogKeyfromAttribution | null> | null = null;
+let cachedDeviceInfo: AnalyticsDeviceInfoSnapshot | null = null;
+let deviceInfoPromise: Promise<AnalyticsDeviceInfoSnapshot | null> | null = null;
 
 interface PendingAnalyticsEvent {
   params: LogEventParams;
@@ -175,6 +186,32 @@ const getWindowKeyfromAttribution = async (): Promise<LogKeyfromAttribution | nu
   return keyfromAttributionPromise;
 };
 
+const getWindowAnalyticsDeviceInfo = async (): Promise<AnalyticsDeviceInfoSnapshot | null> => {
+  if (cachedDeviceInfo) {
+    return cachedDeviceInfo;
+  }
+  if (typeof window === 'undefined' || !window.electron?.appInfo?.getAnalyticsDeviceInfo) {
+    return null;
+  }
+  if (!deviceInfoPromise) {
+    deviceInfoPromise = window.electron.appInfo.getAnalyticsDeviceInfo()
+      .then(info => {
+        cachedDeviceInfo = {
+          osUsername: info.osUsername || '',
+          macAddress: info.macAddress || '',
+          localIp: info.localIp || '',
+        };
+        return cachedDeviceInfo;
+      })
+      .catch(error => {
+        deviceInfoPromise = null;
+        writeReporterLog('warn', 'failed to load device info for analytics', error);
+        return null;
+      });
+  }
+  return deviceInfoPromise;
+};
+
 const getWindowPlatform = (): string => {
   if (typeof window === 'undefined') {
     return '';
@@ -201,6 +238,9 @@ export const buildLogUrl = (
   const firstKeyfrom = options.firstKeyfrom ?? cachedKeyfromAttribution?.firstKeyfrom;
   const latestKeyfrom = options.latestKeyfrom ?? cachedKeyfromAttribution?.latestKeyfrom;
   const installationId = options.installationId ?? cachedInstallationId;
+  const osUsername = options.osUsername ?? cachedDeviceInfo?.osUsername;
+  const macAddress = options.macAddress ?? cachedDeviceInfo?.macAddress;
+  const localIp = options.localIp ?? cachedDeviceInfo?.localIp;
   const environment = options.environment
     ?? (config.app?.testMode
       ? 'test'
@@ -219,6 +259,9 @@ export const buildLogUrl = (
     uuid: installationId,
     firstKeyfrom,
     latestKeyfrom,
+    os_username: osUsername,
+    mac_address: macAddress,
+    local_ip: localIp,
     is_logged_in: isLoggedIn,
     log_Usid: userId,
     identityType: options.identityType ?? identity.identityType,
@@ -258,6 +301,7 @@ const sendPendingEvent = async (
     getWindowAppVersion(),
     getInstallationIdForAnalytics(),
     getWindowKeyfromAttribution(),
+    getWindowAnalyticsDeviceInfo(),
   ]);
   if (!cachedInstallationId) return 'uuid_unavailable';
 
@@ -271,6 +315,9 @@ const sendPendingEvent = async (
         isLoggedIn: event.identity.isLoggedIn,
         isSubscriber: event.identity.isSubscriber,
         subscriptionStatus: event.identity.subscriptionStatus,
+        osUsername: cachedDeviceInfo?.osUsername,
+        macAddress: cachedDeviceInfo?.macAddress,
+        localIp: cachedDeviceInfo?.localIp,
         timestamp: event.timestamp,
         userId: event.identity.userId,
       }),

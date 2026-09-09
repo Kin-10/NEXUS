@@ -119,7 +119,7 @@ OpenClaw Gateway
         "enabled": true,
         "config": {
           "callbackUrl": "http://127.0.0.1:54321/askuser",
-          "secret": "${LOBSTER_MCP_BRIDGE_SECRET}"
+          "secret": "${baiying_MCP_BRIDGE_SECRET}"
         }
       }
     }
@@ -173,7 +173,7 @@ McpStore 记录 → OpenClaw 格式映射：
 
 **保留**：
 - ask-user-question plugin entry (改用 `getAskUserCallbackUrl`)
-- `LOBSTER_MCP_BRIDGE_SECRET` env var 注入
+- `baiying_MCP_BRIDGE_SECRET` env var 注入
 - `getMcpBridgeSecret` 依赖
 - `mcporter` disabled entry (更新注释)
 

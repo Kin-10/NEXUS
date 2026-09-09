@@ -32,7 +32,7 @@ import {
 } from './dailyCheckInAutoRefresh';
 import { logSidebarExperienceDiagnostic } from './sidebarExperienceDiagnostics';
 
-const DAILY_CHECK_IN_UPDATED_EVENT = 'lobster:daily-check-in-updated';
+const DAILY_CHECK_IN_UPDATED_EVENT = 'baiying:daily-check-in-updated';
 
 interface DailyCheckInLoadOptions {
   retryRevision?: boolean;

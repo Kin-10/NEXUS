@@ -197,7 +197,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -459,7 +458,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -595,7 +593,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -649,7 +646,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -849,7 +845,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -862,8 +857,8 @@ describe('OpenClawConfigSync runtime config output', () => {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     const provider = config.models.providers['baiying-server'];
     expect(provider.baseUrl).toBe('http://127.0.0.1:56646/v1');
-    expect(provider.apiKey).toBe('${LOBSTER_PROXY_TOKEN}');
-    expect(JSON.stringify(config)).not.toContain('LOBSTER_APIKEY_SERVER');
+    expect(provider.apiKey).toBe('${BAIYING_PROXY_TOKEN}');
+    expect(JSON.stringify(config)).not.toContain('BAIYING_APIKEY_SERVER');
     expect(provider.models).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: 'qwen3.5-plus-hzbInner',
@@ -1472,7 +1467,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       custom_0: {
         baseUrl: 'https://gateway.example.com/v1',
         api: 'openai-completions',
-        apiKey: '${LOBSTER_APIKEY_CUSTOM_0}',
+        apiKey: '${BAIYING_APIKEY_CUSTOM_0}',
         auth: 'api_key',
         models: modelIds.map(id => ({
           id,
@@ -1684,7 +1679,7 @@ describe('OpenClawConfigSync runtime config output', () => {
       custom_0: {
         baseUrl: 'https://gateway.example.com/v1',
         api: 'openai-completions',
-        apiKey: '${LOBSTER_APIKEY_CUSTOM_0}',
+        apiKey: '${BAIYING_APIKEY_CUSTOM_0}',
         auth: 'api_key',
         models: [{
           id: 'plain-model',
@@ -1726,48 +1721,37 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(config.agents.defaults.models).toBeUndefined();
   });
 
-  test('enables media generation plugin when media entitlement is available', async () => {
-    const sync = await createSync({
-      canUseMediaGeneration: () => true,
-      getMediaCallbackUrl: () => 'http://127.0.0.1:5175/media-callback',
-    });
-
-    const result = sync.sync('media-entitlement-enabled');
+  test('does not register removed media generation plugin', async () => {
+    const sync = await createSync();
+    const result = sync.sync('media-plugin-removed');
     expect(result.ok).toBe(true);
-
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    expect(config.plugins.entries['lobster-media-generation']).toEqual({
-      enabled: true,
-      config: {
-        callbackUrl: 'http://127.0.0.1:5175/media-callback',
-        secret: '${LOBSTER_MCP_BRIDGE_SECRET}',
-        requestTimeoutMs: 150000,
-      },
-    });
-    expect(config.tools.deny).not.toContain('image_generate');
-    expect(config.tools.deny).not.toContain('video_generate');
+    expect(config.plugins.entries['baiying-media-generation']).toBeUndefined();
   });
 
-  test('keeps media generation plugin configured without media entitlement', async () => {
-    const sync = await createSync({
-      canUseMediaGeneration: () => false,
-      getMediaCallbackUrl: () => 'http://127.0.0.1:5175/media-callback',
-    });
+  test('strips removed bee and media-generation plugin leftovers from existing config', async () => {
+    fs.writeFileSync(configPath, JSON.stringify({
+      plugins: {
+        entries: {
+          'openclaw-netease-bee': { enabled: false },
+          'lobster-media-generation': { enabled: true },
+          'baiying-media-generation': { enabled: true },
+          'openclaw-baiying-bee': { enabled: false },
+          browser: { enabled: true },
+        },
+      },
+    }));
 
-    const result = sync.sync('media-entitlement-disabled');
+    const sync = await createSync();
+    const result = sync.sync('strip-removed-plugins');
     expect(result.ok).toBe(true);
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    expect(config.plugins.entries['lobster-media-generation']).toEqual({
-      enabled: true,
-      config: {
-        callbackUrl: 'http://127.0.0.1:5175/media-callback',
-        secret: '${LOBSTER_MCP_BRIDGE_SECRET}',
-        requestTimeoutMs: 150000,
-      },
-    });
-    expect(config.tools.deny).not.toContain('image_generate');
-    expect(config.tools.deny).not.toContain('video_generate');
+    expect(config.plugins.entries).not.toHaveProperty('openclaw-netease-bee');
+    expect(config.plugins.entries).not.toHaveProperty('lobster-media-generation');
+    expect(config.plugins.entries).not.toHaveProperty('baiying-media-generation');
+    expect(config.plugins.entries).not.toHaveProperty('openclaw-baiying-bee');
+    expect(config.plugins.entries.browser).toEqual({ enabled: true });
   });
 
   test('declares and allowlists the bundled xai plugin so its compat hooks load', async () => {
@@ -1921,7 +1905,7 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(selection.primaryModel).toBe(`${OpenClawProviderId.MinimaxPortal}/MiniMax-M3`);
     expect(selection.providerConfig.api).toBe(OpenClawApi.AnthropicMessages);
     expect(selection.providerConfig.auth).toBe(AuthType.OAuth);
-    expect(selection.providerConfig.apiKey).toBe('${LOBSTER_APIKEY_MINIMAX}');
+    expect(selection.providerConfig.apiKey).toBe('${BAIYING_APIKEY_MINIMAX}');
     expect(selection.providerConfig.models[0].maxTokens).toBe(131_072);
   });
 
@@ -1969,7 +1953,7 @@ describe('OpenClawConfigSync runtime config output', () => {
     expect(selection.providerId).toBe(OpenClawProviderId.Xai);
     expect(selection.providerConfig.api).toBe(OpenClawApi.OpenAIResponses);
     expect(selection.providerConfig.auth).toBe(AuthType.ApiKey);
-    expect(selection.providerConfig.apiKey).toBe('${LOBSTER_APIKEY_XAI}');
+    expect(selection.providerConfig.apiKey).toBe('${BAIYING_APIKEY_XAI}');
   });
 
   test.each([
@@ -2274,7 +2258,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -2337,7 +2320,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getSkillsList: () => [],
       getAgents: () => [{
@@ -2434,7 +2416,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => ({
         enabled: true,
         accountId: '97a130e3b62f@im.bot',
@@ -2575,7 +2556,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -2656,7 +2636,6 @@ describe('OpenClawConfigSync runtime config output', () => {
         account: 'nim-account',
         token: 'nim-token',
       }],
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -2710,12 +2689,12 @@ describe('OpenClawConfigSync runtime config output', () => {
       'packed-app|packed-account|packed-token',
     );
     expect(config.channels.nim.accounts['nim-work'].nimToken).toBe(
-      'work-app|work-account|${LOBSTER_NIM_TOKEN_1}',
+      'work-app|work-account|${BAIYING_NIM_TOKEN_1}',
     );
 
     const env = sync.collectSecretEnvVars();
-    expect(env).not.toHaveProperty('LOBSTER_NIM_TOKEN');
-    expect(env.LOBSTER_NIM_TOKEN_1).toBe('work-token');
+    expect(env).not.toHaveProperty('BAIYING_NIM_TOKEN');
+    expect(env.BAIYING_NIM_TOKEN_1).toBe('work-token');
   });
 
   test('writes weixin channel config using dmPolicy and allowFrom instead of unsupported accountId', async () => {
@@ -2750,7 +2729,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       getWecomInstances: () => [],
       getPopoInstances: () => [],
       getNimConfig: () => null,
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => ({
         enabled: true,
         accountId: '97a130e3b62f@im.bot',
@@ -2799,7 +2777,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       }),
       isEnterprise: () => false,
       getPopoInstances: () => [],
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -2899,7 +2876,6 @@ describe('OpenClawConfigSync runtime config output', () => {
       }),
       isEnterprise: () => false,
       getPopoInstances: () => [],
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -2977,15 +2953,14 @@ describe('OpenClawConfigSync runtime config output', () => {
       }),
       getBrowserWebAccessConfig: () => ({ displayMode: browserDisplayMode }),
       getBrowserCallbackUrl: () => browserCallbackUrl,
-      getLobsterBrowserMcpCommand: () => 'C:/LobsterAI/lobster-browser-mcp.cmd',
-      getLobsterBrowserMcpStdioLaunch: () => ({
-        command: 'C:/LobsterAI/LobsterAI.exe',
-        args: ['C:/LobsterAI/lobster-browser-mcp-server.mjs'],
+      getbaiyingBrowserMcpCommand: () => 'C:/baiyingAI/baiying-browser-mcp.cmd',
+      getbaiyingBrowserMcpStdioLaunch: () => ({
+        command: 'C:/baiyingAI/baiyingAI.exe',
+        args: ['C:/baiyingAI/baiying-browser-mcp-server.mjs'],
         env: { ELECTRON_RUN_AS_NODE: '1' },
       }),
       isEnterprise: () => false,
       getPopoInstances: () => [],
-      getNeteaseBeeChanConfig: () => null,
       getWeixinConfig: () => null,
       getIMSettings: () => null,
       getSkillsList: () => [],
@@ -3000,17 +2975,17 @@ describe('OpenClawConfigSync runtime config output', () => {
         [BrowserRuntimeProfile.InApp]: {
           driver: 'existing-session',
           attachOnly: true,
-          mcpCommand: 'C:/LobsterAI/lobster-browser-mcp.cmd',
-          mcpArgs: ['--lobster-bridge-url=http://127.0.0.1:3210/browser/tool'],
+          mcpCommand: 'C:/baiyingAI/baiying-browser-mcp.cmd',
+          mcpArgs: ['--baiying-bridge-url=http://127.0.0.1:3210/browser/tool'],
         },
       },
     });
     expect(inAppConfig.browser.headless).toBeUndefined();
     expect(inAppConfig.browser.extraArgs).toBeUndefined();
     expect(inAppConfig.mcp.servers[BrowserCredentialMcpServer.Name]).toEqual({
-      command: 'C:/LobsterAI/LobsterAI.exe',
+      command: 'C:/baiyingAI/baiyingAI.exe',
       args: [
-        'C:/LobsterAI/lobster-browser-mcp-server.mjs',
+        'C:/baiyingAI/baiying-browser-mcp-server.mjs',
         BrowserCredentialMcpServer.ToolSetArgument,
       ],
       env: { ELECTRON_RUN_AS_NODE: '1' },
@@ -3043,7 +3018,7 @@ describe('OpenClawConfigSync runtime config output', () => {
         transportType: 'stdio',
         command: 'node',
         args: ['server.js'],
-        env: { TAVILY_API_KEY: '${LOBSTER_TAVILY_API_KEY}' },
+        env: { TAVILY_API_KEY: '${BAIYING_TAVILY_API_KEY}' },
       }],
     });
 

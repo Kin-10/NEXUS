@@ -1591,6 +1591,11 @@ interface IElectronAPI {
       latestKeyfrom: string;
       updatedAt: number;
     }>;
+    getAnalyticsDeviceInfo: () => Promise<{
+      osUsername: string;
+      macAddress: string;
+      localIp: string;
+    }>;
     relaunch: () => Promise<void>;
     openSystemNotificationSettings: () => Promise<{ success: boolean; error?: string }>;
   };
@@ -2284,7 +2289,7 @@ interface IMGatewayConfig {
   qq: QQMultiInstanceConfig;
   discord: DiscordMultiInstanceConfig;
   nim: NimMultiInstanceConfig;
-  'netease-bee': NeteaseBeeChanConfig;
+  'baiying-bee': baiyingBeeChanConfig;
   wecom: WecomMultiInstanceConfig;
   popo: PopoMultiInstanceConfig;
   weixin: WeixinOpenClawConfig;
@@ -2495,7 +2500,7 @@ interface NimMultiInstanceConfig {
   instances: NimInstanceConfig[];
 }
 
-interface NeteaseBeeChanConfig {
+interface baiyingBeeChanConfig {
   enabled: boolean;
   clientId: string;
   secret: string;
@@ -2623,7 +2628,7 @@ interface IMGatewayStatus {
   telegram: TelegramMultiInstanceStatus;
   discord: DiscordMultiInstanceStatus;
   nim: NimMultiInstanceStatus;
-  'netease-bee': NeteaseBeeChanGatewayStatus;
+  'baiying-bee': baiyingBeeChanGatewayStatus;
   wecom: WecomMultiInstanceStatus;
   popo: PopoMultiInstanceStatus;
   weixin: WeixinGatewayStatus;
@@ -2735,7 +2740,7 @@ interface NimGatewayStatus {
   lastOutboundAt: number | null;
 }
 
-interface NeteaseBeeChanGatewayStatus {
+interface baiyingBeeChanGatewayStatus {
   connected: boolean;
   startedAt: number | null;
   lastError: string | null;

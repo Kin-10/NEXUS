@@ -168,9 +168,9 @@ describe('isAnalyticsEndpointUrl', () => {
 
   test('does not match other hosts, paths, or schemes', () => {
     expect(isAnalyticsEndpointUrl('https://baiying-server.hzb.com/api/user/profile-summary?uuid=1')).toBe(false);
-    expect(isAnalyticsEndpointUrl('http://127.0.0.1:8899/api/client/analytics/other')).toBe(false);
-    expect(isAnalyticsEndpointUrl('https://127.0.0.1:8899/api/client/analytics/rlog')).toBe(false);
-    expect(isAnalyticsEndpointUrl('http://127.0.0.1:8899.evil.example/api/client/analytics/rlog')).toBe(false);
+    expect(isAnalyticsEndpointUrl('http://192.168.101.24:8899/api/client/analytics/other')).toBe(false);
+    expect(isAnalyticsEndpointUrl('https://192.168.101.24:8899/api/client/analytics/rlog')).toBe(false);
+    expect(isAnalyticsEndpointUrl('http://192.168.101.24:8899.evil.example/api/client/analytics/rlog')).toBe(false);
   });
 
   test('returns false for unparsable input', () => {

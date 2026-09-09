@@ -148,7 +148,7 @@ describe('enterpriseConfigSync', () => {
         setPopoConfig: () => undefined,
         setNimConfig: () => undefined,
         setWeixinConfig: () => undefined,
-        setNeteaseBeeChanConfig: () => undefined,
+        setbaiyingBeeChanConfig: () => undefined,
       } as any,
       () => undefined,
       () => undefined,
@@ -224,7 +224,7 @@ describe('enterpriseConfigSync', () => {
       setPopoConfig: () => undefined,
       setNimConfig: () => undefined,
       setWeixinConfig: () => undefined,
-      setNeteaseBeeChanConfig: () => undefined,
+      setbaiyingBeeChanConfig: () => undefined,
     };
 
     mod.syncEnterpriseConfig(
@@ -414,7 +414,7 @@ describe('enterpriseConfigSync', () => {
       setPopoConfig: () => undefined,
       setNimConfig: () => undefined,
       setWeixinConfig: () => undefined,
-      setNeteaseBeeChanConfig: () => undefined,
+      setbaiyingBeeChanConfig: () => undefined,
     };
 
     mod.syncEnterpriseConfig(
@@ -529,7 +529,7 @@ describe('enterpriseConfigSync', () => {
       setPopoConfig: () => undefined,
       setNimConfig: () => undefined,
       setWeixinConfig: () => undefined,
-      setNeteaseBeeChanConfig: () => undefined,
+      setbaiyingBeeChanConfig: () => undefined,
     };
 
     mod.syncEnterpriseConfig(
@@ -622,7 +622,7 @@ describe('enterpriseConfigSync', () => {
       setWecomConfig: () => undefined,
       setNimConfig: () => undefined,
       setWeixinConfig: () => undefined,
-      setNeteaseBeeChanConfig: () => undefined,
+      setbaiyingBeeChanConfig: () => undefined,
     };
 
     mod.syncEnterpriseConfig(
@@ -655,7 +655,7 @@ describe('enterpriseConfigSync', () => {
     ]);
   });
 
-  test('syncEnterpriseConfig syncs openclaw agents list into Lobster agents', async () => {
+  test('syncEnterpriseConfig syncs openclaw agents list into baiying agents', async () => {
     const configDir = path.join(tmpDir, 'enterprise-config');
     fs.mkdirSync(configDir, { recursive: true });
     fs.writeFileSync(
@@ -719,7 +719,7 @@ describe('enterpriseConfigSync', () => {
         setPopoConfig: () => undefined,
         setNimConfig: () => undefined,
         setWeixinConfig: () => undefined,
-        setNeteaseBeeChanConfig: () => undefined,
+        setbaiyingBeeChanConfig: () => undefined,
       } as any,
       () => undefined,
       () => undefined,

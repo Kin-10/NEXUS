@@ -15,92 +15,92 @@
 ; slack across tens of thousands of staged files, log/registry churn, and
 ; general safety. All staging space math is done in MB because NSIS
 ; integers are 32-bit signed and the extracted tree alone exceeds 2 GB.
-!define LOBSTER_STAGING_MARGIN_MB 300
+!define baiying_STAGING_MARGIN_MB 300
 
-Var lobsterCurrentProcessPid
-Var lobsterInstallerAttemptId
-Var lobsterTargetProcessesStopStatus
-Var lobsterResolveToolKind
-Var lobsterResolvedToolPath
-Var lobsterResolvedToolStatus
-Var lobsterResolvedToolSource
-Var lobsterTrustedPowerShellPath
-Var lobsterTrustedPowerShellStatus
-Var lobsterTrustedPowerShellSource
-Var lobsterHiddenExecExitCode
-Var lobsterHiddenExecOutput
-Var lobsterHiddenExecLaunchError
+Var baiyingCurrentProcessPid
+Var baiyingInstallerAttemptId
+Var baiyingTargetProcessesStopStatus
+Var baiyingResolveToolKind
+Var baiyingResolvedToolPath
+Var baiyingResolvedToolStatus
+Var baiyingResolvedToolSource
+Var baiyingTrustedPowerShellPath
+Var baiyingTrustedPowerShellStatus
+Var baiyingTrustedPowerShellSource
+Var baiyingHiddenExecExitCode
+Var baiyingHiddenExecOutput
+Var baiyingHiddenExecLaunchError
 
 !ifndef BUILD_UNINSTALLER
   ; Cross-hook state used by the update fast path and the electron-builder
   ; template timing hooks. These are installer variables (not registers) so
   ; nested NSIS macros cannot accidentally overwrite an in-flight timer.
-  Var lobsterInstallScenario
-  Var lobsterInvocationSource
-  Var lobsterUpdatedFlag
-  Var lobsterUiMode
-  Var lobsterSilentSource
-  Var lobsterLauncherFallback
-  Var lobsterLegacySkillsStatus
-  Var lobsterLegacySkillsRestoreStatus
-  Var lobsterOldAppRelaunchStatus
-  Var lobsterOldAppRelaunchError
-  Var lobsterOldAppExecutablePath
-  Var lobsterOldUninstallerPath
-  Var lobsterOldAppAsarPath
-  Var lobsterTrustedTarPath
-  Var lobsterTrustedTarStatus
-  Var lobsterTrustedTarSource
-  Var lobsterOldInstallOriginalPath
-  Var lobsterOldInstallOriginalPathNormalized
-  Var lobsterOldInstallRegisteredPath
-  Var lobsterOldInstallRegisteredPathNormalized
-  Var lobsterOldInstallAlternateRegisteredPath
-  Var lobsterOldInstallAlternateRegisteredPathNormalized
-  Var lobsterOldInstallBackupPath
-  Var lobsterOldInstallFailedPath
-  Var lobsterOldInstallRenameStatus
-  Var lobsterOldInstallRenameReason
-  Var lobsterOldInstallRenameError
-  Var lobsterOldInstallRenameAttempts
-  Var lobsterOldInstallRollbackReason
-  Var lobsterOldInstallRollbackStatus
-  Var lobsterOldInstallRollbackError
-  Var lobsterOldInstallCurrentDirectory
-  Var lobsterOldUninstallCandidatePath
-  Var lobsterOldUninstallCandidatePathNormalized
-  Var lobsterOldUninstallStartTick
-  Var lobsterOldUninstallLaunchStatus
-  Var lobsterNewInstallValidationStatus
-  Var lobsterNewInstallValidationReason
+  Var baiyingInstallScenario
+  Var baiyingInvocationSource
+  Var baiyingUpdatedFlag
+  Var baiyingUiMode
+  Var baiyingSilentSource
+  Var baiyingLauncherFallback
+  Var baiyingLegacySkillsStatus
+  Var baiyingLegacySkillsRestoreStatus
+  Var baiyingOldAppRelaunchStatus
+  Var baiyingOldAppRelaunchError
+  Var baiyingOldAppExecutablePath
+  Var baiyingOldUninstallerPath
+  Var baiyingOldAppAsarPath
+  Var baiyingTrustedTarPath
+  Var baiyingTrustedTarStatus
+  Var baiyingTrustedTarSource
+  Var baiyingOldInstallOriginalPath
+  Var baiyingOldInstallOriginalPathNormalized
+  Var baiyingOldInstallRegisteredPath
+  Var baiyingOldInstallRegisteredPathNormalized
+  Var baiyingOldInstallAlternateRegisteredPath
+  Var baiyingOldInstallAlternateRegisteredPathNormalized
+  Var baiyingOldInstallBackupPath
+  Var baiyingOldInstallFailedPath
+  Var baiyingOldInstallRenameStatus
+  Var baiyingOldInstallRenameReason
+  Var baiyingOldInstallRenameError
+  Var baiyingOldInstallRenameAttempts
+  Var baiyingOldInstallRollbackReason
+  Var baiyingOldInstallRollbackStatus
+  Var baiyingOldInstallRollbackError
+  Var baiyingOldInstallCurrentDirectory
+  Var baiyingOldUninstallCandidatePath
+  Var baiyingOldUninstallCandidatePathNormalized
+  Var baiyingOldUninstallStartTick
+  Var baiyingOldUninstallLaunchStatus
+  Var baiyingNewInstallValidationStatus
+  Var baiyingNewInstallValidationReason
   !ifndef APP_PACKAGE_URL
-    Var lobsterPackageMaterializeStartTick
+    Var baiyingPackageMaterializeStartTick
   !else
-    Var lobsterWebDownloadStartTick
-    Var lobsterWebAcquireStartTick
-    Var lobsterWebVerifyStartTick
+    Var baiyingWebDownloadStartTick
+    Var baiyingWebAcquireStartTick
+    Var baiyingWebVerifyStartTick
   !endif
-  Var lobsterPackageExtractStartTick
-  Var lobsterPackageCopyStartTick
-  Var lobsterInstallerCacheCopyStartTick
+  Var baiyingPackageExtractStartTick
+  Var baiyingPackageCopyStartTick
+  Var baiyingInstallerCacheCopyStartTick
   !ifndef ESTIMATED_SIZE
-    Var lobsterEstimatedSizeScanStartTick
-    Var lobsterEstimatedSizeValue
+    Var baiyingEstimatedSizeScanStartTick
+    Var baiyingEstimatedSizeValue
   !endif
 !endif
 
 ; -- Legacy Skills backup helper exit-code protocol --
 ; The PowerShell backup helper reports its outcome ONLY through these process
 ; exit codes. stdout is diagnostic text for the logs and must never drive
-; control flow: LobsterExecHiddenToStack returns output with the helper's
+; control flow: baiyingExecHiddenToStack returns output with the helper's
 ; trailing CRLF attached, so an exact stdout comparison silently fails (this once
 ; misclassified "no user skills" as "backup succeeded" and produced a spurious
 ; legacy-restore-backup-missing degraded install).
-!define LOBSTER_SKILL_BACKUP_EXIT_VERIFIED "0"
-!define LOBSTER_SKILL_BACKUP_EXIT_INSPECT_FAILED "10"
-!define LOBSTER_SKILL_BACKUP_EXIT_COPY_FAILED "11"
-!define LOBSTER_SKILL_BACKUP_EXIT_VERIFY_FAILED "12"
-!define LOBSTER_SKILL_BACKUP_EXIT_NO_USER_SKILLS "13"
+!define baiying_SKILL_BACKUP_EXIT_VERIFIED "0"
+!define baiying_SKILL_BACKUP_EXIT_INSPECT_FAILED "10"
+!define baiying_SKILL_BACKUP_EXIT_COPY_FAILED "11"
+!define baiying_SKILL_BACKUP_EXIT_VERIFY_FAILED "12"
+!define baiying_SKILL_BACKUP_EXIT_NO_USER_SKILLS "13"
 
 ; -- Design invariant --
 ; Nothing destructive may run before the user confirms the wizard (or the
@@ -154,21 +154,21 @@ Var lobsterHiddenExecLaunchError
 ; attemptId is a correlation identifier only. It is intentionally generated by
 ; Windows and is never used as a security nonce or authorization token.
 !ifdef BUILD_UNINSTALLER
-Function un.lobsterEnsureInstallerAttemptId
+Function un.baiyingEnsureInstallerAttemptId
 !else
-Function lobsterEnsureInstallerAttemptId
+Function baiyingEnsureInstallerAttemptId
 !endif
-  StrCmp $lobsterInstallerAttemptId "" 0 LobsterAttemptIdReady
+  StrCmp $baiyingInstallerAttemptId "" 0 baiyingAttemptIdReady
   System::Call 'ole32::CoCreateGuid(g .s)'
-  Pop $lobsterInstallerAttemptId
-  LobsterAttemptIdReady:
+  Pop $baiyingInstallerAttemptId
+  baiyingAttemptIdReady:
 FunctionEnd
 
 !macro EnsureInstallerAttemptId
   !ifdef BUILD_UNINSTALLER
-    Call un.lobsterEnsureInstallerAttemptId
+    Call un.baiyingEnsureInstallerAttemptId
   !else
-    Call lobsterEnsureInstallerAttemptId
+    Call baiyingEnsureInstallerAttemptId
   !endif
 !macroend
 
@@ -176,92 +176,92 @@ FunctionEnd
 ; PowerShell and tar use this single resolver entry so the existence check and
 ; the eventual execution refer to the exact same absolute path.
 !ifdef BUILD_UNINSTALLER
-Function un.lobsterResolveTrustedSystemTool
+Function un.baiyingResolveTrustedSystemTool
 !else
-Function lobsterResolveTrustedSystemTool
+Function baiyingResolveTrustedSystemTool
 !endif
   Push $0
   Push $1
 
-  StrCpy $lobsterResolvedToolPath ""
-  StrCpy $lobsterResolvedToolStatus "helper-not-found"
-  StrCpy $lobsterResolvedToolSource "none"
+  StrCpy $baiyingResolvedToolPath ""
+  StrCpy $baiyingResolvedToolStatus "helper-not-found"
+  StrCpy $baiyingResolvedToolSource "none"
 
-  StrCmp $lobsterResolveToolKind "powershell" LobsterResolvePowerShell
-  StrCmp $lobsterResolveToolKind "tar" LobsterResolveTar
-  StrCpy $lobsterResolvedToolStatus "unsupported-tool"
-  Goto LobsterResolveToolDone
+  StrCmp $baiyingResolveToolKind "powershell" baiyingResolvePowerShell
+  StrCmp $baiyingResolveToolKind "tar" baiyingResolveTar
+  StrCpy $baiyingResolvedToolStatus "unsupported-tool"
+  Goto baiyingResolveToolDone
 
-  LobsterResolvePowerShell:
+  baiyingResolvePowerShell:
     System::Call 'kernel32::GetFileAttributesW(w "$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe") i .r0'
-    IntCmp $0 -1 LobsterResolvePowerShellSystem32 0 0
+    IntCmp $0 -1 baiyingResolvePowerShellSystem32 0 0
     IntOp $1 $0 & 0x410
-    IntCmp $1 0 LobsterResolvePowerShellSysnativeReady LobsterResolvePowerShellSystem32 LobsterResolvePowerShellSystem32
-    LobsterResolvePowerShellSysnativeReady:
-      StrCpy $lobsterResolvedToolPath "$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe"
-      StrCpy $lobsterResolvedToolStatus "resolved"
-      StrCpy $lobsterResolvedToolSource "sysnative"
-      Goto LobsterResolveToolDone
+    IntCmp $1 0 baiyingResolvePowerShellSysnativeReady baiyingResolvePowerShellSystem32 baiyingResolvePowerShellSystem32
+    baiyingResolvePowerShellSysnativeReady:
+      StrCpy $baiyingResolvedToolPath "$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe"
+      StrCpy $baiyingResolvedToolStatus "resolved"
+      StrCpy $baiyingResolvedToolSource "sysnative"
+      Goto baiyingResolveToolDone
 
-    LobsterResolvePowerShellSystem32:
+    baiyingResolvePowerShellSystem32:
     System::Call 'kernel32::GetFileAttributesW(w "$WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe") i .r0'
-    IntCmp $0 -1 LobsterResolveToolDone 0 0
+    IntCmp $0 -1 baiyingResolveToolDone 0 0
     IntOp $1 $0 & 0x410
-    IntCmp $1 0 LobsterResolvePowerShellSystem32Ready LobsterResolveToolDone LobsterResolveToolDone
-    LobsterResolvePowerShellSystem32Ready:
-      StrCpy $lobsterResolvedToolPath "$WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-      StrCpy $lobsterResolvedToolStatus "resolved"
-      StrCpy $lobsterResolvedToolSource "system32"
-      Goto LobsterResolveToolDone
+    IntCmp $1 0 baiyingResolvePowerShellSystem32Ready baiyingResolveToolDone baiyingResolveToolDone
+    baiyingResolvePowerShellSystem32Ready:
+      StrCpy $baiyingResolvedToolPath "$WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
+      StrCpy $baiyingResolvedToolStatus "resolved"
+      StrCpy $baiyingResolvedToolSource "system32"
+      Goto baiyingResolveToolDone
 
-  LobsterResolveTar:
+  baiyingResolveTar:
     System::Call 'kernel32::GetFileAttributesW(w "$WINDIR\Sysnative\tar.exe") i .r0'
-    IntCmp $0 -1 LobsterResolveTarSystem32 0 0
+    IntCmp $0 -1 baiyingResolveTarSystem32 0 0
     IntOp $1 $0 & 0x410
-    IntCmp $1 0 LobsterResolveTarSysnativeReady LobsterResolveTarSystem32 LobsterResolveTarSystem32
-    LobsterResolveTarSysnativeReady:
-      StrCpy $lobsterResolvedToolPath "$WINDIR\Sysnative\tar.exe"
-      StrCpy $lobsterResolvedToolStatus "resolved"
-      StrCpy $lobsterResolvedToolSource "sysnative"
-      Goto LobsterResolveToolDone
+    IntCmp $1 0 baiyingResolveTarSysnativeReady baiyingResolveTarSystem32 baiyingResolveTarSystem32
+    baiyingResolveTarSysnativeReady:
+      StrCpy $baiyingResolvedToolPath "$WINDIR\Sysnative\tar.exe"
+      StrCpy $baiyingResolvedToolStatus "resolved"
+      StrCpy $baiyingResolvedToolSource "sysnative"
+      Goto baiyingResolveToolDone
 
-    LobsterResolveTarSystem32:
+    baiyingResolveTarSystem32:
     System::Call 'kernel32::GetFileAttributesW(w "$WINDIR\System32\tar.exe") i .r0'
-    IntCmp $0 -1 LobsterResolveToolDone 0 0
+    IntCmp $0 -1 baiyingResolveToolDone 0 0
     IntOp $1 $0 & 0x410
-    IntCmp $1 0 LobsterResolveTarSystem32Ready LobsterResolveToolDone LobsterResolveToolDone
-    LobsterResolveTarSystem32Ready:
-      StrCpy $lobsterResolvedToolPath "$WINDIR\System32\tar.exe"
-      StrCpy $lobsterResolvedToolStatus "resolved"
-      StrCpy $lobsterResolvedToolSource "system32"
+    IntCmp $1 0 baiyingResolveTarSystem32Ready baiyingResolveToolDone baiyingResolveToolDone
+    baiyingResolveTarSystem32Ready:
+      StrCpy $baiyingResolvedToolPath "$WINDIR\System32\tar.exe"
+      StrCpy $baiyingResolvedToolStatus "resolved"
+      StrCpy $baiyingResolvedToolSource "system32"
 
-  LobsterResolveToolDone:
+  baiyingResolveToolDone:
   Pop $1
   Pop $0
 FunctionEnd
 
 !macro ResolveTrustedPowerShell
-  StrCpy $lobsterResolveToolKind "powershell"
+  StrCpy $baiyingResolveToolKind "powershell"
   !ifdef BUILD_UNINSTALLER
-    Call un.lobsterResolveTrustedSystemTool
+    Call un.baiyingResolveTrustedSystemTool
   !else
-    Call lobsterResolveTrustedSystemTool
+    Call baiyingResolveTrustedSystemTool
   !endif
-  StrCpy $lobsterTrustedPowerShellPath $lobsterResolvedToolPath
-  StrCpy $lobsterTrustedPowerShellStatus $lobsterResolvedToolStatus
-  StrCpy $lobsterTrustedPowerShellSource $lobsterResolvedToolSource
+  StrCpy $baiyingTrustedPowerShellPath $baiyingResolvedToolPath
+  StrCpy $baiyingTrustedPowerShellStatus $baiyingResolvedToolStatus
+  StrCpy $baiyingTrustedPowerShellSource $baiyingResolvedToolSource
 !macroend
 
 !macro ResolveTrustedTar
-  StrCpy $lobsterResolveToolKind "tar"
+  StrCpy $baiyingResolveToolKind "tar"
   !ifdef BUILD_UNINSTALLER
-    Call un.lobsterResolveTrustedSystemTool
+    Call un.baiyingResolveTrustedSystemTool
   !else
-    Call lobsterResolveTrustedSystemTool
+    Call baiyingResolveTrustedSystemTool
   !endif
-  StrCpy $lobsterTrustedTarPath $lobsterResolvedToolPath
-  StrCpy $lobsterTrustedTarStatus $lobsterResolvedToolStatus
-  StrCpy $lobsterTrustedTarSource $lobsterResolvedToolSource
+  StrCpy $baiyingTrustedTarPath $baiyingResolvedToolPath
+  StrCpy $baiyingTrustedTarStatus $baiyingResolvedToolStatus
+  StrCpy $baiyingTrustedTarSource $baiyingResolvedToolSource
 !macroend
 
 ; -- Hidden helper-process launcher --
@@ -276,9 +276,9 @@ FunctionEnd
 ; so neither conhost nor Windows Terminal ever has something to show.
 ;
 ; In: stack = command line (below), mode (top): "wait" or "detach".
-; Out: $lobsterHiddenExecExitCode = numeric exit code, or "error" when the
+; Out: $baiyingHiddenExecExitCode = numeric exit code, or "error" when the
 ;      process could not be created (Win32 error in
-;      $lobsterHiddenExecLaunchError); $lobsterHiddenExecOutput = combined
+;      $baiyingHiddenExecLaunchError); $baiyingHiddenExecOutput = combined
 ;      stdout+stderr text in wait mode (bounded, trailing CRLF preserved
 ;      exactly as nsExec::ExecToStack delivered it), or a launch-failed note.
 ;      "detach" returns right after creation, inherits no handles and reports
@@ -287,9 +287,9 @@ FunctionEnd
 ; Every register is preserved; results travel through the variables so the
 ; macros below can reproduce the exact nsExec stack contracts.
 !ifdef BUILD_UNINSTALLER
-Function un.lobsterExecHiddenProcess
+Function un.baiyingExecHiddenProcess
 !else
-Function lobsterExecHiddenProcess
+Function baiyingExecHiddenProcess
 !endif
   Exch $1
   Exch
@@ -303,29 +303,29 @@ Function lobsterExecHiddenProcess
   Push $8
   Push $9
 
-  StrCpy $lobsterHiddenExecExitCode "error"
-  StrCpy $lobsterHiddenExecOutput ""
-  StrCpy $lobsterHiddenExecLaunchError "0"
+  StrCpy $baiyingHiddenExecExitCode "error"
+  StrCpy $baiyingHiddenExecOutput ""
+  StrCpy $baiyingHiddenExecLaunchError "0"
   StrCpy $2 0
   StrCpy $3 0
   StrCpy $9 ""
-  StrCmp $1 "wait" 0 LobsterHiddenExecStartupInfo
+  StrCmp $1 "wait" 0 baiyingHiddenExecStartupInfo
 
   ; Capture file for stdout+stderr; stdin comes from NUL so a helper that
   ; unexpectedly prompts fails instead of blocking on a console that does
   ; not exist. Both handles are inheritable.
   InitPluginsDir
   System::Call 'kernel32::GetTickCount() i .r4'
-  StrCpy $9 "$PLUGINSDIR\lobster-helper-$4.out"
+  StrCpy $9 "$PLUGINSDIR\baiying-helper-$4.out"
   System::Call '*(i 12, p 0, i 1) p .r5'
   System::Call 'kernel32::CreateFileW(w "NUL", i 0x80000000, i 3, p r5, i 3, i 0, p 0) p .r2'
   System::Call 'kernel32::CreateFileW(w r9, i 0x40000000, i 3, p r5, i 2, i 0x80, p 0) p .r3'
   System::Free $5
-  IntCmp $2 -1 LobsterHiddenExecCaptureUnavailable
-  IntCmp $3 -1 LobsterHiddenExecCaptureUnavailable
-  Goto LobsterHiddenExecStartupInfo
+  IntCmp $2 -1 baiyingHiddenExecCaptureUnavailable
+  IntCmp $3 -1 baiyingHiddenExecCaptureUnavailable
+  Goto baiyingHiddenExecStartupInfo
 
-  LobsterHiddenExecCaptureUnavailable:
+  baiyingHiddenExecCaptureUnavailable:
   ; Run without redirection rather than failing the operation: output is
   ; diagnostics only, the exit code stays authoritative.
   IntCmp $2 -1 +2
@@ -337,7 +337,7 @@ Function lobsterExecHiddenProcess
   Delete $9
   StrCpy $9 ""
 
-  LobsterHiddenExecStartupInfo:
+  baiyingHiddenExecStartupInfo:
   ; STARTF_USESHOWWINDOW (1) with wShowWindow = SW_HIDE (0), plus
   ; STARTF_USESTDHANDLES (0x100; 257 in total) when capturing.
   StrCpy $6 1
@@ -355,52 +355,52 @@ Function lobsterExecHiddenProcess
   ; CreateProcessW(NULL, cmd, NULL, NULL, bInheritHandles, CREATE_NO_WINDOW,
   ; inherit environment, inherit current directory, &si, &pi)
   System::Call 'kernel32::CreateProcessW(p 0, w r0, p 0, p 0, i r5, i 0x08000000, p 0, p 0, p r7, p r8) i .r4 ?e'
-  Pop $lobsterHiddenExecLaunchError
-  IntCmp $4 0 LobsterHiddenExecCreateFailed
+  Pop $baiyingHiddenExecLaunchError
+  IntCmp $4 0 baiyingHiddenExecCreateFailed
   System::Call '*$8(p .r4, p .r5, i, i)'
   System::Call 'kernel32::CloseHandle(p r5)'
-  StrCmp $1 "wait" 0 LobsterHiddenExecDetachedStarted
+  StrCmp $1 "wait" 0 baiyingHiddenExecDetachedStarted
   System::Call 'kernel32::WaitForSingleObject(p r4, i -1)'
   System::Call 'kernel32::GetExitCodeProcess(p r4, *i .r5) i .r6'
   System::Call 'kernel32::CloseHandle(p r4)'
-  IntCmp $6 0 LobsterHiddenExecCollect
-  StrCpy $lobsterHiddenExecExitCode $5
-  Goto LobsterHiddenExecCollect
+  IntCmp $6 0 baiyingHiddenExecCollect
+  StrCpy $baiyingHiddenExecExitCode $5
+  Goto baiyingHiddenExecCollect
 
-  LobsterHiddenExecDetachedStarted:
+  baiyingHiddenExecDetachedStarted:
   System::Call 'kernel32::CloseHandle(p r4)'
-  StrCpy $lobsterHiddenExecExitCode "0"
-  Goto LobsterHiddenExecCollect
+  StrCpy $baiyingHiddenExecExitCode "0"
+  Goto baiyingHiddenExecCollect
 
-  LobsterHiddenExecCreateFailed:
-  StrCpy $lobsterHiddenExecOutput "launch-failed win32_error=$lobsterHiddenExecLaunchError"
+  baiyingHiddenExecCreateFailed:
+  StrCpy $baiyingHiddenExecOutput "launch-failed win32_error=$baiyingHiddenExecLaunchError"
 
-  LobsterHiddenExecCollect:
+  baiyingHiddenExecCollect:
   System::Free $7
   System::Free $8
   IntCmp $2 0 +2
     System::Call 'kernel32::CloseHandle(p r2)'
   IntCmp $3 0 +2
     System::Call 'kernel32::CloseHandle(p r3)'
-  StrCmp $9 "" LobsterHiddenExecDone
-  StrCmp $lobsterHiddenExecExitCode "error" LobsterHiddenExecDeleteCapture
+  StrCmp $9 "" baiyingHiddenExecDone
+  StrCmp $baiyingHiddenExecExitCode "error" baiyingHiddenExecDeleteCapture
   ClearErrors
   FileOpen $4 $9 r
-  IfErrors LobsterHiddenExecDeleteCapture
-  LobsterHiddenExecReadLoop:
+  IfErrors baiyingHiddenExecDeleteCapture
+  baiyingHiddenExecReadLoop:
     ClearErrors
     FileRead $4 $5
-    IfErrors LobsterHiddenExecReadDone
-    StrLen $6 $lobsterHiddenExecOutput
-    IntCmp $6 4096 LobsterHiddenExecReadDone 0 LobsterHiddenExecReadDone
-    StrCpy $lobsterHiddenExecOutput "$lobsterHiddenExecOutput$5"
-    Goto LobsterHiddenExecReadLoop
-  LobsterHiddenExecReadDone:
+    IfErrors baiyingHiddenExecReadDone
+    StrLen $6 $baiyingHiddenExecOutput
+    IntCmp $6 4096 baiyingHiddenExecReadDone 0 baiyingHiddenExecReadDone
+    StrCpy $baiyingHiddenExecOutput "$baiyingHiddenExecOutput$5"
+    Goto baiyingHiddenExecReadLoop
+  baiyingHiddenExecReadDone:
   FileClose $4
-  LobsterHiddenExecDeleteCapture:
+  baiyingHiddenExecDeleteCapture:
   Delete $9
 
-  LobsterHiddenExecDone:
+  baiyingHiddenExecDone:
   ClearErrors
   Pop $9
   Pop $8
@@ -414,35 +414,35 @@ Function lobsterExecHiddenProcess
   Pop $1
 FunctionEnd
 
-!macro LobsterExecHidden MODE
+!macro baiyingExecHidden MODE
   Push "${MODE}"
   !ifdef BUILD_UNINSTALLER
-    Call un.lobsterExecHiddenProcess
+    Call un.baiyingExecHiddenProcess
   !else
-    Call lobsterExecHiddenProcess
+    Call baiyingExecHiddenProcess
   !endif
 !macroend
 
 ; nsExec::ExecToStack replacement. The caller pushes the command line first;
 ; afterwards the stack holds the exit code on top and the output below it.
-!macro LobsterExecHiddenToStack
-  !insertmacro LobsterExecHidden "wait"
-  Push $lobsterHiddenExecOutput
-  Push $lobsterHiddenExecExitCode
+!macro baiyingExecHiddenToStack
+  !insertmacro baiyingExecHidden "wait"
+  Push $baiyingHiddenExecOutput
+  Push $baiyingHiddenExecExitCode
 !macroend
 
 ; nsExec::ExecToLog replacement: exit code only (the details pane this
 ; installer never shows was the only consumer of the output).
-!macro LobsterExecHiddenExitCode
-  !insertmacro LobsterExecHidden "wait"
-  Push $lobsterHiddenExecExitCode
+!macro baiyingExecHiddenExitCode
+  !insertmacro baiyingExecHidden "wait"
+  Push $baiyingHiddenExecExitCode
 !macroend
 
 ; Exec replacement: fire and forget; the error flag is set when the process
 ; could not be created.
-!macro LobsterExecHiddenDetached
-  !insertmacro LobsterExecHidden "detach"
-  StrCmp $lobsterHiddenExecExitCode "error" 0 +2
+!macro baiyingExecHiddenDetached
+  !insertmacro baiyingExecHidden "detach"
+  StrCmp $baiyingHiddenExecExitCode "error" 0 +2
     SetErrors
 !macroend
 
@@ -451,10 +451,10 @@ FunctionEnd
     ; The custom include can be parsed before electron-builder's asynchronous
     ; !addplugindir output. Define the relaunch function here, after the
     ; generated shared header has registered StdUtils.
-    !insertmacro DefineLobsterOldAppRelaunchFunction
+    !insertmacro DefinebaiyingOldAppRelaunchFunction
     ; The staging functions reference $appPackageStagingDir, declared at the
     ; top of the patched installer.nsi -- also only available by now.
-    !insertmacro DefineLobsterPayloadStagingFunctions
+    !insertmacro DefinebaiyingPayloadStagingFunctions
   !endif
 
   ; Request admin privileges for script execution (tar extract, etc.)
@@ -502,22 +502,22 @@ FunctionEnd
 ; Shared between the installer and the uninstaller via customCheckAppRunning.
 !macro stopBaiYingProcesses
   DetailPrint "[Installer] Stopping running BaiYing processes"
-  StrCpy $lobsterTargetProcessesStopStatus "helper-not-found"
+  StrCpy $baiyingTargetProcessesStopStatus "helper-not-found"
   System::Call 'kernel32::GetCurrentProcessId()i .r4'
-  StrCpy $lobsterCurrentProcessPid $4
+  StrCpy $baiyingCurrentProcessPid $4
   System::Call 'kernel32::GetTickCount()i .r7'
   ; The survivor helper below and every log write in this macro need the
   ; directory, including on the helper-not-found path.
   CreateDirectory "$APPDATA\BaiYing"
-  StrCmp $lobsterTrustedPowerShellPath "" StopBaiYingProcessesDone
+  StrCmp $baiyingTrustedPowerShellPath "" StopBaiYingProcessesDone
   ; The path-prefix sweep in both helpers below needs the install root and
   ; this process id. Both travel through the child environment, not string
   ; interpolation: the install directory is user-selected and may hold shell
   ; metacharacters. Cleared at StopBaiYingProcessesLog, which every path
   ; reaches.
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_ROOT", t "$INSTDIR")i'
-  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_SELF_PID", t "$lobsterCurrentProcessPid")i'
-  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_SELF_PID", t "$baiyingCurrentProcessPid")i'
+  Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
     $$root = $$env:BAIYING_STOP_ROOT;\
     if ($$root -and -not $$root.EndsWith([char]92)) { $$root = $$root + [char]92 };\
     $$selfPid = $$env:BAIYING_STOP_SELF_PID;\
@@ -532,14 +532,14 @@ FunctionEnd
       Start-Sleep -Milliseconds 500;\
     };\
     exit 3"'
-  !insertmacro LobsterExecHiddenExitCode
+  !insertmacro baiyingExecHiddenExitCode
   Pop $0
   StrCpy $R2 $0
-  StrCpy $lobsterTargetProcessesStopStatus "numeric-exit-code"
+  StrCpy $baiyingTargetProcessesStopStatus "numeric-exit-code"
   StrCmp $R2 "error" 0 +2
-    StrCpy $lobsterTargetProcessesStopStatus "process-start-blocked"
+    StrCpy $baiyingTargetProcessesStopStatus "process-start-blocked"
   StrCmp $R2 "0" 0 +2
-    StrCpy $lobsterTargetProcessesStopStatus "success"
+    StrCpy $baiyingTargetProcessesStopStatus "success"
   StrCmp $R2 "3" 0 StopBaiYingProcessesLog
   ; The exit-3 verdict alone never says WHICH process refused to die. Re-snapshot
   ; and append one process-stop-survivor line per remaining process before the
@@ -548,8 +548,8 @@ FunctionEnd
   ; which may hold shell metacharacters. Helper exit code = survivor count at
   ; re-check time; 0 means the blockers died right after the verdict.
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "$APPDATA\BaiYing\install-timing.log")i'
-  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "$lobsterInstallerAttemptId")i'
-  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "$baiyingInstallerAttemptId")i'
+  Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
     $$ts = Get-Date -Format \"yyyy-MM-dd HH:mm:ss\";\
     $$root = $$env:BAIYING_STOP_ROOT;\
     if ($$root -and -not $$root.EndsWith([char]92)) { $$root = $$root + [char]92 };\
@@ -565,7 +565,7 @@ FunctionEnd
       Add-Content -LiteralPath $$env:BAIYING_STOP_LOG_PATH -Value \"$$ts phase=process-stop-survivor attempt_id=$$env:BAIYING_STOP_ATTEMPT_ID name=$$($$p.ProcessName) pid=$$($$p.Id) path=$$fp\" -ErrorAction SilentlyContinue;\
     };\
     exit $$procs.Count"'
-  !insertmacro LobsterExecHiddenExitCode
+  !insertmacro baiyingExecHiddenExitCode
   Pop $1
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_LOG_PATH", t "")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_STOP_ATTEMPT_ID", t "")i'
@@ -573,9 +573,9 @@ FunctionEnd
   FileSeek $9 0 END
   !insertmacro GetTimestamp $8
   !ifdef BUILD_UNINSTALLER
-    FileWrite $9 "$8 phase=process-stop-survivors-logged attempt_id=$lobsterInstallerAttemptId role=uninstaller helper_exit=$1$\r$\n"
+    FileWrite $9 "$8 phase=process-stop-survivors-logged attempt_id=$baiyingInstallerAttemptId role=uninstaller helper_exit=$1$\r$\n"
   !else
-    FileWrite $9 "$8 phase=process-stop-survivors-logged attempt_id=$lobsterInstallerAttemptId role=installer helper_exit=$1$\r$\n"
+    FileWrite $9 "$8 phase=process-stop-survivors-logged attempt_id=$baiyingInstallerAttemptId role=installer helper_exit=$1$\r$\n"
   !endif
   FileClose $9
   Goto StopBaiYingProcessesLog
@@ -593,9 +593,9 @@ FunctionEnd
   FileSeek $9 0 END
   !insertmacro GetTimestamp $8
   !ifdef BUILD_UNINSTALLER
-    FileWrite $9 "$8 phase=process-stop-complete attempt_id=$lobsterInstallerAttemptId role=uninstaller pid=$lobsterCurrentProcessPid status=$lobsterTargetProcessesStopStatus exit=$R2 elapsed_ms=$5$\r$\n"
+    FileWrite $9 "$8 phase=process-stop-complete attempt_id=$baiyingInstallerAttemptId role=uninstaller pid=$baiyingCurrentProcessPid status=$baiyingTargetProcessesStopStatus exit=$R2 elapsed_ms=$5$\r$\n"
   !else
-    FileWrite $9 "$8 phase=process-stop-complete attempt_id=$lobsterInstallerAttemptId role=installer pid=$lobsterCurrentProcessPid status=$lobsterTargetProcessesStopStatus exit=$R2 elapsed_ms=$5$\r$\n"
+    FileWrite $9 "$8 phase=process-stop-complete attempt_id=$baiyingInstallerAttemptId role=installer pid=$baiyingCurrentProcessPid status=$baiyingTargetProcessesStopStatus exit=$R2 elapsed_ms=$5$\r$\n"
   !endif
   FileClose $9
 !macroend
@@ -604,21 +604,21 @@ FunctionEnd
   ; Diagnostics only -- .onInit runs before the user has confirmed anything,
   ; so this macro must stay non-destructive.
   !insertmacro EnsureInstallerAttemptId
-  StrCpy $lobsterInvocationSource "unknown"
-  StrCpy $lobsterUpdatedFlag "absent"
-  StrCpy $lobsterUiMode "interactive"
-  StrCpy $lobsterSilentSource "none"
-  StrCpy $lobsterLauncherFallback "unknown"
+  StrCpy $baiyingInvocationSource "unknown"
+  StrCpy $baiyingUpdatedFlag "absent"
+  StrCpy $baiyingUiMode "interactive"
+  StrCpy $baiyingSilentSource "none"
+  StrCpy $baiyingLauncherFallback "unknown"
   ${If} ${isUpdated}
-    StrCpy $lobsterUpdatedFlag "present"
+    StrCpy $baiyingUpdatedFlag "present"
   ${EndIf}
   ${If} ${isUpdated}
   ${AndIf} ${isForceRun}
-    StrCpy $lobsterInvocationSource "app-update"
-    StrCpy $lobsterLauncherFallback "none"
+    StrCpy $baiyingInvocationSource "app-update"
+    StrCpy $baiyingLauncherFallback "none"
   ${EndIf}
   ${If} ${Silent}
-    StrCpy $lobsterSilentSource "argv"
+    StrCpy $baiyingSilentSource "argv"
   ${EndIf}
   !if "$%BAIYING_CHANNEL_BUILD%" == "1"
   !if "$%BAIYING_SILENT_ON_DOUBLE_CLICK%" == "1"
@@ -626,20 +626,20 @@ FunctionEnd
     ${Else}
       ${If} ${isUpdated}
       ${Else}
-        StrCpy $lobsterSilentSource "build-flag"
+        StrCpy $baiyingSilentSource "build-flag"
         SetSilent silent
       ${EndIf}
     ${EndIf}
   !endif
   !endif
   ${If} ${Silent}
-    StrCpy $lobsterUiMode "silent"
+    StrCpy $baiyingUiMode "silent"
   ${EndIf}
   CreateDirectory "$APPDATA\BaiYing"
   FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $9 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $9 "$8 phase=custom-init-start attempt_id=$lobsterInstallerAttemptId installer_version=${VERSION} invocation_source=$lobsterInvocationSource updated_flag=$lobsterUpdatedFlag ui_mode=$lobsterUiMode silent_source=$lobsterSilentSource launcher_fallback=$lobsterLauncherFallback instdir=$INSTDIR appdata=$APPDATA$\r$\n"
+  FileWrite $9 "$8 phase=custom-init-start attempt_id=$baiyingInstallerAttemptId installer_version=${VERSION} invocation_source=$baiyingInvocationSource updated_flag=$baiyingUpdatedFlag ui_mode=$baiyingUiMode silent_source=$baiyingSilentSource launcher_fallback=$baiyingLauncherFallback instdir=$INSTDIR appdata=$APPDATA$\r$\n"
   FileClose $9
 !macroend
 
@@ -656,16 +656,16 @@ FunctionEnd
     Push $5
     Push $6
 
-    StrCpy $lobsterInstallScenario "possible-existing"
+    StrCpy $baiyingInstallScenario "possible-existing"
     ReadRegStr $0 HKEY_CURRENT_USER "${INSTALL_REGISTRY_KEY}" InstallLocation
     ReadRegStr $1 HKEY_LOCAL_MACHINE "${INSTALL_REGISTRY_KEY}" InstallLocation
     ReadRegStr $2 HKEY_CURRENT_USER "${UNINSTALL_REGISTRY_KEY}" UninstallString
     ReadRegStr $3 HKEY_LOCAL_MACHINE "${UNINSTALL_REGISTRY_KEY}" UninstallString
 
-    StrCmp $0 "" 0 LobsterInstallPreflightDone
-    StrCmp $1 "" 0 LobsterInstallPreflightDone
-    StrCmp $2 "" 0 LobsterInstallPreflightDone
-    StrCmp $3 "" 0 LobsterInstallPreflightDone
+    StrCmp $0 "" 0 baiyingInstallPreflightDone
+    StrCmp $1 "" 0 baiyingInstallPreflightDone
+    StrCmp $2 "" 0 baiyingInstallPreflightDone
+    StrCmp $3 "" 0 baiyingInstallPreflightDone
 
     ; .onInit already called SetOutPath, which creates an empty $INSTDIR.
     ; Enumerate its contents instead of using IfFileExists with a wildcard:
@@ -683,36 +683,36 @@ FunctionEnd
     System::Call '*(i, l, l, l, i, i, i, i, &w260, &w14) p .r6'
     System::Call 'kernel32::FindFirstFileW(w "$INSTDIR\*", p r6) p .r4 ?e'
     Pop $5
-    IntCmp $4 -1 LobsterInstallPreflightFindFirstFailed
-    LobsterInstallPreflightEntryLoop:
+    IntCmp $4 -1 baiyingInstallPreflightFindFirstFailed
+    baiyingInstallPreflightEntryLoop:
       System::Call '*$6(i, l, l, l, i, i, i, i, &w260 .r5, &w14)'
-      StrCmp $5 "." LobsterInstallPreflightNextEntry
-      StrCmp $5 ".." LobsterInstallPreflightNextEntry
+      StrCmp $5 "." baiyingInstallPreflightNextEntry
+      StrCmp $5 ".." baiyingInstallPreflightNextEntry
       System::Call 'kernel32::FindClose(p r4)'
-      Goto LobsterInstallPreflightDone
-    LobsterInstallPreflightNextEntry:
+      Goto baiyingInstallPreflightDone
+    baiyingInstallPreflightNextEntry:
       System::Call 'kernel32::FindNextFileW(p r4, p r6) i .r0 ?e'
       Pop $5
-      IntCmp $0 0 LobsterInstallPreflightFindNextFailed
-      Goto LobsterInstallPreflightEntryLoop
+      IntCmp $0 0 baiyingInstallPreflightFindNextFailed
+      Goto baiyingInstallPreflightEntryLoop
 
-    LobsterInstallPreflightFindNextFailed:
+    baiyingInstallPreflightFindNextFailed:
       System::Call 'kernel32::FindClose(p r4)'
-      IntCmp $5 18 LobsterInstallPreflightFresh
-      Goto LobsterInstallPreflightDone
+      IntCmp $5 18 baiyingInstallPreflightFresh
+      Goto baiyingInstallPreflightDone
 
-    LobsterInstallPreflightFindFirstFailed:
+    baiyingInstallPreflightFindFirstFailed:
       ; ERROR_FILE_NOT_FOUND / ERROR_PATH_NOT_FOUND: the directory does not
       ; exist at all; ERROR_NO_MORE_FILES: it exists and is empty.
-      IntCmp $5 2 LobsterInstallPreflightFresh
-      IntCmp $5 3 LobsterInstallPreflightFresh
-      IntCmp $5 18 LobsterInstallPreflightFresh
-      Goto LobsterInstallPreflightDone
+      IntCmp $5 2 baiyingInstallPreflightFresh
+      IntCmp $5 3 baiyingInstallPreflightFresh
+      IntCmp $5 18 baiyingInstallPreflightFresh
+      Goto baiyingInstallPreflightDone
 
-    LobsterInstallPreflightFresh:
-    StrCpy $lobsterInstallScenario "fresh-install"
+    baiyingInstallPreflightFresh:
+    StrCpy $baiyingInstallScenario "fresh-install"
 
-    LobsterInstallPreflightDone:
+    baiyingInstallPreflightDone:
     System::Free $6
     Pop $6
     Pop $5
@@ -728,18 +728,18 @@ FunctionEnd
   ; Out: stack top = free MB as a decimal integer string, or "-1" when the
   ; query failed. 64-bit math via System::Int64Op -- byte counts here
   ; overflow NSIS' 32-bit signed integers.
-  Function lobsterQueryFreeMegabytes
+  Function baiyingQueryFreeMegabytes
     Exch $0
     Push $1
     Push $2
     System::Call 'kernel32::GetDiskFreeSpaceExW(w r0, *l .r1, p 0, p 0) i .r2'
-    IntCmp $2 0 LobsterQueryFreeMegabytesFailed
+    IntCmp $2 0 baiyingQueryFreeMegabytesFailed
     System::Int64Op $1 / 1048576
     Pop $0
-    Goto LobsterQueryFreeMegabytesDone
-    LobsterQueryFreeMegabytesFailed:
+    Goto baiyingQueryFreeMegabytesDone
+    baiyingQueryFreeMegabytesFailed:
       StrCpy $0 "-1"
-    LobsterQueryFreeMegabytesDone:
+    baiyingQueryFreeMegabytesDone:
     Pop $2
     Pop $1
     Exch $0
@@ -748,22 +748,22 @@ FunctionEnd
   ; Exact on-disk byte size of a file as a decimal string (64-bit safe, so
   ; the result can be compared verbatim against a build-time byte count).
   ; In: stack top = file path. Out: stack top = size string, or "-1".
-  Function lobsterQueryFileSizeBytes
+  Function baiyingQueryFileSizeBytes
     Exch $0
     Push $1
     Push $2
     Push $3
     ; FILE_READ_ATTRIBUTES (0x80), full sharing (7), OPEN_EXISTING (3).
     System::Call 'kernel32::CreateFileW(w r0, i 0x80, i 7, p 0, i 3, i 0, p 0) i .r1'
-    IntCmp $1 -1 LobsterQueryFileSizeFailed
+    IntCmp $1 -1 baiyingQueryFileSizeFailed
     System::Call 'kernel32::GetFileSizeEx(i r1, *l .r2) i .r3'
     System::Call 'kernel32::CloseHandle(i r1)'
-    IntCmp $3 0 LobsterQueryFileSizeFailed
+    IntCmp $3 0 baiyingQueryFileSizeFailed
     StrCpy $0 $2
-    Goto LobsterQueryFileSizeDone
-    LobsterQueryFileSizeFailed:
+    Goto baiyingQueryFileSizeDone
+    baiyingQueryFileSizeFailed:
       StrCpy $0 "-1"
-    LobsterQueryFileSizeDone:
+    baiyingQueryFileSizeDone:
     Pop $3
     Pop $2
     Pop $1
@@ -773,32 +773,32 @@ FunctionEnd
   ; Collapse helper output into one bounded log line: keep the LAST 512
   ; characters (tar prints its fatal reason last) and replace CR/LF/TAB with
   ; spaces so the key=value log stays one record per line.
-  Function lobsterBuildSingleLineTail
+  Function baiyingBuildSingleLineTail
     Exch $0
     Push $1
     Push $2
     Push $3
     StrLen $1 $0
-    IntCmp $1 512 LobsterTailSanitize LobsterTailSanitize 0
+    IntCmp $1 512 baiyingTailSanitize baiyingTailSanitize 0
       IntOp $1 $1 - 512
       StrCpy $0 $0 512 $1
-    LobsterTailSanitize:
+    baiyingTailSanitize:
     StrCpy $3 ""
     StrCpy $1 0
-    LobsterTailLoop:
+    baiyingTailLoop:
       StrCpy $2 $0 1 $1
-      StrCmp $2 "" LobsterTailDone
-      StrCmp $2 "$\r" LobsterTailBlank
-      StrCmp $2 "$\n" LobsterTailBlank
-      StrCmp $2 "$\t" LobsterTailBlank
+      StrCmp $2 "" baiyingTailDone
+      StrCmp $2 "$\r" baiyingTailBlank
+      StrCmp $2 "$\n" baiyingTailBlank
+      StrCmp $2 "$\t" baiyingTailBlank
       StrCpy $3 "$3$2"
-      Goto LobsterTailNext
-      LobsterTailBlank:
+      Goto baiyingTailNext
+      baiyingTailBlank:
         StrCpy $3 "$3 "
-      LobsterTailNext:
+      baiyingTailNext:
       IntOp $1 $1 + 1
-      Goto LobsterTailLoop
-    LobsterTailDone:
+      Goto baiyingTailLoop
+    baiyingTailDone:
     StrCpy $0 $3
     Pop $3
     Pop $2
@@ -810,7 +810,7 @@ FunctionEnd
   ; installer.nsi declares at file scope. This custom include is parsed
   ; before installer.nsi, so like the relaunch function they are emitted
   ; from customHeader, after that declaration exists.
-  !macro DefineLobsterPayloadStagingFunctions
+  !macro DefinebaiyingPayloadStagingFunctions
   ; -- Payload staging drive preflight (field case 2026-08-25) --
   ; TEMP on a nearly full C: let Nsis7z::Extract silently truncate the
   ; staged tree while the user installed to a roomy E:. Before the embedded
@@ -819,8 +819,8 @@ FunctionEnd
   ; also absorb the final install, stage inside $INSTDIR instead. Only when
   ; no drive has room does the install stop -- before anything destructive
   ; beyond the (rolled back) old-install rename has happened.
-  Function lobsterSelectPayloadStagingDir
-    !ifdef LOBSTER_PAYLOAD_UNPACKED_MB
+  Function baiyingSelectPayloadStagingDir
+    !ifdef baiying_PAYLOAD_UNPACKED_MB
     Push $0
     Push $1
     Push $2
@@ -834,90 +834,90 @@ FunctionEnd
     ; Staging need = materialized package (about this installer's own file
     ; size) + extracted 7z-out tree + margin, in MB.
     Push "$EXEPATH"
-    Call lobsterQueryFileSizeBytes
+    Call baiyingQueryFileSizeBytes
     Pop $0
     StrCmp $0 "-1" 0 +2
       StrCpy $0 "0"
     System::Int64Op $0 / 1048576
     Pop $0
-    IntOp $1 $0 + ${LOBSTER_PAYLOAD_UNPACKED_MB}
-    IntOp $1 $1 + ${LOBSTER_STAGING_MARGIN_MB}
+    IntOp $1 $0 + ${baiying_PAYLOAD_UNPACKED_MB}
+    IntOp $1 $1 + ${baiying_STAGING_MARGIN_MB}
 
     StrCpy $4 $PLUGINSDIR 3
     Push "$PLUGINSDIR"
-    Call lobsterQueryFreeMegabytes
+    Call baiyingQueryFreeMegabytes
     Pop $2
-    StrCmp $2 "-1" LobsterStagingQueryFailed
-    IntCmp $2 $1 LobsterStagingDefaultOk LobsterStagingDefaultInsufficient LobsterStagingDefaultOk
+    StrCmp $2 "-1" baiyingStagingQueryFailed
+    IntCmp $2 $1 baiyingStagingDefaultOk baiyingStagingDefaultInsufficient baiyingStagingDefaultOk
 
-    LobsterStagingDefaultInsufficient:
+    baiyingStagingDefaultInsufficient:
     ; The temp drive cannot hold the staged payload. Relocating helps only
     ; when the install directory lives on a different volume with room for
     ; staging plus the final install (tree + tar extraction) at once.
     StrCpy $3 $INSTDIR 3
-    IntOp $6 $1 + ${LOBSTER_PAYLOAD_UNPACKED_MB}
-    IntOp $6 $6 + ${LOBSTER_WIN_RESOURCES_TAR_MB}
+    IntOp $6 $1 + ${baiying_PAYLOAD_UNPACKED_MB}
+    IntOp $6 $6 + ${baiying_WIN_RESOURCES_TAR_MB}
     StrCpy $5 $2
-    StrCmp $3 $4 LobsterStagingNoRoom
+    StrCmp $3 $4 baiyingStagingNoRoom
     Push "$3"
-    Call lobsterQueryFreeMegabytes
+    Call baiyingQueryFreeMegabytes
     Pop $5
-    StrCmp $5 "-1" LobsterStagingQueryFailed
-    IntCmp $5 $6 LobsterStagingRelocate LobsterStagingNoRoom LobsterStagingRelocate
+    StrCmp $5 "-1" baiyingStagingQueryFailed
+    IntCmp $5 $6 baiyingStagingRelocate baiyingStagingNoRoom baiyingStagingRelocate
 
-    LobsterStagingRelocate:
+    baiyingStagingRelocate:
     CreateDirectory "$INSTDIR"
-    CreateDirectory "$INSTDIR\.lobsterai-staging"
-    IfFileExists "$INSTDIR\.lobsterai-staging" 0 LobsterStagingRelocateCreateFailed
-    StrCpy $appPackageStagingDir "$INSTDIR\.lobsterai-staging"
+    CreateDirectory "$INSTDIR\.baiyingai-staging"
+    IfFileExists "$INSTDIR\.baiyingai-staging" 0 baiyingStagingRelocateCreateFailed
+    StrCpy $appPackageStagingDir "$INSTDIR\.baiyingai-staging"
     DetailPrint "[Installer] Staging installation payload on the install drive"
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$3 mode=install-dir free_mb=$5 needed_mb=$6 plugins_drive=$4 plugins_free_mb=$2 plugins_needed_mb=$1 staging=$appPackageStagingDir$\r$\n"
+    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$baiyingInstallerAttemptId drive=$3 mode=install-dir free_mb=$5 needed_mb=$6 plugins_drive=$4 plugins_free_mb=$2 plugins_needed_mb=$1 staging=$appPackageStagingDir$\r$\n"
     FileClose $9
-    Goto LobsterStagingSelected
+    Goto baiyingStagingSelected
 
-    LobsterStagingRelocateCreateFailed:
+    baiyingStagingRelocateCreateFailed:
     ; Could not create the relocated staging directory. Keep the default so
     ; behavior matches previous installers; payload validation still stops a
     ; truncated staging tree afterwards.
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$4 mode=plugins-dir result=relocate-create-failed free_mb=$2 needed_mb=$1$\r$\n"
+    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$baiyingInstallerAttemptId drive=$4 mode=plugins-dir result=relocate-create-failed free_mb=$2 needed_mb=$1$\r$\n"
     FileClose $9
-    Goto LobsterStagingSelected
+    Goto baiyingStagingSelected
 
-    LobsterStagingQueryFailed:
+    baiyingStagingQueryFailed:
     ; Never turn a failed probe into an install blocker. Extraction plus the
     ; staged-payload validation remain the authority on success.
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$4 mode=plugins-dir result=query-failed free_mb=$2 needed_mb=$1$\r$\n"
+    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$baiyingInstallerAttemptId drive=$4 mode=plugins-dir result=query-failed free_mb=$2 needed_mb=$1$\r$\n"
     FileClose $9
-    Goto LobsterStagingSelected
+    Goto baiyingStagingSelected
 
-    LobsterStagingNoRoom:
+    baiyingStagingNoRoom:
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=staging-preflight-insufficient attempt_id=$lobsterInstallerAttemptId plugins_drive=$4 plugins_free_mb=$2 staging_needed_mb=$1 install_drive=$3 install_free_mb=$5 install_needed_mb=$6 action=abort-install$\r$\n"
+    FileWrite $9 "$8 phase=staging-preflight-insufficient attempt_id=$baiyingInstallerAttemptId plugins_drive=$4 plugins_free_mb=$2 staging_needed_mb=$1 install_drive=$3 install_free_mb=$5 install_needed_mb=$6 action=abort-install$\r$\n"
     FileClose $9
     !insertmacro customBeforeInstallerQuit "staging-space-insufficient"
     MessageBox MB_OK|MB_ICONEXCLAMATION "${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+4E0D}${U+8DB3}${U+FF0C}${U+65E0}${U+6CD5}${U+5B89}${U+88C5} BaiYing${U+3002}${U+8BF7}${U+6E05}${U+7406}${U+78C1}${U+76D8}${U+7A7A}${U+95F4}${U+540E}${U+91CD}${U+8BD5}${U+3002}$\r$\n$\r$\nThere is not enough free disk space to install BaiYing: drive $4 has $2 MB free but staging the installation needs about $1 MB, and installing to drive $3 would need about $6 MB free there. Free up disk space and run the installer again. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     SetErrorLevel 2
     Quit
 
-    LobsterStagingDefaultOk:
+    baiyingStagingDefaultOk:
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$lobsterInstallerAttemptId drive=$4 mode=plugins-dir free_mb=$2 needed_mb=$1$\r$\n"
+    FileWrite $9 "$8 phase=staging-drive-selected attempt_id=$baiyingInstallerAttemptId drive=$4 mode=plugins-dir free_mb=$2 needed_mb=$1$\r$\n"
     FileClose $9
 
-    LobsterStagingSelected:
+    baiyingStagingSelected:
     Pop $9
     Pop $8
     Pop $6
@@ -930,23 +930,23 @@ FunctionEnd
     !endif
   FunctionEnd
 
-  ; Remove a relocated staging directory ($INSTDIR\.lobsterai-staging). Runs
+  ; Remove a relocated staging directory ($INSTDIR\.baiyingai-staging). Runs
   ; on the success path once the payload copy is done, and from every
   ; controlled failure exit; a no-op while staging is the default
   ; $PLUGINSDIR (the NSIS temp dir cleans itself up on exit).
-  Function lobsterCleanupRelocatedPayloadStaging
+  Function baiyingCleanupRelocatedPayloadStaging
     Push $8
     Push $9
-    StrCmp $appPackageStagingDir "" LobsterStagingCleanupDone
-    StrCmp $appPackageStagingDir "$PLUGINSDIR" LobsterStagingCleanupDone
+    StrCmp $appPackageStagingDir "" baiyingStagingCleanupDone
+    StrCmp $appPackageStagingDir "$PLUGINSDIR" baiyingStagingCleanupDone
     RMDir /r "$appPackageStagingDir"
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=staging-relocated-cleanup attempt_id=$lobsterInstallerAttemptId staging=$appPackageStagingDir$\r$\n"
+    FileWrite $9 "$8 phase=staging-relocated-cleanup attempt_id=$baiyingInstallerAttemptId staging=$appPackageStagingDir$\r$\n"
     FileClose $9
     StrCpy $appPackageStagingDir "$PLUGINSDIR"
-    LobsterStagingCleanupDone:
+    baiyingStagingCleanupDone:
     Pop $9
     Pop $8
   FunctionEnd
@@ -955,7 +955,7 @@ FunctionEnd
   ; Template hook (patched extractAppPackage.nsh) invoked in *_app_files
   ; right before the app package is materialized to $appPackageStagingDir.
   !macro customSelectAppPackageStagingDir
-    Call lobsterSelectPayloadStagingDir
+    Call baiyingSelectPayloadStagingDir
   !macroend
 
   ; -- Staged payload validation --
@@ -966,7 +966,7 @@ FunctionEnd
   ; Verify the tree before CopyFiles can commit it: the app executable and
   ; resources\win-resources.tar must exist, and the tar must byte-match the
   ; size recorded at build time.
-  !macro LobsterValidateStagedPayload MODE
+  !macro baiyingValidateStagedPayload MODE
     Push $0
     Push $1
     Push $2
@@ -980,8 +980,8 @@ FunctionEnd
       ; fallback-direct extracts straight into the restored $OUTDIR
       StrCpy $0 "$OUTDIR"
     ${EndIf}
-    !ifdef LOBSTER_WIN_RESOURCES_TAR_BYTES
-      StrCpy $3 "${LOBSTER_WIN_RESOURCES_TAR_BYTES}"
+    !ifdef baiying_WIN_RESOURCES_TAR_BYTES
+      StrCpy $3 "${baiying_WIN_RESOURCES_TAR_BYTES}"
     !else
       StrCpy $3 "unknown"
     !endif
@@ -994,14 +994,14 @@ FunctionEnd
       StrCpy $1 "resources-tar-missing"
     ${Else}
       Push "$0\resources\win-resources.tar"
-      Call lobsterQueryFileSizeBytes
+      Call baiyingQueryFileSizeBytes
       Pop $2
       ${If} $2 == "-1"
         ; A just-extracted file that cannot be measured is logged but not
         ; fatal on its own; the tar extraction phase still verifies content.
         StrCpy $1 "size-query-failed"
-      !ifdef LOBSTER_WIN_RESOURCES_TAR_BYTES
-      ${ElseIf} $2 != "${LOBSTER_WIN_RESOURCES_TAR_BYTES}"
+      !ifdef baiying_WIN_RESOURCES_TAR_BYTES
+      ${ElseIf} $2 != "${baiying_WIN_RESOURCES_TAR_BYTES}"
         StrCpy $1 "resources-tar-size-mismatch"
       !endif
       ${EndIf}
@@ -1012,13 +1012,13 @@ FunctionEnd
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=payload-staging-validated attempt_id=$lobsterInstallerAttemptId mode=${MODE} result=$1 root=$0 tar_bytes=$2 expected_bytes=$3$\r$\n"
+      FileWrite $9 "$8 phase=payload-staging-validated attempt_id=$baiyingInstallerAttemptId mode=${MODE} result=$1 root=$0 tar_bytes=$2 expected_bytes=$3$\r$\n"
       FileClose $9
     ${Else}
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=payload-staging-validation-failed attempt_id=$lobsterInstallerAttemptId mode=${MODE} reason=$1 root=$0 found_bytes=$2 expected_bytes=$3 action=abort-install$\r$\n"
+      FileWrite $9 "$8 phase=payload-staging-validation-failed attempt_id=$baiyingInstallerAttemptId mode=${MODE} reason=$1 root=$0 found_bytes=$2 expected_bytes=$3 action=abort-install$\r$\n"
       FileClose $9
       ; Never commit a partial app: restore the previous installation first,
       ; then report. /SD keeps silent (/S) installs from blocking on the box.
@@ -1040,71 +1040,71 @@ FunctionEnd
   ; app-update invocation (--updated + --force-run), after a confirmed process
   ; stop and with an unchanged/restored regular old executable, is eligible.
   ; The restored app is launched with no --updated argument.
-  !macro DefineLobsterOldAppRelaunchFunction
-  Function lobsterTryRelaunchOldApp
+  !macro DefinebaiyingOldAppRelaunchFunction
+  Function baiyingTryRelaunchOldApp
     Push $0
     Push $1
     Push $8
     Push $9
 
-    StrCmp $lobsterOldAppRelaunchStatus "not-attempted" 0 LobsterOldAppRelaunchDone
-    StrCpy $lobsterOldAppRelaunchStatus "blocked"
-    StrCpy $lobsterOldAppRelaunchError "intent-not-trusted"
+    StrCmp $baiyingOldAppRelaunchStatus "not-attempted" 0 baiyingOldAppRelaunchDone
+    StrCpy $baiyingOldAppRelaunchStatus "blocked"
+    StrCpy $baiyingOldAppRelaunchError "intent-not-trusted"
 
     ; Read the generated command-line flags at relaunch time. This function is
     ; emitted by customHeader only after StdUtils has been registered.
     ${StdUtils.TestParameter} $0 "updated"
-    StrCmp $0 "true" 0 LobsterOldAppRelaunchLog
+    StrCmp $0 "true" 0 baiyingOldAppRelaunchLog
     ${StdUtils.TestParameter} $0 "force-run"
-    StrCmp $0 "true" 0 LobsterOldAppRelaunchLog
-    IfSilent 0 LobsterOldAppRelaunchInteractive
-      StrCpy $lobsterOldAppRelaunchError "silent-invocation"
-      Goto LobsterOldAppRelaunchLog
-    LobsterOldAppRelaunchInteractive:
-    StrCmp $lobsterTargetProcessesStopStatus "success" 0 LobsterOldAppRelaunchProcessStateBlocked
-    StrCmp $lobsterOldAppExecutablePath "" 0 +3
-      StrCpy $lobsterOldAppRelaunchError "old-source-missing"
-      Goto LobsterOldAppRelaunchLog
+    StrCmp $0 "true" 0 baiyingOldAppRelaunchLog
+    IfSilent 0 baiyingOldAppRelaunchInteractive
+      StrCpy $baiyingOldAppRelaunchError "silent-invocation"
+      Goto baiyingOldAppRelaunchLog
+    baiyingOldAppRelaunchInteractive:
+    StrCmp $baiyingTargetProcessesStopStatus "success" 0 baiyingOldAppRelaunchProcessStateBlocked
+    StrCmp $baiyingOldAppExecutablePath "" 0 +3
+      StrCpy $baiyingOldAppRelaunchError "old-source-missing"
+      Goto baiyingOldAppRelaunchLog
 
-    System::Call 'kernel32::GetFileAttributesW(w "$lobsterOldAppExecutablePath") i .r0'
-    IntCmp $0 -1 LobsterOldAppRelaunchFootprintBlocked 0 0
+    System::Call 'kernel32::GetFileAttributesW(w "$baiyingOldAppExecutablePath") i .r0'
+    IntCmp $0 -1 baiyingOldAppRelaunchFootprintBlocked 0 0
     IntOp $1 $0 & 0x410
-    IntCmp $1 0 0 LobsterOldAppRelaunchFootprintBlocked LobsterOldAppRelaunchFootprintBlocked
-    System::Call 'kernel32::GetFileAttributesW(w "$lobsterOldUninstallerPath") i .r0'
-    IntCmp $0 -1 LobsterOldAppRelaunchFootprintBlocked 0 0
+    IntCmp $1 0 0 baiyingOldAppRelaunchFootprintBlocked baiyingOldAppRelaunchFootprintBlocked
+    System::Call 'kernel32::GetFileAttributesW(w "$baiyingOldUninstallerPath") i .r0'
+    IntCmp $0 -1 baiyingOldAppRelaunchFootprintBlocked 0 0
     IntOp $1 $0 & 0x410
-    IntCmp $1 0 0 LobsterOldAppRelaunchFootprintBlocked LobsterOldAppRelaunchFootprintBlocked
-    System::Call 'kernel32::GetFileAttributesW(w "$lobsterOldAppAsarPath") i .r0'
-    IntCmp $0 -1 LobsterOldAppRelaunchFootprintBlocked 0 0
+    IntCmp $1 0 0 baiyingOldAppRelaunchFootprintBlocked baiyingOldAppRelaunchFootprintBlocked
+    System::Call 'kernel32::GetFileAttributesW(w "$baiyingOldAppAsarPath") i .r0'
+    IntCmp $0 -1 baiyingOldAppRelaunchFootprintBlocked 0 0
     IntOp $1 $0 & 0x410
-    IntCmp $1 0 0 LobsterOldAppRelaunchFootprintBlocked LobsterOldAppRelaunchFootprintBlocked
+    IntCmp $1 0 0 baiyingOldAppRelaunchFootprintBlocked baiyingOldAppRelaunchFootprintBlocked
 
-    StrCpy $lobsterOldAppRelaunchStatus "attempted"
-    StrCpy $lobsterOldAppRelaunchError "none"
-    ${StdUtils.ExecShellAsUser} $0 "$lobsterOldAppExecutablePath" "open" ""
-    StrCpy $lobsterOldAppRelaunchError $0
-    StrCmp $0 "0" LobsterOldAppRelaunchSucceeded
-      StrCpy $lobsterOldAppRelaunchStatus "old-app-relaunch-failed"
-      Goto LobsterOldAppRelaunchLog
-    LobsterOldAppRelaunchSucceeded:
-      StrCpy $lobsterOldAppRelaunchStatus "dispatched"
-    Goto LobsterOldAppRelaunchLog
+    StrCpy $baiyingOldAppRelaunchStatus "attempted"
+    StrCpy $baiyingOldAppRelaunchError "none"
+    ${StdUtils.ExecShellAsUser} $0 "$baiyingOldAppExecutablePath" "open" ""
+    StrCpy $baiyingOldAppRelaunchError $0
+    StrCmp $0 "0" baiyingOldAppRelaunchSucceeded
+      StrCpy $baiyingOldAppRelaunchStatus "old-app-relaunch-failed"
+      Goto baiyingOldAppRelaunchLog
+    baiyingOldAppRelaunchSucceeded:
+      StrCpy $baiyingOldAppRelaunchStatus "dispatched"
+    Goto baiyingOldAppRelaunchLog
 
-    LobsterOldAppRelaunchProcessStateBlocked:
-      StrCpy $lobsterOldAppRelaunchError "process-state-not-confirmed-stopped"
-      Goto LobsterOldAppRelaunchLog
+    baiyingOldAppRelaunchProcessStateBlocked:
+      StrCpy $baiyingOldAppRelaunchError "process-state-not-confirmed-stopped"
+      Goto baiyingOldAppRelaunchLog
 
-    LobsterOldAppRelaunchFootprintBlocked:
-      StrCpy $lobsterOldAppRelaunchError "old-footprint-not-verified"
+    baiyingOldAppRelaunchFootprintBlocked:
+      StrCpy $baiyingOldAppRelaunchError "old-footprint-not-verified"
 
-    LobsterOldAppRelaunchLog:
+    baiyingOldAppRelaunchLog:
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=old-app-relaunch attempt_id=$lobsterInstallerAttemptId status=$lobsterOldAppRelaunchStatus result=$lobsterOldAppRelaunchError source=$lobsterOldInstallOriginalPath args=none$\r$\n"
+    FileWrite $9 "$8 phase=old-app-relaunch attempt_id=$baiyingInstallerAttemptId status=$baiyingOldAppRelaunchStatus result=$baiyingOldAppRelaunchError source=$baiyingOldInstallOriginalPath args=none$\r$\n"
     FileClose $9
 
-    LobsterOldAppRelaunchDone:
+    baiyingOldAppRelaunchDone:
     Pop $9
     Pop $8
     Pop $1
@@ -1117,7 +1117,7 @@ FunctionEnd
   ; Direct NSIS Quit calls bypass callbacks, so patched template exit sites call
   ; customBeforeInstallerQuit explicitly; interactive failure/cancel callbacks
   ; use the same function as a second line of defence.
-  Function lobsterRollbackOldInstall
+  Function baiyingRollbackOldInstall
     Push $0
     Push $1
     Push $2
@@ -1129,15 +1129,15 @@ FunctionEnd
     Push $8
     Push $9
 
-    StrCmp $lobsterOldInstallRenameStatus "success" LobsterRollbackEligible
-    StrCmp $lobsterOldInstallRenameStatus "prevalidated" 0 LobsterRollbackDone
-    LobsterRollbackEligible:
-    StrCpy $lobsterOldInstallRollbackStatus "started"
-    StrCpy $lobsterOldInstallRollbackError "0"
-    StrCpy $lobsterOldInstallRenameStatus "rollback-in-progress"
+    StrCmp $baiyingOldInstallRenameStatus "success" baiyingRollbackEligible
+    StrCmp $baiyingOldInstallRenameStatus "prevalidated" 0 baiyingRollbackDone
+    baiyingRollbackEligible:
+    StrCpy $baiyingOldInstallRollbackStatus "started"
+    StrCpy $baiyingOldInstallRollbackError "0"
+    StrCpy $baiyingOldInstallRenameStatus "rollback-in-progress"
     System::Call 'kernel32::GetTickCount()i .r7'
     System::Call 'kernel32::GetCurrentProcessId()i .r4'
-    StrCpy $lobsterOldInstallFailedPath "$lobsterOldInstallOriginalPath.failed.$4.$7"
+    StrCpy $baiyingOldInstallFailedPath "$baiyingOldInstallOriginalPath.failed.$4.$7"
 
     InitPluginsDir
     SetOutPath "$PLUGINSDIR"
@@ -1145,98 +1145,98 @@ FunctionEnd
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=old-install-rollback-start attempt_id=$lobsterInstallerAttemptId reason=$lobsterOldInstallRollbackReason source=$lobsterOldInstallOriginalPath backup=$lobsterOldInstallBackupPath displaced=$lobsterOldInstallFailedPath$\r$\n"
+    FileWrite $9 "$8 phase=old-install-rollback-start attempt_id=$baiyingInstallerAttemptId reason=$baiyingOldInstallRollbackReason source=$baiyingOldInstallOriginalPath backup=$baiyingOldInstallBackupPath displaced=$baiyingOldInstallFailedPath$\r$\n"
     FileClose $9
 
     ; Remove an empty target directory first. If the new payload already wrote
     ; files, move the partial tree aside so the complete backup can return to
     ; the exact registered path without destructive deletion.
-    RMDir "$lobsterOldInstallOriginalPath"
+    RMDir "$baiyingOldInstallOriginalPath"
     StrCpy $2 "false"
-    System::Call 'kernel32::MoveFileW(w "$lobsterOldInstallOriginalPath", w "$lobsterOldInstallFailedPath") i .r0 ?e'
+    System::Call 'kernel32::MoveFileW(w "$baiyingOldInstallOriginalPath", w "$baiyingOldInstallFailedPath") i .r0 ?e'
     Pop $1
-    IntCmp $0 0 LobsterRollbackTargetMoveFailed LobsterRollbackTargetMoved LobsterRollbackTargetMoved
+    IntCmp $0 0 baiyingRollbackTargetMoveFailed baiyingRollbackTargetMoved baiyingRollbackTargetMoved
 
-    LobsterRollbackTargetMoved:
+    baiyingRollbackTargetMoved:
       StrCpy $2 "true"
-      Goto LobsterRollbackRestoreBackup
+      Goto baiyingRollbackRestoreBackup
 
-    LobsterRollbackTargetMoveFailed:
+    baiyingRollbackTargetMoveFailed:
       ; ERROR_FILE_NOT_FOUND / ERROR_PATH_NOT_FOUND is expected when payload
       ; extraction had not created the target yet. The restore attempt below
       ; is the authority on whether rollback can complete.
-      StrCpy $lobsterOldInstallRollbackError "target-move:$1"
+      StrCpy $baiyingOldInstallRollbackError "target-move:$1"
 
-    LobsterRollbackRestoreBackup:
-    System::Call 'kernel32::MoveFileW(w "$lobsterOldInstallBackupPath", w "$lobsterOldInstallOriginalPath") i .r0 ?e'
+    baiyingRollbackRestoreBackup:
+    System::Call 'kernel32::MoveFileW(w "$baiyingOldInstallBackupPath", w "$baiyingOldInstallOriginalPath") i .r0 ?e'
     Pop $1
-    IntCmp $0 0 LobsterRollbackRestoreFailed LobsterRollbackRestoreSucceeded LobsterRollbackRestoreSucceeded
+    IntCmp $0 0 baiyingRollbackRestoreFailed baiyingRollbackRestoreSucceeded baiyingRollbackRestoreSucceeded
 
-    LobsterRollbackRestoreSucceeded:
-      StrCpy $lobsterOldInstallRollbackStatus "success"
-      StrCpy $lobsterOldInstallRollbackError "0"
-      StrCpy $lobsterOldInstallRenameStatus "rolled-back"
+    baiyingRollbackRestoreSucceeded:
+      StrCpy $baiyingOldInstallRollbackStatus "success"
+      StrCpy $baiyingOldInstallRollbackError "0"
+      StrCpy $baiyingOldInstallRenameStatus "rolled-back"
 
       ; A failed update must not leave its broad, install-scope Defender
       ; exclusion protecting the restored application indefinitely.
-      StrCmp $lobsterTrustedPowerShellPath "" LobsterRollbackDefenderCleanupDone
-      System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_TARGET", t "$lobsterOldInstallOriginalPath")i'
-      Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { Remove-MpPreference -ExclusionPath $$env:BAIYING_DEFENDER_TARGET -ErrorAction SilentlyContinue } catch {}"'
-      !insertmacro LobsterExecHiddenToStack
+      StrCmp $baiyingTrustedPowerShellPath "" baiyingRollbackDefenderCleanupDone
+      System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_TARGET", t "$baiyingOldInstallOriginalPath")i'
+      Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { Remove-MpPreference -ExclusionPath $$env:BAIYING_DEFENDER_TARGET -ErrorAction SilentlyContinue } catch {}"'
+      !insertmacro baiyingExecHiddenToStack
       Pop $0
       Pop $1
       System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_TARGET", t "")i'
-      LobsterRollbackDefenderCleanupDone:
+      baiyingRollbackDefenderCleanupDone:
 
       ; The displaced tree is never needed after a verified restore. Pass its
       ; exact path through the child environment instead of interpolating it
       ; into cmd/PowerShell code: custom install directories may contain shell
       ; metacharacters. The detached launch is deliberately non-blocking and,
       ; unlike NSIS Exec, creates no console window.
-      StrCmp $2 "true" 0 LobsterRollbackLog
-      System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_FAILED_CLEANUP_PATH", t "$lobsterOldInstallFailedPath")i'
+      StrCmp $2 "true" 0 baiyingRollbackLog
+      System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_FAILED_CLEANUP_PATH", t "$baiyingOldInstallFailedPath")i'
       ClearErrors
-      StrCmp $lobsterTrustedPowerShellPath "" LobsterRollbackFailedTreeCleanupDone
-      Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "Remove-Item -LiteralPath $$env:BAIYING_FAILED_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
-      !insertmacro LobsterExecHiddenDetached
-      LobsterRollbackFailedTreeCleanupDone:
+      StrCmp $baiyingTrustedPowerShellPath "" baiyingRollbackFailedTreeCleanupDone
+      Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "Remove-Item -LiteralPath $$env:BAIYING_FAILED_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
+      !insertmacro baiyingExecHiddenDetached
+      baiyingRollbackFailedTreeCleanupDone:
       System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_FAILED_CLEANUP_PATH", t "")i'
-      Goto LobsterRollbackLog
+      Goto baiyingRollbackLog
 
-    LobsterRollbackRestoreFailed:
-      StrCpy $lobsterOldInstallRollbackStatus "failed"
-      StrCpy $lobsterOldInstallRollbackError "backup-restore:$1"
-      StrCpy $lobsterOldInstallRenameStatus "rollback-failed"
+    baiyingRollbackRestoreFailed:
+      StrCpy $baiyingOldInstallRollbackStatus "failed"
+      StrCpy $baiyingOldInstallRollbackError "backup-restore:$1"
+      StrCpy $baiyingOldInstallRenameStatus "rollback-failed"
 
       ; If the partial tree was displaced but the complete backup could not be
       ; restored, put the partial tree back. Never delete either tree when the
       ; recovery state is ambiguous.
-      StrCmp $2 "true" 0 LobsterRollbackLog
-      System::Call 'kernel32::MoveFileW(w "$lobsterOldInstallFailedPath", w "$lobsterOldInstallOriginalPath") i .r0 ?e'
+      StrCmp $2 "true" 0 baiyingRollbackLog
+      System::Call 'kernel32::MoveFileW(w "$baiyingOldInstallFailedPath", w "$baiyingOldInstallOriginalPath") i .r0 ?e'
       Pop $3
-      IntCmp $0 0 0 LobsterRollbackLog LobsterRollbackLog
-      StrCpy $lobsterOldInstallRollbackError "$lobsterOldInstallRollbackError;partial-restore:$3"
+      IntCmp $0 0 0 baiyingRollbackLog baiyingRollbackLog
+      StrCpy $baiyingOldInstallRollbackError "$baiyingOldInstallRollbackError;partial-restore:$3"
 
-    LobsterRollbackLog:
+    baiyingRollbackLog:
     System::Call 'kernel32::GetTickCount()i .r6'
     IntOp $5 $6 - $7
     StrCpy $2 "false"
     StrCpy $3 "false"
-    IfFileExists "$lobsterOldInstallOriginalPath\*.*" 0 LobsterRollbackSourceChecked
+    IfFileExists "$baiyingOldInstallOriginalPath\*.*" 0 baiyingRollbackSourceChecked
       StrCpy $2 "true"
-    LobsterRollbackSourceChecked:
-    IfFileExists "$lobsterOldInstallBackupPath\*.*" 0 LobsterRollbackBackupChecked
+    baiyingRollbackSourceChecked:
+    IfFileExists "$baiyingOldInstallBackupPath\*.*" 0 baiyingRollbackBackupChecked
       StrCpy $3 "true"
-    LobsterRollbackBackupChecked:
+    baiyingRollbackBackupChecked:
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=old-install-rollback-complete attempt_id=$lobsterInstallerAttemptId status=$lobsterOldInstallRollbackStatus reason=$lobsterOldInstallRollbackReason error=$lobsterOldInstallRollbackError elapsed_ms=$5 source_exists=$2 backup_exists=$3 displaced=$lobsterOldInstallFailedPath$\r$\n"
+    FileWrite $9 "$8 phase=old-install-rollback-complete attempt_id=$baiyingInstallerAttemptId status=$baiyingOldInstallRollbackStatus reason=$baiyingOldInstallRollbackReason error=$baiyingOldInstallRollbackError elapsed_ms=$5 source_exists=$2 backup_exists=$3 displaced=$baiyingOldInstallFailedPath$\r$\n"
     FileClose $9
-    StrCmp $lobsterOldInstallRollbackStatus "success" 0 LobsterRollbackDone
-    Call lobsterTryRelaunchOldApp
+    StrCmp $baiyingOldInstallRollbackStatus "success" 0 baiyingRollbackDone
+    Call baiyingTryRelaunchOldApp
 
-    LobsterRollbackDone:
+    baiyingRollbackDone:
     Pop $9
     Pop $8
     Pop $7
@@ -1250,8 +1250,8 @@ FunctionEnd
   FunctionEnd
 
   !macro customRollbackOldInstall REASON
-    StrCpy $lobsterOldInstallRollbackReason "${REASON}"
-    Call lobsterRollbackOldInstall
+    StrCpy $baiyingOldInstallRollbackReason "${REASON}"
+    Call baiyingRollbackOldInstall
   !macroend
 
   ; Every patched template exit site must leave a trace. The rollback below
@@ -1259,14 +1259,14 @@ FunctionEnd
   ; (rename_status is neither success nor prevalidated), which previously let
   ; e.g. a silent web-download failure quit with no log line at all -- the
   ; install-timing.log just stopped mid-flow.
-  !macro LobsterLogInstallerQuit REASON
+  !macro baiyingLogInstallerQuit REASON
     Push $8
     Push $9
     !insertmacro EnsureInstallerAttemptId
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=installer-quit attempt_id=$lobsterInstallerAttemptId reason=${REASON} ui_mode=$lobsterUiMode rename_status=$lobsterOldInstallRenameStatus$\r$\n"
+    FileWrite $9 "$8 phase=installer-quit attempt_id=$baiyingInstallerAttemptId reason=${REASON} ui_mode=$baiyingUiMode rename_status=$baiyingOldInstallRenameStatus$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -1276,18 +1276,18 @@ FunctionEnd
   ; exit may leave it behind; the rollback that follows may also need the
   ; space it frees. A $PLUGINSDIR staging is left to NSIS' own temp cleanup.
   !macro customBeforeInstallerQuit REASON
-    !insertmacro LobsterLogInstallerQuit "${REASON}"
-    Call lobsterCleanupRelocatedPayloadStaging
+    !insertmacro baiyingLogInstallerQuit "${REASON}"
+    Call baiyingCleanupRelocatedPayloadStaging
     !insertmacro customRollbackOldInstall "${REASON}"
   !macroend
 
   !macro customInstallerFailed
-    Call lobsterCleanupRelocatedPayloadStaging
+    Call baiyingCleanupRelocatedPayloadStaging
     !insertmacro customRollbackOldInstall "installer-failed"
   !macroend
 
   !macro customInstallerUserAbort
-    Call lobsterCleanupRelocatedPayloadStaging
+    Call baiyingCleanupRelocatedPayloadStaging
     !insertmacro customRollbackOldInstall "user-abort"
   !macroend
 !endif
@@ -1305,31 +1305,31 @@ FunctionEnd
   ; page and are unaffected.
   !ifndef BUILD_UNINSTALLER
     !insertmacro EnsureInstallerAttemptId
-    StrCpy $lobsterOldInstallOriginalPath "$INSTDIR"
-    GetFullPathName $lobsterOldInstallOriginalPathNormalized "$INSTDIR"
-    StrCpy $lobsterOldAppExecutablePath "$INSTDIR\${APP_EXECUTABLE_FILENAME}"
-    StrCpy $lobsterOldUninstallerPath "$INSTDIR\${UNINSTALL_FILENAME}"
-    StrCpy $lobsterOldAppAsarPath "$INSTDIR\resources\app.asar"
-    StrCpy $lobsterOldInstallRegisteredPath ""
-    StrCpy $lobsterOldInstallRegisteredPathNormalized ""
-    StrCpy $lobsterOldInstallAlternateRegisteredPath ""
-    StrCpy $lobsterOldInstallAlternateRegisteredPathNormalized ""
-    StrCpy $lobsterOldInstallBackupPath ""
-    StrCpy $lobsterOldInstallFailedPath ""
-    StrCpy $lobsterOldInstallRenameStatus "preflight"
-    StrCpy $lobsterOldInstallRenameReason "not-evaluated"
-    StrCpy $lobsterOldInstallRenameError "0"
-    StrCpy $lobsterOldInstallRenameAttempts "0"
-    StrCpy $lobsterOldInstallRollbackReason ""
-    StrCpy $lobsterOldInstallRollbackStatus "not-needed"
-    StrCpy $lobsterOldInstallRollbackError "0"
-    StrCpy $lobsterNewInstallValidationStatus "not-started"
-    StrCpy $lobsterNewInstallValidationReason "not-evaluated"
-    StrCpy $lobsterTargetProcessesStopStatus "not-started"
-    StrCpy $lobsterLegacySkillsStatus "not-inspected"
-    StrCpy $lobsterLegacySkillsRestoreStatus "not-required"
-    StrCpy $lobsterOldAppRelaunchStatus "not-attempted"
-    StrCpy $lobsterOldAppRelaunchError "none"
+    StrCpy $baiyingOldInstallOriginalPath "$INSTDIR"
+    GetFullPathName $baiyingOldInstallOriginalPathNormalized "$INSTDIR"
+    StrCpy $baiyingOldAppExecutablePath "$INSTDIR\${APP_EXECUTABLE_FILENAME}"
+    StrCpy $baiyingOldUninstallerPath "$INSTDIR\${UNINSTALL_FILENAME}"
+    StrCpy $baiyingOldAppAsarPath "$INSTDIR\resources\app.asar"
+    StrCpy $baiyingOldInstallRegisteredPath ""
+    StrCpy $baiyingOldInstallRegisteredPathNormalized ""
+    StrCpy $baiyingOldInstallAlternateRegisteredPath ""
+    StrCpy $baiyingOldInstallAlternateRegisteredPathNormalized ""
+    StrCpy $baiyingOldInstallBackupPath ""
+    StrCpy $baiyingOldInstallFailedPath ""
+    StrCpy $baiyingOldInstallRenameStatus "preflight"
+    StrCpy $baiyingOldInstallRenameReason "not-evaluated"
+    StrCpy $baiyingOldInstallRenameError "0"
+    StrCpy $baiyingOldInstallRenameAttempts "0"
+    StrCpy $baiyingOldInstallRollbackReason ""
+    StrCpy $baiyingOldInstallRollbackStatus "not-needed"
+    StrCpy $baiyingOldInstallRollbackError "0"
+    StrCpy $baiyingNewInstallValidationStatus "not-started"
+    StrCpy $baiyingNewInstallValidationReason "not-evaluated"
+    StrCpy $baiyingTargetProcessesStopStatus "not-started"
+    StrCpy $baiyingLegacySkillsStatus "not-inspected"
+    StrCpy $baiyingLegacySkillsRestoreStatus "not-required"
+    StrCpy $baiyingOldAppRelaunchStatus "not-attempted"
+    StrCpy $baiyingOldAppRelaunchError "none"
 
     ; The fresh decision is read-only and precedes every external helper,
     ; process stop, legacy Skills action, old uninstaller and directory rename.
@@ -1337,17 +1337,17 @@ FunctionEnd
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=install-preflight-complete attempt_id=$lobsterInstallerAttemptId installer_version=${VERSION} invocation_source=$lobsterInvocationSource updated_flag=$lobsterUpdatedFlag ui_mode=$lobsterUiMode launcher_fallback=$lobsterLauncherFallback scenario=$lobsterInstallScenario instdir=$INSTDIR$\r$\n"
+    FileWrite $9 "$8 phase=install-preflight-complete attempt_id=$baiyingInstallerAttemptId installer_version=${VERSION} invocation_source=$baiyingInvocationSource updated_flag=$baiyingUpdatedFlag ui_mode=$baiyingUiMode launcher_fallback=$baiyingLauncherFallback scenario=$baiyingInstallScenario instdir=$INSTDIR$\r$\n"
     FileClose $9
 
-    StrCmp $lobsterInstallScenario "fresh-install" CustomCheckFreshInstall
+    StrCmp $baiyingInstallScenario "fresh-install" CustomCheckFreshInstall
 
     ; Record the legacy source with a native, non-following attribute check
     ; before any external helper or process stop. This is advisory only: an
     ; existing installation still has to stop its processes even when the
     ; legacy source is absent, and the source is checked again after the stop
     ; before any backup is authorized.
-    StrCpy $lobsterLegacySkillsStatus "legacy-source-present"
+    StrCpy $baiyingLegacySkillsStatus "legacy-source-present"
     System::Call 'kernel32::GetFileAttributesW(w "$INSTDIR\resources\SKILLs") i .r0'
     IntCmp $0 -1 LegacySkillsSourcePreflightAbsent 0 0
     IntOp $1 $0 & 0x10
@@ -1356,30 +1356,30 @@ FunctionEnd
     IntOp $1 $0 & 0x400
     IntCmp $1 0 LegacySkillsSourcePreflightLogged LegacySkillsSourcePreflightInvalid LegacySkillsSourcePreflightInvalid
     LegacySkillsSourcePreflightAbsent:
-      StrCpy $lobsterLegacySkillsStatus "legacy-source-not-present"
+      StrCpy $baiyingLegacySkillsStatus "legacy-source-not-present"
       Goto LegacySkillsSourcePreflightLogged
     LegacySkillsSourcePreflightInvalid:
-      StrCpy $lobsterLegacySkillsStatus "legacy-source-invalid"
+      StrCpy $baiyingLegacySkillsStatus "legacy-source-invalid"
     LegacySkillsSourcePreflightLogged:
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=legacy-skills-source-preflight attempt_id=$lobsterInstallerAttemptId status=$lobsterLegacySkillsStatus source=$INSTDIR\resources\SKILLs$\r$\n"
+    FileWrite $9 "$8 phase=legacy-skills-source-preflight attempt_id=$baiyingInstallerAttemptId status=$baiyingLegacySkillsStatus source=$INSTDIR\resources\SKILLs$\r$\n"
     FileClose $9
 
     !insertmacro ResolveTrustedPowerShell
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=system-tool-resolved attempt_id=$lobsterInstallerAttemptId tool=powershell status=$lobsterTrustedPowerShellStatus source=$lobsterTrustedPowerShellSource path=$lobsterTrustedPowerShellPath$\r$\n"
+    FileWrite $9 "$8 phase=system-tool-resolved attempt_id=$baiyingInstallerAttemptId tool=powershell status=$baiyingTrustedPowerShellStatus source=$baiyingTrustedPowerShellSource path=$baiyingTrustedPowerShellPath$\r$\n"
     FileClose $9
 
     !insertmacro stopBaiYingProcesses
-    StrCmp $lobsterTargetProcessesStopStatus "success" TargetProcessesStopped
+    StrCmp $baiyingTargetProcessesStopStatus "success" TargetProcessesStopped
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=install-failed-before-mutation attempt_id=$lobsterInstallerAttemptId failure_kind=process-stop-failed raw_status=$lobsterTargetProcessesStopStatus exit=$R2 action=old-install-untouched$\r$\n"
+      FileWrite $9 "$8 phase=install-failed-before-mutation attempt_id=$baiyingInstallerAttemptId failure_kind=process-stop-failed raw_status=$baiyingTargetProcessesStopStatus exit=$R2 action=old-install-untouched$\r$\n"
       FileClose $9
       MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update stopped before replacing the previous version because the old application processes could not be confirmed stopped. Please close BaiYing and retry. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       SetErrorLevel 2
@@ -1407,12 +1407,12 @@ FunctionEnd
     IntCmp $1 0 SkillBackupSourceReady SkillBackupInspectFailed SkillBackupInspectFailed
 
     SkillBackupSourceAbsent:
-      StrCpy $lobsterLegacySkillsStatus "legacy-source-not-present"
+      StrCpy $baiyingLegacySkillsStatus "legacy-source-not-present"
       StrCpy $R2 "0"
       Goto SkillBackupResultLog
 
     SkillBackupInspectFailed:
-      StrCpy $lobsterLegacySkillsStatus "legacy-inspect-failed"
+      StrCpy $baiyingLegacySkillsStatus "legacy-inspect-failed"
       StrCpy $R2 "invalid-source-attributes"
       Goto SkillBackupResultLog
 
@@ -1422,7 +1422,7 @@ FunctionEnd
     FileOpen $R0 "$APPDATA\BaiYing\skill-migrate.log" w
     IfErrors BackupLogOpenFailed
       !insertmacro GetTimestamp $8
-      FileWrite $R0 "$8 phase=backup-start attempt_id=$lobsterInstallerAttemptId instdir=$INSTDIR appdata=$APPDATA$\r$\n"
+      FileWrite $R0 "$8 phase=backup-start attempt_id=$baiyingInstallerAttemptId instdir=$INSTDIR appdata=$APPDATA$\r$\n"
       Goto BackupDoExec
     BackupLogOpenFailed:
       StrCpy $R0 ""
@@ -1431,9 +1431,9 @@ FunctionEnd
     ReadRegStr $4 SHELL_CONTEXT "${UNINSTALL_REGISTRY_KEY}" DisplayVersion
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_SOURCE", t "$INSTDIR\resources\SKILLs")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_BACKUP_ROOT", t "$APPDATA\BaiYing\skills-backup")i'
-    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ATTEMPT_ID", t "$lobsterInstallerAttemptId")i'
+    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ATTEMPT_ID", t "$baiyingInstallerAttemptId")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_OLD_VERSION", t "$4")i'
-    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$ErrorActionPreference = \"Stop\";\
       $$src       = $$env:BAIYING_SKILL_SOURCE;\
       $$root      = $$env:BAIYING_SKILL_BACKUP_ROOT;\
@@ -1453,7 +1453,7 @@ FunctionEnd
           }\
         } catch { });\
         $$userSkills = @(Get-ChildItem -LiteralPath $$src -Directory -ErrorAction Stop | Where-Object { $$bundled -notcontains $$_.Name });\
-        if ($$userSkills.Count -eq 0) { Write-Output \"legacy-no-user-skills\"; exit ${LOBSTER_SKILL_BACKUP_EXIT_NO_USER_SKILLS} };\
+        if ($$userSkills.Count -eq 0) { Write-Output \"legacy-no-user-skills\"; exit ${baiying_SKILL_BACKUP_EXIT_NO_USER_SKILLS} };\
         $$phase = \"backup-copy\";\
         if (Test-Path -LiteralPath $$staging) { Remove-Item -LiteralPath $$staging -Recurse -Force -ErrorAction Stop };\
         if (Test-Path -LiteralPath $$backup) { throw \"attempt backup already exists\" };\
@@ -1512,15 +1512,15 @@ FunctionEnd
         $$finalManifest = Get-Content -LiteralPath $$manifest -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop;\
         if (($$finalManifest.attemptId -ne $$attempt) -or ($$finalManifest.validation.status -ne \"verified\")) { throw \"manifest final validation mismatch\" };\
         Write-Output (\"legacy-backup-succeeded skills=\" + $$finalManifest.statistics.skillCount + \" files=\" + $$finalManifest.statistics.fileCount + \" directories=\" + $$finalManifest.statistics.directoryCount + \" bytes=\" + $$finalManifest.statistics.totalBytes);\
-        exit ${LOBSTER_SKILL_BACKUP_EXIT_VERIFIED}\
+        exit ${baiying_SKILL_BACKUP_EXIT_VERIFIED}\
       } catch {\
         if (Test-Path -LiteralPath $$staging) { Remove-Item -LiteralPath $$staging -Recurse -Force -ErrorAction SilentlyContinue };\
-        if ($$phase -eq \"inspect\") { Write-Output \"legacy-inspect-failed\"; exit ${LOBSTER_SKILL_BACKUP_EXIT_INSPECT_FAILED} };\
-        if ($$phase -eq \"backup-verify\") { Write-Output \"legacy-backup-verify-failed\"; exit ${LOBSTER_SKILL_BACKUP_EXIT_VERIFY_FAILED} };\
+        if ($$phase -eq \"inspect\") { Write-Output \"legacy-inspect-failed\"; exit ${baiying_SKILL_BACKUP_EXIT_INSPECT_FAILED} };\
+        if ($$phase -eq \"backup-verify\") { Write-Output \"legacy-backup-verify-failed\"; exit ${baiying_SKILL_BACKUP_EXIT_VERIFY_FAILED} };\
         Write-Output \"legacy-backup-copy-failed\";\
-        exit ${LOBSTER_SKILL_BACKUP_EXIT_COPY_FAILED}\
+        exit ${baiying_SKILL_BACKUP_EXIT_COPY_FAILED}\
       }"'
-    !insertmacro LobsterExecHiddenToStack
+    !insertmacro baiyingExecHiddenToStack
     Pop $0
     Pop $1
     StrCpy $R2 $0
@@ -1533,30 +1533,30 @@ FunctionEnd
 
     StrCmp $R0 "" BackupSkipCloseLog
       !insertmacro GetTimestamp $8
-      FileWrite $R0 "$8 phase=backup-end attempt_id=$lobsterInstallerAttemptId exit=$R2 elapsed_ms=$5$\r$\n"
-      FileWrite $R0 "$8 phase=backup-output attempt_id=$lobsterInstallerAttemptId text=$1$\r$\n"
+      FileWrite $R0 "$8 phase=backup-end attempt_id=$baiyingInstallerAttemptId exit=$R2 elapsed_ms=$5$\r$\n"
+      FileWrite $R0 "$8 phase=backup-output attempt_id=$baiyingInstallerAttemptId text=$1$\r$\n"
       FileClose $R0
     BackupSkipCloseLog:
     ; Status is derived from the helper exit code alone. stdout ($1) is
     ; logged above for diagnosis only: the launcher keeps the helper's
     ; trailing CRLF, so an exact text match here silently fails. Unknown
     ; exit codes keep the fail-closed copy-failed default.
-    StrCpy $lobsterLegacySkillsStatus "legacy-backup-copy-failed"
+    StrCpy $baiyingLegacySkillsStatus "legacy-backup-copy-failed"
     StrCmp $R2 "error" 0 +3
-      StrCpy $lobsterLegacySkillsStatus "legacy-helper-launch-failed"
+      StrCpy $baiyingLegacySkillsStatus "legacy-helper-launch-failed"
       Goto SkillBackupResultLog
-    StrCmp $R2 "${LOBSTER_SKILL_BACKUP_EXIT_VERIFIED}" 0 +3
-      StrCpy $lobsterLegacySkillsStatus "legacy-backup-succeeded"
+    StrCmp $R2 "${baiying_SKILL_BACKUP_EXIT_VERIFIED}" 0 +3
+      StrCpy $baiyingLegacySkillsStatus "legacy-backup-succeeded"
       Goto SkillBackupResultLog
-    StrCmp $R2 "${LOBSTER_SKILL_BACKUP_EXIT_NO_USER_SKILLS}" 0 +3
-      StrCpy $lobsterLegacySkillsStatus "legacy-no-user-skills"
+    StrCmp $R2 "${baiying_SKILL_BACKUP_EXIT_NO_USER_SKILLS}" 0 +3
+      StrCpy $baiyingLegacySkillsStatus "legacy-no-user-skills"
       Goto SkillBackupResultLog
-    StrCmp $R2 "${LOBSTER_SKILL_BACKUP_EXIT_INSPECT_FAILED}" 0 +2
-      StrCpy $lobsterLegacySkillsStatus "legacy-inspect-failed"
-    StrCmp $R2 "${LOBSTER_SKILL_BACKUP_EXIT_COPY_FAILED}" 0 +2
-      StrCpy $lobsterLegacySkillsStatus "legacy-backup-copy-failed"
-    StrCmp $R2 "${LOBSTER_SKILL_BACKUP_EXIT_VERIFY_FAILED}" 0 +2
-      StrCpy $lobsterLegacySkillsStatus "legacy-backup-verify-failed"
+    StrCmp $R2 "${baiying_SKILL_BACKUP_EXIT_INSPECT_FAILED}" 0 +2
+      StrCpy $baiyingLegacySkillsStatus "legacy-inspect-failed"
+    StrCmp $R2 "${baiying_SKILL_BACKUP_EXIT_COPY_FAILED}" 0 +2
+      StrCpy $baiyingLegacySkillsStatus "legacy-backup-copy-failed"
+    StrCmp $R2 "${baiying_SKILL_BACKUP_EXIT_VERIFY_FAILED}" 0 +2
+      StrCpy $baiyingLegacySkillsStatus "legacy-backup-verify-failed"
 
     SkillBackupResultLog:
     System::Call 'kernel32::GetTickCount()i .r6'
@@ -1564,35 +1564,35 @@ FunctionEnd
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=skill-backup-complete attempt_id=$lobsterInstallerAttemptId status=$lobsterLegacySkillsStatus exit=$R2 elapsed_ms=$5 backup=$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId$\r$\n"
+    FileWrite $9 "$8 phase=skill-backup-complete attempt_id=$baiyingInstallerAttemptId status=$baiyingLegacySkillsStatus exit=$R2 elapsed_ms=$5 backup=$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId$\r$\n"
     FileClose $9
 
     ; User-created skills live inside the installation tree. If their backup
     ; did not complete, stop before the directory swap so the only authoritative
     ; copy remains untouched. An update that fails closed is recoverable; a
     ; fast update that silently drops user data is not.
-    StrCmp $lobsterLegacySkillsStatus "legacy-source-not-present" SkillBackupValidated
-    StrCmp $lobsterLegacySkillsStatus "legacy-no-user-skills" SkillBackupValidated
-    StrCmp $lobsterLegacySkillsStatus "legacy-backup-succeeded" 0 SkillBackupFailedAbort
+    StrCmp $baiyingLegacySkillsStatus "legacy-source-not-present" SkillBackupValidated
+    StrCmp $baiyingLegacySkillsStatus "legacy-no-user-skills" SkillBackupValidated
+    StrCmp $baiyingLegacySkillsStatus "legacy-backup-succeeded" 0 SkillBackupFailedAbort
       ; Post-condition for a verified backup: the manifest must still exist on
       ; disk immediately before any destructive step. If it vanished (e.g.
       ; antivirus quarantine), fail closed now while the old install is still
       ; intact instead of discovering the loss at restore time.
-      IfFileExists "$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId\backup-manifest.json" SkillBackupValidated
-      StrCpy $lobsterLegacySkillsStatus "legacy-backup-verify-failed"
+      IfFileExists "$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId\backup-manifest.json" SkillBackupValidated
+      StrCpy $baiyingLegacySkillsStatus "legacy-backup-verify-failed"
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=skill-backup-manifest-postcheck-missing attempt_id=$lobsterInstallerAttemptId manifest=$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId\backup-manifest.json$\r$\n"
+      FileWrite $9 "$8 phase=skill-backup-manifest-postcheck-missing attempt_id=$baiyingInstallerAttemptId manifest=$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId\backup-manifest.json$\r$\n"
       FileClose $9
     SkillBackupFailedAbort:
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=skill-backup-failed-abort attempt_id=$lobsterInstallerAttemptId status=$lobsterLegacySkillsStatus exit=$R2 action=old-install-preserved$\r$\n"
+      FileWrite $9 "$8 phase=skill-backup-failed-abort attempt_id=$baiyingInstallerAttemptId status=$baiyingLegacySkillsStatus exit=$R2 action=old-install-preserved$\r$\n"
       FileClose $9
-      Call lobsterTryRelaunchOldApp
-      MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update stopped because legacy user skills could not be safely inspected or backed up (status=$lobsterLegacySkillsStatus). The previous installation was not replaced. Please retry the update. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+      Call baiyingTryRelaunchOldApp
+      MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update stopped because legacy user skills could not be safely inspected or backed up (status=$baiyingLegacySkillsStatus). The previous installation was not replaced. Please retry the update. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       SetErrorLevel 2
       Quit
     SkillBackupValidated:
@@ -1616,43 +1616,43 @@ FunctionEnd
     ; extraction does not compete with a recursive old-tree deletion.
     DetailPrint "[Installer] Preparing previous installation for replacement"
     System::Call 'kernel32::GetTickCount()i .r7'
-    StrCpy $lobsterOldInstallOriginalPath "$INSTDIR"
-    GetFullPathName $lobsterOldInstallOriginalPathNormalized "$INSTDIR"
-    StrCpy $lobsterOldInstallRegisteredPath ""
-    StrCpy $lobsterOldInstallRegisteredPathNormalized ""
-    StrCpy $lobsterOldInstallAlternateRegisteredPath ""
-    StrCpy $lobsterOldInstallAlternateRegisteredPathNormalized ""
-    StrCpy $lobsterOldInstallBackupPath ""
-    StrCpy $lobsterOldInstallFailedPath ""
-    StrCpy $lobsterOldInstallRenameStatus "not-applicable"
-    StrCpy $lobsterOldInstallRenameReason "not-evaluated"
-    StrCpy $lobsterOldInstallRenameError "0"
-    StrCpy $lobsterOldInstallRenameAttempts "0"
-    StrCpy $lobsterOldInstallRollbackReason ""
-    StrCpy $lobsterOldInstallRollbackStatus "not-needed"
-    StrCpy $lobsterOldInstallRollbackError "0"
+    StrCpy $baiyingOldInstallOriginalPath "$INSTDIR"
+    GetFullPathName $baiyingOldInstallOriginalPathNormalized "$INSTDIR"
+    StrCpy $baiyingOldInstallRegisteredPath ""
+    StrCpy $baiyingOldInstallRegisteredPathNormalized ""
+    StrCpy $baiyingOldInstallAlternateRegisteredPath ""
+    StrCpy $baiyingOldInstallAlternateRegisteredPathNormalized ""
+    StrCpy $baiyingOldInstallBackupPath ""
+    StrCpy $baiyingOldInstallFailedPath ""
+    StrCpy $baiyingOldInstallRenameStatus "not-applicable"
+    StrCpy $baiyingOldInstallRenameReason "not-evaluated"
+    StrCpy $baiyingOldInstallRenameError "0"
+    StrCpy $baiyingOldInstallRenameAttempts "0"
+    StrCpy $baiyingOldInstallRollbackReason ""
+    StrCpy $baiyingOldInstallRollbackStatus "not-needed"
+    StrCpy $baiyingOldInstallRollbackError "0"
 
     ClearErrors
-    ReadRegStr $lobsterOldInstallRegisteredPath SHELL_CONTEXT "${INSTALL_REGISTRY_KEY}" InstallLocation
-    StrCmp $lobsterOldInstallRegisteredPath "" OldInstallRegisteredPathReady
-      GetFullPathName $lobsterOldInstallRegisteredPathNormalized "$lobsterOldInstallRegisteredPath"
+    ReadRegStr $baiyingOldInstallRegisteredPath SHELL_CONTEXT "${INSTALL_REGISTRY_KEY}" InstallLocation
+    StrCmp $baiyingOldInstallRegisteredPath "" OldInstallRegisteredPathReady
+      GetFullPathName $baiyingOldInstallRegisteredPathNormalized "$baiyingOldInstallRegisteredPath"
     OldInstallRegisteredPathReady:
 
-    GetFullPathName $lobsterOldInstallCurrentDirectory "."
+    GetFullPathName $baiyingOldInstallCurrentDirectory "."
     InitPluginsDir
     SetOutPath "$PLUGINSDIR"
 
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=old-install-rename-start attempt_id=$lobsterInstallerAttemptId instdir=$lobsterOldInstallOriginalPath registered_instdir=$lobsterOldInstallRegisteredPath current_directory=$lobsterOldInstallCurrentDirectory install_mode=$installMode$\r$\n"
+    FileWrite $9 "$8 phase=old-install-rename-start attempt_id=$baiyingInstallerAttemptId instdir=$baiyingOldInstallOriginalPath registered_instdir=$baiyingOldInstallRegisteredPath current_directory=$baiyingOldInstallCurrentDirectory install_mode=$installMode$\r$\n"
     FileClose $9
 
-    StrCpy $lobsterOldInstallRenameReason "registered-install-missing"
-    StrCmp $lobsterOldInstallRegisteredPathNormalized "" OldInstallRenameComplete
+    StrCpy $baiyingOldInstallRenameReason "registered-install-missing"
+    StrCmp $baiyingOldInstallRegisteredPathNormalized "" OldInstallRenameComplete
 
-    StrCpy $lobsterOldInstallRenameReason "install-location-mismatch"
-    StrCmp $lobsterOldInstallRegisteredPathNormalized $lobsterOldInstallOriginalPathNormalized 0 OldInstallRenameComplete
+    StrCpy $baiyingOldInstallRenameReason "install-location-mismatch"
+    StrCmp $baiyingOldInstallRegisteredPathNormalized $baiyingOldInstallOriginalPathNormalized 0 OldInstallRenameComplete
 
     ; A machine install can have a stale per-user registration pointing at the
     ; same directory. Fast-path skipping both roots would preserve a duplicate
@@ -1660,64 +1660,64 @@ FunctionEnd
     ; install, so treat this ambiguous state as fallback-only.
     ${If} $installMode == "all"
       ClearErrors
-      ReadRegStr $lobsterOldInstallAlternateRegisteredPath HKEY_CURRENT_USER "${INSTALL_REGISTRY_KEY}" InstallLocation
-      StrCmp $lobsterOldInstallAlternateRegisteredPath "" OldInstallAlternateRegisteredPathReady
-        GetFullPathName $lobsterOldInstallAlternateRegisteredPathNormalized "$lobsterOldInstallAlternateRegisteredPath"
+      ReadRegStr $baiyingOldInstallAlternateRegisteredPath HKEY_CURRENT_USER "${INSTALL_REGISTRY_KEY}" InstallLocation
+      StrCmp $baiyingOldInstallAlternateRegisteredPath "" OldInstallAlternateRegisteredPathReady
+        GetFullPathName $baiyingOldInstallAlternateRegisteredPathNormalized "$baiyingOldInstallAlternateRegisteredPath"
       OldInstallAlternateRegisteredPathReady:
-      StrCpy $lobsterOldInstallRenameReason "ambiguous-dual-registration"
-      StrCmp $lobsterOldInstallAlternateRegisteredPathNormalized $lobsterOldInstallOriginalPathNormalized OldInstallRenameComplete
+      StrCpy $baiyingOldInstallRenameReason "ambiguous-dual-registration"
+      StrCmp $baiyingOldInstallAlternateRegisteredPathNormalized $baiyingOldInstallOriginalPathNormalized OldInstallRenameComplete
     ${EndIf}
 
-    StrCpy $lobsterOldInstallRenameReason "install-files-missing"
-    IfFileExists "$lobsterOldInstallOriginalPath\${APP_EXECUTABLE_FILENAME}" OldInstallRenameEligible
-    IfFileExists "$lobsterOldInstallOriginalPath\${UNINSTALL_FILENAME}" OldInstallRenameEligible
+    StrCpy $baiyingOldInstallRenameReason "install-files-missing"
+    IfFileExists "$baiyingOldInstallOriginalPath\${APP_EXECUTABLE_FILENAME}" OldInstallRenameEligible
+    IfFileExists "$baiyingOldInstallOriginalPath\${UNINSTALL_FILENAME}" OldInstallRenameEligible
     Goto OldInstallRenameComplete
 
     OldInstallRenameEligible:
-      StrCpy $lobsterOldInstallRenameStatus "failed"
-      StrCpy $lobsterOldInstallRenameReason "rename-failed"
+      StrCpy $baiyingOldInstallRenameStatus "failed"
+      StrCpy $baiyingOldInstallRenameReason "rename-failed"
       System::Call 'kernel32::GetCurrentProcessId()i .r4'
-      StrCpy $lobsterCurrentProcessPid $4
+      StrCpy $baiyingCurrentProcessPid $4
       System::Call 'kernel32::GetTickCount()i .r4'
-      StrCpy $lobsterOldInstallBackupPath "$lobsterOldInstallOriginalPath.old.$lobsterCurrentProcessPid.$4"
+      StrCpy $baiyingOldInstallBackupPath "$baiyingOldInstallOriginalPath.old.$baiyingCurrentProcessPid.$4"
 
     OldInstallRenameAttempt:
-      IntOp $lobsterOldInstallRenameAttempts $lobsterOldInstallRenameAttempts + 1
+      IntOp $baiyingOldInstallRenameAttempts $baiyingOldInstallRenameAttempts + 1
       ; Capture the Win32 error in the same System plug-in invocation as the
       ; move. GetLastError after an NSIS Rename/logging call can be stale.
-      System::Call 'kernel32::MoveFileW(w "$lobsterOldInstallOriginalPath", w "$lobsterOldInstallBackupPath") i .r4 ?e'
-      Pop $lobsterOldInstallRenameError
+      System::Call 'kernel32::MoveFileW(w "$baiyingOldInstallOriginalPath", w "$baiyingOldInstallBackupPath") i .r4 ?e'
+      Pop $baiyingOldInstallRenameError
       IntCmp $4 0 OldInstallRenameAttemptFailed OldInstallRenameAttemptSucceeded OldInstallRenameAttemptSucceeded
 
     OldInstallRenameAttemptSucceeded:
-      StrCpy $lobsterOldInstallRenameStatus "success"
+      StrCpy $baiyingOldInstallRenameStatus "success"
 
       ; Rename success is only accepted when the source tree is gone and the
       ; complete backup tree is visible at the unique destination.
-      IfFileExists "$lobsterOldInstallOriginalPath\*.*" OldInstallRenameVerificationFailed
-      IfFileExists "$lobsterOldInstallBackupPath\*.*" 0 OldInstallRenameVerificationFailed
-      StrCpy $lobsterOldInstallRenameStatus "success"
-      StrCpy $lobsterOldInstallRenameReason "renamed"
-      StrCpy $lobsterOldInstallRenameError "0"
+      IfFileExists "$baiyingOldInstallOriginalPath\*.*" OldInstallRenameVerificationFailed
+      IfFileExists "$baiyingOldInstallBackupPath\*.*" 0 OldInstallRenameVerificationFailed
+      StrCpy $baiyingOldInstallRenameStatus "success"
+      StrCpy $baiyingOldInstallRenameReason "renamed"
+      StrCpy $baiyingOldInstallRenameError "0"
       Goto OldInstallRenameComplete
 
     OldInstallRenameAttemptFailed:
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=old-install-rename-attempt attempt_id=$lobsterInstallerAttemptId attempt=$lobsterOldInstallRenameAttempts result=failed win32_error=$lobsterOldInstallRenameError$\r$\n"
+      FileWrite $9 "$8 phase=old-install-rename-attempt attempt_id=$baiyingInstallerAttemptId attempt=$baiyingOldInstallRenameAttempts result=failed win32_error=$baiyingOldInstallRenameError$\r$\n"
       FileClose $9
-      IntCmp $lobsterOldInstallRenameAttempts 3 OldInstallRenameComplete OldInstallRenameRetry OldInstallRenameComplete
+      IntCmp $baiyingOldInstallRenameAttempts 3 OldInstallRenameComplete OldInstallRenameRetry OldInstallRenameComplete
 
     OldInstallRenameRetry:
       Sleep 250
       Goto OldInstallRenameAttempt
 
     OldInstallRenameVerificationFailed:
-      StrCpy $lobsterOldInstallRenameReason "verification-failed"
-      StrCpy $lobsterOldInstallRenameError "verification-failed"
+      StrCpy $baiyingOldInstallRenameReason "verification-failed"
+      StrCpy $baiyingOldInstallRenameError "verification-failed"
       !insertmacro customRollbackOldInstall "rename-verification-failed"
-      StrCmp $lobsterOldInstallRollbackStatus "success" OldInstallRenameVerificationRestored
+      StrCmp $baiyingOldInstallRollbackStatus "success" OldInstallRenameVerificationRestored
 
       ; The move succeeded but its postcondition could not be verified, and
       ; rollback could not restore a single authoritative old tree. Freeze the
@@ -1726,20 +1726,20 @@ FunctionEnd
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=old-install-rename-verification-abort attempt_id=$lobsterInstallerAttemptId outcome=recovery-required rollback_status=$lobsterOldInstallRollbackStatus rollback_error=$lobsterOldInstallRollbackError source=$lobsterOldInstallOriginalPath backup=$lobsterOldInstallBackupPath$\r$\n"
+      FileWrite $9 "$8 phase=old-install-rename-verification-abort attempt_id=$baiyingInstallerAttemptId outcome=recovery-required rollback_status=$baiyingOldInstallRollbackStatus rollback_error=$baiyingOldInstallRollbackError source=$baiyingOldInstallOriginalPath backup=$baiyingOldInstallBackupPath$\r$\n"
       FileClose $9
       MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the previous installation move could not be verified and automatic recovery did not complete. No recovery copy was deleted. Restart Windows before retrying. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       SetErrorLevel 3
       Quit
 
     OldInstallRenameVerificationRestored:
-      ; lobsterRollbackOldInstall has already restored and, when its strict
+      ; baiyingRollbackOldInstall has already restored and, when its strict
       ; gates allow it, relaunched the old application. This attempt must end
       ; here instead of invoking the stock uninstaller against that live tree.
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=old-install-rename-verification-abort attempt_id=$lobsterInstallerAttemptId outcome=restored rollback_status=$lobsterOldInstallRollbackStatus relaunch_status=$lobsterOldAppRelaunchStatus source=$lobsterOldInstallOriginalPath$\r$\n"
+      FileWrite $9 "$8 phase=old-install-rename-verification-abort attempt_id=$baiyingInstallerAttemptId outcome=restored rollback_status=$baiyingOldInstallRollbackStatus relaunch_status=$baiyingOldAppRelaunchStatus source=$baiyingOldInstallOriginalPath$\r$\n"
       FileClose $9
       MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the previous installation move could not be verified. The previous version was restored. Please retry the installation. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       SetErrorLevel 2
@@ -1750,17 +1750,17 @@ FunctionEnd
     IntOp $5 $6 - $7
     StrCpy $2 "false"
     StrCpy $3 "false"
-    IfFileExists "$lobsterOldInstallOriginalPath\*.*" 0 OldInstallRenameSourceChecked
+    IfFileExists "$baiyingOldInstallOriginalPath\*.*" 0 OldInstallRenameSourceChecked
       StrCpy $2 "true"
     OldInstallRenameSourceChecked:
-    StrCmp $lobsterOldInstallBackupPath "" OldInstallRenameBackupChecked
-    IfFileExists "$lobsterOldInstallBackupPath\*.*" 0 OldInstallRenameBackupChecked
+    StrCmp $baiyingOldInstallBackupPath "" OldInstallRenameBackupChecked
+    IfFileExists "$baiyingOldInstallBackupPath\*.*" 0 OldInstallRenameBackupChecked
       StrCpy $3 "true"
     OldInstallRenameBackupChecked:
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=old-install-rename-complete attempt_id=$lobsterInstallerAttemptId status=$lobsterOldInstallRenameStatus reason=$lobsterOldInstallRenameReason attempts=$lobsterOldInstallRenameAttempts win32_error=$lobsterOldInstallRenameError elapsed_ms=$5 source_exists=$2 backup_exists=$3 backup_path=$lobsterOldInstallBackupPath cleanup_mode=deferred$\r$\n"
+    FileWrite $9 "$8 phase=old-install-rename-complete attempt_id=$baiyingInstallerAttemptId status=$baiyingOldInstallRenameStatus reason=$baiyingOldInstallRenameReason attempts=$baiyingOldInstallRenameAttempts win32_error=$baiyingOldInstallRenameError elapsed_ms=$5 source_exists=$2 backup_exists=$3 backup_path=$baiyingOldInstallBackupPath cleanup_mode=deferred$\r$\n"
     FileClose $9
 
     ; The install-scope Defender exclusion is intentionally added by
@@ -1770,14 +1770,14 @@ FunctionEnd
     Goto CustomCheckInstallerDone
 
     CustomCheckFreshInstall:
-      StrCpy $lobsterTargetProcessesStopStatus "not-required-fresh-install"
-      StrCpy $lobsterLegacySkillsStatus "legacy-not-applicable-fresh-install"
-      StrCpy $lobsterOldInstallRenameStatus "not-required"
-      StrCpy $lobsterOldInstallRenameReason "fresh-install"
+      StrCpy $baiyingTargetProcessesStopStatus "not-required-fresh-install"
+      StrCpy $baiyingLegacySkillsStatus "legacy-not-applicable-fresh-install"
+      StrCpy $baiyingOldInstallRenameStatus "not-required"
+      StrCpy $baiyingOldInstallRenameReason "fresh-install"
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=fresh-install-old-flow-skipped attempt_id=$lobsterInstallerAttemptId process_stop=skipped legacy_skills=skipped old_staging=skipped$\r$\n"
+      FileWrite $9 "$8 phase=fresh-install-old-flow-skipped attempt_id=$baiyingInstallerAttemptId process_stop=skipped legacy_skills=skipped old_staging=skipped$\r$\n"
       FileClose $9
 
     CustomCheckInstallerDone:
@@ -1797,48 +1797,48 @@ FunctionEnd
   ; only the matching legacy uninstaller is skipped. Every other case retains
   ; the stock uninstallOldVersion fallback and its error handling.
   !macro customUninstallOldVersion ROOT_KEY
-    StrCpy $lobsterOldUninstallCandidatePath ""
-    StrCpy $lobsterOldUninstallCandidatePathNormalized ""
+    StrCpy $baiyingOldUninstallCandidatePath ""
+    StrCpy $baiyingOldUninstallCandidatePathNormalized ""
     ClearErrors
-    !insertmacro readReg $lobsterOldUninstallCandidatePath ${ROOT_KEY} "${INSTALL_REGISTRY_KEY}" InstallLocation
-    StrCmp $lobsterOldUninstallCandidatePath "" CustomOldUninstallCandidateReady_${ROOT_KEY}
-      GetFullPathName $lobsterOldUninstallCandidatePathNormalized "$lobsterOldUninstallCandidatePath"
+    !insertmacro readReg $baiyingOldUninstallCandidatePath ${ROOT_KEY} "${INSTALL_REGISTRY_KEY}" InstallLocation
+    StrCmp $baiyingOldUninstallCandidatePath "" CustomOldUninstallCandidateReady_${ROOT_KEY}
+      GetFullPathName $baiyingOldUninstallCandidatePathNormalized "$baiyingOldUninstallCandidatePath"
     CustomOldUninstallCandidateReady_${ROOT_KEY}:
 
-    ${If} $lobsterOldInstallRenameStatus == "success"
-    ${AndIf} $lobsterOldUninstallCandidatePathNormalized != ""
-    ${AndIf} $lobsterOldUninstallCandidatePathNormalized == $lobsterOldInstallOriginalPathNormalized
+    ${If} $baiyingOldInstallRenameStatus == "success"
+    ${AndIf} $baiyingOldUninstallCandidatePathNormalized != ""
+    ${AndIf} $baiyingOldUninstallCandidatePathNormalized == $baiyingOldInstallOriginalPathNormalized
       ClearErrors
       StrCpy $R0 0
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=old-uninstaller-skipped attempt_id=$lobsterInstallerAttemptId root=${ROOT_KEY} reason=rename-success registered_instdir=$lobsterOldUninstallCandidatePath backup_path=$lobsterOldInstallBackupPath$\r$\n"
+      FileWrite $9 "$8 phase=old-uninstaller-skipped attempt_id=$baiyingInstallerAttemptId root=${ROOT_KEY} reason=rename-success registered_instdir=$baiyingOldUninstallCandidatePath backup_path=$baiyingOldInstallBackupPath$\r$\n"
       FileClose $9
     ${Else}
       System::Call 'kernel32::GetTickCount()i .r4'
-      StrCpy $lobsterOldUninstallStartTick $4
+      StrCpy $baiyingOldUninstallStartTick $4
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=old-uninstaller-start attempt_id=$lobsterInstallerAttemptId root=${ROOT_KEY} registered_instdir=$lobsterOldUninstallCandidatePath rename_status=$lobsterOldInstallRenameStatus$\r$\n"
+      FileWrite $9 "$8 phase=old-uninstaller-start attempt_id=$baiyingInstallerAttemptId root=${ROOT_KEY} registered_instdir=$baiyingOldUninstallCandidatePath rename_status=$baiyingOldInstallRenameStatus$\r$\n"
       FileClose $9
 
       !insertmacro uninstallOldVersion ${ROOT_KEY}
       IfErrors CustomOldUninstallerLaunchFailed_${ROOT_KEY}
-      StrCpy $lobsterOldUninstallLaunchStatus "returned"
+      StrCpy $baiyingOldUninstallLaunchStatus "returned"
       Goto CustomOldUninstallerReturned_${ROOT_KEY}
 
       CustomOldUninstallerLaunchFailed_${ROOT_KEY}:
-      StrCpy $lobsterOldUninstallLaunchStatus "launch-error"
+      StrCpy $baiyingOldUninstallLaunchStatus "launch-error"
 
       CustomOldUninstallerReturned_${ROOT_KEY}:
       System::Call 'kernel32::GetTickCount()i .r6'
-      IntOp $5 $6 - $lobsterOldUninstallStartTick
+      IntOp $5 $6 - $baiyingOldUninstallStartTick
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=old-uninstaller-returned attempt_id=$lobsterInstallerAttemptId root=${ROOT_KEY} status=$lobsterOldUninstallLaunchStatus exit=$R0 elapsed_ms=$5$\r$\n"
+      FileWrite $9 "$8 phase=old-uninstaller-returned attempt_id=$baiyingInstallerAttemptId root=${ROOT_KEY} status=$baiyingOldUninstallLaunchStatus exit=$R0 elapsed_ms=$5$\r$\n"
       FileClose $9
 
       ; handleUninstallResult calls Quit for a non-zero legacy uninstaller.
@@ -1849,7 +1849,7 @@ FunctionEnd
 
       ; The diagnostic writes above can change NSIS' error flag. Recreate the
       ; exact result expected by electron-builder's stock handler.
-      StrCmp $lobsterOldUninstallLaunchStatus "launch-error" CustomOldUninstallerRestoreError_${ROOT_KEY}
+      StrCmp $baiyingOldUninstallLaunchStatus "launch-error" CustomOldUninstallerRestoreError_${ROOT_KEY}
       ClearErrors
       Goto CustomOldUninstallerHandle_${ROOT_KEY}
       CustomOldUninstallerRestoreError_${ROOT_KEY}:
@@ -1858,11 +1858,11 @@ FunctionEnd
       !insertmacro handleUninstallResult ${ROOT_KEY}
 
       System::Call 'kernel32::GetTickCount()i .r6'
-      IntOp $5 $6 - $lobsterOldUninstallStartTick
+      IntOp $5 $6 - $baiyingOldUninstallStartTick
       FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $9 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $9 "$8 phase=old-uninstaller-complete attempt_id=$lobsterInstallerAttemptId root=${ROOT_KEY} status=handled exit=$R0 elapsed_ms=$5$\r$\n"
+      FileWrite $9 "$8 phase=old-uninstaller-complete attempt_id=$baiyingInstallerAttemptId root=${ROOT_KEY} status=handled exit=$R0 elapsed_ms=$5$\r$\n"
       FileClose $9
     ${EndIf}
   !macroend
@@ -1877,10 +1877,10 @@ FunctionEnd
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=defender-exclusion-start attempt_id=$lobsterInstallerAttemptId point=post-old-uninstaller rename_status=$lobsterOldInstallRenameStatus helper_status=$lobsterTrustedPowerShellStatus$\r$\n"
+    FileWrite $9 "$8 phase=defender-exclusion-start attempt_id=$baiyingInstallerAttemptId point=post-old-uninstaller rename_status=$baiyingOldInstallRenameStatus helper_status=$baiyingTrustedPowerShellStatus$\r$\n"
     FileClose $9
     System::Call 'kernel32::GetTickCount()i .r7'
-    StrCmp $lobsterTrustedPowerShellPath "" DefenderPostUninstallHelperMissing
+    StrCmp $baiyingTrustedPowerShellPath "" DefenderPostUninstallHelperMissing
 
     ${GetParameters} $R9
     ClearErrors
@@ -1889,25 +1889,25 @@ FunctionEnd
 
     CreateDirectory "$INSTDIR"
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$target = $$env:BAIYING_INSTALL_ROOT;\
       try { $$beforePaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$before = if ($$beforePaths -contains $$target) { \"present\" } else { \"absent\" } } catch { $$before = \"query-failed\" };\
       try { Add-MpPreference -ExclusionPath $$target -ErrorAction Stop; $$add = \"added\" } catch { $$add = \"skipped:\" + $$_.Exception.Message.Trim() };\
       try { $$afterPaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$after = if ($$afterPaths -contains $$target) { \"present\" } else { \"absent\" } } catch { $$after = \"query-failed\" };\
       Write-Output (\"before=\" + $$before + \" add=\" + $$add + \" after=\" + $$after)"'
-    !insertmacro LobsterExecHiddenToStack
+    !insertmacro baiyingExecHiddenToStack
     Goto DefenderPostUninstallCommandDone
 
     DefenderPostUninstallQueryOnly:
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$root = $$env:BAIYING_INSTALL_ROOT;\
       $$targets = @($$root, (Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\SKILLs\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\app.asar\"), (Join-Path $$root \"resources\win-resources.tar\"));\
       try { $$beforePaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$before = @($$targets | Where-Object { $$beforePaths -contains $$_ }).Count } catch { $$before = \"query-failed\" };\
       try { Remove-MpPreference -ExclusionPath $$targets -ErrorAction Stop; $$remove = \"requested\" } catch { $$remove = \"failed:\" + $$_.Exception.Message.Trim() };\
       try { $$afterPaths = @((Get-MpPreference -ErrorAction Stop).ExclusionPath); $$after = @($$targets | Where-Object { $$afterPaths -contains $$_ }).Count } catch { $$after = \"query-failed\" };\
       Write-Output (\"before_count=\" + $$before + \" add=disabled remove=\" + $$remove + \" after_count=\" + $$after)"'
-    !insertmacro LobsterExecHiddenToStack
+    !insertmacro baiyingExecHiddenToStack
 
     DefenderPostUninstallCommandDone:
     Pop $0
@@ -1926,7 +1926,7 @@ FunctionEnd
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=defender-exclusion-complete attempt_id=$lobsterInstallerAttemptId point=post-old-uninstaller exit=$R2 elapsed_ms=$5 output=$1$\r$\n"
+    FileWrite $9 "$8 phase=defender-exclusion-complete attempt_id=$baiyingInstallerAttemptId point=post-old-uninstaller exit=$R2 elapsed_ms=$5 output=$1$\r$\n"
     FileClose $9
   !macroend
 
@@ -1944,11 +1944,11 @@ FunctionEnd
     Push $9
     !insertmacro EnsureInstallerAttemptId
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterWebAcquireStartTick $0
+    StrCpy $baiyingWebAcquireStartTick $0
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=web-package-acquire-start attempt_id=$lobsterInstallerAttemptId$\r$\n"
+    FileWrite $9 "$8 phase=web-package-acquire-start attempt_id=$baiyingInstallerAttemptId$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -1961,11 +1961,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterWebAcquireStartTick
+    IntOp $1 $0 - $baiyingWebAcquireStartTick
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=web-package-acquire-complete attempt_id=$lobsterInstallerAttemptId source=${SOURCE} elapsed_ms=$1 file=$packageFile$\r$\n"
+    FileWrite $9 "$8 phase=web-package-acquire-complete attempt_id=$baiyingInstallerAttemptId source=${SOURCE} elapsed_ms=$1 file=$packageFile$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -1979,11 +1979,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterWebVerifyStartTick $0
+    StrCpy $baiyingWebVerifyStartTick $0
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=web-package-verify-start attempt_id=$lobsterInstallerAttemptId attempt=$webDownloadAttempt$\r$\n"
+    FileWrite $9 "$8 phase=web-package-verify-start attempt_id=$baiyingInstallerAttemptId attempt=$webDownloadAttempt$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -1996,11 +1996,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterWebVerifyStartTick
+    IntOp $1 $0 - $baiyingWebVerifyStartTick
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=web-package-verify-complete attempt_id=$lobsterInstallerAttemptId attempt=$webDownloadAttempt result=${RESULT} elapsed_ms=$1$\r$\n"
+    FileWrite $9 "$8 phase=web-package-verify-complete attempt_id=$baiyingInstallerAttemptId attempt=$webDownloadAttempt result=${RESULT} elapsed_ms=$1$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2017,11 +2017,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterWebDownloadStartTick $0
+    StrCpy $baiyingWebDownloadStartTick $0
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=web-package-download-start attempt_id=$lobsterInstallerAttemptId attempt=$webDownloadAttempt mode=${MODE} arch=$packageArch url=$packageUrl dest=$PLUGINSDIR\package.7z$\r$\n"
+    FileWrite $9 "$8 phase=web-package-download-start attempt_id=$baiyingInstallerAttemptId attempt=$webDownloadAttempt mode=${MODE} arch=$packageArch url=$packageUrl dest=$PLUGINSDIR\package.7z$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2039,11 +2039,11 @@ FunctionEnd
     ; status strings may contain spaces ("SendRequest Error").
     StrCpy $2 "${STATUS}"
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterWebDownloadStartTick
+    IntOp $1 $0 - $baiyingWebDownloadStartTick
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=web-package-download-exit attempt_id=$lobsterInstallerAttemptId attempt=$webDownloadAttempt mode=${MODE} elapsed_ms=$1 status=$2$\r$\n"
+    FileWrite $9 "$8 phase=web-package-download-exit attempt_id=$baiyingInstallerAttemptId attempt=$webDownloadAttempt mode=${MODE} elapsed_ms=$1 status=$2$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2057,11 +2057,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterPackageMaterializeStartTick $0
+    StrCpy $baiyingPackageMaterializeStartTick $0
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=payload-materialize-start attempt_id=$lobsterInstallerAttemptId arch=$packageArch dest=$appPackageStagingDir\app-$packageArch.${COMPRESSION_METHOD}$\r$\n"
+    FileWrite $9 "$8 phase=payload-materialize-start attempt_id=$baiyingInstallerAttemptId arch=$packageArch dest=$appPackageStagingDir\app-$packageArch.${COMPRESSION_METHOD}$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2074,11 +2074,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterPackageMaterializeStartTick
+    IntOp $1 $0 - $baiyingPackageMaterializeStartTick
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=payload-materialize-complete attempt_id=$lobsterInstallerAttemptId arch=$packageArch elapsed_ms=$1$\r$\n"
+    FileWrite $9 "$8 phase=payload-materialize-complete attempt_id=$baiyingInstallerAttemptId arch=$packageArch elapsed_ms=$1$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2091,11 +2091,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterPackageExtractStartTick $0
+    StrCpy $baiyingPackageExtractStartTick $0
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=payload-7z-extract-start attempt_id=$lobsterInstallerAttemptId mode=${MODE} arch=$packageArch source=${SOURCE} dest=$OUTDIR$\r$\n"
+    FileWrite $9 "$8 phase=payload-7z-extract-start attempt_id=$baiyingInstallerAttemptId mode=${MODE} arch=$packageArch source=${SOURCE} dest=$OUTDIR$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2108,11 +2108,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterPackageExtractStartTick
+    IntOp $1 $0 - $baiyingPackageExtractStartTick
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=payload-7z-extract-complete attempt_id=$lobsterInstallerAttemptId mode=${MODE} arch=$packageArch result=${RESULT} elapsed_ms=$1$\r$\n"
+    FileWrite $9 "$8 phase=payload-7z-extract-complete attempt_id=$baiyingInstallerAttemptId mode=${MODE} arch=$packageArch result=${RESULT} elapsed_ms=$1$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2121,7 +2121,7 @@ FunctionEnd
     ; This hook runs right after Nsis7z::Extract and before the CopyFiles
     ; commit, so a truncated staging tree is caught while the previous
     ; installation is still restorable.
-    !insertmacro LobsterValidateStagedPayload "${MODE}"
+    !insertmacro baiyingValidateStagedPayload "${MODE}"
   !macroend
 
   !macro customAppPackageCopyStart
@@ -2129,11 +2129,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterPackageCopyStartTick $0
+    StrCpy $baiyingPackageCopyStartTick $0
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=payload-copy-start attempt_id=$lobsterInstallerAttemptId attempt=$R1 source=$appPackageStagingDir\7z-out dest=$OUTDIR$\r$\n"
+    FileWrite $9 "$8 phase=payload-copy-start attempt_id=$baiyingInstallerAttemptId attempt=$R1 source=$appPackageStagingDir\7z-out dest=$OUTDIR$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2146,11 +2146,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterPackageCopyStartTick
+    IntOp $1 $0 - $baiyingPackageCopyStartTick
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=payload-copy-complete attempt_id=$lobsterInstallerAttemptId attempt=$R1 result=${RESULT} elapsed_ms=$1$\r$\n"
+    FileWrite $9 "$8 phase=payload-copy-complete attempt_id=$baiyingInstallerAttemptId attempt=$R1 result=${RESULT} elapsed_ms=$1$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2163,11 +2163,11 @@ FunctionEnd
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterInstallerCacheCopyStartTick $0
+    StrCpy $baiyingInstallerCacheCopyStartTick $0
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=installer-cache-copy-start attempt_id=$lobsterInstallerAttemptId kind=${KIND}$\r$\n"
+    FileWrite $9 "$8 phase=installer-cache-copy-start attempt_id=$baiyingInstallerAttemptId kind=${KIND}$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2191,22 +2191,22 @@ FunctionEnd
     ; SHFileOperation precheck). The copy stays non-fatal either way.
     System::Call 'kernel32::GetLastError() i .r2'
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterInstallerCacheCopyStartTick
+    IntOp $1 $0 - $baiyingInstallerCacheCopyStartTick
     StrCpy $3 "-"
     ${If} "${RESULT}" == "error"
       ; Shell var context is still "current" here, so this is the same
       ; $LOCALAPPDATA the failed copy targeted.
       Push "$LOCALAPPDATA"
-      Call lobsterQueryFreeMegabytes
+      Call baiyingQueryFreeMegabytes
       Pop $3
     ${EndIf}
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
     ${If} "${RESULT}" == "error"
-      FileWrite $9 "$8 phase=installer-cache-copy-complete attempt_id=$lobsterInstallerAttemptId kind=${KIND} result=${RESULT} win32_error=$2 dest_free_mb=$3 elapsed_ms=$1$\r$\n"
+      FileWrite $9 "$8 phase=installer-cache-copy-complete attempt_id=$baiyingInstallerAttemptId kind=${KIND} result=${RESULT} win32_error=$2 dest_free_mb=$3 elapsed_ms=$1$\r$\n"
     ${Else}
-      FileWrite $9 "$8 phase=installer-cache-copy-complete attempt_id=$lobsterInstallerAttemptId kind=${KIND} result=${RESULT} elapsed_ms=$1$\r$\n"
+      FileWrite $9 "$8 phase=installer-cache-copy-complete attempt_id=$baiyingInstallerAttemptId kind=${KIND} result=${RESULT} elapsed_ms=$1$\r$\n"
     ${EndIf}
     FileClose $9
     Pop $9
@@ -2223,7 +2223,7 @@ FunctionEnd
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=estimated-size-scan-skipped attempt_id=$lobsterInstallerAttemptId source=build-estimate value_kb=${VALUE}$\r$\n"
+    FileWrite $9 "$8 phase=estimated-size-scan-skipped attempt_id=$baiyingInstallerAttemptId source=build-estimate value_kb=${VALUE}$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2232,22 +2232,22 @@ FunctionEnd
   !macro customEstimatedSizeScanStart
     Push $0
     System::Call 'kernel32::GetTickCount()i .r0'
-    StrCpy $lobsterEstimatedSizeScanStartTick $0
+    StrCpy $baiyingEstimatedSizeScanStartTick $0
     Pop $0
   !macroend
 
   !macro customEstimatedSizeScanEnd VALUE
-    StrCpy $lobsterEstimatedSizeValue ${VALUE}
+    StrCpy $baiyingEstimatedSizeValue ${VALUE}
     Push $0
     Push $1
     Push $8
     Push $9
     System::Call 'kernel32::GetTickCount()i .r0'
-    IntOp $1 $0 - $lobsterEstimatedSizeScanStartTick
+    IntOp $1 $0 - $baiyingEstimatedSizeScanStartTick
     FileOpen $9 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $9 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $9 "$8 phase=estimated-size-scan-complete attempt_id=$lobsterInstallerAttemptId value_kb=$lobsterEstimatedSizeValue elapsed_ms=$1$\r$\n"
+    FileWrite $9 "$8 phase=estimated-size-scan-complete attempt_id=$baiyingInstallerAttemptId value_kb=$baiyingEstimatedSizeValue elapsed_ms=$1$\r$\n"
     FileClose $9
     Pop $9
     Pop $8
@@ -2265,15 +2265,15 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=app-files-install-complete attempt_id=$lobsterInstallerAttemptId$\r$\n"
-  FileWrite $2 "$8 phase=nsis-extract-complete attempt_id=$lobsterInstallerAttemptId$\r$\n"
+  FileWrite $2 "$8 phase=app-files-install-complete attempt_id=$baiyingInstallerAttemptId$\r$\n"
+  FileWrite $2 "$8 phase=nsis-extract-complete attempt_id=$baiyingInstallerAttemptId$\r$\n"
   FileClose $2
   DetailPrint "[Installer] Preparing installation steps"
 
   ; The payload copy into $INSTDIR is committed, so a staging tree relocated
   ; onto the install drive has served its purpose. Remove it before the tar
   ; extraction below needs that space back.
-  Call lobsterCleanupRelocatedPayloadStaging
+  Call baiyingCleanupRelocatedPayloadStaging
 
   ; -- Extract combined resource archive (win-resources.tar) --
   ; All large resource directories (cfmind/, SKILLs/, python-win/) are packed
@@ -2296,19 +2296,19 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=system-tool-resolved attempt_id=$lobsterInstallerAttemptId tool=tar status=$lobsterTrustedTarStatus source=$lobsterTrustedTarSource path=$lobsterTrustedTarPath$\r$\n"
+  FileWrite $2 "$8 phase=system-tool-resolved attempt_id=$baiyingInstallerAttemptId tool=tar status=$baiyingTrustedTarStatus source=$baiyingTrustedTarSource path=$baiyingTrustedTarPath$\r$\n"
   FileClose $2
 
   ; -- Attempt 1: Windows built-in bsdtar (Win10 1803+) --
   ; Runs a trusted system binary instead of the freshly written app exe,
   ; which security software tends to freeze for cloud analysis on its first
   ; execution (the root cause of installers hanging at this phase).
-  StrCmp $lobsterTrustedTarPath "" TarExtractElectron
+  StrCmp $baiyingTrustedTarPath "" TarExtractElectron
   StrCpy $R3 "system-tar"
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=tar-extract-start attempt_id=$lobsterInstallerAttemptId extractor=system-tar helper=$lobsterTrustedTarPath tar=$INSTDIR\resources\win-resources.tar dest=$INSTDIR\resources$\r$\n"
+  FileWrite $2 "$8 phase=tar-extract-start attempt_id=$baiyingInstallerAttemptId extractor=system-tar helper=$baiyingTrustedTarPath tar=$INSTDIR\resources\win-resources.tar dest=$INSTDIR\resources$\r$\n"
   FileClose $2
   System::Call 'kernel32::GetTickCount()i .r7'
   ; The output is captured: bsdtar reports its fatal reason only on stderr
@@ -2317,8 +2317,8 @@ FunctionEnd
   ; only place the old ExecToLog delivered it. The exit code contract below
   ; is unchanged; on success tar -xf prints nothing and the output is
   ; discarded.
-  Push '"$lobsterTrustedTarPath" -xf "$INSTDIR\resources\win-resources.tar" -C "$INSTDIR\resources"'
-  !insertmacro LobsterExecHiddenToStack
+  Push '"$baiyingTrustedTarPath" -xf "$INSTDIR\resources\win-resources.tar" -C "$INSTDIR\resources"'
+  !insertmacro baiyingExecHiddenToStack
   Pop $0
   Pop $R6
   StrCpy $R2 $0
@@ -2327,7 +2327,7 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=tar-extract-exit attempt_id=$lobsterInstallerAttemptId extractor=system-tar raw_kind=numeric-or-adapter-exit exit=$R2 elapsed_ms=$5$\r$\n"
+  FileWrite $2 "$8 phase=tar-extract-exit attempt_id=$baiyingInstallerAttemptId extractor=system-tar raw_kind=numeric-or-adapter-exit exit=$R2 elapsed_ms=$5$\r$\n"
   FileClose $2
   ; On any non-success exit, preserve a bounded single-line tail of the
   ; combined stdout+stderr before the electron fallback overwrites $R2. The
@@ -2336,12 +2336,12 @@ FunctionEnd
   IntCmp $R2 0 TarExtractOutputCaptured TarExtractCaptureOutput TarExtractCaptureOutput
   TarExtractCaptureOutput:
     Push $R6
-    Call lobsterBuildSingleLineTail
+    Call baiyingBuildSingleLineTail
     Pop $R6
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=tar-extract-output attempt_id=$lobsterInstallerAttemptId extractor=system-tar exit=$R2 text=$R6$\r$\n"
+    FileWrite $2 "$8 phase=tar-extract-output attempt_id=$baiyingInstallerAttemptId extractor=system-tar exit=$R2 text=$R6$\r$\n"
     FileClose $2
   TarExtractOutputCaptured:
   StrCmp $R2 "error" TarExtractElectron
@@ -2363,25 +2363,25 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=tar-extract-start attempt_id=$lobsterInstallerAttemptId extractor=electron tar=$INSTDIR\resources\win-resources.tar dest=$INSTDIR\resources$\r$\n"
+  FileWrite $2 "$8 phase=tar-extract-start attempt_id=$baiyingInstallerAttemptId extractor=electron tar=$INSTDIR\resources\win-resources.tar dest=$INSTDIR\resources$\r$\n"
   FileClose $2
   System::Call 'kernel32::GetTickCount()i .r7'
 
   !insertmacro ResolveTrustedPowerShell
-  StrCmp $lobsterTrustedPowerShellPath "" TarExtractHelperNotFound
-  Delete "$PLUGINSDIR\lobster-watchdog-$lobsterInstallerAttemptId.marker"
+  StrCmp $baiyingTrustedPowerShellPath "" TarExtractHelperNotFound
+  Delete "$PLUGINSDIR\baiying-watchdog-$baiyingInstallerAttemptId.marker"
   ; A stale sentinel from an earlier run must never vouch for this attempt.
   Delete "$INSTDIR\resources\.unpack-cfmind-ok"
-  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_WATCHDOG_MARKER_PATH", t "$PLUGINSDIR\lobster-watchdog-$lobsterInstallerAttemptId.marker")i'
+  System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_WATCHDOG_MARKER_PATH", t "$PLUGINSDIR\baiying-watchdog-$baiyingInstallerAttemptId.marker")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_EXE", t "$INSTDIR\${APP_EXECUTABLE_FILENAME}")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_SCRIPT", t "$INSTDIR\resources\unpack-cfmind.cjs")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_ARCHIVE", t "$INSTDIR\resources\win-resources.tar")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_DESTINATION", t "$INSTDIR\resources")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_LOG", t "$APPDATA\BaiYing\install-timing.log")i'
-  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+  Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
     $$ErrorActionPreference = \"Stop\";\
     $$marker = $$env:BAIYING_WATCHDOG_MARKER_PATH;\
-    function Write-LobsterWatchdogMarker {\
+    function Write-baiyingWatchdogMarker {\
       param([string] $$value);\
       try {\
         Set-Content -LiteralPath $$marker -Value $$value -NoNewline -ErrorAction Stop\
@@ -2393,7 +2393,7 @@ FunctionEnd
       $$extractorArgs = \"`\"\" + $$env:BAIYING_EXTRACTOR_SCRIPT + \"`\" `\"\" + $$env:BAIYING_EXTRACTOR_ARCHIVE + \"`\" `\"\" + $$env:BAIYING_EXTRACTOR_DESTINATION + \"`\" `\"\" + $$env:BAIYING_EXTRACTOR_LOG + \"`\"\";\
       $$p = Start-Process -FilePath $$env:BAIYING_EXTRACTOR_EXE -ArgumentList $$extractorArgs -NoNewWindow -PassThru\
     } catch {\
-      Write-LobsterWatchdogMarker \"process-start-blocked\";\
+      Write-baiyingWatchdogMarker \"process-start-blocked\";\
       Write-Output \"BAIYING_WATCHDOG_START_BLOCKED\";\
       exit 125\
     };\
@@ -2406,10 +2406,10 @@ FunctionEnd
           $$sentinelOk = Test-Path -LiteralPath $$sentinel\
         } catch { $$sentinelOk = $$false };\
         if ($$sentinelOk) {\
-          Write-LobsterWatchdogMarker \"exit-code-null-sentinel-ok\";\
+          Write-baiyingWatchdogMarker \"exit-code-null-sentinel-ok\";\
           exit 0\
         };\
-        Write-LobsterWatchdogMarker \"output-validation-failed\";\
+        Write-baiyingWatchdogMarker \"output-validation-failed\";\
         exit 127\
       };\
       exit $$p.ExitCode\
@@ -2417,19 +2417,19 @@ FunctionEnd
     try {\
       Stop-Process -Id $$p.Id -Force -ErrorAction Stop;\
       if (-not $$p.WaitForExit(30000)) {\
-        Write-LobsterWatchdogMarker \"process-termination-failed\";\
+        Write-baiyingWatchdogMarker \"process-termination-failed\";\
         Write-Output \"BAIYING_WATCHDOG_TERMINATION_FAILED\";\
         exit 126\
       }\
     } catch {\
-      Write-LobsterWatchdogMarker \"process-termination-failed\";\
+      Write-baiyingWatchdogMarker \"process-termination-failed\";\
       Write-Output \"BAIYING_WATCHDOG_TERMINATION_FAILED\";\
       exit 126\
     };\
-    Write-LobsterWatchdogMarker \"process-timeout\";\
+    Write-baiyingWatchdogMarker \"process-timeout\";\
     Write-Output \"BAIYING_WATCHDOG_TIMEOUT\";\
     exit 124"'
-  !insertmacro LobsterExecHiddenExitCode
+  !insertmacro baiyingExecHiddenExitCode
   Pop $0
   StrCpy $R2 $0
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_WATCHDOG_MARKER_PATH", t "")i'
@@ -2440,12 +2440,12 @@ FunctionEnd
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_EXTRACTOR_LOG", t "")i'
   StrCpy $R4 "none"
   ClearErrors
-  FileOpen $3 "$PLUGINSDIR\lobster-watchdog-$lobsterInstallerAttemptId.marker" r
+  FileOpen $3 "$PLUGINSDIR\baiying-watchdog-$baiyingInstallerAttemptId.marker" r
   IfErrors TarExtractMarkerReadDone
     FileRead $3 $R4
     FileClose $3
   TarExtractMarkerReadDone:
-  Delete "$PLUGINSDIR\lobster-watchdog-$lobsterInstallerAttemptId.marker"
+  Delete "$PLUGINSDIR\baiying-watchdog-$baiyingInstallerAttemptId.marker"
   Goto TarExtractWatchdogReturned
 
   TarExtractHelperNotFound:
@@ -2458,7 +2458,7 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=tar-extract-exit attempt_id=$lobsterInstallerAttemptId extractor=electron raw_marker=$R4 exit=$R2 elapsed_ms=$5$\r$\n"
+  FileWrite $2 "$8 phase=tar-extract-exit attempt_id=$baiyingInstallerAttemptId extractor=electron raw_marker=$R4 exit=$R2 elapsed_ms=$5$\r$\n"
   FileClose $2
 
   ; "error" = the launcher couldn't start PowerShell (check before IntCmp, which
@@ -2500,7 +2500,7 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=tar-extract-error attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 reason=$R5-after-extract$\r$\n"
+  FileWrite $2 "$8 phase=tar-extract-error attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 reason=$R5-after-extract$\r$\n"
   FileClose $2
   ; A bogus system-tar success still gets a shot at the bundled extractor.
   ;
@@ -2515,7 +2515,7 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=process-start-failed$\r$\n"
+    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=process-start-failed$\r$\n"
     FileClose $2
     MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the resource extractor could not be started (exit=$R2). The installer will not commit a partial application. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     Goto TarExtractFailed
@@ -2524,7 +2524,7 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=timeout$\r$\n"
+    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=timeout$\r$\n"
     FileClose $2
     MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because resource extraction timed out after 10 minutes. The blocked extractor was terminated and the installer will not commit a partial application. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     Goto TarExtractFailed
@@ -2533,10 +2533,10 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=process-termination-failed action=preserve-all-no-concurrent-rollback$\r$\n"
+    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=process-termination-failed action=preserve-all-no-concurrent-rollback$\r$\n"
     FileClose $2
     System::Call 'Kernel32::SetEnvironmentVariable(t "ELECTRON_RUN_AS_NODE", t "")i'
-    MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the extractor process could not be confirmed terminated. No automatic rollback or cleanup was attempted while that process may still be writing files. Restart Windows before retrying. Recovery files (if any): $lobsterOldInstallBackupPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+    MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the extractor process could not be confirmed terminated. No automatic rollback or cleanup was attempted while that process may still be writing files. Restart Windows before retrying. Recovery files (if any): $baiyingOldInstallBackupPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     SetErrorLevel 3
     Quit
 
@@ -2552,7 +2552,7 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=tar-extract-sentinel-rescue attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 sentinel=present$\r$\n"
+    FileWrite $2 "$8 phase=tar-extract-sentinel-rescue attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 sentinel=present$\r$\n"
     FileClose $2
     Goto TarExtractVerify
 
@@ -2560,7 +2560,7 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=watchdog-output-validation-failed$\r$\n"
+    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=watchdog-output-validation-failed$\r$\n"
     FileClose $2
     MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the resource extractor watchdog returned an invalid result. The installer will not commit a partial application. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     Goto TarExtractFailed
@@ -2569,7 +2569,7 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=numeric-child-exit$\r$\n"
+    FileWrite $2 "$8 phase=tar-extract-error attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 elapsed_ms=$5 reason=numeric-child-exit$\r$\n"
     FileClose $2
     MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because resource extraction failed (child exit code $R2). The installer will not commit a partial application. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     Goto TarExtractFailed
@@ -2578,7 +2578,7 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=tar-extract-complete attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2$\r$\n"
+  FileWrite $2 "$8 phase=tar-extract-complete attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2$\r$\n"
   FileClose $2
   ; Completion marker, read by the app for install-integrity diagnostics.
   FileOpen $2 "$INSTDIR\resources\.win-resources-extracted" w
@@ -2598,12 +2598,12 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=tar-extract-failed-archive-preserved attempt_id=$lobsterInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 action=abort-install$\r$\n"
+  FileWrite $2 "$8 phase=tar-extract-failed-archive-preserved attempt_id=$baiyingInstallerAttemptId extractor=$R3 exit=$R2 raw_marker=$R4 action=abort-install$\r$\n"
   FileClose $2
   System::Call 'Kernel32::SetEnvironmentVariable(t "ELECTRON_RUN_AS_NODE", t "")i'
   !insertmacro customRollbackOldInstall "resource-extraction-failed"
-  StrCmp $lobsterOldInstallRollbackStatus "failed" 0 TarExtractAbort
-    MessageBox MB_OK|MB_ICONEXCLAMATION "The installation failed and automatic rollback did not complete. No recovery copy was deleted. Previous files: $lobsterOldInstallBackupPath. Partial update: $lobsterOldInstallFailedPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+  StrCmp $baiyingOldInstallRollbackStatus "failed" 0 TarExtractAbort
+    MessageBox MB_OK|MB_ICONEXCLAMATION "The installation failed and automatic rollback did not complete. No recovery copy was deleted. Previous files: $baiyingOldInstallBackupPath. Partial update: $baiyingOldInstallFailedPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
   TarExtractAbort:
   SetErrorLevel 3
   Quit
@@ -2614,12 +2614,12 @@ FunctionEnd
   ; Restore any skills not already present in the new install, then clean up
   ; only this attempt's backup. A later attempt never consumes a historical
   ; fixed skills-backup directory.
-  StrCmp $lobsterLegacySkillsStatus "legacy-backup-succeeded" 0 SkipSkillRestore
+  StrCmp $baiyingLegacySkillsStatus "legacy-backup-succeeded" 0 SkipSkillRestore
   System::Call 'kernel32::GetTickCount()i .r7'
-  IfFileExists "$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId\backup-manifest.json" SkillRestoreAttemptBackupReady
+  IfFileExists "$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId\backup-manifest.json" SkillRestoreAttemptBackupReady
     StrCpy $R2 "backup-missing"
     StrCpy $1 "current-attempt-backup-manifest-missing"
-    StrCpy $lobsterLegacySkillsRestoreStatus "legacy-restore-backup-missing"
+    StrCpy $baiyingLegacySkillsRestoreStatus "legacy-restore-backup-missing"
     Goto SkillRestoreCommandDone
 
   SkillRestoreAttemptBackupReady:
@@ -2627,15 +2627,15 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=skill-restore-start attempt_id=$lobsterInstallerAttemptId backup=$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId$\r$\n"
+    FileWrite $2 "$8 phase=skill-restore-start attempt_id=$baiyingInstallerAttemptId backup=$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId$\r$\n"
     FileClose $2
 
-    StrCmp $lobsterTrustedPowerShellPath "" SkillRestoreHelperMissing
-    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_SOURCE", t "$lobsterOldInstallOriginalPath\resources\SKILLs")i'
+    StrCmp $baiyingTrustedPowerShellPath "" SkillRestoreHelperMissing
+    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_SOURCE", t "$baiyingOldInstallOriginalPath\resources\SKILLs")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_BACKUP_ROOT", t "$APPDATA\BaiYing\skills-backup")i'
     System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_SKILL_DESTINATION", t "$INSTDIR\resources\SKILLs")i'
-    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ATTEMPT_ID", t "$lobsterInstallerAttemptId")i'
-    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ATTEMPT_ID", t "$baiyingInstallerAttemptId")i'
+    Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
       $$ErrorActionPreference = \"Stop\";\
       $$attempt   = $$env:BAIYING_INSTALL_ATTEMPT_ID;\
       $$root      = $$env:BAIYING_SKILL_BACKUP_ROOT;\
@@ -2699,7 +2699,7 @@ FunctionEnd
       } catch {\
         exit 1\
       }"'
-    !insertmacro LobsterExecHiddenToStack
+    !insertmacro baiyingExecHiddenToStack
     Pop $0
     Pop $1
     StrCpy $R2 $0
@@ -2712,22 +2712,22 @@ FunctionEnd
     SkillRestoreHelperMissing:
     StrCpy $R2 "helper-not-found"
     StrCpy $1 "trusted-powershell-unavailable"
-    StrCpy $lobsterLegacySkillsRestoreStatus "legacy-restore-helper-launch-failed"
+    StrCpy $baiyingLegacySkillsRestoreStatus "legacy-restore-helper-launch-failed"
 
     SkillRestoreCommandDone:
     StrCmp $R2 "0" 0 +2
-      StrCpy $lobsterLegacySkillsRestoreStatus "legacy-restore-succeeded"
+      StrCpy $baiyingLegacySkillsRestoreStatus "legacy-restore-succeeded"
     StrCmp $R2 "20" 0 +2
-      StrCpy $lobsterLegacySkillsRestoreStatus "legacy-restore-name-conflict"
-    StrCmp $lobsterLegacySkillsRestoreStatus "not-required" 0 +2
-      StrCpy $lobsterLegacySkillsRestoreStatus "legacy-restore-failed"
+      StrCpy $baiyingLegacySkillsRestoreStatus "legacy-restore-name-conflict"
+    StrCmp $baiyingLegacySkillsRestoreStatus "not-required" 0 +2
+      StrCpy $baiyingLegacySkillsRestoreStatus "legacy-restore-failed"
     System::Call 'kernel32::GetTickCount()i .r6'
     IntOp $5 $6 - $7
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=skill-restore-complete attempt_id=$lobsterInstallerAttemptId status=$lobsterLegacySkillsRestoreStatus exit=$R2 elapsed_ms=$5 backup=$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId$\r$\n"
-    FileWrite $2 "$8 phase=skill-restore-output attempt_id=$lobsterInstallerAttemptId status=$lobsterLegacySkillsRestoreStatus text=$1$\r$\n"
+    FileWrite $2 "$8 phase=skill-restore-complete attempt_id=$baiyingInstallerAttemptId status=$baiyingLegacySkillsRestoreStatus exit=$R2 elapsed_ms=$5 backup=$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId$\r$\n"
+    FileWrite $2 "$8 phase=skill-restore-output attempt_id=$baiyingInstallerAttemptId status=$baiyingLegacySkillsRestoreStatus text=$1$\r$\n"
     FileClose $2
 
     StrCmp $R2 "0" SkillRestoreValidated
@@ -2735,18 +2735,18 @@ FunctionEnd
       FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $2 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $2 "$8 phase=skill-restore-failed attempt_id=$lobsterInstallerAttemptId status=legacy-restore-failed action=attempt-backup-preserved rename_status=$lobsterOldInstallRenameStatus$\r$\n"
+      FileWrite $2 "$8 phase=skill-restore-failed attempt_id=$baiyingInstallerAttemptId status=legacy-restore-failed action=attempt-backup-preserved rename_status=$baiyingOldInstallRenameStatus$\r$\n"
       FileClose $2
 
       ; On the directory-swap path, restoring the previous application also
       ; restores its original in-place skills. The AppData copy remains as an
       ; additional recovery source because the PowerShell transaction deletes
       ; it only after every skill copy succeeds.
-      StrCmp $lobsterOldInstallRenameStatus "success" 0 SkillRestoreFailurePreserved
+      StrCmp $baiyingOldInstallRenameStatus "success" 0 SkillRestoreFailurePreserved
       System::Call 'Kernel32::SetEnvironmentVariable(t "ELECTRON_RUN_AS_NODE", t "")i'
       !insertmacro customRollbackOldInstall "skill-restore-failed"
-      StrCmp $lobsterOldInstallRollbackStatus "success" SkillRestoreRollbackSucceeded
-        MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update could not restore user skills, and automatic rollback did not complete. No recovery copy was deleted. Previous files: $lobsterOldInstallBackupPath. Partial update: $lobsterOldInstallFailedPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+      StrCmp $baiyingOldInstallRollbackStatus "success" SkillRestoreRollbackSucceeded
+        MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update could not restore user skills, and automatic rollback did not complete. No recovery copy was deleted. Previous files: $baiyingOldInstallBackupPath. Partial update: $baiyingOldInstallFailedPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
         Goto SkillRestoreAbort
       SkillRestoreRollbackSucceeded:
         MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update could not restore user skills, so the previous version was restored. Please retry the update. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
@@ -2760,13 +2760,13 @@ FunctionEnd
       ; registration, but record an explicit degraded state for retry/manual
       ; recovery. The dialog must state exactly what survives: when no backup
       ; exists for this attempt, do not claim one was preserved.
-      StrCmp $lobsterLegacySkillsRestoreStatus "legacy-restore-backup-missing" SkillRestoreDegradedBackupMissing
+      StrCmp $baiyingLegacySkillsRestoreStatus "legacy-restore-backup-missing" SkillRestoreDegradedBackupMissing
       FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $2 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $2 "$8 phase=skill-restore-degraded attempt_id=$lobsterInstallerAttemptId status=$lobsterLegacySkillsRestoreStatus action=continue-with-attempt-backup-preserved backup=$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId$\r$\n"
+      FileWrite $2 "$8 phase=skill-restore-degraded attempt_id=$baiyingInstallerAttemptId status=$baiyingLegacySkillsRestoreStatus action=continue-with-attempt-backup-preserved backup=$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId$\r$\n"
       FileClose $2
-      MessageBox MB_OK|MB_ICONEXCLAMATION "BaiYing will finish installing, but legacy user skills could not be restored automatically ($lobsterLegacySkillsRestoreStatus). The recovery backup was preserved at $APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+      MessageBox MB_OK|MB_ICONEXCLAMATION "BaiYing will finish installing, but legacy user skills could not be restored automatically ($baiyingLegacySkillsRestoreStatus). The recovery backup was preserved at $APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       Goto SkillRestoreValidated
 
     SkillRestoreDegradedBackupMissing:
@@ -2775,9 +2775,9 @@ FunctionEnd
       FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $2 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $2 "$8 phase=skill-restore-degraded attempt_id=$lobsterInstallerAttemptId status=$lobsterLegacySkillsRestoreStatus action=continue-no-backup-found backup=$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId$\r$\n"
+      FileWrite $2 "$8 phase=skill-restore-degraded attempt_id=$baiyingInstallerAttemptId status=$baiyingLegacySkillsRestoreStatus action=continue-no-backup-found backup=$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId$\r$\n"
       FileClose $2
-      MessageBox MB_OK|MB_ICONEXCLAMATION "BaiYing will finish installing, but the recovery backup for legacy user skills was not found, so no skills were restored ($lobsterLegacySkillsRestoreStatus). Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+      MessageBox MB_OK|MB_ICONEXCLAMATION "BaiYing will finish installing, but the recovery backup for legacy user skills was not found, so no skills were restored ($baiyingLegacySkillsRestoreStatus). Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       Goto SkillRestoreValidated
 
     SkillRestoreConflictPreserved:
@@ -2788,7 +2788,7 @@ FunctionEnd
       FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
       FileSeek $2 0 END
       !insertmacro GetTimestamp $8
-      FileWrite $2 "$8 phase=skill-restore-conflict-preserved attempt_id=$lobsterInstallerAttemptId status=name-conflict action=attempt-backup-preserved backup=$APPDATA\BaiYing\skills-backup\$lobsterInstallerAttemptId$\r$\n"
+      FileWrite $2 "$8 phase=skill-restore-conflict-preserved attempt_id=$baiyingInstallerAttemptId status=name-conflict action=attempt-backup-preserved backup=$APPDATA\BaiYing\skills-backup\$baiyingInstallerAttemptId$\r$\n"
       FileClose $2
     SkillRestoreValidated:
   SkipSkillRestore:
@@ -2822,17 +2822,17 @@ FunctionEnd
   ${GetOptions} $R9 "/NoDefenderExclusion" $R8
   IfErrors +2
     StrCpy $R7 "0"
-  StrCmp $lobsterTrustedPowerShellPath "" DefenderRebalanceHelperMissing
+  StrCmp $baiyingTrustedPowerShellPath "" DefenderRebalanceHelperMissing
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_DEFENDER_ADD_PERMANENT", t "$R7")i'
-  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
+  Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "\
     $$root = $$env:BAIYING_INSTALL_ROOT;\
     try { $$trimTargets = @($$root, (Join-Path $$root \"resources\SKILLs\")); Remove-MpPreference -ExclusionPath $$trimTargets -ErrorAction SilentlyContinue; $$trim = \"removed\" } catch { $$trim = \"failed:\" + $$_.Exception.Message.Trim() };\
     if ($$env:BAIYING_DEFENDER_ADD_PERMANENT -ne \"1\") { $$permanent = \"skipped:opt-out\" } else {\
       try { $$addTargets = @((Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\app.asar\"), (Join-Path $$root \"resources\win-resources.tar\")); Add-MpPreference -ExclusionPath $$addTargets -ErrorAction Stop; $$permanent = \"added\" } catch { $$permanent = \"skipped:\" + $$_.Exception.Message.Trim() }\
     };\
     Write-Output (\"trim=\" + $$trim + \" permanent=\" + $$permanent)"'
-  !insertmacro LobsterExecHiddenToStack
+  !insertmacro baiyingExecHiddenToStack
   Pop $0
   Pop $1
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "")i'
@@ -2845,43 +2845,43 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=defender-exclusion-rebalance-complete attempt_id=$lobsterInstallerAttemptId permanent_requested=$R7 exit=$0 output=$1$\r$\n"
+  FileWrite $2 "$8 phase=defender-exclusion-rebalance-complete attempt_id=$baiyingInstallerAttemptId permanent_requested=$R7 exit=$0 output=$1$\r$\n"
   FileClose $2
 
   ; Validate every scenario before electron-builder writes new registration
   ; or shortcuts. The archive and unpack script are diagnostic recovery
   ; material, never a successful validation condition.
-  StrCpy $lobsterNewInstallValidationStatus "failed"
-  StrCpy $lobsterNewInstallValidationReason "app-executable-missing"
+  StrCpy $baiyingNewInstallValidationStatus "failed"
+  StrCpy $baiyingNewInstallValidationReason "app-executable-missing"
   IfFileExists "$INSTDIR\${APP_EXECUTABLE_FILENAME}" 0 NewInstallPrevalidateFailed
-  StrCpy $lobsterNewInstallValidationReason "uninstaller-missing"
+  StrCpy $baiyingNewInstallValidationReason "uninstaller-missing"
   IfFileExists "$INSTDIR\${UNINSTALL_FILENAME}" 0 NewInstallPrevalidateFailed
-  StrCpy $lobsterNewInstallValidationReason "app-asar-missing"
+  StrCpy $baiyingNewInstallValidationReason "app-asar-missing"
   IfFileExists "$INSTDIR\resources\app.asar" 0 NewInstallPrevalidateFailed
 
   IfFileExists "$INSTDIR\resources\cfmind\gateway-bundle.mjs" NewInstallPrevalidateSkills
   IfFileExists "$INSTDIR\resources\cfmind\openclaw.mjs" NewInstallPrevalidateSkills
-  StrCpy $lobsterNewInstallValidationReason "runtime-entry-missing"
+  StrCpy $baiyingNewInstallValidationReason "runtime-entry-missing"
   Goto NewInstallPrevalidateFailed
 
   NewInstallPrevalidateSkills:
-    StrCpy $lobsterNewInstallValidationReason "skills-content-missing"
+    StrCpy $baiyingNewInstallValidationReason "skills-content-missing"
     IfFileExists "$INSTDIR\resources\SKILLs\*.*" 0 NewInstallPrevalidateFailed
-    StrCpy $lobsterNewInstallValidationReason "python-entry-missing"
+    StrCpy $baiyingNewInstallValidationReason "python-entry-missing"
     IfFileExists "$INSTDIR\resources\python-win\python.exe" NewInstallPrevalidateSucceeded
     IfFileExists "$INSTDIR\resources\python-win\python3.exe" NewInstallPrevalidateSucceeded
     Goto NewInstallPrevalidateFailed
 
   NewInstallPrevalidateSucceeded:
-    StrCpy $lobsterNewInstallValidationStatus "success"
-    StrCpy $lobsterNewInstallValidationReason "new-install-runtime-ready"
-    StrCmp $lobsterOldInstallRenameStatus "success" 0 NewInstallPrevalidateLog
-      StrCpy $lobsterOldInstallRenameStatus "prevalidated"
+    StrCpy $baiyingNewInstallValidationStatus "success"
+    StrCpy $baiyingNewInstallValidationReason "new-install-runtime-ready"
+    StrCmp $baiyingOldInstallRenameStatus "success" 0 NewInstallPrevalidateLog
+      StrCpy $baiyingOldInstallRenameStatus "prevalidated"
     NewInstallPrevalidateLog:
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=new-install-prevalidated attempt_id=$lobsterInstallerAttemptId status=$lobsterNewInstallValidationStatus reason=$lobsterNewInstallValidationReason rename_status=$lobsterOldInstallRenameStatus registration=pending backup_path=$lobsterOldInstallBackupPath$\r$\n"
+    FileWrite $2 "$8 phase=new-install-prevalidated attempt_id=$baiyingInstallerAttemptId status=$baiyingNewInstallValidationStatus reason=$baiyingNewInstallValidationReason rename_status=$baiyingOldInstallRenameStatus registration=pending backup_path=$baiyingOldInstallBackupPath$\r$\n"
     FileClose $2
     Goto NewInstallPrevalidateDone
 
@@ -2889,18 +2889,18 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=new-install-prevalidation-failed attempt_id=$lobsterInstallerAttemptId status=$lobsterNewInstallValidationStatus reason=$lobsterNewInstallValidationReason rename_status=$lobsterOldInstallRenameStatus registration=not-written backup_path=$lobsterOldInstallBackupPath$\r$\n"
+    FileWrite $2 "$8 phase=new-install-prevalidation-failed attempt_id=$baiyingInstallerAttemptId status=$baiyingNewInstallValidationStatus reason=$baiyingNewInstallValidationReason rename_status=$baiyingOldInstallRenameStatus registration=not-written backup_path=$baiyingOldInstallBackupPath$\r$\n"
     FileClose $2
-    StrCmp $lobsterOldInstallRenameStatus "success" 0 NewInstallPrevalidateAbort
+    StrCmp $baiyingOldInstallRenameStatus "success" 0 NewInstallPrevalidateAbort
     !insertmacro customRollbackOldInstall "new-install-validation-failed"
-    StrCmp $lobsterOldInstallRollbackStatus "success" NewInstallPrevalidateRollbackSucceeded
-      MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update could not be validated, and automatic rollback did not complete. No recovery copy was deleted. Previous files: $lobsterOldInstallBackupPath. Partial update: $lobsterOldInstallFailedPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+    StrCmp $baiyingOldInstallRollbackStatus "success" NewInstallPrevalidateRollbackSucceeded
+      MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update could not be validated, and automatic rollback did not complete. No recovery copy was deleted. Previous files: $baiyingOldInstallBackupPath. Partial update: $baiyingOldInstallFailedPath. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       Goto NewInstallPrevalidateAbortAfterMessage
     NewInstallPrevalidateRollbackSucceeded:
       MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing update could not be validated, so the previous version was restored. Please retry the update. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
       Goto NewInstallPrevalidateAbortAfterMessage
     NewInstallPrevalidateAbort:
-      MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the new application could not be validated ($lobsterNewInstallValidationReason). New registration and shortcuts were not written. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
+      MessageBox MB_OK|MB_ICONEXCLAMATION "The BaiYing installation stopped because the new application could not be validated ($baiyingNewInstallValidationReason). New registration and shortcuts were not written. Details: $APPDATA\BaiYing\install-timing.log" /SD IDOK
     NewInstallPrevalidateAbortAfterMessage:
     SetErrorLevel 2
     Quit
@@ -2913,13 +2913,13 @@ FunctionEnd
 ; customBeforeRegistryAddInstallInfo. This hook only commits the already
 ; prevalidated directory swap and schedules exact-current-backup cleanup.
 !macro customInstall
-  StrCmp $lobsterNewInstallValidationStatus "success" 0 InstallFinalizeInvariantFailed
-  StrCmp $lobsterOldInstallRenameStatus "prevalidated" 0 InstallFinalizeNoRename
-    StrCpy $lobsterOldInstallRenameStatus "committed"
+  StrCmp $baiyingNewInstallValidationStatus "success" 0 InstallFinalizeInvariantFailed
+  StrCmp $baiyingOldInstallRenameStatus "prevalidated" 0 InstallFinalizeNoRename
+    StrCpy $baiyingOldInstallRenameStatus "committed"
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=old-install-commit-complete attempt_id=$lobsterInstallerAttemptId status=$lobsterNewInstallValidationStatus reason=$lobsterNewInstallValidationReason registration=written backup_path=$lobsterOldInstallBackupPath$\r$\n"
+    FileWrite $2 "$8 phase=old-install-commit-complete attempt_id=$baiyingInstallerAttemptId status=$baiyingNewInstallValidationStatus reason=$baiyingNewInstallValidationReason registration=written backup_path=$baiyingOldInstallBackupPath$\r$\n"
     FileClose $2
   InstallFinalizeNoRename:
 
@@ -2930,13 +2930,13 @@ FunctionEnd
   ; user-selected install directory. The detached launch is asynchronous (and,
   ; unlike NSIS Exec, creates no console window), so this phase is
   ; "scheduled", not complete.
-  ${If} $lobsterOldInstallRenameStatus == "committed"
+  ${If} $baiyingOldInstallRenameStatus == "committed"
     StrCpy $0 "success"
-    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_OLD_CLEANUP_PATH", t "$lobsterOldInstallBackupPath")i'
+    System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_OLD_CLEANUP_PATH", t "$baiyingOldInstallBackupPath")i'
     ClearErrors
-    StrCmp $lobsterTrustedPowerShellPath "" OldInstallCleanupHelperMissing
-    Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "Remove-Item -LiteralPath $$env:BAIYING_OLD_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
-    !insertmacro LobsterExecHiddenDetached
+    StrCmp $baiyingTrustedPowerShellPath "" OldInstallCleanupHelperMissing
+    Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "Remove-Item -LiteralPath $$env:BAIYING_OLD_CLEANUP_PATH -Recurse -Force -ErrorAction SilentlyContinue"'
+    !insertmacro baiyingExecHiddenDetached
     IfErrors 0 +2
       StrCpy $0 "launch-failed"
     Goto OldInstallCleanupDispatchDone
@@ -2947,7 +2947,7 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=old-install-cleanup-scheduled attempt_id=$lobsterInstallerAttemptId dispatch=$0 backup_path=$lobsterOldInstallBackupPath target=exact-current-backup cleanup_mode=async-exec-after-commit$\r$\n"
+    FileWrite $2 "$8 phase=old-install-cleanup-scheduled attempt_id=$baiyingInstallerAttemptId dispatch=$0 backup_path=$baiyingOldInstallBackupPath target=exact-current-backup cleanup_mode=async-exec-after-commit$\r$\n"
     FileClose $2
   ${EndIf}
   Goto InstallFinalizeComplete
@@ -2959,7 +2959,7 @@ FunctionEnd
     FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
     FileSeek $2 0 END
     !insertmacro GetTimestamp $8
-    FileWrite $2 "$8 phase=install-finalize-invariant-failed attempt_id=$lobsterInstallerAttemptId validation_status=$lobsterNewInstallValidationStatus rename_status=$lobsterOldInstallRenameStatus$\r$\n"
+    FileWrite $2 "$8 phase=install-finalize-invariant-failed attempt_id=$baiyingInstallerAttemptId validation_status=$baiyingNewInstallValidationStatus rename_status=$baiyingOldInstallRenameStatus$\r$\n"
     FileClose $2
     SetErrorLevel 2
     Quit
@@ -2968,7 +2968,7 @@ FunctionEnd
   FileOpen $2 "$APPDATA\BaiYing\install-timing.log" a
   FileSeek $2 0 END
   !insertmacro GetTimestamp $8
-  FileWrite $2 "$8 phase=install-complete attempt_id=$lobsterInstallerAttemptId scenario=$lobsterInstallScenario$\r$\n"
+  FileWrite $2 "$8 phase=install-complete attempt_id=$baiyingInstallerAttemptId scenario=$baiyingInstallScenario$\r$\n"
   FileClose $2
   DetailPrint "[Installer] Installation complete"
 
@@ -2987,10 +2987,10 @@ FunctionEnd
   ; whole-directory entry in case an install was interrupted before its
   ; rebalance step ran.
   !insertmacro ResolveTrustedPowerShell
-  StrCmp $lobsterTrustedPowerShellPath "" DefenderUninstallCleanupDone
+  StrCmp $baiyingTrustedPowerShellPath "" DefenderUninstallCleanupDone
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "$INSTDIR")i'
-  Push '"$lobsterTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { $$root = $$env:BAIYING_INSTALL_ROOT; $$targets = @($$root, (Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\SKILLs\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\win-resources.tar\"), (Join-Path $$root \"resources\app.asar\")); Remove-MpPreference -ExclusionPath $$targets -ErrorAction SilentlyContinue } catch {}"'
-  !insertmacro LobsterExecHiddenToStack
+  Push '"$baiyingTrustedPowerShellPath" -NoProfile -NonInteractive -Command "try { $$root = $$env:BAIYING_INSTALL_ROOT; $$targets = @($$root, (Join-Path $$root \"resources\cfmind\"), (Join-Path $$root \"resources\python-win\"), (Join-Path $$root \"resources\SKILLs\"), (Join-Path $$root \"resources\app.asar.unpacked\"), (Join-Path $$root \"resources\win-resources.tar\"), (Join-Path $$root \"resources\app.asar\")); Remove-MpPreference -ExclusionPath $$targets -ErrorAction SilentlyContinue } catch {}"'
+  !insertmacro baiyingExecHiddenToStack
   Pop $0
   Pop $1
   System::Call 'Kernel32::SetEnvironmentVariable(t "BAIYING_INSTALL_ROOT", t "")i'

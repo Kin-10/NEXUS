@@ -192,7 +192,7 @@ BaiYing 之前已经把 OpenClaw workspace 与用户项目 cwd 解耦。修复�
 - `vendor/openclaw-runtime/current/dist/plugin-sdk/src/config/types.agents.d.ts` 已声明 `agents.list[].cwd`。
 - `vendor/openclaw-runtime/current/dist/plugin-sdk/src/auto-reply/get-reply-options.types.d.ts` 已声明 `GetReplyOptions.cwd`。
 - `vendor/openclaw-runtime/current/dist/plugin-sdk/src/auto-reply/reply/agent-runner-utils.d.ts` 已声明 embedded run base params 包含 `cwd`。
-- 微信 `openclaw-weixin/dist/src/messaging/process-message.js`、飞书 `openclaw-lark/src/messaging/inbound/dispatch.js`、网易 Bee `openclaw-netease-bee/src/inbound.ts` 都能解析 `route.agentId` / `sessionKey`，但调用 `dispatchReplyFromConfig()` 时没有传入 `replyOptions.cwd`。
+- 微信 `openclaw-weixin/dist/src/messaging/process-message.js`、飞书 `openclaw-lark/src/messaging/inbound/dispatch.js`、网易 Bee `openclaw-baiying-bee/src/inbound.ts` 都能解析 `route.agentId` / `sessionKey`，但调用 `dispatchReplyFromConfig()` 时没有传入 `replyOptions.cwd`。
 - 钉钉 `dingtalk-connector` 没有走 core `resolveAgentRoute()`，而是自定义遍历 `cfg.bindings`。其 `match.accountId` 比较不支持 `'*'` 通配，且只解析 `agentWorkspaceDir`，没有解析 run cwd。
 - gateway bundle 中当前 Agent scope helper 用于解析 `workspace` / `agentDir` / model / tools 等字段，但没有把 `agents.list[].cwd` 暴露为 Agent scope 字段。仅写出 `agents.list[].cwd` 不足以证明 channel run 会使用该 cwd。
 
@@ -242,7 +242,7 @@ replyOptions: { ...replyOptions, cwd: resolvedRunCwd }
 - 微信：`vendor/openclaw-runtime/current/third-party-extensions/openclaw-weixin/dist/src/messaging/process-message.js`
 - 飞书普通消息和评论消息：`vendor/openclaw-runtime/current/third-party-extensions/openclaw-lark/src/messaging/inbound/dispatch.js`
 - 飞书系统命令路径：`vendor/openclaw-runtime/current/third-party-extensions/openclaw-lark/src/messaging/inbound/dispatch-commands.js`
-- 网易 Bee：`vendor/openclaw-runtime/current/third-party-extensions/openclaw-netease-bee/src/inbound.ts`
+- 网易 Bee：`vendor/openclaw-runtime/current/third-party-extensions/openclaw-baiying-bee/src/inbound.ts`
 - 网易 IM：`vendor/openclaw-runtime/current/third-party-extensions/openclaw-nim-channel/src/bot.ts`
 
 更优方案是在 OpenClaw SDK 的 `dispatchReplyFromConfig()` 内部根据 `ctx.SessionKey` / `route.agentId` 自动解析 cwd，并允许 `replyOptions.cwd` 覆盖。这样各 channel plugin 不需要重复实现，且未来新增 IM 平台不容易漏。
@@ -350,7 +350,7 @@ IM channel run 需要和桌面 Cowork run 保持同一类路径语义：
 | `vendor/openclaw-runtime/current/dist/plugin-sdk` 或上游 OpenClaw SDK | 新增/修正 `resolveAgentRunCwd`，并在 `dispatchReplyFromConfig()` 中按 `ctx.SessionKey` / `agentId` 自动解析 cwd |
 | `vendor/openclaw-runtime/current/third-party-extensions/openclaw-weixin` | dispatch 前按 `route.agentId` 解析 cwd，或依赖 SDK 统一解析 |
 | `vendor/openclaw-runtime/current/third-party-extensions/openclaw-lark` | 普通消息、评论消息、系统命令 dispatch 都必须传递/继承 `resolvedRunCwd` |
-| `vendor/openclaw-runtime/current/third-party-extensions/openclaw-netease-bee` | dispatch 前按 `route.agentId` 解析 cwd，或依赖 SDK 统一解析 |
+| `vendor/openclaw-runtime/current/third-party-extensions/openclaw-baiying-bee` | dispatch 前按 `route.agentId` 解析 cwd，或依赖 SDK 统一解析 |
 | `vendor/openclaw-runtime/current/third-party-extensions/openclaw-nim-channel` | dispatch 前按 `route.agentId` 解析 cwd，或依赖 SDK 统一解析 |
 | `vendor/openclaw-runtime/current/third-party-extensions/dingtalk-connector` | 自定义 binding matcher 支持 `accountId: '*'`，并用 matched Agent 解析 run cwd |
 | `SKILLs/` 与 OpenClaw skills 输出路径 | 检查文件型成果的默认输出目录是否继承 run cwd |

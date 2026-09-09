@@ -5,22 +5,22 @@ import React, { type CSSProperties } from 'react';
 import type { SkinPresentation } from '../../../shared/skin/presentation';
 import { useSkin } from '../../providers/SkinProvider';
 
-type SkinPresentationStyle = CSSProperties & Record<`--lobster-skin-${string}`, string>;
+type SkinPresentationStyle = CSSProperties & Record<`--baiying-skin-${string}`, string>;
 
 export const buildSkinPresentationStyle = (
   presentation: SkinPresentation,
 ): SkinPresentationStyle => ({
-  '--lobster-skin-canvas': presentation.palette.canvas,
-  '--lobster-skin-panel': presentation.palette.panel,
-  '--lobster-skin-panel-raised': presentation.palette.panelRaised,
-  '--lobster-skin-accent': presentation.palette.accent,
-  '--lobster-skin-accent-foreground': presentation.palette.accentForeground,
-  '--lobster-skin-accent-alt': presentation.palette.accentAlt,
-  '--lobster-skin-foreground': presentation.palette.foreground,
-  '--lobster-skin-muted': presentation.palette.muted,
-  '--lobster-skin-border': presentation.palette.border,
-  '--lobster-skin-focus-x': `${(presentation.art?.focusX ?? 0.5) * 100}%`,
-  '--lobster-skin-focus-y': `${(presentation.art?.focusY ?? 0.5) * 100}%`,
+  '--baiying-skin-canvas': presentation.palette.canvas,
+  '--baiying-skin-panel': presentation.palette.panel,
+  '--baiying-skin-panel-raised': presentation.palette.panelRaised,
+  '--baiying-skin-accent': presentation.palette.accent,
+  '--baiying-skin-accent-foreground': presentation.palette.accentForeground,
+  '--baiying-skin-accent-alt': presentation.palette.accentAlt,
+  '--baiying-skin-foreground': presentation.palette.foreground,
+  '--baiying-skin-muted': presentation.palette.muted,
+  '--baiying-skin-border': presentation.palette.border,
+  '--baiying-skin-focus-x': `${(presentation.art?.focusX ?? 0.5) * 100}%`,
+  '--baiying-skin-focus-y': `${(presentation.art?.focusY ?? 0.5) * 100}%`,
 });
 
 interface SkinPresentationScopeProps extends React.HTMLAttributes<HTMLDivElement> {

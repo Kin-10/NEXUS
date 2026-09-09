@@ -1,5 +1,5 @@
 export const ManualCredentialCaptureChannel = {
-  Event: 'lobster:browser-credential:capture-event',
+  Event: 'baiying:browser-credential:capture-event',
 } as const;
 
 export const ManualCredentialCaptureEventType = {

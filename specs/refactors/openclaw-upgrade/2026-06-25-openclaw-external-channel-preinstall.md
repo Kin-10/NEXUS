@@ -21,7 +21,7 @@ plugins.entries.qqbot: plugin not installed: qqbot
 
 用户预期是 QQ/Discord 与其它 IM 一样，启用配置后重启网关即可使用，不应在首次启用时再执行网络下载。
 
-同时，NIM 多实例配置在升级后暴露出配置和环境变量不同步的问题：配置会写入未启用实例或不同索引的 `${LOBSTER_NIM_TOKEN_*}`，但运行时注入的环境变量只覆盖启用实例，导致 NIM 插件启动时报缺失环境变量。
+同时，NIM 多实例配置在升级后暴露出配置和环境变量不同步的问题：配置会写入未启用实例或不同索引的 `${baiying_NIM_TOKEN_*}`，但运行时注入的环境变量只覆盖启用实例，导致 NIM 插件启动时报缺失环境变量。
 
 ### 1.2 目标
 
@@ -76,7 +76,7 @@ vendor/openclaw-runtime/current/third-party-extensions/{pluginId}
 - `channels.nim.accounts` 会写入有凭据但未启用的实例。
 - `collectSecretEnvVars()` 只按启用且有 `token` 的实例注入 env，和 channel accounts 的实例列表、索引不完全一致。
 
-当账号配置使用 `${LOBSTER_NIM_TOKEN}` 但 env 未注入时，gateway 启动阶段会报缺失环境变量。
+当账号配置使用 `${baiying_NIM_TOKEN}` 但 env 未注入时，gateway 启动阶段会报缺失环境变量。
 
 ## 3. 方案设计
 

@@ -2,7 +2,7 @@
 
 > 创建日期：2026-09-04  
 > 状态：设计完成，待实现  
-> 适用仓库：`LobsterAI`  
+> 适用仓库：`baiyingAI`  
 > 产品入口：左侧栏「我的文件」→「本地产物」  
 > 基线设计：`specs/features/library/2026-08-17-library-design.md`  
 > 相关增量：`specs/bugfixes/library-loading-feedback/2026-08-31-library-loading-feedback-design.md`
@@ -870,7 +870,7 @@ SQLite 已按文件时间截取第一页，Renderer 无法看到最近任务中�
 
 ### 10.3 发布范围
 
-本次是 Electron 客户端原子发布：Main、Preload、Renderer 和共享类型必须同版本交付。不需要 `lobsterai-server`、`lobsterai-admin`、`lobsterai-portal` 或 `docs/server-integration/2026-08-17-library-cloud-items.md` 配套发布。
+本次是 Electron 客户端原子发布：Main、Preload、Renderer 和共享类型必须同版本交付。不需要 `baiyingai-server`、`baiyingai-admin`、`baiyingai-portal` 或 `docs/server-integration/2026-08-17-library-cloud-items.md` 配套发布。
 
 ### 10.4 回滚
 

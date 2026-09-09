@@ -86,7 +86,7 @@ accessForm.addEventListener('submit', (event) => {
     return;
   }
 
-  if (value !== 'LOBSTER') {
+  if (value !== 'baiying') {
     accessError.textContent = '分享码错误，请重试。';
     accessCode.setAttribute('aria-invalid', 'true');
     accessCode.select();
@@ -100,7 +100,7 @@ accessForm.addEventListener('submit', (event) => {
 document.querySelectorAll('[data-demo-link]').forEach((link) => {
   link.addEventListener('click', (event) => {
     event.preventDefault();
-    showToast('正式页面会打开 LobsterAI 官网');
+    showToast('正式页面会打开 baiyingAI 官网');
   });
 });
 
