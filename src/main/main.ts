@@ -210,6 +210,7 @@ import { BrowserCredentialApprovalService } from './browserCredentials/browserCr
 import { BrowserCredentialService } from './browserCredentials/browserCredentialService';
 import {
   destroyComputerUseActivityOverlay,
+  prewarmComputerUseActivityOverlay,
   reportComputerUseActivity,
 } from './computerUse/computerUseActivityOverlay';
 import { getRecentComputerUseLogEntries } from './computerUse/computerUseLogs';
@@ -3619,6 +3620,7 @@ const startAskUserServer = async (): Promise<void> => {
   runtime.onComputerUseActivity((state) => {
     reportComputerUseActivity(state);
   });
+  prewarmComputerUseActivityOverlay();
 };
 
 const getIMGatewayManager = () => {

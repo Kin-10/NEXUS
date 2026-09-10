@@ -143,7 +143,7 @@ describe('resolveComputerUseRuntimePaths', () => {
     expect(config.strings?.usingComputer).toBe('百应正在接管你的电脑');
     expect(config.strings?.escToCancel).toBe('按Esc键退出');
     expect(config).toMatchObject({
-      accentColor: '#FFFFFF',
+      accentColor: '#1A1A1A',
       locale: 'zh-CN',
     });
   });
@@ -156,6 +156,7 @@ describe('resolveComputerUseRuntimePaths', () => {
     expect(script).toContain("requireEnv('baiying_COMPUTER_USE_CLIENT_MODULE')");
     expect(script).toContain("requireEnv('baiying_COMPUTER_USE_ACTIVITY_URL')");
     expect(script).toContain("await notifyActivity('active')");
+    expect(script).toContain('setTimeout(resolve, 120)');
     expect(script).toContain("await notifyActivity(stoppedByEsc ? 'stopped' : 'idle')");
     expect(script).toContain('async function notifyActivity(state)');
     expect(script).toContain('let stoppedByEsc = false');

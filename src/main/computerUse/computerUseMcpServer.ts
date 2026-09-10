@@ -448,6 +448,9 @@ function stateToContent(state) {
 function registerTool(name, description, inputSchema, handler) {
   server.registerTool(name, { description, inputSchema }, async (args) => {
     await notifyActivity('active');
+    // Let BaiYing show its overlay and start the native-banner hide watcher
+    // before the helper paints the top bar / screen frame.
+    await new Promise((resolve) => setTimeout(resolve, 120));
     let stoppedByEsc = false;
     try {
       assertHelperTurnActive();

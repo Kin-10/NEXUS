@@ -29,7 +29,12 @@ export type ComputerUseRuntimeStatus =
   typeof ComputerUseRuntimeStatus[keyof typeof ComputerUseRuntimeStatus];
 
 export const ComputerUseHelperConfig = {
-  AccentColor: '#FFFFFF',
+  /**
+   * Native helper paints top bar + screen frame with this accent. Keep it dark so any
+   * brief flash before the hide watcher catches the HWND is not a bright white border.
+   * BaiYing owns the visible bottom white bar + edge aura.
+   */
+  AccentColor: '#1A1A1A',
   Direction: 'ltr',
   Locale: 'zh-CN',
   EscToCancel: '按Esc键退出',

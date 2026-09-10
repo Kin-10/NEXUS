@@ -22,6 +22,8 @@ type DisplayLike = ReturnType<typeof screen.getAllDisplays>[number];
 export const ComputerUseActivityOverlayTiming = {
   FadeMs: 320,
   EscPollMs: 200,
+  /** Give BaiYing overlay + native hide watcher a head start before helper paints. */
+  PreHelperSettleMs: 120,
 } as const;
 
 export type ComputerUseActivityControllerOptions = {
@@ -96,7 +98,7 @@ const OVERLAY_HTML = `<!DOCTYPE html>
       bottom: 40px;
       transform: translateX(-50%);
       z-index: 3;
-      display: inline-flex;
+      display: none;
       align-items: center;
       gap: 10px;
       padding: 12px 24px;
@@ -110,6 +112,9 @@ const OVERLAY_HTML = `<!DOCTYPE html>
         0 10px 30px rgba(15, 23, 42, 0.18),
         0 0 0 1px rgba(15, 23, 42, 0.06);
     }
+    body.show-status .status {
+      display: inline-flex;
+    }
     .status-dot {
       width: 8px;
       height: 8px;
@@ -120,7 +125,7 @@ const OVERLAY_HTML = `<!DOCTYPE html>
     }
   </style>
 </head>
-<body>
+<body class="__STATUS_CLASS__">
   <canvas id="glow" aria-hidden="true"></canvas>
   <div class="status" role="status">
     <span class="status-dot" aria-hidden="true"></span>
@@ -316,8 +321,13 @@ const OVERLAY_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
+function buildOverlayHtml(showStatus: boolean): string {
+  return OVERLAY_HTML.replace('__STATUS_CLASS__', showStatus ? 'show-status' : '');
+}
+
 type OverlayWindowEntry = {
   displayId: number;
+  showStatus: boolean;
   window: BrowserWindow;
 };
 
@@ -328,6 +338,7 @@ let desiredVisible = false;
 let visibilityEpoch = 0;
 let escWatcherTimer: ReturnType<typeof setInterval> | null = null;
 let overlaySessionStartedAt = 0;
+let ensureOverlayChain: Promise<void> = Promise.resolve();
 
 function isSupportedPlatform(): boolean {
   return process.platform === 'win32';
@@ -340,6 +351,27 @@ function destroyOverlayWindows(): void {
     }
   }
   overlayEntries = [];
+}
+
+/** Keep at most one overlay window per display (prewarm + Active can race). */
+function dedupeOverlayWindows(): void {
+  const byDisplay = new Map<number, OverlayWindowEntry>();
+  for (const entry of overlayEntries) {
+    if (entry.window.isDestroyed()) continue;
+    const existing = byDisplay.get(entry.displayId);
+    if (!existing) {
+      byDisplay.set(entry.displayId, entry);
+      continue;
+    }
+    // Prefer the window that carries the status bar when colliding.
+    const keep = entry.showStatus && !existing.showStatus ? entry : existing;
+    const drop = keep === existing ? entry : existing;
+    if (!drop.window.isDestroyed()) {
+      drop.window.destroy();
+    }
+    byDisplay.set(entry.displayId, keep);
+  }
+  overlayEntries = Array.from(byDisplay.values());
 }
 
 function listFilesRecursive(rootDir: string): string[] {
@@ -406,7 +438,10 @@ function startEscInterruptWatcher(): void {
   }, ComputerUseActivityOverlayTiming.EscPollMs);
 }
 
-async function createOverlayWindowForDisplay(display: DisplayLike): Promise<OverlayWindowEntry | null> {
+async function createOverlayWindowForDisplay(
+  display: DisplayLike,
+  showStatus: boolean,
+): Promise<OverlayWindowEntry | null> {
   const { x, y, width, height } = display.bounds;
   const win = new BrowserWindow({
     x,
@@ -431,7 +466,7 @@ async function createOverlayWindowForDisplay(display: DisplayLike): Promise<Over
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      partition: `computer-use-glow-v6-${display.id}`,
+      partition: `computer-use-glow-v13-${display.id}-${showStatus ? 'status' : 'glow'}`,
     },
   });
 
@@ -449,7 +484,7 @@ async function createOverlayWindowForDisplay(display: DisplayLike): Promise<Over
   win.setIgnoreMouseEvents(true, { forward: true });
 
   try {
-    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(OVERLAY_HTML)}`);
+    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(buildOverlayHtml(showStatus))}`);
   } catch (error) {
     console.warn('[ComputerUseOverlay] failed to load glow window:', error);
     if (!win.isDestroyed()) {
@@ -462,13 +497,14 @@ async function createOverlayWindowForDisplay(display: DisplayLike): Promise<Over
     overlayEntries = overlayEntries.filter(entry => entry.window !== win);
   });
 
-  return { displayId: display.id, window: win };
+  return { displayId: display.id, showStatus, window: win };
 }
 
-async function ensureOverlayWindows(): Promise<void> {
+async function ensureOverlayWindowsImpl(): Promise<void> {
   if (!isSupportedPlatform()) return;
 
   const displays = screen.getAllDisplays();
+  const primaryId = screen.getPrimaryDisplay().id;
   const wantedIds = new Set(displays.map(display => display.id));
   const stale = overlayEntries.filter(entry => !wantedIds.has(entry.displayId) || entry.window.isDestroyed());
   for (const entry of stale) {
@@ -477,6 +513,17 @@ async function ensureOverlayWindows(): Promise<void> {
     }
   }
   overlayEntries = overlayEntries.filter(entry => wantedIds.has(entry.displayId) && !entry.window.isDestroyed());
+  dedupeOverlayWindows();
+
+  // Recreate any window whose status-bar role no longer matches (primary-only bar).
+  for (const entry of [...overlayEntries]) {
+    const shouldShowStatus = entry.displayId === primaryId;
+    if (entry.showStatus === shouldShowStatus) continue;
+    if (!entry.window.isDestroyed()) {
+      entry.window.destroy();
+    }
+    overlayEntries = overlayEntries.filter(item => item.window !== entry.window);
+  }
 
   const existingIds = new Set(overlayEntries.map(entry => entry.displayId));
   for (const display of displays) {
@@ -488,11 +535,22 @@ async function ensureOverlayWindows(): Promise<void> {
       }
       continue;
     }
-    const created = await createOverlayWindowForDisplay(display);
+    const created = await createOverlayWindowForDisplay(display, display.id === primaryId);
     if (created) {
       overlayEntries.push(created);
+      existingIds.add(display.id);
     }
   }
+  dedupeOverlayWindows();
+}
+
+function ensureOverlayWindows(): Promise<void> {
+  ensureOverlayChain = ensureOverlayChain
+    .then(() => ensureOverlayWindowsImpl())
+    .catch((error) => {
+      console.warn('[ComputerUseOverlay] ensureOverlayWindows failed:', error);
+    });
+  return ensureOverlayChain;
 }
 
 function setOverlayWindowsVisible(visible: boolean): void {
@@ -577,7 +635,13 @@ function ensureController(): ComputerUseActivityController {
         void (async () => {
           try {
             if (visible) {
-              destroyOverlayWindows();
+              // Hide native UI immediately — do not wait for window create.
+              startHidingNativeComputerUseStatusBanner();
+              hideNativeComputerUseStatusBanner();
+              // Reuse existing overlay windows when possible for first-frame speed.
+              if (overlayEntries.length > 0) {
+                setOverlayWindowsVisible(true);
+              }
               await ensureOverlayWindows();
             }
             if (epoch !== visibilityEpoch) return;
@@ -595,7 +659,23 @@ function ensureController(): ComputerUseActivityController {
 export function reportComputerUseActivity(state: ComputerUseActivityStateType): void {
   if (!isSupportedPlatform()) return;
   console.log(`[ComputerUseOverlay] activity=${state}`);
+  if (state === ComputerUseActivityState.Active) {
+    // Kick the hide watcher before any async overlay work.
+    startHidingNativeComputerUseStatusBanner();
+  }
   ensureController().setActivity(state);
+}
+
+/** Create hidden overlay windows early so the first Active paint is instant. */
+export function prewarmComputerUseActivityOverlay(): void {
+  if (!isSupportedPlatform()) return;
+  ensureController();
+  void ensureOverlayWindows().catch((error) => {
+    console.debug(
+      '[ComputerUseOverlay] prewarm failed:',
+      error instanceof Error ? error.message : String(error),
+    );
+  });
 }
 
 export function destroyComputerUseActivityOverlay(): void {
