@@ -27,7 +27,8 @@ describe('artifactFileSharePolicy', () => {
     [ArtifactTypeValue.Html, HtmlShareSourceType.HtmlFile],
     [ArtifactTypeValue.Image, HtmlShareSourceType.ImageFile],
     [ArtifactTypeValue.Svg, HtmlShareSourceType.SvgFile],
-    [ArtifactTypeValue.Document, HtmlShareSourceType.DocumentFile],
+    // Document share is temporarily disabled (see ARTIFACT_DOCUMENT_FILE_SHARE_TEMPORARILY_DISABLED).
+    [ArtifactTypeValue.Document, null],
     [ArtifactTypeValue.Markdown, HtmlShareSourceType.MarkdownFile],
     [ArtifactTypeValue.Mermaid, HtmlShareSourceType.MermaidFile],
   ])('maps %s artifacts to %s', (artifactType, sourceType) => {
@@ -93,13 +94,14 @@ describe('artifactFileSharePolicy', () => {
       label: 'document file path',
       type: ArtifactTypeValue.Document,
       source: { filePath: '/tmp/report.pdf' },
-      expected: true,
+      // Temporarily disabled for generated documents.
+      expected: false,
     },
     {
       label: 'document content',
       type: ArtifactTypeValue.Document,
       source: { content: 'Report contents' },
-      expected: true,
+      expected: false,
     },
     {
       label: 'document remote URL',

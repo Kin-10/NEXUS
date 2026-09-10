@@ -56,6 +56,12 @@ const ARTIFACT_FILE_SHARE_SOURCE_TYPES: Partial<Record<ArtifactType, ArtifactFil
     [ArtifactTypeValue.Mermaid]: HtmlShareSourceType.MermaidFile,
   };
 
+/**
+ * Temporary kill-switch: hide share for generated document artifacts
+ * (docx / xlsx / pptx / pdf / csv / …). Flip back to false to restore.
+ */
+export const ARTIFACT_DOCUMENT_FILE_SHARE_TEMPORARILY_DISABLED = true;
+
 export function getArtifactFileShareSourceType(
   artifact: Artifact,
 ): ArtifactFileShareSourceType | null {
@@ -71,7 +77,14 @@ export function getArtifactFileShareSourceType(
   ) {
     return HtmlShareSourceType.GeneratedVideoFile;
   }
-  return ARTIFACT_FILE_SHARE_SOURCE_TYPES[artifact.type] ?? null;
+  const sourceType = ARTIFACT_FILE_SHARE_SOURCE_TYPES[artifact.type] ?? null;
+  if (
+    ARTIFACT_DOCUMENT_FILE_SHARE_TEMPORARILY_DISABLED
+    && sourceType === HtmlShareSourceType.DocumentFile
+  ) {
+    return null;
+  }
+  return sourceType;
 }
 
 function hasShareableSource(artifact: Artifact, sourceType: ArtifactFileShareSourceType): boolean {

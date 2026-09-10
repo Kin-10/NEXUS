@@ -11,8 +11,11 @@
     "pdf": { "order": 60, "enabled": true },
     "drafter-diagram": { "order": 70, "enabled": true },
     "ui-designer": { "order": 80, "enabled": true },
+    "frontend-design": { "order": 85, "enabled": true },
     "local-tools": { "order": 90, "enabled": true },
+    "playwright": { "order": 95, "enabled": true },
     "weather": { "order": 100, "enabled": true },
+    "wecom-unified": { "order": 105, "enabled": true },
     "install-skill-dependency": { "order": 110, "enabled": true },
     "skill-vetter": { "order": 120, "enabled": true },
     "skill-creator": { "order": 130, "enabled": true }

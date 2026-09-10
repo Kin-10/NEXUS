@@ -1,284 +1,256 @@
 ---
 name: pdf
-version: 1.0.1
-description: Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill.
-description_zh: 当用户需要对 PDF 文件执行任何操作时使用此技能。包括：读取或提取 PDF 中的文本/表格、合并多个 PDF、拆分 PDF、旋转页面、添加水印、创建新 PDF、填写 PDF 表单、加密/解密 PDF、提取图片，以及对扫描版 PDF 进行 OCR 使其可搜索。只要用户提及 .pdf 文件或要求生成 PDF，就使用此技能。
+description: Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. When Claude needs to fill in a PDF form or programmatically process, generate, or analyze PDF documents at scale.
+description_zh: "全面的 PDF 处理工具集：提取文本与表格、创建/合并/拆分 PDF、旋转页面、处理表单（见 forms.md）、以及高级能力（见 reference.md）。用户提到 .pdf 或需要生成、分析、填写 PDF 时使用。"
 license: Proprietary. LICENSE.txt has complete terms
+official: true
 ---
 
-# Working with PDF Documents
+# PDF Processing Guide
 
-## Introduction
+## Overview
 
-A comprehensive toolkit for PDF manipulation through Python and shell utilities. Consult `advanced-reference.md` for extended capabilities (pypdfium2, JavaScript ecosystems, performance guidance). When form-filling is required, follow the workflow described in `form-filling-guide.md`.
+This guide covers essential PDF processing operations using Python libraries and command-line tools. For advanced features, JavaScript libraries, and detailed examples, see reference.md. If you need to fill out a PDF form, read forms.md and follow its instructions.
 
-## Getting Started
-
-```python
-import pypdf
-
-# Open and inspect a document
-doc = pypdf.PdfReader("document.pdf")
-total_pages = len(doc.pages)
-print("Pages: {}".format(total_pages))
-
-# Gather all textual content
-content = "".join(pg.extract_text() for pg in doc.pages)
-```
-
-## Core Python Libraries
-
-### pypdf — Structural Manipulation
-
-#### Combining Multiple Documents
+## Quick Start
 
 ```python
-import pypdf
+from pypdf import PdfReader, PdfWriter
 
-output = pypdf.PdfWriter()
-sources = ["doc1.pdf", "doc2.pdf", "doc3.pdf"]
-for src in sources:
-    rdr = pypdf.PdfReader(src)
-    for pg in rdr.pages:
-        output.add_page(pg)
+# Read a PDF
+reader = PdfReader("document.pdf")
+print(f"Pages: {len(reader.pages)}")
 
-with open("merged.pdf", "wb") as dest:
-    output.write(dest)
+# Extract text
+text = ""
+for page in reader.pages:
+    text += page.extract_text()
 ```
 
-#### Separating Pages Into Individual Files
+## Python Libraries
 
+### pypdf - Basic Operations
+
+#### Merge PDFs
 ```python
-import pypdf
+from pypdf import PdfWriter, PdfReader
 
-source = pypdf.PdfReader("input.pdf")
-for idx, pg in enumerate(source.pages):
-    single = pypdf.PdfWriter()
-    single.add_page(pg)
-    with open("page_{}.pdf".format(idx + 1), "wb") as dest:
-        single.write(dest)
+writer = PdfWriter()
+for pdf_file in ["doc1.pdf", "doc2.pdf", "doc3.pdf"]:
+    reader = PdfReader(pdf_file)
+    for page in reader.pages:
+        writer.add_page(page)
+
+with open("merged.pdf", "wb") as output:
+    writer.write(output)
 ```
 
-#### Reading Document Properties
-
+#### Split PDF
 ```python
-import pypdf
-
-source = pypdf.PdfReader("document.pdf")
-props = source.metadata
-print("Title: {}".format(props.title))
-print("Author: {}".format(props.author))
-print("Subject: {}".format(props.subject))
-print("Creator: {}".format(props.creator))
+reader = PdfReader("input.pdf")
+for i, page in enumerate(reader.pages):
+    writer = PdfWriter()
+    writer.add_page(page)
+    with open(f"page_{i+1}.pdf", "wb") as output:
+        writer.write(output)
 ```
 
-#### Changing Page Orientation
-
+#### Extract Metadata
 ```python
-import pypdf
-
-source = pypdf.PdfReader("input.pdf")
-output = pypdf.PdfWriter()
-
-target = source.pages[0]
-target.rotate(90)  # 90-degree clockwise rotation
-output.add_page(target)
-
-with open("rotated.pdf", "wb") as dest:
-    output.write(dest)
+reader = PdfReader("document.pdf")
+meta = reader.metadata
+print(f"Title: {meta.title}")
+print(f"Author: {meta.author}")
+print(f"Subject: {meta.subject}")
+print(f"Creator: {meta.creator}")
 ```
 
-### pdfplumber — Content Extraction
+#### Rotate Pages
+```python
+reader = PdfReader("input.pdf")
+writer = PdfWriter()
 
-#### Retrieving Text Preserving Layout
+page = reader.pages[0]
+page.rotate(90)  # Rotate 90 degrees clockwise
+writer.add_page(page)
 
+with open("rotated.pdf", "wb") as output:
+    writer.write(output)
+```
+
+### pdfplumber - Text and Table Extraction
+
+#### Extract Text with Layout
 ```python
 import pdfplumber
 
-with pdfplumber.open("document.pdf") as doc:
-    for pg in doc.pages:
-        content = pg.extract_text()
-        print(content)
+with pdfplumber.open("document.pdf") as pdf:
+    for page in pdf.pages:
+        text = page.extract_text()
+        print(text)
 ```
 
-#### Pulling Tabular Data
-
+#### Extract Tables
 ```python
-import pdfplumber
-
-with pdfplumber.open("document.pdf") as doc:
-    for pg_idx, pg in enumerate(doc.pages):
-        found_tables = pg.extract_tables()
-        for tbl_idx, tbl in enumerate(found_tables):
-            print("Table {} on page {}:".format(tbl_idx + 1, pg_idx + 1))
-            for row in tbl:
+with pdfplumber.open("document.pdf") as pdf:
+    for i, page in enumerate(pdf.pages):
+        tables = page.extract_tables()
+        for j, table in enumerate(tables):
+            print(f"Table {j+1} on page {i+1}:")
+            for row in table:
                 print(row)
 ```
 
-#### Structured Table Export
-
+#### Advanced Table Extraction
 ```python
-import pdfplumber
 import pandas as pd
 
-with pdfplumber.open("document.pdf") as doc:
-    collected = []
-    for pg in doc.pages:
-        for tbl in pg.extract_tables():
-            if tbl:
-                frame = pd.DataFrame(tbl[1:], columns=tbl[0])
-                collected.append(frame)
+with pdfplumber.open("document.pdf") as pdf:
+    all_tables = []
+    for page in pdf.pages:
+        tables = page.extract_tables()
+        for table in tables:
+            if table:  # Check if table is not empty
+                df = pd.DataFrame(table[1:], columns=table[0])
+                all_tables.append(df)
 
-if collected:
-    merged = pd.concat(collected, ignore_index=True)
-    merged.to_excel("extracted_tables.xlsx", index=False)
+# Combine all tables
+if all_tables:
+    combined_df = pd.concat(all_tables, ignore_index=True)
+    combined_df.to_excel("extracted_tables.xlsx", index=False)
 ```
 
-### reportlab — Document Generation
+### reportlab - Create PDFs
 
-#### Producing a Simple PDF
-
+#### Basic PDF Creation
 ```python
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-doc = canvas.Canvas("hello.pdf", pagesize=letter)
-w, h = letter
+c = canvas.Canvas("hello.pdf", pagesize=letter)
+width, height = letter
 
-doc.drawString(100, h - 100, "Hello World!")
-doc.drawString(100, h - 120, "This is a PDF created with reportlab")
+# Add text
+c.drawString(100, height - 100, "Hello World!")
+c.drawString(100, height - 120, "This is a PDF created with reportlab")
 
-doc.line(100, h - 140, 400, h - 140)
+# Add a line
+c.line(100, height - 140, 400, height - 140)
 
-doc.save()
+# Save
+c.save()
 ```
 
-#### Multi-Page Document Construction
-
+#### Create PDF with Multiple Pages
 ```python
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 
-template = SimpleDocTemplate("report.pdf", pagesize=letter)
+doc = SimpleDocTemplate("report.pdf", pagesize=letter)
 styles = getSampleStyleSheet()
-elements = []
+story = []
 
-elements.append(Paragraph("Report Title", styles['Title']))
-elements.append(Spacer(1, 12))
-elements.append(Paragraph("This is the body of the report. " * 20, styles['Normal']))
-elements.append(PageBreak())
+# Add content
+title = Paragraph("Report Title", styles['Title'])
+story.append(title)
+story.append(Spacer(1, 12))
 
-elements.append(Paragraph("Page 2", styles['Heading1']))
-elements.append(Paragraph("Content for page 2", styles['Normal']))
+body = Paragraph("This is the body of the report. " * 20, styles['Normal'])
+story.append(body)
+story.append(PageBreak())
 
-template.build(elements)
+# Page 2
+story.append(Paragraph("Page 2", styles['Heading1']))
+story.append(Paragraph("Content for page 2", styles['Normal']))
+
+# Build PDF
+doc.build(story)
 ```
 
-#### Handling Sub/Superscripts
+## Command-Line Tools
 
-**IMPORTANT**: Never use Unicode subscript/superscript characters (₀₁₂₃₄₅₆₇₈₉, ⁰¹²³⁴⁵⁶⁷⁸⁹) in ReportLab PDFs. The built-in fonts do not include these glyphs, causing them to render as solid black boxes.
-
-Instead, use ReportLab's XML markup tags in Paragraph objects:
-```python
-from reportlab.platypus import Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
-
-styles = getSampleStyleSheet()
-
-# Subscripts: use <sub> tag
-chemical = Paragraph("H<sub>2</sub>O", styles['Normal'])
-
-# Superscripts: use <super> tag
-squared = Paragraph("x<super>2</super> + y<super>2</super>", styles['Normal'])
-```
-
-For canvas-drawn text (not Paragraph objects), manually adjust font the size and position rather than using Unicode subscripts/superscripts.
-
-## Shell Utilities
-
-### poppler-utils (pdftotext)
-
+### pdftotext (poppler-utils)
 ```bash
-# Plain text extraction
+# Extract text
 pdftotext input.pdf output.txt
 
-# Layout-preserving extraction
+# Extract text preserving layout
 pdftotext -layout input.pdf output.txt
 
-# Page range selection
+# Extract specific pages
 pdftotext -f 1 -l 5 input.pdf output.txt  # Pages 1-5
 ```
 
 ### qpdf
-
 ```bash
-# Combine documents
+# Merge PDFs
 qpdf --empty --pages file1.pdf file2.pdf -- merged.pdf
 
-# Extract page subsets
+# Split pages
 qpdf input.pdf --pages . 1-5 -- pages1-5.pdf
 qpdf input.pdf --pages . 6-10 -- pages6-10.pdf
 
-# Orientation adjustment
+# Rotate pages
 qpdf input.pdf output.pdf --rotate=+90:1  # Rotate page 1 by 90 degrees
 
-# Decrypt protected files
+# Remove password
 qpdf --password=mypassword --decrypt encrypted.pdf decrypted.pdf
 ```
 
 ### pdftk (if available)
-
 ```bash
-# Combine
+# Merge
 pdftk file1.pdf file2.pdf cat output merged.pdf
 
-# Burst into pages
+# Split
 pdftk input.pdf burst
 
-# Orientation change
+# Rotate
 pdftk input.pdf rotate 1east output rotated.pdf
 ```
 
-## Typical Workflows
+## Common Tasks
 
-### OCR for Scanned Documents
-
+### Extract Text from Scanned PDFs
 ```python
+# Requires: pip install pytesseract pdf2image
 import pytesseract
 from pdf2image import convert_from_path
 
-rendered = convert_from_path('scanned.pdf')
+# Convert PDF to images
+images = convert_from_path('scanned.pdf')
 
-content = ""
-for idx, frame in enumerate(rendered):
-    content += "Page {}:\n".format(idx + 1)
-    content += pytesseract.image_to_string(frame)
-    content += "\n\n"
+# OCR each page
+text = ""
+for i, image in enumerate(images):
+    text += f"Page {i+1}:\n"
+    text += pytesseract.image_to_string(image)
+    text += "\n\n"
 
-print(content)
+print(text)
 ```
 
-### Overlaying a Watermark
-
+### Add Watermark
 ```python
-import pypdf
+from pypdf import PdfReader, PdfWriter
 
-stamp = pypdf.PdfReader("watermark.pdf").pages[0]
+# Create watermark (or load existing)
+watermark = PdfReader("watermark.pdf").pages[0]
 
-source = pypdf.PdfReader("document.pdf")
-output = pypdf.PdfWriter()
+# Apply to all pages
+reader = PdfReader("document.pdf")
+writer = PdfWriter()
 
-for pg in source.pages:
-    pg.merge_page(stamp)
-    output.add_page(pg)
+for page in reader.pages:
+    page.merge_page(watermark)
+    writer.add_page(page)
 
-with open("watermarked.pdf", "wb") as dest:
-    output.write(dest)
+with open("watermarked.pdf", "wb") as output:
+    writer.write(output)
 ```
 
-### Extracting Embedded Graphics
-
+### Extract Images
 ```bash
 # Using pdfimages (poppler-utils)
 pdfimages -j input.pdf output_prefix
@@ -286,39 +258,39 @@ pdfimages -j input.pdf output_prefix
 # This extracts all images as output_prefix-000.jpg, output_prefix-001.jpg, etc.
 ```
 
-### Applying Password Protection
-
+### Password Protection
 ```python
-import pypdf
+from pypdf import PdfReader, PdfWriter
 
-source = pypdf.PdfReader("input.pdf")
-output = pypdf.PdfWriter()
+reader = PdfReader("input.pdf")
+writer = PdfWriter()
 
-for pg in source.pages:
-    output.add_page(pg)
+for page in reader.pages:
+    writer.add_page(page)
 
-output.encrypt("userpassword", "ownerpassword")
+# Add password
+writer.encrypt("userpassword", "ownerpassword")
 
-with open("encrypted.pdf", "wb") as dest:
-    output.write(dest)
+with open("encrypted.pdf", "wb") as output:
+    writer.write(output)
 ```
 
-## Capability Matrix
+## Quick Reference
 
-| Operation | Recommended Tool | Approach |
-|-----------|-----------------|----------|
-| Combine documents | pypdf | `writer.add_page(page)` |
-| Separate pages | pypdf | One file per page |
-| Read text content | pdfplumber | `page.extract_text()` |
-| Parse tables | pdfplumber | `page.extract_tables()` |
-| Generate new PDFs | reportlab | Canvas or Platypus |
-| CLI merging | qpdf | `qpdf --empty --pages ...` |
-| Scanned document OCR | pytesseract | Render to image first |
-| Form completion | pdf-lib or pypdf (see form-filling-guide.md) | See form-filling-guide.md |
+| Task | Best Tool | Command/Code |
+|------|-----------|--------------|
+| Merge PDFs | pypdf | `writer.add_page(page)` |
+| Split PDFs | pypdf | One page per file |
+| Extract text | pdfplumber | `page.extract_text()` |
+| Extract tables | pdfplumber | `page.extract_tables()` |
+| Create PDFs | reportlab | Canvas or Platypus |
+| Command line merge | qpdf | `qpdf --empty --pages ...` |
+| OCR scanned PDFs | pytesseract | Convert to image first |
+| Fill PDF forms | pdf-lib or pypdf (see forms.md) | See forms.md |
 
-## Additional Resources
+## Next Steps
 
-- Extended pypdfium2 documentation: `advanced-reference.md`
-- JavaScript library details (pdf-lib): `advanced-reference.md`
-- Form-filling procedures: `form-filling-guide.md`
-- Error resolution guidance: `advanced-reference.md`
+- For advanced pypdfium2 usage, see reference.md
+- For JavaScript libraries (pdf-lib), see reference.md
+- If you need to fill out a PDF form, follow the instructions in forms.md
+- For troubleshooting guides, see reference.md
