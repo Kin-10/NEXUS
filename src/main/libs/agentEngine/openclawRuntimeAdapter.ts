@@ -8402,19 +8402,23 @@ export class OpenClawRuntimeAdapter extends EventEmitter implements CoworkRuntim
     const toolName = toolNameRaw || 'Tool';
     if (isComputerUseToolName(toolNameRaw)) {
       if (phase === 'result') {
+        const isError = resolveToolEventIsError(data);
         const resultText = (() => {
           const result = isRecord(data.result) ? data.result : null;
           if (!result) return '';
           if (typeof result.text === 'string') return result.text;
-          const content = Array.isArray(result.content) ? result.content : [];
-          return content
-            .map((part) => (isRecord(part) && typeof part.text === 'string' ? part.text : ''))
-            .join('\n');
+          if (Array.isArray(result.content)) {
+            return result.content
+              .map((part) => (isRecord(part) && typeof part.text === 'string' ? part.text : ''))
+              .join('\n');
+          }
+          return '';
         })();
-        if (resultText.includes('physical Escape key')) {
+        if (isError && resultText.includes('physical Escape key')) {
           reportComputerUseActivity(ComputerUseActivityState.Stopped);
+        } else {
+          reportComputerUseActivity(ComputerUseActivityState.Idle);
         }
-        // Tool completion must NOT dismiss the overlay — it stays until Esc.
       } else {
         reportComputerUseActivity(ComputerUseActivityState.Active);
       }

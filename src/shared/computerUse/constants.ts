@@ -50,9 +50,8 @@ export type ComputerUseBridgePath =
 
 export const ComputerUseActivityState = {
   Active: 'active',
-  /** @deprecated Tool-end idle no longer hides the overlay; use Stopped for Esc. */
   Idle: 'idle',
-  /** User pressed Esc (or equivalent cancel). Hides bottom banner + ribbons. */
+  /** User pressed Esc (or equivalent). Overlay must dismiss. */
   Stopped: 'stopped',
 } as const;
 export type ComputerUseActivityState =

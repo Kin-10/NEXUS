@@ -18,10 +18,6 @@ vi.mock('electron', () => ({
     },
   },
   BrowserWindow: vi.fn(),
-  globalShortcut: {
-    register: vi.fn(() => true),
-    unregister: vi.fn(),
-  },
   screen: {
     getAllDisplays: vi.fn(() => []),
     on: vi.fn(),
@@ -147,7 +143,7 @@ describe('resolveComputerUseRuntimePaths', () => {
     expect(config.strings?.usingComputer).toBe('百应正在接管你的电脑');
     expect(config.strings?.escToCancel).toBe('按Esc键退出');
     expect(config).toMatchObject({
-      accentColor: '#5B9DFF',
+      accentColor: '#FFFFFF',
       locale: 'zh-CN',
     });
   });
@@ -159,10 +155,10 @@ describe('resolveComputerUseRuntimePaths', () => {
     expect(script).toContain("requireEnv('baiying_COMPUTER_USE_HOME')");
     expect(script).toContain("requireEnv('baiying_COMPUTER_USE_CLIENT_MODULE')");
     expect(script).toContain("requireEnv('baiying_COMPUTER_USE_ACTIVITY_URL')");
-    expect(script).toContain('async function notifyActivity(state)');
     expect(script).toContain("await notifyActivity('active')");
-    expect(script).toContain("await notifyActivity('stopped')");
-    expect(script).not.toContain("await notifyActivity('idle')");
+    expect(script).toContain("await notifyActivity(stoppedByEsc ? 'stopped' : 'idle')");
+    expect(script).toContain('async function notifyActivity(state)');
+    expect(script).toContain('let stoppedByEsc = false');
     expect(script).not.toContain("requireEnv('CODEX_HOME')");
     expect(script).not.toContain('sky_js');
     expect(script).not.toContain('@oai');
@@ -192,7 +188,7 @@ describe('deriveComputerUseActivityUrl', () => {
 });
 
 describe('ComputerUseActivityController', () => {
-  test('stays visible through tool idle and only hides on stopped (Esc)', () => {
+  test('shows on active and stays through idle until stopped (Esc)', () => {
     const visibleChanges: boolean[] = [];
     const controller = new ComputerUseActivityController({
       onVisibleChange: (visible) => visibleChanges.push(visible),
@@ -200,12 +196,12 @@ describe('ComputerUseActivityController', () => {
 
     controller.setActivity(ComputerUseActivityState.Active);
     expect(controller.isVisible).toBe(true);
+    expect(visibleChanges).toEqual([true]);
 
     controller.setActivity(ComputerUseActivityState.Idle);
+    controller.setActivity(ComputerUseActivityState.Idle);
     expect(controller.isVisible).toBe(true);
-
-    controller.setActivity(ComputerUseActivityState.Active);
-    expect(controller.isVisible).toBe(true);
+    expect(visibleChanges).toEqual([true]);
 
     controller.setActivity(ComputerUseActivityState.Stopped);
     expect(controller.isVisible).toBe(false);
@@ -214,13 +210,20 @@ describe('ComputerUseActivityController', () => {
     controller.destroy();
   });
 
-  test('destroy hides the overlay', () => {
+  test('keeps glow visible across overlapping tool heartbeats until Esc', () => {
     const controller = new ComputerUseActivityController({
       onVisibleChange: () => {},
     });
+
     controller.setActivity(ComputerUseActivityState.Active);
+    controller.setActivity(ComputerUseActivityState.Idle);
+    controller.setActivity(ComputerUseActivityState.Active);
+    controller.setActivity(ComputerUseActivityState.Idle);
     expect(controller.isVisible).toBe(true);
-    controller.destroy();
+
+    controller.setActivity(ComputerUseActivityState.Stopped);
     expect(controller.isVisible).toBe(false);
+
+    controller.destroy();
   });
 });

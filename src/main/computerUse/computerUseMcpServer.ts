@@ -448,6 +448,7 @@ function stateToContent(state) {
 function registerTool(name, description, inputSchema, handler) {
   server.registerTool(name, { description, inputSchema }, async (args) => {
     await notifyActivity('active');
+    let stoppedByEsc = false;
     try {
       assertHelperTurnActive();
       return await handler(args || {});
@@ -457,10 +458,12 @@ function registerTool(name, description, inputSchema, handler) {
         isError: true,
       };
       if (isComputerUseStoppedError(error)) {
-        await notifyActivity('stopped');
+        stoppedByEsc = true;
         renewHelperTurn();
       }
       return result;
+    } finally {
+      await notifyActivity(stoppedByEsc ? 'stopped' : 'idle');
     }
   });
 }

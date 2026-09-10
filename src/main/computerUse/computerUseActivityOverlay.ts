@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, screen } from 'electron';
+import { BrowserWindow, screen } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,18 +24,13 @@ export const ComputerUseActivityOverlayTiming = {
   EscPollMs: 200,
 } as const;
 
-const RIBBON_PX = 10;
-const BANNER_HEIGHT = 44;
-
 export type ComputerUseActivityControllerOptions = {
   onVisibleChange: (visible: boolean) => void;
 };
 
 /**
- * Esc-latched activity controller:
- * - active → show and keep showing
- * - idle → ignored (tools finishing must not dismiss UI)
- * - stopped → hide immediately (Esc / cancel)
+ * Overlay stays up from first Active until explicit Stopped (Esc).
+ * Idle heartbeats from tool end are ignored so the UI remains persistent.
  */
 export class ComputerUseActivityController {
   private readonly onVisibleChange: (visible: boolean) => void;
@@ -58,7 +53,7 @@ export class ComputerUseActivityController {
       this.setVisible(false);
       return;
     }
-    // Idle from tool completion is intentionally ignored.
+    // Idle: keep showing until Esc / Stopped.
   }
 
   destroy(): void {
@@ -74,24 +69,8 @@ export class ComputerUseActivityController {
 
 const STATUS_BANNER_TEXT = ComputerUseHelperConfig.StatusBanner;
 
-/** Opaque ribbon strip — avoids Windows DWM white-edge artifacts from fullscreen transparent windows. */
-function buildRibbonHtml(axis: 'x' | 'y'): string {
-  const gradient = axis === 'x'
-    ? `linear-gradient(90deg,#ff4fd8 0%,#5b9dff 25%,#2dffe0 50%,#ffd24a 75%,#ff4fd8 100%)`
-    : `linear-gradient(180deg,#ff4fd8 0%,#5b9dff 25%,#2dffe0 50%,#ffd24a 75%,#ff4fd8 100%)`;
-  const size = axis === 'x' ? '220% 100%' : '100% 220%';
-  const flow = axis === 'x' ? 'flow-x' : 'flow-y';
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;}
-.core{position:absolute;inset:0;background:${gradient};background-size:${size};animation:${flow} 2.8s linear infinite,pulse 2.2s ease-in-out infinite;}
-@keyframes flow-x{0%{background-position:0% 50%}100%{background-position:220% 50%}}
-@keyframes flow-y{0%{background-position:50% 0%}100%{background-position:50% 220%}}
-@keyframes pulse{0%,100%{opacity:.9}50%{opacity:1}}
-@media (prefers-reduced-motion:reduce){.core{animation:none}}
-</style></head><body><div class="core"></div></body></html>`;
-}
-
-const BANNER_HTML = `<!DOCTYPE html>
+// Soft undulating edge ribbons (Apple Intelligence–style) + bottom white status.
+const OVERLAY_HTML = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -101,23 +80,35 @@ const BANNER_HTML = `<!DOCTYPE html>
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #ffffff;
+      background: transparent;
     }
-    .status {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
+    #glow {
+      position: fixed;
+      inset: 0;
       width: 100%;
       height: 100%;
-      box-sizing: border-box;
-      padding: 0 20px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .status {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      background: #ffffff;
       color: #111111;
       font: 600 14px/1.35 "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;
       letter-spacing: 0.01em;
       white-space: nowrap;
-      border-top: 1px solid rgba(15, 23, 42, 0.08);
-      box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.12);
+      box-shadow:
+        0 10px 30px rgba(15, 23, 42, 0.18),
+        0 0 0 1px rgba(15, 23, 42, 0.06);
     }
     .status-dot {
       width: 8px;
@@ -130,18 +121,203 @@ const BANNER_HTML = `<!DOCTYPE html>
   </style>
 </head>
 <body>
+  <canvas id="glow" aria-hidden="true"></canvas>
   <div class="status" role="status">
     <span class="status-dot" aria-hidden="true"></span>
     <span>${STATUS_BANNER_TEXT}</span>
   </div>
+  <script>
+(function () {
+  var canvas = document.getElementById('glow');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d', { alpha: true });
+  if (!ctx) return;
+
+  var COLORS = [
+    [255, 79, 216],
+    [168, 85, 247],
+    [91, 157, 255],
+    [45, 255, 224],
+    [255, 210, 74],
+    [255, 120, 90],
+    [255, 79, 216]
+  ];
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var dpr = 1;
+  var w = 0;
+  var h = 0;
+  var raf = 0;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = Math.max(1, Math.floor(w * dpr));
+    canvas.height = Math.max(1, Math.floor(h * dpr));
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function colorAt(t, alpha) {
+    var n = COLORS.length - 1;
+    var x = ((t % 1) + 1) % 1;
+    var i = Math.floor(x * n);
+    var f = x * n - i;
+    var c0 = COLORS[i];
+    var c1 = COLORS[Math.min(i + 1, n)];
+    return 'rgba(' +
+      Math.round(lerp(c0[0], c1[0], f)) + ',' +
+      Math.round(lerp(c0[1], c1[1], f)) + ',' +
+      Math.round(lerp(c0[2], c1[2], f)) + ',' +
+      alpha + ')';
+  }
+
+  function wave(t, phase, freq, amp) {
+    return Math.sin(t * freq + phase) * amp
+      + Math.sin(t * freq * 1.7 + phase * 1.3) * amp * 0.45
+      + Math.sin(t * freq * 0.55 + phase * 0.7) * amp * 0.7;
+  }
+
+  function sampleEdge(edge, u, time) {
+    var breath = 0.78 + 0.22 * Math.sin(time * 1.05 + edge * 0.85);
+    // Thickness swells along the edge like Apple Intelligence ribbons.
+    var thickness = (14
+      + wave(u * Math.PI * 2, time * 1.85 + edge, 1.05, 11)
+      + wave(u * Math.PI * 2, time * 2.6 + edge * 1.7, 2.1, 5)
+      + 8) * breath;
+    var travel = wave(u * Math.PI * 2, time * 1.35 + edge * 1.2, 0.9, 7)
+      + wave(u * Math.PI * 2, time * 2.2 + 1.6, 1.75, 3.2);
+    var inward = Math.max(4, thickness * 0.42 + travel * 0.35);
+    var x;
+    var y;
+    var nx = 0;
+    var ny = 0;
+    if (edge === 0) {
+      x = u * w;
+      y = inward;
+      nx = 0;
+      ny = 1;
+    } else if (edge === 1) {
+      x = w - inward;
+      y = u * h;
+      nx = -1;
+      ny = 0;
+    } else if (edge === 2) {
+      x = u * w;
+      y = h - inward;
+      nx = 0;
+      ny = -1;
+    } else {
+      x = inward;
+      y = u * h;
+      nx = 1;
+      ny = 0;
+    }
+    return { x: x, y: y, nx: nx, ny: ny, thickness: Math.max(8, thickness) };
+  }
+
+  function fillBand(points, scale, alpha, colorShift) {
+    if (points.length < 2) return;
+    var outer = [];
+    var inner = [];
+    var i;
+    for (i = 0; i < points.length; i++) {
+      var p = points[i];
+      var half = p.thickness * scale * 0.5;
+      outer.push({ x: p.x - p.nx * half * 0.15, y: p.y - p.ny * half * 0.15 });
+      inner.push({ x: p.x + p.nx * half, y: p.y + p.ny * half });
+    }
+    ctx.beginPath();
+    ctx.moveTo(outer[0].x, outer[0].y);
+    for (i = 1; i < outer.length; i++) ctx.lineTo(outer[i].x, outer[i].y);
+    for (i = inner.length - 1; i >= 0; i--) ctx.lineTo(inner[i].x, inner[i].y);
+    ctx.closePath();
+
+    var mid = points[Math.floor(points.length / 2)];
+    var edgeIsHorizontal = Math.abs(points[0].ny) > 0.5;
+    var grad = edgeIsHorizontal
+      ? ctx.createLinearGradient(0, mid.y, w, mid.y)
+      : ctx.createLinearGradient(mid.x, 0, mid.x, h);
+    grad.addColorStop(0, colorAt(colorShift, alpha));
+    grad.addColorStop(0.22, colorAt(colorShift + 0.16, alpha));
+    grad.addColorStop(0.48, colorAt(colorShift + 0.34, alpha));
+    grad.addColorStop(0.72, colorAt(colorShift + 0.52, alpha));
+    grad.addColorStop(1, colorAt(colorShift + 0.7, alpha));
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  function drawRibbon(edge, time, colorShift) {
+    var steps = edge % 2 === 0
+      ? Math.max(64, Math.floor(w / 8))
+      : Math.max(64, Math.floor(h / 8));
+    var points = [];
+    var i;
+    for (i = 0; i <= steps; i++) {
+      points.push(sampleEdge(edge, i / steps, time));
+    }
+
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.shadowColor = colorAt(colorShift + 0.25, 0.55);
+    ctx.shadowBlur = 28;
+    fillBand(points, 1.85, 0.16, colorShift);
+    ctx.shadowBlur = 16;
+    fillBand(points, 1.25, 0.32, colorShift + 0.08);
+    ctx.shadowBlur = 0;
+    fillBand(points, 0.78, 0.55, colorShift + 0.14);
+
+    // Bright core line that rides the undulating crest
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (i = 0; i < points.length - 1; i++) {
+      var a = points[i];
+      var b = points[i + 1];
+      var u = i / (points.length - 1);
+      ctx.beginPath();
+      ctx.moveTo(a.x + a.nx * a.thickness * 0.12, a.y + a.ny * a.thickness * 0.12);
+      ctx.lineTo(b.x + b.nx * b.thickness * 0.12, b.y + b.ny * b.thickness * 0.12);
+      ctx.strokeStyle = colorAt(colorShift + u * 0.9, 0.95);
+      ctx.lineWidth = lerp(a.thickness, b.thickness, 0.5) * 0.28;
+      ctx.stroke();
+    }
+  }
+
+  function frame(now) {
+    var time = reduced ? 0 : now / 1000;
+    ctx.clearRect(0, 0, w, h);
+    var shift = reduced ? 0.15 : (time * 0.08) % 1;
+    for (var edge = 0; edge < 4; edge++) {
+      drawRibbon(edge, time, shift + edge * 0.12);
+    }
+    if (!reduced) {
+      raf = requestAnimationFrame(frame);
+    }
+  }
+
+  resize();
+  window.addEventListener('resize', function () {
+    resize();
+    if (reduced) frame(0);
+  });
+  if (reduced) {
+    frame(0);
+  } else {
+    raf = requestAnimationFrame(frame);
+  }
+  window.addEventListener('pagehide', function () {
+    if (raf) cancelAnimationFrame(raf);
+  });
+})();
+  </script>
 </body>
 </html>`;
 
-type OverlayPart = 'top' | 'right' | 'bottom' | 'left' | 'banner';
-
 type OverlayWindowEntry = {
   displayId: number;
-  part: OverlayPart;
   window: BrowserWindow;
 };
 
@@ -150,6 +326,8 @@ let overlayEntries: OverlayWindowEntry[] = [];
 let displayListenersAttached = false;
 let desiredVisible = false;
 let visibilityEpoch = 0;
+let escWatcherTimer: ReturnType<typeof setInterval> | null = null;
+let overlaySessionStartedAt = 0;
 
 function isSupportedPlatform(): boolean {
   return process.platform === 'win32';
@@ -164,62 +342,80 @@ function destroyOverlayWindows(): void {
   overlayEntries = [];
 }
 
-function boundsForPart(
-  display: DisplayLike,
-  part: OverlayPart,
-): { x: number; y: number; width: number; height: number } {
+function listFilesRecursive(rootDir: string): string[] {
+  if (!fs.existsSync(rootDir)) return [];
+  const out: string[] = [];
+  const stack = [rootDir];
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(fullPath);
+      } else if (entry.isFile()) {
+        out.push(fullPath);
+      }
+    }
+  }
+  return out;
+}
+
+function hasFreshEscInterruptMarker(sinceMs: number): boolean {
+  const interruptsRoot = path.join(
+    getComputerUseHelperStateHome(),
+    'cache',
+    'computer-use',
+    'interrupts',
+  );
+  for (const filePath of listFilesRecursive(interruptsRoot)) {
+    try {
+      const stat = fs.statSync(filePath);
+      if (stat.mtimeMs >= sinceMs - 1_000) {
+        return true;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return false;
+}
+
+function stopEscInterruptWatcher(): void {
+  if (escWatcherTimer) {
+    clearInterval(escWatcherTimer);
+    escWatcherTimer = null;
+  }
+}
+
+function startEscInterruptWatcher(): void {
+  if (!isSupportedPlatform()) return;
+  stopEscInterruptWatcher();
+  overlaySessionStartedAt = Date.now();
+  escWatcherTimer = setInterval(() => {
+    if (!desiredVisible) return;
+    if (hasFreshEscInterruptMarker(overlaySessionStartedAt)) {
+      console.log('[ComputerUseOverlay] Esc interrupt marker detected, dismissing overlay');
+      reportComputerUseActivity(ComputerUseActivityState.Stopped);
+    }
+  }, ComputerUseActivityOverlayTiming.EscPollMs);
+}
+
+async function createOverlayWindowForDisplay(display: DisplayLike): Promise<OverlayWindowEntry | null> {
   const { x, y, width, height } = display.bounds;
-  switch (part) {
-    case 'top':
-      return { x, y, width, height: RIBBON_PX };
-    case 'bottom':
-      return { x, y: y + height - RIBBON_PX, width, height: RIBBON_PX };
-    case 'left':
-      return { x, y, width: RIBBON_PX, height };
-    case 'right':
-      return { x: x + width - RIBBON_PX, y, width: RIBBON_PX, height };
-    case 'banner':
-      return {
-        x,
-        y: y + height - RIBBON_PX - BANNER_HEIGHT,
-        width,
-        height: BANNER_HEIGHT,
-      };
-    default: {
-      const _exhaustive: never = part;
-      return _exhaustive;
-    }
-  }
-}
-
-function htmlForPart(part: OverlayPart): string {
-  switch (part) {
-    case 'top':
-    case 'bottom':
-      return buildRibbonHtml('x');
-    case 'left':
-    case 'right':
-      return buildRibbonHtml('y');
-    case 'banner':
-      return BANNER_HTML;
-    default: {
-      const _exhaustive: never = part;
-      return _exhaustive;
-    }
-  }
-}
-
-async function createOverlayPartWindow(
-  display: DisplayLike,
-  part: OverlayPart,
-): Promise<OverlayWindowEntry | null> {
-  const bounds = boundsForPart(display, part);
-  // Opaque strip windows: no transparent:true — that is what produced white perimeter bars on Windows.
   const win = new BrowserWindow({
-    ...bounds,
+    x,
+    y,
+    width,
+    height,
     frame: false,
-    transparent: false,
-    backgroundColor: part === 'banner' ? '#ffffff' : '#111111',
+    transparent: true,
+    backgroundColor: '#00000000',
     hasShadow: false,
     skipTaskbar: true,
     focusable: false,
@@ -235,7 +431,7 @@ async function createOverlayPartWindow(
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      partition: `computer-use-glow-v4-${display.id}-${part}`,
+      partition: `computer-use-glow-v6-${display.id}`,
     },
   });
 
@@ -253,9 +449,9 @@ async function createOverlayPartWindow(
   win.setIgnoreMouseEvents(true, { forward: true });
 
   try {
-    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlForPart(part))}`);
+    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(OVERLAY_HTML)}`);
   } catch (error) {
-    console.warn(`[ComputerUseOverlay] failed to load ${part} window:`, error);
+    console.warn('[ComputerUseOverlay] failed to load glow window:', error);
     if (!win.isDestroyed()) {
       win.destroy();
     }
@@ -266,49 +462,35 @@ async function createOverlayPartWindow(
     overlayEntries = overlayEntries.filter(entry => entry.window !== win);
   });
 
-  return { displayId: display.id, part, window: win };
+  return { displayId: display.id, window: win };
 }
-
-const OVERLAY_PARTS: OverlayPart[] = ['top', 'right', 'bottom', 'left', 'banner'];
 
 async function ensureOverlayWindows(): Promise<void> {
   if (!isSupportedPlatform()) return;
 
   const displays = screen.getAllDisplays();
-  const wantedKeys = new Set(
-    displays.flatMap(display => OVERLAY_PARTS.map(part => `${display.id}:${part}`)),
-  );
-  const stale = overlayEntries.filter(
-    entry => !wantedKeys.has(`${entry.displayId}:${entry.part}`) || entry.window.isDestroyed(),
-  );
+  const wantedIds = new Set(displays.map(display => display.id));
+  const stale = overlayEntries.filter(entry => !wantedIds.has(entry.displayId) || entry.window.isDestroyed());
   for (const entry of stale) {
     if (!entry.window.isDestroyed()) {
       entry.window.destroy();
     }
   }
-  overlayEntries = overlayEntries.filter(
-    entry => wantedKeys.has(`${entry.displayId}:${entry.part}`) && !entry.window.isDestroyed(),
-  );
+  overlayEntries = overlayEntries.filter(entry => wantedIds.has(entry.displayId) && !entry.window.isDestroyed());
 
-  const existingKeys = new Set(
-    overlayEntries.map(entry => `${entry.displayId}:${entry.part}`),
-  );
+  const existingIds = new Set(overlayEntries.map(entry => entry.displayId));
   for (const display of displays) {
-    for (const part of OVERLAY_PARTS) {
-      const key = `${display.id}:${part}`;
-      if (existingKeys.has(key)) {
-        const entry = overlayEntries.find(
-          item => item.displayId === display.id && item.part === part,
-        );
-        if (entry && !entry.window.isDestroyed()) {
-          entry.window.setBounds(boundsForPart(display, part));
-        }
-        continue;
+    if (existingIds.has(display.id)) {
+      const entry = overlayEntries.find(item => item.displayId === display.id);
+      if (entry && !entry.window.isDestroyed()) {
+        const { x, y, width, height } = display.bounds;
+        entry.window.setBounds({ x, y, width, height });
       }
-      const created = await createOverlayPartWindow(display, part);
-      if (created) {
-        overlayEntries.push(created);
-      }
+      continue;
+    }
+    const created = await createOverlayWindowForDisplay(display);
+    if (created) {
+      overlayEntries.push(created);
     }
   }
 }
@@ -321,9 +503,9 @@ function setOverlayWindowsVisible(visible: boolean): void {
   if (visible) {
     startHidingNativeComputerUseStatusBanner();
     hideNativeComputerUseStatusBanner();
-    startEscCancelWatchers();
+    startEscInterruptWatcher();
   } else {
-    stopEscCancelWatchers();
+    stopEscInterruptWatcher();
     stopHidingNativeComputerUseStatusBanner();
   }
   for (const entry of overlayEntries) {
@@ -337,6 +519,9 @@ function setOverlayWindowsVisible(visible: boolean): void {
       if (!entry.window.isVisible()) {
         entry.window.showInactive();
       }
+      const bounds = entry.window.getBounds();
+      entry.window.setBounds({ ...bounds, width: bounds.width + 1 });
+      entry.window.setBounds(bounds);
       try {
         entry.window.setAlwaysOnTop(true, 'screen-saver', 1);
       } catch {
@@ -361,82 +546,6 @@ function setOverlayWindowsVisible(visible: boolean): void {
         }
       }, ComputerUseActivityOverlayTiming.FadeMs);
     }
-  }
-}
-
-function hasHelperInterruptMarker(): boolean {
-  try {
-    const interruptsRoot = path.join(
-      getComputerUseHelperStateHome(),
-      'cache',
-      'computer-use',
-      'interrupts',
-    );
-    if (!fs.existsSync(interruptsRoot)) return false;
-    const sessions = fs.readdirSync(interruptsRoot);
-    for (const session of sessions) {
-      const sessionDir = path.join(interruptsRoot, session);
-      let stat: fs.Stats;
-      try {
-        stat = fs.statSync(sessionDir);
-      } catch {
-        continue;
-      }
-      if (stat.isFile()) return true;
-      if (!stat.isDirectory()) continue;
-      if (fs.readdirSync(sessionDir).length > 0) return true;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-function dismissComputerUseOverlayFromEsc(source: string): void {
-  console.log(`[ComputerUseOverlay] dismissed by Esc (${source})`);
-  reportComputerUseActivity(ComputerUseActivityState.Stopped);
-}
-
-let escPollTimer: ReturnType<typeof setInterval> | null = null;
-let escShortcutRegistered = false;
-
-function startEscCancelWatchers(): void {
-  if (!escShortcutRegistered) {
-    try {
-      const ok = globalShortcut.register('Escape', () => {
-        dismissComputerUseOverlayFromEsc('global-shortcut');
-      });
-      escShortcutRegistered = ok;
-      if (!ok) {
-        console.warn('[ComputerUseOverlay] failed to register Escape shortcut');
-      }
-    } catch (error) {
-      console.warn('[ComputerUseOverlay] Escape shortcut registration error:', error);
-    }
-  }
-
-  if (escPollTimer) return;
-  escPollTimer = setInterval(() => {
-    if (!desiredVisible) return;
-    hideNativeComputerUseStatusBanner();
-    if (hasHelperInterruptMarker()) {
-      dismissComputerUseOverlayFromEsc('helper-interrupt');
-    }
-  }, ComputerUseActivityOverlayTiming.EscPollMs);
-}
-
-function stopEscCancelWatchers(): void {
-  if (escPollTimer) {
-    clearInterval(escPollTimer);
-    escPollTimer = null;
-  }
-  if (escShortcutRegistered) {
-    try {
-      globalShortcut.unregister('Escape');
-    } catch {
-      // ignore
-    }
-    escShortcutRegistered = false;
   }
 }
 
@@ -491,7 +600,7 @@ export function reportComputerUseActivity(state: ComputerUseActivityStateType): 
 
 export function destroyComputerUseActivityOverlay(): void {
   visibilityEpoch += 1;
-  stopEscCancelWatchers();
+  stopEscInterruptWatcher();
   disposeNativeComputerUseStatusBannerHider();
   controller?.destroy();
   controller = null;

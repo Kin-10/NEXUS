@@ -29,12 +29,7 @@ export type ComputerUseRuntimeStatus =
   typeof ComputerUseRuntimeStatus[keyof typeof ComputerUseRuntimeStatus];
 
 export const ComputerUseHelperConfig = {
-  /**
-   * Native helper paints its top banner with this accent. Keep it non-white so any
-   * brief flash before we hide the HWND does not look like screen-edge white bars.
-   * BaiYing owns the visible bottom white bar + ribbons.
-   */
-  AccentColor: '#5B9DFF',
+  AccentColor: '#FFFFFF',
   Direction: 'ltr',
   Locale: 'zh-CN',
   EscToCancel: '按Esc键退出',
