@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 
 const config = require('../electron-builder.json');
@@ -141,5 +142,30 @@ if (isWebInstallerEnabled()) {
 
 console.log(`[Keyfrom] configured artifact keyfrom as ${keyfrom}`);
 console.log(`[ChannelBuild] silentOnDoubleClick=${silentOnDoubleClick}`);
+
+// Prefer a locally cached Electron zip when present (vendor/electron-dist), so
+// packaging does not depend on GitHub. Otherwise electronDownload.mirror
+// (npmmirror by default) is used by app-builder.
+try {
+  const electronVersion = require('electron/package.json').version;
+  const localElectronDist = path.join(__dirname, '..', 'vendor', 'electron-dist');
+  const platform = process.platform === 'win32' ? 'win32' : process.platform === 'darwin' ? 'darwin' : 'linux';
+  const arch = process.arch === 'ia32' ? 'ia32' : process.arch === 'arm64' ? 'arm64' : 'x64';
+  const localZip = path.join(
+    localElectronDist,
+    `electron-v${electronVersion}-${platform}-${arch}.zip`,
+  );
+  if (fs.existsSync(localZip)) {
+    config.electronDist = localElectronDist;
+    console.log(`[Electron] using local cache ${localZip}`);
+  } else {
+    const mirror = config.electronDownload && config.electronDownload.mirror;
+    if (mirror) {
+      console.log(`[Electron] download mirror ${mirror}`);
+    }
+  }
+} catch (error) {
+  console.warn(`[Electron] failed to resolve local electronDist: ${error instanceof Error ? error.message : String(error)}`);
+}
 
 module.exports = config;

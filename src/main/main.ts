@@ -364,12 +364,10 @@ import {
 import { DesktopNotificationManager } from './libs/desktopNotificationManager';
 import {
   getHtmlSharePublicBaseUrl,
-  getKitStoreUrl,
   getLoginOvermindUrl,
   getPortalBaseUrl,
   getPortalTasksUrl,
   getServerApiBaseUrl,
-  getSkillStoreUrl,
   refreshEndpointsTestMode,
 } from './libs/endpoints';
 import {
@@ -1948,7 +1946,12 @@ const savePngWithDialog = async (
 
 const configureUserDataPath = (): void => {
   const appDataPath = app.getPath('appData');
-  const preferredUserDataPath = path.join(appDataPath, APP_NAME);
+  // Unpackaged electron:dev must not share userData (and thus the single-instance
+  // lock) with an installed BaiYing build — otherwise `npm run electron:dev`
+  // silently exits and marketplace traffic keeps hitting the packaged process
+  // without BAIYING_* local overrides.
+  const userDataFolder = app.isPackaged ? APP_NAME : `${APP_NAME}-dev`;
+  const preferredUserDataPath = path.join(appDataPath, userDataFolder);
   const currentUserDataPath = app.getPath('userData');
 
   if (currentUserDataPath !== preferredUserDataPath) {
@@ -4629,10 +4632,15 @@ const scheduleReload = (reason: string, webContents?: WebContents) => {
   target.reloadIgnoringCache();
 };
 
-// 确保应用程序只有一个实例
+// 确保应用程序只有一个实例（打包版与 electron:dev 使用不同 userData，互不抢锁）
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
+  console.warn(
+    '[Main] another BaiYing instance already holds the single-instance lock; exiting. '
+    + 'If you meant to run electron:dev, quit the installed app first '
+    + `(or use the unpackaged ${APP_NAME}-dev userData path).`,
+  );
   app.quit();
 } else {
   // Register custom protocol for OAuth callback
@@ -8417,14 +8425,12 @@ if (!gotTheLock) {
   // Skills IPC handlers
   registerSkillHandlers({
     getSkillManager,
-    getSkillStoreUrl,
     getOpenClawRuntimeAdapter: () => openClawRuntimeAdapter,
   });
 
   // Kits IPC handlers
   registerKitHandlers({
     getStore,
-    getKitStoreUrl,
     getSkillManager,
     syncOpenClawConfig,
   });

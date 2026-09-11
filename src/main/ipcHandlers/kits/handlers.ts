@@ -67,7 +67,6 @@ function downloadBuffer(url: string): Promise<Buffer> {
 
 export interface KitHandlerDeps {
   getStore: () => SqliteStore;
-  getKitStoreUrl: () => string;
   getSkillManager: () => SkillManager;
   syncOpenClawConfig: (options: {
     reason: string;
@@ -204,7 +203,7 @@ function notifySkillsChanged(): void {
 }
 
 export function registerKitHandlers(deps: KitHandlerDeps): void {
-  const { getStore, getKitStoreUrl, getSkillManager, syncOpenClawConfig } = deps;
+  const { getStore, getSkillManager, syncOpenClawConfig } = deps;
   const skinPackKitLifecycle = createSkinPackKitLifecycle({
     getStore,
     getSkillManager,
@@ -217,11 +216,10 @@ export function registerKitHandlers(deps: KitHandlerDeps): void {
 
   // Fetch kit store catalog from overmind
   ipcMain.handle('kits:fetchStore', async () => {
-    const url = getKitStoreUrl();
-    console.log(`[KitStore] fetching from: ${url}`);
     try {
-      const { fetchTextUrl } = await import('../../libs/fetchTextUrl');
-      const data = await fetchTextUrl(url);
+      const { fetchOvermindCatalogText } = await import('../../libs/fetchOvermindCatalog');
+      const { text: data, url } = await fetchOvermindCatalogText('kit-store');
+      console.log(`[KitStore] fetching from: ${url}`);
       return {
         success: true,
         data: skinPackKitLifecycle.appendToStoreResponse(data, getAdditionalBuiltInKits()),

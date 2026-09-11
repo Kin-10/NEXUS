@@ -14,6 +14,7 @@ import {
   Plug,
   Sliders,
 } from '../icons/iconParkCompat';
+import type { IconProps } from '../icons/iconParkCompat';
 import { iconParkOutlineProps } from '../icons/iconStyle';
 
 type SettingsNavIconProps = {
@@ -24,7 +25,7 @@ type SettingsNavIconProps = {
 const NAV_ICON_CLASS = 'h-4 w-4';
 
 const renderNavIcon = (
-  Icon: React.ComponentType<{ className?: string; size?: string | number; strokeWidth?: number; 'aria-hidden'?: boolean }>,
+  Icon: React.ComponentType<IconProps>,
   className?: string,
 ) => (
   <Icon

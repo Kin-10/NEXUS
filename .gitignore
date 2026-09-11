@@ -17,6 +17,7 @@ vendor/openclaw-runtime/
 vendor/openclaw-plugins/
 vendor/dsh-runtime/
 vendor/dsh-dist/
+vendor/electron-dist/
 
 # Tar archives generated during Windows packaging
 build-tar/
@@ -33,6 +34,7 @@ SKILLs/**/.connection
 SKILLs/**/.server.log
 SKILLs/**/.server.pid
 SKILLs/**/.venv/
+SKILLs/**/.network_cache
 
 package-lock.json
 

@@ -596,18 +596,18 @@ describe('Windows installer hardening contracts', () => {
     // path-prefix based, must never match the invoking process (the stock
     // fallback can run the old uninstaller in place from $INSTDIR), and is
     // skipped for drive-root paths where the prefix would match everything.
-    const start = installerInclude.indexOf('!macro stopbaiyingAIProcesses');
+    const start = installerInclude.indexOf('!macro stopBaiYingProcesses');
     const end = installerInclude.indexOf('!macroend', start);
     const stopMacro = installerInclude.slice(start, end);
 
     expect(stopMacro).toContain(
-      'SetEnvironmentVariable(t "baiyingAI_STOP_ROOT", t "$INSTDIR")',
+      'SetEnvironmentVariable(t "BAIYING_STOP_ROOT", t "$INSTDIR")',
     );
     expect(stopMacro).toContain(
-      'SetEnvironmentVariable(t "baiyingAI_STOP_SELF_PID", t "$baiyingCurrentProcessPid")',
+      'SetEnvironmentVariable(t "BAIYING_STOP_SELF_PID", t "$baiyingCurrentProcessPid")',
     );
-    expect(stopMacro).toContain('SetEnvironmentVariable(t "baiyingAI_STOP_ROOT", t "")');
-    expect(stopMacro).toContain('SetEnvironmentVariable(t "baiyingAI_STOP_SELF_PID", t "")');
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "BAIYING_STOP_ROOT", t "")');
+    expect(stopMacro).toContain('SetEnvironmentVariable(t "BAIYING_STOP_SELF_PID", t "")');
 
     // Both the kill loop and the survivor snapshot must use the same sweep so
     // diagnostics describe the same process set the kill acted on.
@@ -621,10 +621,10 @@ describe('Windows installer hardening contracts', () => {
     expect(rootGuards).toHaveLength(2);
     // The env-var clear must sit on the shared exit label so the non-survivor
     // paths clear it too.
-    const logLabel = stopMacro.indexOf('StopbaiyingAIProcessesLog:');
+    const logLabel = stopMacro.indexOf('StopBaiYingProcessesLog:');
     expect(logLabel).toBeGreaterThan(-1);
     expect(
-      stopMacro.indexOf('SetEnvironmentVariable(t "baiyingAI_STOP_ROOT", t "")'),
+      stopMacro.indexOf('SetEnvironmentVariable(t "BAIYING_STOP_ROOT", t "")'),
     ).toBeGreaterThan(logLabel);
   });
 
@@ -817,16 +817,16 @@ describe('Windows installer hardening contracts', () => {
     );
     expect(rebalance).toContain('${GetOptions} $R9 "/NoDefenderExclusion" $R8');
     expect(rebalance).toContain(
-      'SetEnvironmentVariable(t "baiyingAI_DEFENDER_ADD_PERMANENT", t "$R7")',
+      'SetEnvironmentVariable(t "BAIYING_DEFENDER_ADD_PERMANENT", t "$R7")',
     );
     expect(rebalance).toContain(
-      'SetEnvironmentVariable(t "baiyingAI_DEFENDER_ADD_PERMANENT", t "")',
+      'SetEnvironmentVariable(t "BAIYING_DEFENDER_ADD_PERMANENT", t "")',
     );
     expect(rebalance).toContain(
       'Remove-MpPreference -ExclusionPath $$trimTargets -ErrorAction SilentlyContinue',
     );
     expect(rebalance).toContain(
-      String.raw`if ($$env:baiyingAI_DEFENDER_ADD_PERMANENT -ne \"1\") { $$permanent = \"skipped:opt-out\" }`,
+      String.raw`if ($$env:BAIYING_DEFENDER_ADD_PERMANENT -ne \"1\") { $$permanent = \"skipped:opt-out\" }`,
     );
     expect(rebalance).toContain('Add-MpPreference -ExclusionPath $$addTargets -ErrorAction Stop');
     for (const entry of [
@@ -1342,7 +1342,7 @@ describe('Windows installer hardening contracts', () => {
     // they must be emitted from customHeader, not at include parse time.
     const header = installerInclude.slice(
       installerInclude.indexOf('!macro customHeader'),
-      installerInclude.indexOf('!macro stopbaiyingAIProcesses'),
+      installerInclude.indexOf('!macro stopBaiYingProcesses'),
     );
     expect(header).toContain('!insertmacro DefinebaiyingPayloadStagingFunctions');
   });

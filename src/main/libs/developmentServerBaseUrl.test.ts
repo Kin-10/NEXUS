@@ -28,20 +28,29 @@ describe('developmentServerBaseUrl', () => {
     })).toBe('http://192.168.101.24:8899');
   });
 
-  test('keeps the default server outside an unpackaged development build', () => {
+  test('keeps the default server outside development when unpackaged', () => {
     expect(resolveDevelopmentServerBaseUrl({
       defaultBaseUrl,
       developmentOverride: 'http://127.0.0.1:18878',
       isDev: false,
       isPackaged: false,
     })).toBe(defaultBaseUrl);
+  });
 
+  test('allows explicit private-LAN overrides for packaged builds', () => {
     expect(resolveDevelopmentServerBaseUrl({
       defaultBaseUrl,
       developmentOverride: 'http://127.0.0.1:18878',
       isDev: true,
       isPackaged: true,
-    })).toBe(defaultBaseUrl);
+    })).toBe('http://127.0.0.1:18878');
+
+    expect(resolveDevelopmentServerBaseUrl({
+      defaultBaseUrl,
+      developmentOverride: 'http://192.168.101.24:8899',
+      isDev: false,
+      isPackaged: true,
+    })).toBe('http://192.168.101.24:8899');
   });
 
   test('rejects hostnames, public hosts, non-HTTP URLs and missing ports', () => {

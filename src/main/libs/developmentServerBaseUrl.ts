@@ -29,14 +29,7 @@ const isAllowedDevelopmentHostname = (hostname: string): boolean => (
   LOOPBACK_HOSTNAMES.has(hostname) || isPrivateIpv4Hostname(hostname)
 );
 
-export function resolveDevelopmentServerBaseUrl(
-  input: ResolveDevelopmentServerBaseUrlInput,
-): string {
-  const override = input.developmentOverride?.trim();
-  if (!override || !input.isDev || input.isPackaged) {
-    return input.defaultBaseUrl;
-  }
-
+function parsePrivateLanOrigin(override: string): string {
   let url: URL;
   try {
     url = new URL(override);
@@ -61,4 +54,34 @@ export function resolveDevelopmentServerBaseUrl(
   }
 
   return url.origin;
+}
+
+/**
+ * Resolve an optional private-LAN override for BaiYing / Overmind origins.
+ *
+ * - Unpackaged development: honor private-LAN overrides (existing behavior).
+ * - Packaged builds: also honor explicit private-LAN overrides so installers can
+ *   be validated when corporate DNS cannot resolve api-overmind.*.
+ * - Never allow public host overrides (keeps production traffic pinned unless
+ *   an operator intentionally points at a LAN BYServer).
+ */
+export function resolveDevelopmentServerBaseUrl(
+  input: ResolveDevelopmentServerBaseUrlInput,
+): string {
+  const override = input.developmentOverride?.trim();
+  if (!override) {
+    return input.defaultBaseUrl;
+  }
+
+  const origin = parsePrivateLanOrigin(override);
+
+  if (input.isPackaged) {
+    return origin;
+  }
+
+  if (!input.isDev) {
+    return input.defaultBaseUrl;
+  }
+
+  return origin;
 }

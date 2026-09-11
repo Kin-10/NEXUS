@@ -818,7 +818,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
               {renderProviderIcon(selectedModel)}
             </span>
             <span className={`${triggerTextClassName} min-w-0 truncate`}>{selectedModel.name}</span>
-            <ChevronDownIcon className={`${triggerIconClassName} shrink-0 dark:text-claude-darkTextSecondary text-claude-textSecondary`} />
+            <CaretDown className={`${triggerIconClassName} shrink-0 dark:text-claude-darkTextSecondary text-claude-textSecondary`} />
           </button>
         </div>
       );
@@ -1026,7 +1026,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
           className="mx-2 flex w-[calc(100%-1rem)] items-center justify-between rounded-lg bg-surface-raised px-3 py-2 text-left text-[13px] font-semibold leading-5 text-foreground transition-colors hover:bg-surface-hover"
         >
           <span>{i18nService.t('modelSelectorMoreModels')}</span>
-          <ChevronDownIcon
+          <CaretDown
             className={`h-4 w-4 shrink-0 text-secondary transition-transform ${moreModelsExpanded ? 'rotate-180' : ''}`}
           />
         </button>

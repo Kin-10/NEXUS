@@ -9,10 +9,19 @@ export function getNameAbbreviation(name: string, maxChars = 2): string {
   const limit = Math.max(1, Math.min(3, maxChars));
 
   // Prefer grapheme-aware slicing when available (emoji / composed CJK).
+  // Intl.Segmenter is runtime-available in Chromium but not in our ES2020 lib types.
   const graphemes = (() => {
     try {
-      if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
-        const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+      const IntlWithSegmenter = Intl as typeof Intl & {
+        Segmenter?: new (
+          locales?: string | string[],
+          options?: { granularity?: 'grapheme' | 'word' | 'sentence' },
+        ) => { segment: (input: string) => Iterable<{ segment: string }> };
+      };
+      if (typeof IntlWithSegmenter.Segmenter === 'function') {
+        const segmenter = new IntlWithSegmenter.Segmenter(undefined, {
+          granularity: 'grapheme',
+        });
         return Array.from(segmenter.segment(trimmed), (s) => s.segment);
       }
     } catch {

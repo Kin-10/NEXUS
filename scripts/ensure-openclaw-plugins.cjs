@@ -29,10 +29,6 @@ const os = require('os');
 const path = require('path');
 
 const { applyOpenClawPluginPatches } = require('./openclaw-plugin-patches/index.cjs');
-const {
-  NIM_PLUGIN_PACKAGE_ID,
-  prepareOpenClawNimPackage,
-} = require('./openclaw-plugin-preparers/nim-channel.cjs');
 const { prepareHostPeerPackage } = require('./openclaw-plugin-preparers/host-peer.cjs');
 const { pruneHostPeerLeftovers } = require('./openclaw-plugin-host-peer-leftovers.cjs');
 
@@ -138,7 +134,7 @@ function fixBinSymlinks(baseDir) {
         const target = fs.readlinkSync(full);
         if (!path.isAbsolute(target)) continue;
         // Extract the path relative to node_modules/ from the absolute target.
-        // e.g. "/tmp/.../extensions/moltbot-popo/node_modules/qrcode/bin/qrcode"
+        // e.g. "/tmp/.../extensions/some-plugin/node_modules/qrcode/bin/qrcode"
         //   -> "qrcode/bin/qrcode"
         const nmSegment = '/node_modules/';
         const nmIdx = target.lastIndexOf(nmSegment);
@@ -680,11 +676,6 @@ function main() {
           installSpec = npmPack(source.packSpec, source.registry, stagingDir);
         } else {
           installSpec = source.installSpec;
-        }
-
-        if (id === NIM_PLUGIN_PACKAGE_ID) {
-          log('  Preparing NIM package for OpenClaw 2026.6 runtime install.');
-          installSpec = prepareOpenClawNimPackage(installSpec, stagingDir, { log });
         }
 
         if (fs.existsSync(installSpec) && fs.statSync(installSpec).isFile()) {

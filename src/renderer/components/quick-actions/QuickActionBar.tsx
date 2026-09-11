@@ -8,6 +8,7 @@ import {
   GraduationCap,
   PresentationChart,
 } from '@/components/icons/iconParkCompat';
+import type { IconProps } from '@/components/icons/iconParkCompat';
 
 import type { LocalizedQuickAction } from '../../types/quickAction';
 import { iconParkOutlineProps } from '../icons/iconStyle';
@@ -19,7 +20,7 @@ interface QuickActionBarProps {
 }
 
 /** Map config icon keys → Lucide chrome icons (1.5 stroke, optically consistent). */
-const iconMap: Record<string, React.ComponentType<{ className?: string; size?: string | number; strokeWidth?: number; 'aria-hidden'?: boolean }>> = {
+const iconMap: Record<string, React.ComponentType<IconProps>> = {
   PresentationChartBarIcon: PresentationChart,
   GlobeAltIcon: Globe,
   DevicePhoneMobileIcon: DeviceMobile,

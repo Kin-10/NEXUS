@@ -7,7 +7,6 @@ import type { SkillManager } from '../../skills/skillManager';
 
 export interface SkillHandlerDeps {
   getSkillManager: () => SkillManager;
-  getSkillStoreUrl: () => string;
   getOpenClawRuntimeAdapter: () => {
     connectGatewayIfNeeded: () => Promise<void>;
     getGatewayClient: () => {
@@ -21,7 +20,7 @@ export interface SkillHandlerDeps {
 }
 
 export function registerSkillHandlers(deps: SkillHandlerDeps): void {
-  const { getSkillManager, getSkillStoreUrl, getOpenClawRuntimeAdapter } = deps;
+  const { getSkillManager, getOpenClawRuntimeAdapter } = deps;
 
   ipcMain.handle('skills:list', () => {
     try {
@@ -158,11 +157,10 @@ export function registerSkillHandlers(deps: SkillHandlerDeps): void {
   });
 
   ipcMain.handle('skills:fetchMarketplace', async () => {
-    const url = getSkillStoreUrl();
-    console.log(`[SkillMarketplace] fetching from: ${url}`);
     try {
-      const { fetchTextUrl } = await import('../../libs/fetchTextUrl');
-      const raw = await fetchTextUrl(url);
+      const { fetchOvermindCatalogText } = await import('../../libs/fetchOvermindCatalog');
+      const { text: raw, url } = await fetchOvermindCatalogText('skill-store');
+      console.log(`[SkillMarketplace] fetching from: ${url}`);
       const json = JSON.parse(raw) as {
         code?: number;
         message?: string;
