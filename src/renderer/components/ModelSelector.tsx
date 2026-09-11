@@ -382,6 +382,7 @@ const MODEL_ICON_PROVIDER_HINTS: Array<{ pattern: RegExp; providerName: Provider
   { pattern: /gemini/i, providerName: ProviderName.Gemini },
   { pattern: /gpt|openai/i, providerName: ProviderName.OpenAI },
   { pattern: /hy3|hzb/i, providerName: ProviderName.hzbzhiyun },
+  { pattern: /tianlong|天隆/i, providerName: ProviderName.TianLong },
 ];
 
 const ModelSelector: React.FC<ModelSelectorProps> = ({

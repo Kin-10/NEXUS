@@ -211,6 +211,11 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
     normalizeBaseUrl: stripChatCompletionsSuffix,
     resolveModelReasoning: () => true,
   },
+  [ProviderName.TianLong]: {
+    providerId: OpenClawProviderId.TianLong,
+    resolveApi: () => OpenClawApi.OpenAICompletions as OpenClawProviderApi,
+    normalizeBaseUrl: stripChatCompletionsSuffix,
+  },
   [ProviderName.OpenRouter]: {
     providerId: OpenClawProviderId.OpenRouter,
     resolveApi: ({ apiType }) => mapApiTypeToOpenClawApi(apiType),
@@ -357,11 +362,12 @@ describe('provider registry coverage', () => {
     ProviderName.hzbzhiyun,
     ProviderName.StepFun,
     ProviderName.Xiaomi,
+    ProviderName.TianLong,
     ProviderName.OpenRouter,
     ProviderName.Ollama,
   ] as const;
 
-  test('all 14 providers have registry entries', () => {
+  test('all registry providers have registry entries', () => {
     for (const name of allRegistryProviders) {
       expect(name in PROVIDER_REGISTRY, `${name} missing from registry`).toBe(true);
     }

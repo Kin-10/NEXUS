@@ -1077,6 +1077,12 @@ const PROVIDER_REGISTRY: Record<string, ProviderDescriptor> = {
     resolveModelReasoning: () => true,
   },
 
+  [ProviderName.TianLong]: {
+    providerId: OpenClawProviderId.TianLong,
+    resolveApi: () => OpenClawApiConst.OpenAICompletions as OpenClawTransportApi,
+    normalizeBaseUrl: stripChatCompletionsSuffix,
+  },
+
   [ProviderName.OpenRouter]: {
     providerId: OpenClawProviderId.OpenRouter,
     resolveApi: ({ apiType, baseURL }) => mapApiTypeToOpenClawApi(apiType, undefined, baseURL),

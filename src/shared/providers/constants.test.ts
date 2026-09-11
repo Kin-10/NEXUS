@@ -17,9 +17,9 @@ describe('ProviderName constants', () => {
 });
 
 describe('ProviderRegistry', () => {
-  test('providerIds returns 18 providers (no custom)', () => {
+  test('providerIds returns 19 providers (no custom)', () => {
     const ids = ProviderRegistry.providerIds;
-    expect(ids.length).toBe(18);
+    expect(ids.length).toBe(19);
     expect(ids).not.toContain(ProviderName.Custom);
     expect(ids).not.toContain(ProviderName.BaiyingServer);
   });
@@ -203,13 +203,19 @@ describe('ProviderRegistry', () => {
     expect(ProviderRegistry.supportsCodingPlan('unknown')).toBe(false);
   });
 
-  test('idsByRegion china returns 12 providers', () => {
+  test('idsByRegion china returns 13 providers', () => {
     const china = ProviderRegistry.idsByRegion('china');
-    expect(china.length).toBe(12);
+    expect(china.length).toBe(13);
     expect(china).toContain(ProviderName.DeepSeek);
     expect(china).toContain(ProviderName.Qianfan);
+    expect(china).toContain(ProviderName.TianLong);
     expect(china).toContain(ProviderName.Ollama);
     expect(china).not.toContain(ProviderName.OpenAI);
+  });
+
+  test('tianlong maps to OpenClaw provider id', () => {
+    expect(ProviderRegistry.getOpenClawProviderId(ProviderName.TianLong)).toBe(OpenClawProviderId.TianLong);
+    expect(OpenClawProviderId.TianLong).toBe('tianlong');
   });
 
   test('hides hzb, Qianfan, and StepFun from settings lists', () => {

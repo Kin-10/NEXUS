@@ -36,6 +36,7 @@ export const ProviderName = {
   Qianfan: 'qianfan',
   Xiaomi: 'xiaomi',
   StepFun: 'stepfun',
+  TianLong: 'tianlong',
   Volcengine: 'volcengine',
   OpenRouter: 'openrouter',
   Ollama: 'ollama',
@@ -66,6 +67,7 @@ export const OpenClawProviderId = {
   hzbzhiyun: 'hzbzhiyun',
   StepFun: 'stepfun',
   Xiaomi: 'xiaomi',
+  TianLong: 'tianlong',
   OpenRouter: 'openrouter',
   Copilot: 'github-copilot',
   BaiyingCopilot: 'baiying-copilot',
@@ -434,6 +436,21 @@ const PROVIDER_DEFINITIONS = [
     defaultModels: [
       { id: 'mimo-v2.5-pro', name: 'MiMo V2.5 Pro', supportsImage: false, supportsThinking: true, contextWindow: 1_000_000 },
       { id: 'mimo-v2.5', name: 'MiMo V2.5', supportsImage: true, supportsThinking: true, contextWindow: 1_000_000 },
+    ],
+  },
+  {
+    id: ProviderName.TianLong,
+    label: 'TianLong',
+    website: 'https://www.medtl.com',
+    openClawProviderId: OpenClawProviderId.TianLong,
+    // OpenAI-compatible gateway; override Base URL in Settings for your deployment.
+    defaultBaseUrl: 'https://api.medtl.com/v1',
+    defaultApiFormat: ApiFormat.OpenAI,
+    codingPlanSupported: false,
+    region: 'china',
+    enPriority: 0,
+    defaultModels: [
+      { id: 'tianlong', name: 'TianLong', supportsImage: false },
     ],
   },
   {
