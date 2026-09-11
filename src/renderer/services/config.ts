@@ -56,6 +56,13 @@ const getFixedProviderApiFormat = (providerKey: string): ApiFormat | null => {
 };
 
 const normalizeProviderBaseUrl = (providerKey: string, baseUrl: unknown): string => {
+  const lockedDefault = ProviderRegistry.get(providerKey)?.lockBaseUrl
+    ? ProviderRegistry.get(providerKey)?.defaultBaseUrl
+    : undefined;
+  if (typeof lockedDefault === 'string' && lockedDefault.length > 0) {
+    return lockedDefault.replace(/\/+$/, '');
+  }
+
   if (typeof baseUrl !== 'string') {
     return '';
   }
@@ -101,7 +108,13 @@ const normalizeProviderModels = (
   providerKey: string,
   models: ProviderConfig['models'],
   providerContext: Pick<ProviderConfig, 'apiFormat'>,
-): ProviderConfig['models'] => models?.map(model => {
+): ProviderConfig['models'] => {
+  const lockedDef = ProviderRegistry.get(providerKey);
+  if (lockedDef?.lockModels) {
+    return lockedDef.defaultModels.map(m => ({ ...m }));
+  }
+
+  return models?.map(model => {
   const {
     compatibilityMode: _legacyCompatibilityMode,
     ...modelWithoutCompatibilityMode
@@ -164,7 +177,8 @@ const normalizeProviderModels = (
       ? { maxTokens: runtimeMetadata.maxTokens }
       : {}),
   };
-});
+  });
+};
 
 const normalizeProvidersConfig = (providers: AppConfig['providers']): AppConfig['providers'] => {
   if (!providers) {

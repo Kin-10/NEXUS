@@ -158,7 +158,7 @@ const buildDefaultProviders = (): AppConfig['providers'] => {
   for (const id of ProviderRegistry.providerIds) {
     const def = ProviderRegistry.get(id)!;
     providers[id] = {
-      enabled: false,
+      enabled: def.defaultEnabled === true,
       apiKey: '',
       baseUrl: def.defaultBaseUrl,
       apiFormat: def.defaultApiFormat,

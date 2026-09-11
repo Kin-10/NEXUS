@@ -143,3 +143,15 @@ test('getVisibleProviders omits hzb, Qianfan, and StepFun', () => {
     expect(ProviderRegistry.isHiddenInSettings(ProviderName.hzbzhiyun)).toBe(true);
   }
 });
+
+test('getVisibleProviders zh lists TianLong first', () => {
+  expect(getVisibleProviders('zh')[0]).toBe(ProviderName.TianLong);
+});
+
+test('defaultConfig enables TianLong and keeps other providers disabled', () => {
+  expect(defaultConfig.providers?.[ProviderName.TianLong]?.enabled).toBe(true);
+  expect(defaultConfig.providers?.[ProviderName.DeepSeek]?.enabled).toBe(false);
+  expect(defaultConfig.providers?.[ProviderName.TianLong]?.models).toEqual([
+    { id: 'latest-intranet', name: '企业内网模型', supportsImage: false },
+  ]);
+});

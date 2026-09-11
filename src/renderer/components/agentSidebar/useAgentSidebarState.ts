@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { isHiddenOpenClawMainAgentSessionTitle } from '../../../shared/cowork/openclawMainAgentSession';
 import { coworkService } from '../../services/cowork';
 import { localStore } from '../../services/store';
 import { RootState } from '../../store';
@@ -80,8 +81,17 @@ const mergeSessions = (
   incoming: CoworkSessionSummary[],
 ): CoworkSessionSummary[] => {
   const byId = new Map<string, CoworkSessionSummary>();
-  current.forEach((session) => byId.set(session.id, session));
-  incoming.forEach((session) => byId.set(session.id, session));
+  current.forEach((session) => {
+    if (isHiddenOpenClawMainAgentSessionTitle(session.title)) return;
+    byId.set(session.id, session);
+  });
+  incoming.forEach((session) => {
+    if (isHiddenOpenClawMainAgentSessionTitle(session.title)) {
+      byId.delete(session.id);
+      return;
+    }
+    byId.set(session.id, session);
+  });
   return Array.from(byId.values());
 };
 
@@ -479,6 +489,7 @@ export const useAgentSidebarState = ({
       const next = { ...previous };
 
       sessions.forEach((session) => {
+        if (isHiddenOpenClawMainAgentSessionTitle(session.title)) return;
         const agentId = normalizeAgentId(session.agentId);
         const existingTasks = next[agentId];
         if (!existingTasks) return;

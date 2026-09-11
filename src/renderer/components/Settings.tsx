@@ -1486,7 +1486,17 @@ const Settings: React.FC<SettingsProps> = ({
   const openaiIsOAuthMode = providers.openai.authType === 'oauth';
   // xAI likewise defaults to API key mode; OAuth is an explicit opt-in
   const xaiIsOAuthMode = providers.xai.authType === 'oauth';
-  const isBaseUrlLocked = (activeProvider === 'zhipu' && providers.zhipu.codingPlanEnabled) || (activeProvider === 'qwen' && providers.qwen.codingPlanEnabled) || (activeProvider === 'volcengine' && providers.volcengine.codingPlanEnabled) || (activeProvider === 'moonshot' && providers.moonshot.codingPlanEnabled) || (activeProvider === 'qianfan' && providers.qianfan.codingPlanEnabled) || (activeProvider === 'xiaomi' && providers.xiaomi.codingPlanEnabled) || (activeProvider === 'minimax' && minimaxIsOAuthMode) || (activeProvider === 'openai' && openaiIsOAuthMode) || (activeProvider === 'xai' && xaiIsOAuthMode);
+  const isBaseUrlLocked = ProviderRegistry.isBaseUrlLocked(activeProvider)
+    || (activeProvider === 'zhipu' && providers.zhipu.codingPlanEnabled)
+    || (activeProvider === 'qwen' && providers.qwen.codingPlanEnabled)
+    || (activeProvider === 'volcengine' && providers.volcengine.codingPlanEnabled)
+    || (activeProvider === 'moonshot' && providers.moonshot.codingPlanEnabled)
+    || (activeProvider === 'qianfan' && providers.qianfan.codingPlanEnabled)
+    || (activeProvider === 'xiaomi' && providers.xiaomi.codingPlanEnabled)
+    || (activeProvider === 'minimax' && minimaxIsOAuthMode)
+    || (activeProvider === 'openai' && openaiIsOAuthMode)
+    || (activeProvider === 'xai' && xaiIsOAuthMode);
+  const isModelsLocked = ProviderRegistry.isModelsLocked(activeProvider);
 
   // 创建引用来确保内容区域的滚动
   const contentRef = useRef<HTMLDivElement>(null);
@@ -2384,6 +2394,10 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Handle provider configuration change
   const handleProviderConfigChange = (provider: ProviderType, field: string, value: string) => {
+    if (field === 'baseUrl' && ProviderRegistry.isBaseUrlLocked(provider)) {
+      return;
+    }
+
     setProviders(prev => {
       if (field === 'apiFormat') {
         const nextApiFormat = getEffectiveApiFormat(provider, value);
@@ -3758,6 +3772,7 @@ const Settings: React.FC<SettingsProps> = ({
 
   // Handlers for model operations
   const handleAddModel = () => {
+    if (ProviderRegistry.isModelsLocked(activeProvider)) return;
     setIsAddingModel(true);
     setIsEditingModel(false);
     setEditingModelId(null);
@@ -3778,6 +3793,7 @@ const Settings: React.FC<SettingsProps> = ({
     contextWindow?: number,
     customParams?: Record<string, unknown>,
   ) => {
+    if (ProviderRegistry.isModelsLocked(activeProvider)) return;
     setIsAddingModel(false);
     setIsEditingModel(true);
     setEditingModelId(modelId);
@@ -3795,6 +3811,7 @@ const Settings: React.FC<SettingsProps> = ({
   };
 
   const handleDeleteModel = (modelId: string) => {
+    if (ProviderRegistry.isModelsLocked(activeProvider)) return;
     if (!providers[activeProvider].models) return;
 
     const updatedModels = providers[activeProvider].models.filter(
@@ -3811,6 +3828,7 @@ const Settings: React.FC<SettingsProps> = ({
   };
 
   const handleSaveNewModel = () => {
+    if (ProviderRegistry.isModelsLocked(activeProvider)) return;
     const modelId = newModelId.trim();
 
     if (activeProvider === 'ollama' || activeProvider === 'lm-studio') {
@@ -5558,6 +5576,7 @@ const Settings: React.FC<SettingsProps> = ({
             minimaxIsOAuthMode={minimaxIsOAuthMode}
             openaiIsOAuthMode={openaiIsOAuthMode}
             isBaseUrlLocked={isBaseUrlLocked}
+            isModelsLocked={isModelsLocked}
             minimaxOAuthPhase={minimaxOAuthPhase}
             minimaxOAuthRegion={minimaxOAuthRegion}
             setMinimaxOAuthRegion={setMinimaxOAuthRegion}

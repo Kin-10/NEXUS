@@ -67,6 +67,14 @@ test('channel sync does not treat managed local session keys as channel sessions
   expect(sync.resolveOrCreateMainAgentSession('agent:main:baiying:abc-123')).toBe(null);
 });
 
+test('channel sync does not mirror gateway main-agent sessions into the sidebar', () => {
+  const sync = createSync();
+
+  expect(sync.isChannelSessionKey('agent:main:main')).toBe(false);
+  expect(sync.resolveOrCreateMainAgentSession('agent:main:main')).toBe(null);
+  expect(sync.resolveOrCreateMainAgentSession('agent:secondary:main')).toBe(null);
+});
+
 test('channel sync still recognizes real channel session keys', () => {
   const sync = createSync();
 
@@ -74,7 +82,7 @@ test('channel sync still recognizes real channel session keys', () => {
     platform: 'feishu',
     conversationId: 'dm:ou_123',
   });
-  expect(sync.isChannelSessionKey('agent:main:main')).toBe(true);
+  expect(sync.isChannelSessionKey('agent:main:feishu:dm:ou_123')).toBe(true);
 });
 
 test('channel sync recognizes OpenClaw cron run-scoped session keys', () => {

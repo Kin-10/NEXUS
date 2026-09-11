@@ -160,6 +160,21 @@ interface ProviderDefInput {
    * Existing saved configs remain loadable for compatibility.
    */
   readonly hiddenInSettings?: boolean;
+  /**
+   * When true, Settings shows Base URL as read-only and config normalize
+   * always rewrites it to defaultBaseUrl. API key remains editable.
+   */
+  readonly lockBaseUrl?: boolean;
+  /**
+   * When true, Settings hides model add/edit/delete and config normalize
+   * resets models to defaultModels.
+   */
+  readonly lockModels?: boolean;
+  /**
+   * When true, fresh installs enable this provider by default.
+   * Existing saved configs keep their stored enabled flag.
+   */
+  readonly defaultEnabled?: boolean;
   /** Priority ordering for English locale display (lower = higher priority, 0 = no special priority) */
   readonly enPriority: number;
   /** Default model list */
@@ -206,6 +221,22 @@ const DEEPSEEK_V4_CONTEXT_WINDOW = 1_000_000;
 
 const PROVIDER_DEFINITIONS = [
   // ── China ──
+  {
+    id: ProviderName.TianLong,
+    label: 'TianLong',
+    website: 'https://www.medtl.com',
+    openClawProviderId: OpenClawProviderId.TianLong,
+    defaultBaseUrl: 'http://192.168.1.85:3000/v1',
+    defaultApiFormat: ApiFormat.OpenAI,
+    codingPlanSupported: false,
+    lockBaseUrl: true,
+    defaultEnabled: true,
+    region: 'china',
+    enPriority: 0,
+    defaultModels: [
+      { id: 'latest-intranet', name: '企业内网模型', supportsImage: false },
+    ],
+  },
   {
     id: ProviderName.DeepSeek,
     label: 'DeepSeek',
@@ -439,21 +470,6 @@ const PROVIDER_DEFINITIONS = [
     ],
   },
   {
-    id: ProviderName.TianLong,
-    label: 'TianLong',
-    website: 'https://www.medtl.com',
-    openClawProviderId: OpenClawProviderId.TianLong,
-    // OpenAI-compatible gateway; override Base URL in Settings for your deployment.
-    defaultBaseUrl: 'https://api.medtl.com/v1',
-    defaultApiFormat: ApiFormat.OpenAI,
-    codingPlanSupported: false,
-    region: 'china',
-    enPriority: 0,
-    defaultModels: [
-      { id: 'tianlong', name: 'TianLong', supportsImage: false },
-    ],
-  },
-  {
     id: ProviderName.Ollama,
     label: 'Ollama',
     website: 'https://ollama.com',
@@ -639,6 +655,21 @@ export interface ProviderDef {
    * Existing saved configs remain loadable for compatibility.
    */
   readonly hiddenInSettings?: boolean;
+  /**
+   * When true, Settings shows Base URL as read-only and config normalize
+   * always rewrites it to defaultBaseUrl. API key remains editable.
+   */
+  readonly lockBaseUrl?: boolean;
+  /**
+   * When true, Settings hides model add/edit/delete and config normalize
+   * resets models to defaultModels.
+   */
+  readonly lockModels?: boolean;
+  /**
+   * When true, fresh installs enable this provider by default.
+   * Existing saved configs keep their stored enabled flag.
+   */
+  readonly defaultEnabled?: boolean;
   /** Priority ordering for English locale display (lower = higher priority, 0 = no special priority) */
   readonly enPriority: number;
   /** Default model list */
@@ -898,6 +929,16 @@ class ProviderRegistryImpl {
   /** Whether the provider should be hidden from Settings model list. */
   isHiddenInSettings(id: string): boolean {
     return this.idIndex.get(id)?.hiddenInSettings === true;
+  }
+
+  /** Whether Settings must keep Base URL fixed to the registry default. */
+  isBaseUrlLocked(id: string): boolean {
+    return this.idIndex.get(id)?.lockBaseUrl === true;
+  }
+
+  /** Whether Settings must keep the model list fixed to registry defaults. */
+  isModelsLocked(id: string): boolean {
+    return this.idIndex.get(id)?.lockModels === true;
   }
 
   /**

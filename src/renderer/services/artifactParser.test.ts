@@ -762,6 +762,35 @@ describe('parseLocalServiceUrlsFromText', () => {
     const artifacts = parseLocalServiceUrlsFromText('https://example.com/app', 'msg1', 'sess1');
     expect(artifacts).toHaveLength(0);
   });
+
+  test('parses 192.168 intranet service URLs for preview', () => {
+    const content = '内网服务：http://192.168.1.85:3000/v1';
+    const artifacts = parseLocalServiceUrlsFromText(content, 'msg1', 'sess1');
+    expect(artifacts).toHaveLength(1);
+    expect(artifacts[0].type).toBe('local-service');
+    expect(artifacts[0].url).toBe('http://192.168.1.85:3000/v1');
+    expect(artifacts[0].localService?.origin).toBe('http://192.168.1.85:3000');
+  });
+
+  test('parses 10.x and 172.16-31.x intranet service URLs for preview', () => {
+    const ten = parseLocalServiceUrlsFromText('http://10.0.0.8:3000/app', 'msg1', 'sess1');
+    expect(ten).toHaveLength(1);
+    expect(ten[0].url).toBe('http://10.0.0.8:3000/app');
+
+    const seventeen = parseLocalServiceUrlsFromText('http://172.16.0.8:8080', 'msg2', 'sess1');
+    expect(seventeen).toHaveLength(1);
+    expect(seventeen[0].url).toBe('http://172.16.0.8:8080');
+
+    const upper = parseLocalServiceUrlsFromText('http://172.31.255.1:80/', 'msg3', 'sess1');
+    expect(upper).toHaveLength(1);
+    expect(upper[0].url).toBe('http://172.31.255.1:80/');
+  });
+
+  test('ignores non-private IPs outside RFC1918 ranges', () => {
+    expect(parseLocalServiceUrlsFromText('http://172.15.0.8:3000', 'msg1', 'sess1')).toHaveLength(0);
+    expect(parseLocalServiceUrlsFromText('http://172.32.0.8:3000', 'msg1', 'sess1')).toHaveLength(0);
+    expect(parseLocalServiceUrlsFromText('http://8.8.8.8:3000', 'msg1', 'sess1')).toHaveLength(0);
+  });
 });
 
 describe('parseMediaTokensFromText', () => {

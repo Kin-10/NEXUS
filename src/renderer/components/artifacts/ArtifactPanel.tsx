@@ -6484,6 +6484,12 @@ function normalizeBrowserUrl(value: string): string | null {
   if (/^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|::1)(:\d+)?(\/.*)?$/i.test(trimmed)) {
     return `http://${trimmed}`;
   }
+  if (
+    /^(?:10(?:\.\d{1,3}){3}|172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2}|192\.168(?:\.\d{1,3}){2})(:\d+)?(\/.*)?$/i
+      .test(trimmed)
+  ) {
+    return `http://${trimmed}`;
+  }
   if (/^[\w.-]+\.[a-z]{2,}(:\d+)?(\/.*)?$/i.test(trimmed)) {
     return `https://${trimmed}`;
   }

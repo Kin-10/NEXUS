@@ -136,6 +136,7 @@ export interface ModelSettingsSectionProps {
   minimaxIsOAuthMode: boolean;
   openaiIsOAuthMode: boolean;
   isBaseUrlLocked: boolean;
+  isModelsLocked: boolean;
   minimaxOAuthPhase: MiniMaxOAuthPhase;
   minimaxOAuthRegion: MiniMaxRegion;
   setMinimaxOAuthRegion: (v: MiniMaxRegion) => void;
@@ -613,7 +614,7 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
   providers, activeProvider, visibleProviders,
   showApiKey, setShowApiKey,
   isImportingProviders, isExportingProviders,
-  minimaxIsOAuthMode, openaiIsOAuthMode, isBaseUrlLocked,
+  minimaxIsOAuthMode, openaiIsOAuthMode, isBaseUrlLocked, isModelsLocked,
   minimaxOAuthPhase, minimaxOAuthRegion, setMinimaxOAuthRegion, setMinimaxOAuthPhase,
   openaiOAuthPhase, setOpenaiOAuthPhase, openaiOAuthStatus,
   xaiIsOAuthMode, xaiOAuthPhase, setXaiOAuthPhase, xaiOAuthStatus,
@@ -1738,6 +1739,10 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                     id={`${activeProvider}-baseUrl`}
                     value={
                       (() => {
+                        if (ProviderRegistry.isBaseUrlLocked(activeProvider)) {
+                          return ProviderRegistry.get(activeProvider)?.defaultBaseUrl
+                            ?? providers[activeProvider].baseUrl;
+                        }
                         // Coding plan override: delegate to ProviderRegistry (50e20b76)
                         const fmt = getEffectiveApiFormat(activeProvider, providers[activeProvider].apiFormat);
                         if (fmt !== 'gemini') {
@@ -2101,42 +2106,49 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                       </span>
                     )}
                   </h3>
-                  <button
-                    type="button"
-                    onClick={handleAddModel}
-                    className="inline-flex cursor-pointer items-center text-xs font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
-                  >
-                    <PlusCircleIcon className="mr-1 h-3.5 w-3.5" />
-                    {i18nService.t('addModel')}
-                  </button>
+                  {!isModelsLocked && (
+                    <button
+                      type="button"
+                      onClick={handleAddModel}
+                      className="inline-flex cursor-pointer items-center text-xs font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
+                    >
+                      <PlusCircleIcon className="mr-1 h-3.5 w-3.5" />
+                      {i18nService.t('addModel')}
+                    </button>
+                  )}
                 </div>
 
                 {/* Model card grid — flat directory cards */}
                 {(providers[activeProvider].models?.length ?? 0) > 0 ? (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {(providers[activeProvider].models ?? []).map(model => {
-                      const openEdit = () => handleEditModel(
-                        model.id,
-                        model.name,
-                        model.supportsImage,
-                        model.supportsThinking,
-                        model.contextWindow,
-                        model.customParams,
-                      );
+                      const openEdit = () => {
+                        if (isModelsLocked) return;
+                        handleEditModel(
+                          model.id,
+                          model.name,
+                          model.supportsImage,
+                          model.supportsThinking,
+                          model.contextWindow,
+                          model.customParams,
+                        );
+                      };
                       return (
                         <div
                           key={model.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={openEdit}
-                          onKeyDown={(e) => {
+                          role={isModelsLocked ? undefined : 'button'}
+                          tabIndex={isModelsLocked ? undefined : 0}
+                          onClick={isModelsLocked ? undefined : openEdit}
+                          onKeyDown={isModelsLocked ? undefined : (e) => {
                             if (e.target !== e.currentTarget) return;
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault();
                               openEdit();
                             }
                           }}
-                          className={CAPABILITIES_CARD_CLASS}
+                          className={isModelsLocked
+                            ? CAPABILITIES_CARD_CLASS.replace('cursor-pointer', 'cursor-default')
+                            : CAPABILITIES_CARD_CLASS}
                         >
                           <div className="mb-2 flex items-start gap-2">
                             <div className="min-w-0 flex-1">
@@ -2147,30 +2159,32 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                                 {model.id}
                               </div>
                             </div>
-                            <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openEdit();
-                                }}
-                                className="cursor-pointer rounded-lg p-1 text-secondary transition-colors duration-200 hover:bg-primary/10 hover:text-primary"
-                                title={i18nService.t('edit')}
-                              >
-                                <EditIcon className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteModel(model.id);
-                                }}
-                                className="cursor-pointer rounded-lg p-1 text-secondary transition-colors duration-200 hover:bg-red-500/10 hover:text-red-500"
-                                title={i18nService.t('delete')}
-                              >
-                                <TrashIcon className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
+                            {!isModelsLocked && (
+                              <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEdit();
+                                  }}
+                                  className="cursor-pointer rounded-lg p-1 text-secondary transition-colors duration-200 hover:bg-primary/10 hover:text-primary"
+                                  title={i18nService.t('edit')}
+                                >
+                                  <EditIcon className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteModel(model.id);
+                                  }}
+                                  className="cursor-pointer rounded-lg p-1 text-secondary transition-colors duration-200 hover:bg-red-500/10 hover:text-red-500"
+                                  title={i18nService.t('delete')}
+                                >
+                                  <TrashIcon className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           <div className={`mt-auto flex flex-wrap items-center gap-1.5 ${MANAGEMENT_META_TEXT}`}>
@@ -2197,14 +2211,16 @@ const ModelSettingsSection: React.FC<ModelSettingsSectionProps> = ({
                 ) : (
                   <div className="rounded-xl border border-dashed border-border bg-surface/40 px-4 py-8 text-center">
                     <p className="text-xs text-secondary">{i18nService.t('noModelsAvailable')}</p>
-                    <button
-                      type="button"
-                      onClick={handleAddModel}
-                      className="mt-2 inline-flex cursor-pointer items-center text-xs font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
-                    >
-                      <PlusCircleIcon className="mr-1 h-3.5 w-3.5" />
-                      {i18nService.t('addFirstModel')}
-                    </button>
+                    {!isModelsLocked && (
+                      <button
+                        type="button"
+                        onClick={handleAddModel}
+                        className="mt-2 inline-flex cursor-pointer items-center text-xs font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
+                      >
+                        <PlusCircleIcon className="mr-1 h-3.5 w-3.5" />
+                        {i18nService.t('addFirstModel')}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

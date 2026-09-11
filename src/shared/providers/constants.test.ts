@@ -203,9 +203,10 @@ describe('ProviderRegistry', () => {
     expect(ProviderRegistry.supportsCodingPlan('unknown')).toBe(false);
   });
 
-  test('idsByRegion china returns 13 providers', () => {
+  test('idsByRegion china returns 13 providers with TianLong first', () => {
     const china = ProviderRegistry.idsByRegion('china');
     expect(china.length).toBe(13);
+    expect(china[0]).toBe(ProviderName.TianLong);
     expect(china).toContain(ProviderName.DeepSeek);
     expect(china).toContain(ProviderName.Qianfan);
     expect(china).toContain(ProviderName.TianLong);
@@ -216,6 +217,21 @@ describe('ProviderRegistry', () => {
   test('tianlong maps to OpenClaw provider id', () => {
     expect(ProviderRegistry.getOpenClawProviderId(ProviderName.TianLong)).toBe(OpenClawProviderId.TianLong);
     expect(OpenClawProviderId.TianLong).toBe('tianlong');
+  });
+
+  test('tianlong locks base URL but keeps models editable', () => {
+    expect(ProviderRegistry.isBaseUrlLocked(ProviderName.TianLong)).toBe(true);
+    expect(ProviderRegistry.isModelsLocked(ProviderName.TianLong)).toBe(false);
+    expect(ProviderRegistry.get(ProviderName.TianLong)?.defaultBaseUrl).toBe('http://192.168.1.85:3000/v1');
+    expect(ProviderRegistry.get(ProviderName.TianLong)?.defaultModels).toEqual([
+      { id: 'latest-intranet', name: '企业内网模型', supportsImage: false },
+    ]);
+    expect(ProviderRegistry.isBaseUrlLocked(ProviderName.DeepSeek)).toBe(false);
+  });
+
+  test('tianlong is default-enabled for fresh installs', () => {
+    expect(ProviderRegistry.get(ProviderName.TianLong)?.defaultEnabled).toBe(true);
+    expect(ProviderRegistry.get(ProviderName.DeepSeek)?.defaultEnabled).toBeUndefined();
   });
 
   test('hides hzb, Qianfan, and StepFun from settings lists', () => {
