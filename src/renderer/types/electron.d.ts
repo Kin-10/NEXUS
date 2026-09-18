@@ -9,6 +9,7 @@ import type {
   ActivitySlotResponse,
 } from '../../shared/activity/constants';
 import type { AppUpdateActiveWorkloads, AppUpdateCheckResult, AppUpdateRuntimeState } from '../../shared/appUpdate/constants';
+import type { MarkdownFileBridge } from '../../shared/artifactPreview/markdownEditing';
 import type {
   AsrRealtimeSessionRequest,
   AsrRealtimeSessionResult,
@@ -29,12 +30,15 @@ import type {
 } from '../../shared/browserCredentials/constants';
 import type {
   AgentBrowserCredentialSavePromptRequest,
+  AgentBrowserHostMenuRequest,
+  AgentBrowserHostMenuResponse,
   AgentBrowserHostNavigateRequest,
   AgentBrowserHostPageRequest,
   AgentBrowserHostRequest,
   AgentBrowserHostResponse,
   AgentBrowserHostSetViewRequest,
   AgentBrowserHostStateEvent,
+  AgentBrowserHostZoomRequest,
   BrowserDiagnosticResult,
   BrowserRuntimeProfile,
 } from '../../shared/browserWebAccess/constants';
@@ -105,6 +109,10 @@ import type {
   LibraryLocalDetailData,
   LibraryLocalListData,
   LibraryLocalListOptions,
+  LibraryLocalTaskGroupsData,
+  LibraryLocalTaskGroupsOptions,
+  LibraryLocalTaskItemsData,
+  LibraryLocalTaskItemsOptions,
   LibraryRecordCandidatesData,
   LibraryResult,
 } from '../../shared/library/types';
@@ -117,6 +125,7 @@ import type {
   OpenClawEnginePhase as SharedOpenClawEnginePhase,
   OpenClawGatewayRepairErrorCode,
 } from '../../shared/openclawEngine/constants';
+import type { OpenClawRepairStage } from '../../shared/openclawEngine/repair';
 import type {
   PublishingQuota,
   PublishingQuotaErrorData,
@@ -268,6 +277,8 @@ interface CoworkConfig {
   memoryUserMemoriesMaxItems: number;
   skipMissedJobs: boolean;
   openClawHeartbeatEnabled: boolean;
+  openClawSkillReviewEnabled: boolean;
+  openClawMemoryFlushEnabled: boolean;
   embeddingEnabled: boolean;
   embeddingProvider: string;
   embeddingModel: string;
@@ -291,6 +302,8 @@ type CoworkConfigUpdate = Partial<
     | 'memoryUserMemoriesMaxItems'
     | 'skipMissedJobs'
     | 'openClawHeartbeatEnabled'
+    | 'openClawSkillReviewEnabled'
+    | 'openClawMemoryFlushEnabled'
     | 'embeddingEnabled'
     | 'embeddingProvider'
     | 'embeddingModel'
@@ -373,6 +386,8 @@ interface OpenClawGatewayRepairResult {
   error?: string;
   errorCode?: OpenClawGatewayRepairErrorCode;
   recoverable?: boolean;
+  failedStage?: OpenClawRepairStage;
+  failurePath?: string;
 }
 
 interface OpenClawSessionPolicyConfig {
@@ -907,8 +922,17 @@ interface IElectronAPI {
       goForwardHost: (request?: AgentBrowserHostRequest) => Promise<AgentBrowserHostResponse>;
       reloadHost: (request?: AgentBrowserHostRequest) => Promise<AgentBrowserHostResponse>;
       stopHost: (request?: AgentBrowserHostRequest) => Promise<AgentBrowserHostResponse>;
+      createHostPage: (request?: AgentBrowserHostRequest) => Promise<AgentBrowserHostResponse>;
       selectHostPage: (request: AgentBrowserHostPageRequest) => Promise<AgentBrowserHostResponse>;
       closeHostPage: (request: AgentBrowserHostPageRequest) => Promise<AgentBrowserHostResponse>;
+      showHostMenu: (request: AgentBrowserHostMenuRequest) => Promise<AgentBrowserHostMenuResponse>;
+      captureHostScreenshot: (request?: AgentBrowserHostRequest) => Promise<AgentBrowserHostResponse>;
+      setHostZoom: (request: AgentBrowserHostZoomRequest) => Promise<AgentBrowserHostResponse>;
+      clearHostCookies: (request?: AgentBrowserHostRequest) => Promise<AgentBrowserHostResponse>;
+      clearHostCache: (request?: AgentBrowserHostRequest) => Promise<AgentBrowserHostResponse>;
+      dismissCredentialLoginStatus: (
+        request?: AgentBrowserHostRequest,
+      ) => Promise<AgentBrowserHostResponse>;
       resolveCredentialSavePrompt: (
         request: AgentBrowserCredentialSavePromptRequest,
       ) => Promise<AgentBrowserHostResponse>;
@@ -1262,6 +1286,7 @@ interface IElectronAPI {
       callback: (data: { sessionId: string; request: CoworkPermissionRequest }) => void,
     ) => () => void;
     onStreamPermissionDismiss: (callback: (data: { requestId: string }) => void) => () => void;
+    getPendingQuestions?: () => Promise<CoworkPermissionRequest[]>;
     onStreamComplete: (
       callback: (data: { sessionId: string; claudeSessionId: string | null }) => void,
     ) => () => void;
@@ -1504,6 +1529,12 @@ interface IElectronAPI {
     listLocal: (
       options?: LibraryLocalListOptions,
     ) => Promise<LibraryResult<LibraryLocalListData>>;
+    listLocalTaskGroups: (
+      options?: LibraryLocalTaskGroupsOptions,
+    ) => Promise<LibraryResult<LibraryLocalTaskGroupsData>>;
+    listLocalTaskItems: (
+      options: LibraryLocalTaskItemsOptions,
+    ) => Promise<LibraryResult<LibraryLocalTaskItemsData>>;
     listCloud: (
       options?: LibraryCloudListOptions,
     ) => Promise<LibraryResult<LibraryCloudListData>>;
@@ -1534,6 +1565,7 @@ interface IElectronAPI {
     createRealtimeSession: (options: AsrRealtimeSessionRequest) => Promise<AsrRealtimeSessionResult>;
   };
   artifact: {
+    markdown: MarkdownFileBridge;
     watchFile: (filePath: string) => Promise<void>;
     unwatchFile: (filePath: string) => Promise<void>;
     onFileChanged: (callback: (data: { filePath: string }) => void) => () => void;

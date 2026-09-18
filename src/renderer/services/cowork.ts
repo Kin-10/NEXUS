@@ -54,6 +54,7 @@ import {
   setMessageRailIndex,
   setMessageRailIndexLoading,
   setMessageWindow,
+  setOpenClawRepairing,
   setRemoteManaged,
   setSessions,
   setStreaming,
@@ -91,6 +92,7 @@ import {
   shouldReloadCurrentSessionForChange,
 } from './coworkSessionRefreshPolicy';
 import { i18nService } from './i18n';
+import { restoreNativeQuestionPermissions } from './nativeQuestionRecovery';
 import { reportOnboardingAction } from './onboardingAnalytics';
 
 const STREAM_ERROR_DUPLICATE_WINDOW_MS = 10_000;
@@ -161,6 +163,7 @@ class CoworkService {
   private initialized = false;
   private openClawStatus: OpenClawEngineStatus | null = null;
   private openClawStatusListeners = new Set<(status: OpenClawEngineStatus) => void>();
+  private openClawRepairPromise: Promise<OpenClawGatewayRepairResult> | null = null;
   private openClawEngineListenerAttached = false;
   private latestLoadSessionsRequestId = 0;
   private latestLoadSessionRequestId = 0;
@@ -438,6 +441,9 @@ class CoworkService {
       store.dispatch(dequeuePendingPermission({ requestId }));
     });
     this.streamListenerCleanups.push(permissionDismissCleanup);
+    this.streamListenerCleanups.push(restoreNativeQuestionPermissions(cowork, (request) => {
+      store.dispatch(enqueuePendingPermission(request));
+    }));
 
     // Complete listener
     const completeCleanup = cowork.onStreamComplete(({ sessionId }) => {
@@ -2389,6 +2395,8 @@ class CoworkService {
   }
 
   async repairOpenClawGatewayState(): Promise<OpenClawGatewayRepairResult> {
+    if (this.openClawRepairPromise) return this.openClawRepairPromise;
+
     const engineApi = window.electron?.openclaw?.engine;
     if (!engineApi?.repairGatewayState) {
       return {
@@ -2396,14 +2404,26 @@ class CoworkService {
         error: i18nService.t('openClawRepairApiUnavailable'),
       };
     }
-    const result = await engineApi.repairGatewayState();
-    if (result?.status) {
-      this.notifyOpenClawStatus(result.status);
+    // Own the loading state here so it survives Settings closing and also
+    // covers Quick Repair. Gateway phase changes are not repair completion.
+    const repairPromise = Promise.resolve().then(async () => {
+      const result = await engineApi.repairGatewayState();
+      if (result?.status) {
+        this.notifyOpenClawStatus(result.status);
+      }
+      return result ?? {
+        success: false,
+        error: i18nService.t('openClawRepairFailed'),
+      };
+    });
+    this.openClawRepairPromise = repairPromise;
+    store.dispatch(setOpenClawRepairing(true));
+    try {
+      return await repairPromise;
+    } finally {
+      this.openClawRepairPromise = null;
+      store.dispatch(setOpenClawRepairing(false));
     }
-    return result ?? {
-      success: false,
-      error: i18nService.t('openClawRepairFailed'),
-    };
   }
 
   async generateSessionTitle(prompt: string | null): Promise<string | null> {

@@ -8,6 +8,7 @@ import {
 } from '@/components/icons/iconParkCompat';
 
 import { ScheduledTaskDataStatus, TaskStatus } from '../../../scheduledTask/constants';
+import { createRunFilter } from '../../../scheduledTask/runFilter';
 import type { RunFilter, ScheduledTaskRunWithName } from '../../../scheduledTask/types';
 import { i18nService } from '../../services/i18n';
 import { scheduledTaskService } from '../../services/scheduledTask';
@@ -50,18 +51,6 @@ const statusConfig: Record<TaskStatus, { label: string; color: string; activeCol
   },
 };
 
-function applyClientFilter(
-  runs: ScheduledTaskRunWithName[],
-  filter: RunFilter,
-): ScheduledTaskRunWithName[] {
-  return runs.filter(run => {
-    if (filter.status && run.status !== filter.status) return false;
-    if (filter.startDate && run.startedAt < filter.startDate + 'T00:00:00') return false;
-    if (filter.endDate && run.startedAt > filter.endDate + 'T23:59:59') return false;
-    return true;
-  });
-}
-
 const EMPTY_FILTER: RunFilter = {};
 
 interface AllRunsHistoryProps {
@@ -81,7 +70,7 @@ const AllRunsHistory: React.FC<AllRunsHistoryProps> = ({ searchText = '' }) => {
   const normalizedSearch = searchText.trim().toLowerCase();
 
   const displayedRuns = useMemo(() => {
-    let runs = hasActiveFilter ? applyClientFilter(allRuns, filter) : allRuns;
+    let runs = hasActiveFilter ? allRuns.filter(createRunFilter(filter)) : allRuns;
     if (normalizedSearch) {
       runs = runs.filter(run =>
         [run.taskName, run.summary ?? '', run.error ?? '']

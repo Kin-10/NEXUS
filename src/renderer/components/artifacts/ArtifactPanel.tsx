@@ -79,6 +79,7 @@ import {
   readLocalServiceProjectDirectoryCandidate as readNodeDeploymentProjectDirectoryCandidate,
   writeLocalServiceProjectDirectory as writeNodeDeploymentProjectDirectory,
 } from '@/services/localServiceProjectDirectoryCache';
+import { getMarkdownDocumentContent } from '@/services/markdownDocument';
 import {
   armPublishingSubscriptionRecovery,
   PublishingSubscriptionRecoveryRefreshOutcome,
@@ -214,7 +215,6 @@ import {
   PublishingTrialStatus,
   usePublishingTrialStatus,
 } from './PublishingTrialStatus';
-import CodeRenderer from './renderers/CodeRenderer';
 import {
   OfficePreviewActionsContext,
   type OfficePreviewZoomControlsConfig,
@@ -1837,7 +1837,13 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
           await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
         }
       } else {
-        if (selectedArtifact.filePath && !selectedArtifact.content && selectedArtifact.type !== 'document') {
+        const editingContent = selectedArtifact.type === ArtifactTypeValue.Markdown && selectedArtifact.filePath
+          ? getMarkdownDocumentContent(selectedArtifact.filePath) : undefined;
+        if (editingContent !== undefined) {
+          if (!await copyTextToClipboard(editingContent)) {
+            throw new Error('Failed to copy Markdown editor content');
+          }
+        } else if (selectedArtifact.filePath && !selectedArtifact.content && selectedArtifact.type !== 'document') {
           const result = await window.electron?.dialog?.readTextFile?.(selectedArtifact.filePath);
           if (result?.truncated) {
             logArtifactFileActionFailure(
@@ -5295,15 +5301,12 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
             {/* Render area */}
             <div className="flex-1 min-h-0 overflow-hidden">
               <OfficePreviewActionsContext.Provider value={officePreviewActionsContextValue}>
-                {!isCodeViewActive ? (
-                  <ArtifactRenderer
-                    artifact={selectedArtifact}
-                    sessionArtifacts={artifacts}
-                    selectedTextContext={selectedTextContext}
-                  />
-                ) : (
-                  <CodeRenderer artifact={selectedArtifact} />
-                )}
+                <ArtifactRenderer
+                  artifact={selectedArtifact}
+                  sessionArtifacts={artifacts}
+                  selectedTextContext={selectedTextContext}
+                  sourceView={isCodeViewActive}
+                />
               </OfficePreviewActionsContext.Provider>
             </div>
           </div>

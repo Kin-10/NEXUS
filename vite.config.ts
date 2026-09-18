@@ -116,10 +116,8 @@ export default defineConfig({
             },
           ],
         },
-        onstart() {
-          // Signal that the main process bundle is ready for electron to load
-          fs.writeFileSync('dist-electron/.electron-ready', '');
-        },
+        // package.json starts Electron after all five output files stabilize.
+        onstart() {},
       },
       {
         // 预加载脚本入口文件
@@ -189,9 +187,10 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     rollupOptions: {
+      // library-thumbnail.html is built by vite.thumbnail.config.ts so the
+      // sandboxed thumbnail page never shares chunks with the app entry.
       input: {
         main: path.resolve(__dirname, 'index.html'),
-        libraryThumbnail: path.resolve(__dirname, 'library-thumbnail.html'),
       },
     },
   },
@@ -206,7 +205,13 @@ export default defineConfig({
       usePolling: false,
       // Ignore vendor/ to prevent dev reload when plugins are installed into
       // vendor/openclaw-runtime/.../third-party-extensions/
-      ignored: ['**/vendor/**'],
+      // Skip temporary trees (which may contain circular junctions) and Electron output.
+      ignored: [
+        '**/vendor/**',
+        '**/.work/**',
+        '**/artifacts/**',
+        '**/dist-electron/**',
+      ],
     },
   },
   optimizeDeps: {

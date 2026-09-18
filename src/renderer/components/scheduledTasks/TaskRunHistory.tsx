@@ -11,6 +11,7 @@ import {
 } from '@/components/icons/iconParkCompat';
 
 import { TaskStatus } from '../../../scheduledTask/constants';
+import { createRunFilter } from '../../../scheduledTask/runFilter';
 import type { RunFilter, ScheduledTask, ScheduledTaskRun } from '../../../scheduledTask/types';
 import { i18nService } from '../../services/i18n';
 import { scheduledTaskService } from '../../services/scheduledTask';
@@ -64,15 +65,6 @@ const RunStatusIcon: React.FC<{ status: TaskStatus }> = ({ status }) => {
   return <MinusCircle className="h-4 w-4 shrink-0 text-yellow-500" />;
 };
 
-function applyClientFilter(runs: ScheduledTaskRun[], filter: RunFilter): ScheduledTaskRun[] {
-  return runs.filter(run => {
-    if (filter.status && run.status !== filter.status) return false;
-    if (filter.startDate && run.startedAt < filter.startDate + 'T00:00:00') return false;
-    if (filter.endDate && run.startedAt > filter.endDate + 'T23:59:59') return false;
-    return true;
-  });
-}
-
 const EMPTY_FILTER: RunFilter = {};
 
 const TaskRunHistory: React.FC<TaskRunHistoryProps> = ({ task, runs }) => {
@@ -87,7 +79,7 @@ const TaskRunHistory: React.FC<TaskRunHistoryProps> = ({ task, runs }) => {
   const hasActiveFilter = Boolean(filter.startDate || filter.endDate || filter.status);
 
   const displayedRuns = useMemo(
-    () => (hasActiveFilter ? applyClientFilter(runs, filter) : runs),
+    () => (hasActiveFilter ? runs.filter(createRunFilter(filter)) : runs),
     [runs, filter, hasActiveFilter],
   );
   const taskAnalyticsParams = useMemo(

@@ -16,6 +16,13 @@ export type LanguageType = 'zh' | 'en';
 
 const translations: Record<LanguageType, Record<string, string>> = {
   zh: {
+    xaiAuthMigrationPending: '请等待 AI 引擎完成认证数据升级后，再更改 xAI 登录；若升级失败，请先修复引擎。',
+    xaiAuthStoreFailed: '无法访问 xAI 认证存储，请检查 AI 引擎状态后重试。',
+    openClawStartupMigrationFailed: 'AI 引擎状态升级失败：{error}',
+    openClawPluginVerificationFailed: 'AI 引擎插件校验失败，已停止自动重启。请处理以下插件错误后重试：\n{error}',
+    openClawStartupCompatibilityRepairing: '正在备份并修复旧版网关状态…',
+    openClawDreamingStateRepairing: '正在备份并处理旧版记忆状态…',
+    openClawRuntimeFilesMissing: 'AI 引擎运行文件缺失或无法读取，已停止启动。请退出应用，使用包含修复的最新安装包覆盖安装后重试。',
     // DeepSeek Harness (experimental)
     dshWorkbenchTitle: 'DeepSeek Harness 工作台（实验）',
     dshPlanProviderName: '套餐',
@@ -31,6 +38,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     // Quit confirmation (native dialog shown on user-initiated quit)
     appQuitConfirmTitle: '退出 baiyingAI？',
     appQuitConfirmDetail: 'baiyingAI 关闭期间，定时任务不会运行，也无法回复 IM 消息。',
+    appQuitConfirmUnsafeMarkdown: '有 Markdown 修改尚未保存，且无法备份草稿。退出后这些修改将丢失。请取消退出，返回文档保存或复制修改。',
     appQuitConfirmQuit: '退出',
     appQuitConfirmCancel: '取消',
     taskCompletionNotificationTitle: '任务已完成',
@@ -58,6 +66,18 @@ const translations: Record<LanguageType, Record<string, string>> = {
     contextMenuCopy: '复制',
     contextMenuPaste: '粘贴',
     contextMenuSelectAll: '全选',
+    agentBrowserMenuScreenshot: '截图',
+    agentBrowserMenuNewBlankPage: '空白页',
+    agentBrowserMenuZoom: '缩放',
+    agentBrowserMenuZoomOut: '缩小',
+    agentBrowserMenuResetZoom: '重置为 100%',
+    agentBrowserMenuZoomIn: '放大',
+    agentBrowserMenuClearCookies: '清除 Cookie',
+    agentBrowserMenuClearCache: '清除缓存',
+    agentBrowserMenuUnavailable: '浏览器窗口当前不可用。',
+    agentBrowserRuntimeUnavailable: 'Agent 浏览器暂不可用，请稍后重试。',
+    agentBrowserMenuOpenFailed: '无法打开浏览器菜单。',
+    agentBrowserZoomFailed: '调整浏览器缩放失败。',
 
     // Session titles (created by ChannelSessionSync)
     coworkDefaultSessionTitle: '新对话',
@@ -100,6 +120,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     coworkErrorEnterprisePoolExhausted: '当前团队积分池已用完。',
     coworkErrorEnterpriseCreditBatchesExpired: '当前团队积分批次已全部过期。',
     coworkErrorInsufficientBalance: 'API 余额不足，请充值后重试。',
+    coworkErrorModelServiceUnavailable: '该模型服务暂不可用，请切换模型或稍后重试。',
+    coworkErrorProviderCooldown: '模型凭据暂时处于冷却期，请稍后重试或切换其他服务商。',
     coworkErrorInputTooLong: '输入内容过长，超出模型上下文限制。',
     coworkErrorMessageTooLarge:
       '本次消息过大，请减少附件、压缩图片或拆分提交。（单次整体需小于 30MB）',
@@ -370,6 +392,13 @@ const translations: Record<LanguageType, Record<string, string>> = {
     'enterprise.updateBlocked': '版本更新由企业统一管理',
   },
   en: {
+    xaiAuthMigrationPending: 'Wait for the AI engine credential migration to finish before changing xAI login. If migration failed, repair the engine first.',
+    xaiAuthStoreFailed: 'Unable to access the xAI credential store. Check the AI engine status and retry.',
+    openClawStartupMigrationFailed: 'AI engine state migration failed: {error}',
+    openClawPluginVerificationFailed: 'AI engine plugin verification failed. Automatic restarts stopped. Fix the plugin error and retry:\n{error}',
+    openClawStartupCompatibilityRepairing: 'Backing up and repairing legacy gateway state…',
+    openClawDreamingStateRepairing: 'Backing up and handling legacy memory state…',
+    openClawRuntimeFilesMissing: 'AI engine runtime files are missing or unreadable. Startup has stopped. Quit the app and reinstall using the latest installer containing the fix, then try again.',
     // DeepSeek Harness (experimental)
     dshWorkbenchTitle: 'DeepSeek Harness Workbench (Experimental)',
     dshPlanProviderName: 'Plan',
@@ -385,6 +414,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     // Quit confirmation (native dialog shown on user-initiated quit)
     appQuitConfirmTitle: 'Quit baiyingAI?',
     appQuitConfirmDetail: 'While baiyingAI is closed, scheduled tasks will not run and IM messages will not be answered.',
+    appQuitConfirmUnsafeMarkdown: 'Some Markdown changes have not been saved and could not be backed up as drafts. Quitting will lose these changes. Cancel and return to the document to save or copy your changes.',
     appQuitConfirmQuit: 'Quit',
     appQuitConfirmCancel: 'Cancel',
     taskCompletionNotificationTitle: 'Task Complete',
@@ -412,6 +442,18 @@ const translations: Record<LanguageType, Record<string, string>> = {
     contextMenuCopy: 'Copy',
     contextMenuPaste: 'Paste',
     contextMenuSelectAll: 'Select All',
+    agentBrowserMenuScreenshot: 'Screenshot',
+    agentBrowserMenuNewBlankPage: 'Blank page',
+    agentBrowserMenuZoom: 'Zoom',
+    agentBrowserMenuZoomOut: 'Zoom out',
+    agentBrowserMenuResetZoom: 'Reset to 100%',
+    agentBrowserMenuZoomIn: 'Zoom in',
+    agentBrowserMenuClearCookies: 'Clear Cookie',
+    agentBrowserMenuClearCache: 'Clear cache',
+    agentBrowserMenuUnavailable: 'The browser window is unavailable.',
+    agentBrowserRuntimeUnavailable: 'The Agent browser is temporarily unavailable. Try again later.',
+    agentBrowserMenuOpenFailed: 'Failed to open the browser menu.',
+    agentBrowserZoomFailed: 'Failed to adjust browser zoom.',
 
     // Session titles
     coworkDefaultSessionTitle: 'New Chat',
@@ -465,6 +507,8 @@ const translations: Record<LanguageType, Record<string, string>> = {
     coworkErrorEnterprisePoolExhausted: 'The current team credit pool has been used up.',
     coworkErrorEnterpriseCreditBatchesExpired: 'All credit batches for the current team have expired.',
     coworkErrorInsufficientBalance: 'Insufficient API balance. Please top up and try again.',
+    coworkErrorModelServiceUnavailable: 'This model service is temporarily unavailable. Switch models or try again later.',
+    coworkErrorProviderCooldown: 'The model credentials are temporarily in cooldown. Try again later or switch providers.',
     coworkErrorInputTooLong: 'Input too long, exceeding model context limit.',
     coworkErrorMessageTooLarge:
       'This message is too large. Reduce attachments, compress images, or split it up. (Keep each message under about 30 MB.)',
