@@ -76,6 +76,19 @@ describe('preview card presentation policy', () => {
     });
   });
 
+  test('hides private intranet hosts on local-service cards', () => {
+    const descriptor = getPreviewCardDescriptor(makeArtifact({
+      type: ArtifactTypeValue.LocalService,
+      title: '192.168.1.85:3000',
+      url: 'http://192.168.1.85:3000/v1',
+      content: 'http://192.168.1.85:3000/v1',
+    }));
+
+    expect(descriptor.title).toBe('内网服务');
+    expect(descriptor.subtitle).toBe('内网服务');
+    expect(descriptor.iconKind).toBe(PreviewCardIconKind.Globe);
+  });
+
   test('keeps regular files on file icons and preview behavior', () => {
     const descriptor = getPreviewCardDescriptor(makeArtifact({
       type: ArtifactTypeValue.Document,

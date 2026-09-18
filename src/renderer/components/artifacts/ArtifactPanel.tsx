@@ -70,6 +70,11 @@ import { copyTextToClipboard } from '@/services/clipboard';
 import { getPortalPricingUrl, PortalPricingKeyfrom } from '@/services/endpoints';
 import { i18nService } from '@/services/i18n';
 import {
+  getPrivateIntranetAddressDisplay,
+  isPrivateIntranetHostname,
+  isPrivateIntranetUrl,
+} from '@/services/intranetUrlPrivacy';
+import {
   readLocalServiceProjectDirectory as readNodeDeploymentProjectDirectory,
   readLocalServiceProjectDirectoryCandidate as readNodeDeploymentProjectDirectoryCandidate,
   writeLocalServiceProjectDirectory as writeNodeDeploymentProjectDirectory,
@@ -109,7 +114,6 @@ import {
 import { openLocalPathWithToast, revealLocalPathWithToast } from '@/utils/localFileActions';
 
 import CopyIcon from '../icons/CopyIcon';
-import ServiceDeploymentIcon from '../icons/ServiceDeploymentIcon';
 import {
   ArtifactPreviewActionSource,
   ArtifactPublishEntryPoint,
@@ -2584,67 +2588,6 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
     });
   }, [artifactFileShare, browserToolbarPublishTarget]);
 
-  const handleDeployBrowserLocalService = useCallback(() => {
-    if (browserToolbarPublishTarget?.kind !== ArtifactToolbarPublishActionKind.Deploy) return;
-    const currentLocalService = parseLocalServiceUrl(browserUrl || browserAddress);
-    if (
-      !currentLocalService ||
-      normalizeLocalServiceOriginForCompare(currentLocalService.url) !==
-        normalizeLocalServiceOriginForCompare(browserToolbarPublishTarget.localService.url)
-    ) {
-      return;
-    }
-
-    const projectDirectory = browserLocalServiceProjectDirectory || undefined;
-    const projectCandidates =
-      browserLocalServiceContextMatches && browserLocalServiceContext?.projectCandidates?.length
-        ? browserLocalServiceContext.projectCandidates
-        : browserLocalServiceArtifact?.localService?.projectCandidates ?? [];
-    const localService: LocalWebService = {
-      ...currentLocalService,
-      title: browserLocalServiceArtifact?.title || currentLocalService.title,
-      ...(projectDirectory ? { projectDirectory } : {}),
-      ...(projectCandidates.length
-        ? { projectCandidates }
-        : {}),
-    };
-    const currentLookup = selectedNodeDeploymentLookupKey &&
-      nodeDeploymentLookupRef.current?.sourceKey === selectedNodeDeploymentLookupKey
-      ? nodeDeploymentLookupRef.current
-      : null;
-    reportArtifactPreviewAction({
-      actionType: 'deployment_entry_click',
-      source: ArtifactPreviewActionSource.ArtifactBrowser,
-      artifact: browserLocalServiceArtifact,
-      params: {
-        entryPoint: ArtifactPublishEntryPoint.BrowserToolbar,
-        browserUrlType: getArtifactBrowserUrlType(currentLocalService.url),
-        hasArtifactContext: Boolean(
-          browserLocalServiceArtifact || browserLocalServiceContextMatches,
-        ),
-        hasProjectDirectory: Boolean(projectDirectory),
-        hasExistingDeployment: Boolean(currentLookup?.deployment),
-      },
-    });
-    void handleShareLocalServiceDeployment({
-      localService,
-      projectDirectory,
-      projectCandidates,
-      source: ArtifactPreviewActionSource.ArtifactBrowser,
-      entryPoint: ArtifactPublishEntryPoint.BrowserToolbar,
-    });
-  }, [
-    browserAddress,
-    browserLocalServiceArtifact,
-    browserLocalServiceContext,
-    browserLocalServiceContextMatches,
-    browserLocalServiceProjectDirectory,
-    browserToolbarPublishTarget,
-    browserUrl,
-    handleShareLocalServiceDeployment,
-    selectedNodeDeploymentLookupKey,
-  ]);
-
   useEffect(() => {
     const request = localServiceDeploymentRequest;
     if (
@@ -5118,31 +5061,6 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
     nodeDeploymentDialog?.projectDirectory,
     t('nodeDeploymentLocalService'),
   );
-  const isBrowserDeploymentActionBusy = Boolean(
-    isNodeDeploymentLookupPending ||
-      isNodeDeploymentBusy ||
-      isHtmlSharing,
-  );
-  const browserDeploymentActionLabel = (() => {
-    if (isNodeDeploymentLookupPending) {
-      return t('nodeDeploymentButtonChecking');
-    }
-    if (!isNodeDeploymentBusy) return t('nodeDeploymentProgressDeploy');
-    switch (nodeDeploymentDialog?.phase) {
-      case NodeDeploymentPhase.Analyzing:
-        return t('nodeDeploymentButtonAnalyzing');
-      case NodeDeploymentPhase.Uploading:
-        return t('nodeDeploymentButtonBuildingUploading');
-      case NodeDeploymentPhase.Deploying:
-        return t('nodeDeploymentButtonDeploying');
-      case NodeDeploymentPhase.Checking:
-      case NodeDeploymentPhase.Live:
-      case NodeDeploymentPhase.Failed:
-      case NodeDeploymentPhase.Idle:
-      default:
-        return t('nodeDeploymentButtonChecking');
-    }
-  })();
   const browserPublishAction: BrowserPublishAction | undefined = (() => {
     if (browserToolbarPublishTarget?.kind === ArtifactToolbarPublishActionKind.Share) {
       return {
@@ -5153,15 +5071,8 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
         onClick: handleShareBrowserHtmlArtifact,
       };
     }
-    if (browserToolbarPublishTarget?.kind === ArtifactToolbarPublishActionKind.Deploy) {
-      return {
-        kind: ArtifactToolbarPublishActionKind.Deploy,
-        label: browserDeploymentActionLabel,
-        disabled: isBrowserDeploymentActionBusy,
-        busy: isBrowserDeploymentActionBusy,
-        onClick: handleDeployBrowserLocalService,
-      };
-    }
+    // Local-service / URL deployment is intentionally unavailable in the
+    // built-in browser toolbar.
     return undefined;
   })();
 
@@ -6536,13 +6447,14 @@ function getBrowserDevicePresetLabel(preset: BrowserDevicePreset): string {
 }
 
 function isLocalServiceHostname(hostname: string): boolean {
-  const value = hostname.toLowerCase();
+  const value = hostname.toLowerCase().replace(/^\[|\]$/g, '');
   return (
     value === 'localhost' ||
     value === '127.0.0.1' ||
     value === '0.0.0.0' ||
-    value === '[::1]' ||
-    value === '::1'
+    value === '::1' ||
+    /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(value) ||
+    isPrivateIntranetHostname(value)
   );
 }
 
@@ -6560,7 +6472,10 @@ function parseLocalServiceUrl(
     if (!Number.isInteger(port) || port <= 0 || port > 65535) return null;
     return {
       id: `localhost:${port}`,
-      title: title || `localhost:${port}`,
+      title: title
+        || (isPrivateIntranetHostname(parsed.hostname)
+          ? t('artifactIntranetService')
+          : `localhost:${port}`),
       url: rawUrl.trim(),
       host: parsed.hostname,
       port,
@@ -7346,6 +7261,30 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
     [autoRefreshFilePath, localHtmlPreviewUrl],
   );
 
+  const isIntranetAddressLocked = isPrivateIntranetUrl(currentUrl) || isPrivateIntranetUrl(address);
+  const addressBarDisplayValue = isIntranetAddressLocked
+    ? (
+      getPrivateIntranetAddressDisplay(address, t('artifactIntranetService'))
+      || getPrivateIntranetAddressDisplay(currentUrl, t('artifactIntranetService'))
+      || t('artifactIntranetService')
+    )
+    : isAddressBarFocused
+      ? address
+      : (
+        getPrivateIntranetAddressDisplay(address, t('artifactIntranetService'))
+        || getPrivateIntranetAddressDisplay(currentUrl, t('artifactIntranetService'))
+        || address
+      );
+
+  useEffect(() => {
+    if (!isIntranetAddressLocked) return;
+    setIsAddressBarFocused(false);
+    setIsAddressOpenExternalHovered(false);
+    if (document.activeElement === addressInputRef.current) {
+      addressInputRef.current?.blur();
+    }
+  }, [isIntranetAddressLocked]);
+
   const syncBrowserTitle = useCallback(
     (node: BrowserWebviewElement | null) => {
       if (!onTitleChange || !node) return;
@@ -7625,13 +7564,18 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
   );
 
   const handleAddressFocus = useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+    if (isIntranetAddressLocked) {
+      event.currentTarget.blur();
+      return;
+    }
     setIsAddressBarFocused(true);
     event.currentTarget.select();
-  }, []);
+  }, [isIntranetAddressLocked]);
 
   const handleAddressBarFocusCapture = useCallback(() => {
+    if (isIntranetAddressLocked) return;
     setIsAddressBarFocused(true);
-  }, []);
+  }, [isIntranetAddressLocked]);
 
   const handleAddressBarBlurCapture = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -7642,17 +7586,21 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
   }, [hideAddressOpenExternal]);
 
   const handleAddressBarMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (isIntranetAddressLocked) {
+      event.preventDefault();
+      return;
+    }
     if (event.target !== event.currentTarget) return;
     event.preventDefault();
     addressInputRef.current?.focus();
     addressInputRef.current?.select();
-  }, []);
+  }, [isIntranetAddressLocked]);
 
   const handleAddressOpenExternalMouseEnter = useCallback(() => {
-    if (!currentUrl) return;
+    if (!currentUrl || isIntranetAddressLocked) return;
     setIsAddressOpenExternalHovered(true);
     setHoveredToolbarAction(BrowserToolbarAction.OpenExternal);
-  }, [currentUrl]);
+  }, [currentUrl, isIntranetAddressLocked]);
 
   const handleAddressOpenExternalMouseLeave = useCallback(() => {
     setIsAddressOpenExternalHovered(false);
@@ -7957,7 +7905,9 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
         ? t('artifactBrowserOpenExternal')
         : '';
   const showAddressOpenExternal =
-    Boolean(currentUrl) && (isAddressBarFocused || isAddressOpenExternalHovered);
+    Boolean(currentUrl)
+    && !isIntranetAddressLocked
+    && (isAddressBarFocused || isAddressOpenExternalHovered);
   return (
     <div className="relative flex h-full min-h-0 flex-col bg-background">
       <div className="flex h-10 shrink-0 items-center gap-1.5 border-b border-border px-3">
@@ -8003,7 +7953,11 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
         </button>
         <div
           ref={addressBarRef}
-          className="relative flex h-7 min-w-0 flex-1 items-center rounded-md border border-transparent bg-transparent px-2 pr-10 transition-colors hover:bg-surface focus-within:border-border focus-within:bg-surface"
+          className={`relative flex h-7 min-w-0 flex-1 items-center rounded-md border border-transparent bg-transparent px-2 transition-colors ${
+            isIntranetAddressLocked
+              ? 'cursor-default pr-2'
+              : 'pr-10 hover:bg-surface focus-within:border-border focus-within:bg-surface'
+          }`}
           onFocusCapture={handleAddressBarFocusCapture}
           onBlurCapture={handleAddressBarBlurCapture}
           onMouseDown={handleAddressBarMouseDown}
@@ -8011,36 +7965,48 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
           <input
             ref={addressInputRef}
             type="text"
-            value={address}
-            onChange={event => onAddressChange(event.target.value)}
-            onKeyDown={handleAddressKeyDown}
+            value={addressBarDisplayValue}
+            onChange={event => {
+              if (isIntranetAddressLocked) return;
+              onAddressChange(event.target.value);
+            }}
+            onKeyDown={isIntranetAddressLocked ? undefined : handleAddressKeyDown}
             onFocus={handleAddressFocus}
+            readOnly={isIntranetAddressLocked}
+            tabIndex={isIntranetAddressLocked ? -1 : 0}
             placeholder={t('artifactBrowserUrlPlaceholder')}
-            className="h-full min-w-0 flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted"
-          />
-          <div
-            ref={openExternalButtonRef}
-            className={`absolute inset-y-0 right-0 flex w-8 items-center justify-center overflow-hidden rounded-r-[5px] transition-opacity duration-150 ${
-              showAddressOpenExternal
-                ? 'opacity-100'
-                : 'opacity-0'
+            aria-label={isIntranetAddressLocked ? t('artifactIntranetService') : undefined}
+            className={`h-full min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-muted ${
+              isIntranetAddressLocked
+                ? 'cursor-default select-none text-secondary'
+                : 'text-foreground'
             }`}
-            onMouseEnter={handleAddressOpenExternalMouseEnter}
-            onMouseLeave={handleAddressOpenExternalMouseLeave}
-          >
-            <button
-              type="button"
-              onMouseDown={event => event.preventDefault()}
-              onClick={handleOpenExternal}
-              disabled={!currentUrl}
-              tabIndex={showAddressOpenExternal ? 0 : -1}
-              className="inline-flex h-full w-full items-center justify-center rounded-l-none rounded-r-[5px] border-l border-border bg-black/[0.035] text-secondary transition-colors hover:bg-black/[0.06] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35 dark:bg-white/[0.045] dark:hover:bg-white/[0.075]"
-              aria-label={t('artifactBrowserOpenExternal')}
-              title={t('artifactBrowserOpenExternal')}
+          />
+          {!isIntranetAddressLocked && (
+            <div
+              ref={openExternalButtonRef}
+              className={`absolute inset-y-0 right-0 flex w-8 items-center justify-center overflow-hidden rounded-r-[5px] transition-opacity duration-150 ${
+                showAddressOpenExternal
+                  ? 'opacity-100'
+                  : 'opacity-0'
+              }`}
+              onMouseEnter={handleAddressOpenExternalMouseEnter}
+              onMouseLeave={handleAddressOpenExternalMouseLeave}
             >
-              <BrowserAddressOpenExternalIcon />
-            </button>
-          </div>
+              <button
+                type="button"
+                onMouseDown={event => event.preventDefault()}
+                onClick={handleOpenExternal}
+                disabled={!currentUrl}
+                tabIndex={showAddressOpenExternal ? 0 : -1}
+                className="inline-flex h-full w-full items-center justify-center rounded-l-none rounded-r-[5px] border-l border-border bg-black/[0.035] text-secondary transition-colors hover:bg-black/[0.06] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35 dark:bg-white/[0.045] dark:hover:bg-white/[0.075]"
+                aria-label={t('artifactBrowserOpenExternal')}
+                title={t('artifactBrowserOpenExternal')}
+              >
+                <BrowserAddressOpenExternalIcon />
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {publishAction && (
@@ -8057,10 +8023,8 @@ const BrowserTabContent: React.FC<BrowserTabContentProps> = ({
                   className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary"
                   aria-hidden="true"
                 />
-              ) : publishAction.kind === ArtifactToolbarPublishActionKind.Share ? (
-                <ShareNetwork className="h-4 w-4" />
               ) : (
-                <ServiceDeploymentIcon className="h-[18px] w-[18px] translate-y-[1.5px]" />
+                <ShareNetwork className="h-4 w-4" />
               )}
             </button>
           )}

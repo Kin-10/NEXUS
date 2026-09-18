@@ -229,8 +229,11 @@ describe('ProviderRegistry', () => {
     expect(ProviderRegistry.isBaseUrlLocked(ProviderName.DeepSeek)).toBe(false);
   });
 
-  test('tianlong is default-enabled for fresh installs', () => {
-    expect(ProviderRegistry.get(ProviderName.TianLong)?.defaultEnabled).toBe(true);
+  test('tianlong is default-disabled and ships a default API key', () => {
+    expect(ProviderRegistry.get(ProviderName.TianLong)?.defaultEnabled).toBe(false);
+    expect(ProviderRegistry.getDefaultApiKey(ProviderName.TianLong)).toBe(
+      'sk-TumfRPbFva14PEGMxxvFxXlC1qTh9OwH52SnI6R2rNoFZW7O',
+    );
     expect(ProviderRegistry.get(ProviderName.DeepSeek)?.defaultEnabled).toBeUndefined();
   });
 

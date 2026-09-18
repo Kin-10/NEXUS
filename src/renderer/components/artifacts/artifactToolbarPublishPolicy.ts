@@ -51,9 +51,7 @@ export function resolveBrowserToolbarPublishTarget(input: {
       input.shareAvailable,
     );
   }
-  if (!input.localService) return null;
-  return {
-    kind: ArtifactToolbarPublishActionKind.Deploy,
-    localService: input.localService,
-  };
+  // Local-service / URL deployment is intentionally unavailable in the
+  // built-in browser toolbar.
+  return null;
 }

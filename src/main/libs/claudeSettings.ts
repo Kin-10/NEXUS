@@ -653,16 +653,21 @@ function resolveMatchedProvider(appConfig: AppConfig): { matched: MatchedProvide
     return { matched: null, error: `Provider ${providerName} is missing base URL.` };
   }
 
-   // Check for API key or OAuth credentials
-  const hasApiKey = providerConfig.apiKey?.trim();
+   // Check for API key or OAuth credentials. OpenClaw stores provider keys as
+  // ${BAIYING_APIKEY_*} SecretRefs and refuses to start when those env vars are
+  // missing — so key-required providers without a key must not be selected.
+  const hasApiKey = Boolean(providerConfig.apiKey?.trim());
   const hasOAuthCreds =
     (providerName === ProviderName.Minimax && (providerConfig as any).authType === 'oauth' && !!(providerConfig as any).oauthAccessToken?.trim())
     || shouldUseOpenAICodexOAuth(providerName, providerConfig)
     || (shouldUseXaiOAuth(providerName, providerConfig) && hasXaiOAuthCredential());
-  if (apiFormat === 'anthropic' && providerRequiresApiKey(providerName) && !providerConfig.apiKey?.trim() && !hasApiKey && !hasOAuthCreds) {
+  if (providerRequiresApiKey(providerName) && !hasApiKey && !hasOAuthCreds) {
     const serverFallback = tryBaiyingServerFallback(modelId);
     if (serverFallback) return { matched: serverFallback };
-    return { matched: null, error: `Provider ${providerName} requires API key for Anthropic-compatible mode.` };
+    return {
+      matched: null,
+      error: `Provider ${providerName} requires an API key.`,
+    };
   }
 
   const matchedModel = normalizedProviderModels.find((m) => m.id === modelId);
@@ -853,6 +858,38 @@ export function resolveRawApiConfig(): ApiConfigResolution {
   // the request with "No API key found for provider".
   const effectiveApiKey = apiKey
     || (!providerRequiresApiKey(matched.providerName) ? 'sk-baiying-local' : '');
+  // Key-required providers with an empty key must not sync a ${BAIYING_APIKEY_*}
+  // SecretRef — the env var is not injected and the gateway exits on startup.
+  if (!effectiveApiKey) {
+    const serverFallback = tryBaiyingServerFallback(matched.modelId);
+    if (serverFallback) {
+      return {
+        config: {
+          apiKey: serverFallback.providerConfig.apiKey?.trim() || '',
+          baseURL: serverFallback.baseURL,
+          model: serverFallback.modelId,
+          apiType: serverFallback.apiFormat === 'anthropic' ? 'anthropic' : 'openai',
+        },
+        providerMetadata: {
+          providerName: serverFallback.providerName,
+          codingPlanEnabled: false,
+          runtimeProfile: serverFallback.runtimeProfile,
+          supportsImage: serverFallback.supportsImage,
+          supportsVideo: serverFallback.supportsVideo,
+          supportsThinking: serverFallback.supportsThinking,
+          thinkingConfig: serverFallback.thinkingConfig,
+          requestCapabilities: serverFallback.requestCapabilities,
+          modelName: serverFallback.modelName,
+          contextWindow: serverFallback.contextWindow,
+          maxTokens: serverFallback.maxTokens,
+        },
+      };
+    }
+    return {
+      config: null,
+      error: `Provider ${matched.providerName} requires an API key.`,
+    };
+  }
   return {
     config: {
       apiKey: effectiveApiKey,

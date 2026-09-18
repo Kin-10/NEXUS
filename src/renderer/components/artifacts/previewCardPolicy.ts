@@ -1,4 +1,8 @@
 import { i18nService } from '@/services/i18n';
+import {
+  isPrivateIntranetUrl,
+  looksLikePrivateIntranetReference,
+} from '@/services/intranetUrlPrivacy';
 import { type Artifact, ArtifactTypeValue } from '@/types/artifact';
 
 export const PreviewCardDisplayKind = {
@@ -76,7 +80,19 @@ function getExtension(value: string | undefined): string {
 }
 
 function getPreferredFileName(artifact: Artifact): string {
-  return artifact.fileName || getBaseName(artifact.filePath) || getBaseName(artifact.url) || artifact.title || t('artifactFileKindFile');
+  if (artifact.fileName) return artifact.fileName;
+  if (artifact.filePath) return getBaseName(artifact.filePath);
+  if (artifact.url && !isPrivateIntranetUrl(artifact.url) && !looksLikePrivateIntranetReference(artifact.url)) {
+    return getBaseName(artifact.url);
+  }
+  if (artifact.title && !looksLikePrivateIntranetReference(artifact.title)) {
+    return artifact.title;
+  }
+  return t(
+    artifact.type === ArtifactTypeValue.LocalService && isPrivateIntranetUrl(artifact.url || artifact.content)
+      ? 'artifactIntranetService'
+      : 'artifactFileKindFile',
+  );
 }
 
 function formatSubtitle(kindKey: string, extension: string): string {
@@ -96,10 +112,18 @@ function isHtmlFileTitle(title: string, fileName: string): boolean {
 
 function getWebResourceTitle(artifact: Artifact, fileName: string, kindKey: string): string {
   const title = artifact.title.trim();
-  if (title && !isHtmlFileTitle(title, fileName)) {
+  const fallbackKind = artifact.type === ArtifactTypeValue.LocalService
+    && isPrivateIntranetUrl(artifact.url || artifact.content)
+    ? t('artifactIntranetService')
+    : t(kindKey);
+
+  if (title && !isHtmlFileTitle(title, fileName) && !looksLikePrivateIntranetReference(title)) {
     return title;
   }
-  return fileName || title || t(kindKey);
+  if (fileName && !looksLikePrivateIntranetReference(fileName) && !isPrivateIntranetUrl(fileName)) {
+    return fileName;
+  }
+  return fallbackKind;
 }
 
 function getDisplayKind(artifact: Artifact, extension: string): PreviewCardDisplayKind {
@@ -178,7 +202,12 @@ export function getPreviewCardDescriptor(artifact: Artifact): PreviewCardDescrip
     ? getWebResourceTitle(artifact, fileName, kindKey)
     : fileName;
   const subtitle = isBrowserResource
-    ? t(kindKey)
+    ? (
+      displayKind === PreviewCardDisplayKind.LocalService
+        && isPrivateIntranetUrl(artifact.url || artifact.content)
+        ? t('artifactIntranetService')
+        : t(kindKey)
+    )
     : formatSubtitle(getKindKey(displayKind), extension);
   const defaultOpenAction = isBrowserResource
     ? PreviewCardOpenAction.Browser

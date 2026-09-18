@@ -2897,6 +2897,18 @@ const _syncOpenClawConfigImpl = async (
   } catch (error) {
     console.warn('[OpenClawConfigSync] failed to inspect referenced secret env vars, comparing all secrets:', error);
   }
+  // Stale or partially-synced configs can still reference ${BAIYING_APIKEY_*} for
+  // providers that currently have no key. OpenClaw treats missing SecretRefs as a
+  // hard startup failure — fill placeholders so the gateway can boot.
+  if (referencedSecretEnvVarNames) {
+    for (const name of referencedSecretEnvVarNames) {
+      if (!name.startsWith('BAIYING_APIKEY_') || nextSecretEnvVars[name]) continue;
+      console.warn(
+        `[OpenClawConfigSync] filling missing referenced secret ${name} with placeholder to keep gateway startable`,
+      );
+      nextSecretEnvVars[name] = 'unconfigured';
+    }
+  }
   const effectiveNextSecretEnvVars = referencedSecretEnvVarNames
     ? pickReferencedSecretEnvVars(nextSecretEnvVars, referencedSecretEnvVarNames)
     : nextSecretEnvVars;

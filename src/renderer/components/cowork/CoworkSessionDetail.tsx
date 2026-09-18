@@ -62,6 +62,7 @@ import {
 import { configService, ConfigServiceEvent } from '../../services/config';
 import { coworkService } from '../../services/cowork';
 import { i18nService } from '../../services/i18n';
+import { redactPrivateIntranetUrlsInText } from '../../services/intranetUrlPrivacy';
 import { getInstalledKitSkillIds } from '../../services/kitCapability';
 import { readLocalServiceProjectDirectoryCandidate } from '../../services/localServiceProjectDirectoryCache';
 import { RootState } from '../../store';
@@ -130,7 +131,6 @@ import { parseUserMessageForDisplay } from '../../utils/userMessageDisplay';
 import {
   AgentBrowserInAppPanel,
   ArtifactPanel,
-  type LocalServiceDeploymentRequest,
   SubagentPanelContent,
   UserAttachmentPanelContent,
   type UserAttachmentPreviewPayload,
@@ -2252,8 +2252,6 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   const [browserPreviewTitle, setBrowserPreviewTitle] = useState('');
   const [browserLocalServiceContext, setBrowserLocalServiceContext] =
     useState<BrowserLocalServiceContext | null>(null);
-  const [localServiceDeploymentRequest, setLocalServiceDeploymentRequest] =
-    useState<LocalServiceDeploymentRequest | null>(null);
   const [browserHtmlPreviewArtifactId, setBrowserHtmlPreviewArtifactId] = useState<string | null>(null);
   const [showArtifactAddMenu, setShowArtifactAddMenu] = useState(false);
   const [artifactAddMenuPosition, setArtifactAddMenuPosition] = useState<{ left: number; top: number } | null>(null);
@@ -2290,7 +2288,6 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   const browserHtmlPreviewSessionIdBySessionRef = useRef<Record<string, string>>({});
   const browserHtmlPreviewUrlBySessionRef = useRef<Record<string, string>>({});
   const browserHtmlPreviewRequestIdRef = useRef(0);
-  const localServiceDeploymentRequestIdRef = useRef(0);
   const artifactAddButtonRef = useRef<HTMLButtonElement>(null);
   const artifactAddMenuRef = useRef<HTMLDivElement>(null);
   const artifactTabsScrollRef = useRef<HTMLDivElement>(null);
@@ -3117,33 +3114,6 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     handleOpenArtifactBrowserTab,
     setSessionBrowserLocalServiceContext,
   ]);
-
-  const handleDeployLocalServiceArtifact = useCallback((artifact: Artifact) => {
-    if (!sessionId || artifact.type !== ArtifactTypeValue.LocalService) return;
-    const url = (artifact.url || artifact.content || '').trim();
-
-    const requestId = localServiceDeploymentRequestIdRef.current + 1;
-    localServiceDeploymentRequestIdRef.current = requestId;
-    setLocalServiceDeploymentRequest({
-      requestId,
-      sessionId,
-      artifactId: artifact.id,
-      url,
-      title: artifact.title,
-      projectDirectory: artifact.localService?.projectDirectory,
-      projectCandidates: artifact.localService?.projectCandidates,
-    });
-  }, [sessionId]);
-
-  const handleLocalServiceDeploymentRequestConsumed = useCallback((requestId: number) => {
-    setLocalServiceDeploymentRequest(current =>
-      current?.requestId === requestId ? null : current,
-    );
-  }, []);
-
-  useEffect(() => {
-    setLocalServiceDeploymentRequest(null);
-  }, [sessionId]);
 
   const handleOpenArtifactFileListFromMenu = useCallback(() => {
     setShowArtifactAddMenu(false);
@@ -5133,7 +5103,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   }, [currentSession?.cwd]);
 
   const mapDisplayText = useCallback((value: string): string => {
-    return value;
+    return redactPrivateIntranetUrlsInText(value, i18nService.t('artifactIntranetService'));
   }, []);
 
   const handleReEdit = useCallback((message: CoworkMessage) => {
@@ -6032,6 +6002,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
               assistantItems: [],
             }}
             resolveLocalFilePath={resolveLocalFilePath}
+            mapDisplayText={mapDisplayText}
             localServiceDirectory={currentSession?.cwd}
             showActivityIndicator
             activityStatusOverride={
@@ -6118,7 +6089,6 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 mapDisplayText={mapDisplayText}
                 localServiceDirectory={currentSession?.cwd}
                 onOpenLocalService={handleOpenLocalServiceArtifact}
-                onDeployLocalService={handleDeployLocalServiceArtifact}
                 onOpenHtmlFile={handleOpenHtmlFileInBrowser}
                 onForkMessage={remoteManaged ? undefined : handleForkMessage}
                 renderToolGroupOverride={(group) => {
@@ -7208,7 +7178,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
         </button>
       )}
     </div>
-    {(shouldRenderArtifactPanel || Boolean(localServiceDeploymentRequest)) && (
+    {shouldRenderArtifactPanel && (
       <div
         className={`${
           artifactPanelIsOverlay
@@ -7248,13 +7218,11 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
               browserAddress={browserPreviewAddress}
               browserUrl={browserPreviewUrl}
               browserLocalServiceContext={browserLocalServiceContext}
-              localServiceDeploymentRequest={localServiceDeploymentRequest}
               browserHtmlArtifactId={browserHtmlPreviewArtifactId}
               onBrowserAddressChange={handleBrowserPreviewAddressChange}
               onBrowserUrlChange={handleBrowserPreviewUrlChange}
               onBrowserTitleChange={handleBrowserPreviewTitleChange}
               onBrowserLocalServiceContextChange={setSessionBrowserLocalServiceContext}
-              onLocalServiceDeploymentRequestConsumed={handleLocalServiceDeploymentRequestConsumed}
               onOpenFileListTab={handleOpenArtifactFileListTab}
               onOpenBrowserTab={handleOpenArtifactBrowserTab}
               onOpenHtmlFileInBrowser={handleOpenHtmlFileInBrowser}

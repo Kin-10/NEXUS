@@ -159,7 +159,7 @@ const buildDefaultProviders = (): AppConfig['providers'] => {
     const def = ProviderRegistry.get(id)!;
     providers[id] = {
       enabled: def.defaultEnabled === true,
-      apiKey: '',
+      apiKey: def.defaultApiKey?.trim() || '',
       baseUrl: def.defaultBaseUrl,
       apiFormat: def.defaultApiFormat,
       ...(def.codingPlanSupported ? { codingPlanEnabled: false } : {}),

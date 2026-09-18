@@ -712,11 +712,23 @@ function isLocalServiceUrl(url: string): boolean {
 function buildLocalServiceTitle(url: string, linkText?: string): string {
   const title = linkText?.trim();
   if (title && !/^https?:\/\//i.test(title)) {
-    return title;
+    // Avoid surfacing private IP hosts that were used as markdown labels.
+    if (!/^(?:10|172\.(?:1[6-9]|2\d|3[0-1])|192\.168)\./i.test(title)) {
+      return title;
+    }
   }
 
   try {
     const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^\[|\]$/g, '');
+    if (
+      /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/i.test(hostname)
+      || /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/i.test(hostname)
+      || /^192\.168\.\d{1,3}\.\d{1,3}$/i.test(hostname)
+    ) {
+      // Leave empty so preview cards fall back to the localized intranet label.
+      return '';
+    }
     const pathPart = decodeURIComponent(parsed.pathname.split('/').filter(Boolean).pop() ?? '');
     return pathPart || parsed.host;
   } catch {

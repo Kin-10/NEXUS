@@ -21,7 +21,6 @@ import { openArtifactPreviewTab } from '@/store/slices/artifactSlice';
 import { type Artifact, ArtifactTypeValue } from '@/types/artifact';
 import { revealLocalPathWithToast, showShellFailureToast } from '@/utils/localFileActions';
 
-import ServiceDeploymentIcon from '../icons/ServiceDeploymentIcon';
 import {
   ArtifactPreviewActionSource,
   ArtifactPublishEntryPoint,
@@ -343,7 +342,6 @@ interface ArtifactPreviewCardProps {
   artifact: Artifact;
   localServiceDirectory?: string;
   onOpenLocalService?: (artifact: Artifact) => void;
-  onDeployLocalService?: (artifact: Artifact) => void;
   onOpenHtmlFile?: (artifact: Artifact) => void;
   /**
    * Overrides the default preview-tab behavior for contexts without the
@@ -356,7 +354,6 @@ const ArtifactPreviewCard: React.FC<ArtifactPreviewCardProps> = ({
   artifact,
   localServiceDirectory,
   onOpenLocalService,
-  onDeployLocalService,
   onOpenHtmlFile,
   onOpenPreview,
 }) => {
@@ -399,18 +396,11 @@ const ArtifactPreviewCard: React.FC<ArtifactPreviewCardProps> = ({
     });
   }, [artifact, artifactFileShare]);
 
-  const handleDeployClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    onDeployLocalService?.(artifact);
-  }, [artifact, onDeployLocalService]);
-
   const descriptor = getPreviewCardDescriptor(artifact);
   const supportsOpenMenu = descriptor.supportsOpenMenu;
   const canShare = artifact.type !== ArtifactTypeValue.LocalService &&
     Boolean(artifactFileShare) &&
     isArtifactFileShareable(artifact);
-  const canDeploy = artifact.type === ArtifactTypeValue.LocalService &&
-    Boolean(onDeployLocalService);
   const cardClassName = 'artifact-preview-card-row group flex min-h-[58px] items-center gap-3 px-4 py-3 transition-colors w-full text-left';
   const iconClassName = 'w-5 h-5';
   const localServiceUrl = artifact.type === ArtifactTypeValue.LocalService
@@ -507,17 +497,6 @@ const ArtifactPreviewCard: React.FC<ArtifactPreviewCardProps> = ({
           >
             <ShareNetwork className="h-4 w-4" />
             <span>{t('htmlShare')}</span>
-          </button>
-        )}
-        {canDeploy && (
-          <button
-            type="button"
-            onClick={handleDeployClick}
-            className="inline-flex h-9 min-w-[82px] flex-shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-transparent px-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
-            aria-label={t('nodeDeploymentProgressDeploy')}
-          >
-            <ServiceDeploymentIcon className="h-4 w-4 translate-y-px" />
-            <span>{t('nodeDeploymentProgressDeploy')}</span>
           </button>
         )}
         {dropdownOpen && (

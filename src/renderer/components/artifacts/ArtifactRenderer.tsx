@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { i18nService } from '@/services/i18n';
+import { getPrivateIntranetAddressDisplay, isPrivateIntranetUrl } from '@/services/intranetUrlPrivacy';
 import type { Artifact } from '@/types/artifact';
 
 import type { ArtifactSelectedTextContext } from './artifactSelectedText';
@@ -39,12 +41,17 @@ const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ artifact, selectedT
       return <DocumentRenderer artifact={artifact} />;
     case 'code':
       return <CodeRenderer artifact={artifact} />;
-    case 'local-service':
+    case 'local-service': {
+      const rawUrl = artifact.url || artifact.content || '';
+      const display = isPrivateIntranetUrl(rawUrl)
+        ? i18nService.t('artifactIntranetService')
+        : getPrivateIntranetAddressDisplay(rawUrl, i18nService.t('artifactIntranetService')) || rawUrl;
       return (
         <div className="flex h-full items-center justify-center p-4 text-center text-sm text-muted">
-          {artifact.url || artifact.content}
+          {display}
         </div>
       );
+    }
     default:
       return (
         <div className="flex items-center justify-center h-full text-muted text-sm">

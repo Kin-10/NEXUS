@@ -180,6 +180,12 @@ const normalizeProviderModels = (
   });
 };
 
+const normalizeProviderApiKey = (providerKey: string, apiKey: unknown): string => {
+  const trimmed = typeof apiKey === 'string' ? apiKey.trim() : '';
+  if (trimmed) return trimmed;
+  return ProviderRegistry.getDefaultApiKey(providerKey) || '';
+};
+
 const normalizeProvidersConfig = (providers: AppConfig['providers']): AppConfig['providers'] => {
   if (!providers) {
     return providers;
@@ -189,10 +195,12 @@ const normalizeProvidersConfig = (providers: AppConfig['providers']): AppConfig[
     Object.entries(providers).map(([providerKey, providerConfig]) => {
       const baseUrl = normalizeProviderBaseUrl(providerKey, providerConfig.baseUrl);
       const apiFormat = normalizeProviderApiFormat(providerKey, providerConfig.apiFormat);
+      const apiKey = normalizeProviderApiKey(providerKey, providerConfig.apiKey);
       return [
         providerKey,
         {
         ...providerConfig,
+          apiKey,
           baseUrl,
           apiFormat,
           models: normalizeProviderModels(providerKey, providerConfig.models, {
@@ -651,8 +659,10 @@ const hydrateStoredConfig = (storedConfig: AppConfig): AppConfig => {
             const migratedProvider = migrateProviderDefaultApiFormat(providerKey, mergedProvider);
             const baseUrl = normalizeProviderBaseUrl(providerKey, migratedProvider.baseUrl);
             const apiFormat = normalizeProviderApiFormat(providerKey, migratedProvider.apiFormat);
+            const apiKey = normalizeProviderApiKey(providerKey, migratedProvider.apiKey);
             return {
               ...migratedProvider,
+              apiKey,
               baseUrl,
               apiFormat,
               models: normalizeProviderModels(

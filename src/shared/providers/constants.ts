@@ -175,6 +175,11 @@ interface ProviderDefInput {
    * Existing saved configs keep their stored enabled flag.
    */
   readonly defaultEnabled?: boolean;
+  /**
+   * Optional default API key for fresh installs / empty-key normalize.
+   * Does not overwrite a user-provided non-empty key.
+   */
+  readonly defaultApiKey?: string;
   /** Priority ordering for English locale display (lower = higher priority, 0 = no special priority) */
   readonly enPriority: number;
   /** Default model list */
@@ -230,7 +235,8 @@ const PROVIDER_DEFINITIONS = [
     defaultApiFormat: ApiFormat.OpenAI,
     codingPlanSupported: false,
     lockBaseUrl: true,
-    defaultEnabled: true,
+    defaultEnabled: false,
+    defaultApiKey: 'sk-TumfRPbFva14PEGMxxvFxXlC1qTh9OwH52SnI6R2rNoFZW7O',
     region: 'china',
     enPriority: 0,
     defaultModels: [
@@ -670,6 +676,11 @@ export interface ProviderDef {
    * Existing saved configs keep their stored enabled flag.
    */
   readonly defaultEnabled?: boolean;
+  /**
+   * Optional default API key for fresh installs / empty-key normalize.
+   * Does not overwrite a user-provided non-empty key.
+   */
+  readonly defaultApiKey?: string;
   /** Priority ordering for English locale display (lower = higher priority, 0 = no special priority) */
   readonly enPriority: number;
   /** Default model list */
@@ -939,6 +950,12 @@ class ProviderRegistryImpl {
   /** Whether Settings must keep the model list fixed to registry defaults. */
   isModelsLocked(id: string): boolean {
     return this.idIndex.get(id)?.lockModels === true;
+  }
+
+  /** Optional default API key used when the stored key is empty. */
+  getDefaultApiKey(id: string): string | undefined {
+    const value = this.idIndex.get(id)?.defaultApiKey?.trim();
+    return value || undefined;
   }
 
   /**

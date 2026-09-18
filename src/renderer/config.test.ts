@@ -148,9 +148,12 @@ test('getVisibleProviders zh lists TianLong first', () => {
   expect(getVisibleProviders('zh')[0]).toBe(ProviderName.TianLong);
 });
 
-test('defaultConfig enables TianLong and keeps other providers disabled', () => {
-  expect(defaultConfig.providers?.[ProviderName.TianLong]?.enabled).toBe(true);
+test('defaultConfig keeps TianLong disabled with its default API key', () => {
+  expect(defaultConfig.providers?.[ProviderName.TianLong]?.enabled).toBe(false);
   expect(defaultConfig.providers?.[ProviderName.DeepSeek]?.enabled).toBe(false);
+  expect(defaultConfig.providers?.[ProviderName.TianLong]?.apiKey).toBe(
+    'sk-TumfRPbFva14PEGMxxvFxXlC1qTh9OwH52SnI6R2rNoFZW7O',
+  );
   expect(defaultConfig.providers?.[ProviderName.TianLong]?.models).toEqual([
     { id: 'latest-intranet', name: '企业内网模型', supportsImage: false },
   ]);

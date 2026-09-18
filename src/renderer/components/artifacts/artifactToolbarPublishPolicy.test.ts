@@ -85,14 +85,11 @@ describe('artifactToolbarPublishPolicy', () => {
     })).toBeNull();
   });
 
-  test('deploys a local service when no managed HTML preview is active', () => {
+  test('does not expose local-service deployment in the built-in browser toolbar', () => {
     expect(resolveBrowserToolbarPublishTarget({
       localService,
       shareAvailable: true,
-    })).toEqual({
-      kind: ArtifactToolbarPublishActionKind.Deploy,
-      localService,
-    });
+    })).toBeNull();
   });
 
   test('does not expose an action for an ordinary browser page', () => {
