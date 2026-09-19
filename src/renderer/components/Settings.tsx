@@ -2,7 +2,7 @@ import { ArchiveBoxIcon, ArrowPathIcon, ArrowPathRoundedSquareIcon, CheckCircleI
 import React, { useCallback,useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { UsageAnalyticsUnlockClickCount } from '../../shared/analytics/constants';
+import { AboutExportLogsUnlockClickCount, UsageAnalyticsUnlockClickCount } from '../../shared/analytics/constants';
 import { AppSettingsAutoLaunchErrorCode } from '../../shared/appSettings/constants';
 import { type AppUpdateInfo,type AppUpdateRuntimeState,AppUpdateSource,AppUpdateStatus } from '../../shared/appUpdate/constants';
 import {
@@ -64,8 +64,8 @@ import Modal from './common/Modal';
 import DreamingRecoveryNotice from './cowork/DreamingRecoveryNotice';
 import DreamingSettingsSection from './cowork/DreamingSettingsSection';
 import EmbeddingSettingsSection from './cowork/EmbeddingSettingsSection';
-import ImagePreviewModal from './cowork/ImagePreviewModal';
 import ErrorMessage from './ErrorMessage';
+import BrainIcon from './icons/BrainIcon';
 import EditIcon from './icons/EditIcon';
 import PlusCircleIcon from './icons/PlusCircleIcon';
 import IMSettings from './im/IMSettings';
@@ -951,6 +951,8 @@ interface ProvidersImportPayload {
 
 const ABOUT_CONTACT_EMAIL = 'zhibao.he@skhb.com';
 
+const formatAboutVersion = (version: string): string => version.trim().replace(/^v/i, '');
+
 // MiniMax Portal OAuth constants
 const MINIMAX_OAUTH_CLIENT_ID = '78257093-7e40-4613-99e0-527b14b39113';
 const MINIMAX_OAUTH_SCOPE = 'group_id profile model.completion';
@@ -1388,6 +1390,8 @@ const Settings: React.FC<SettingsProps> = ({
   const [usageAnalyticsEnabled, setUsageAnalyticsEnabled] = useState(true);
   const [usageAnalyticsUnlocked, setUsageAnalyticsUnlocked] = useState(false);
   const usageAnalyticsNavClickCountRef = useRef(0);
+  const [exportLogsUnlocked, setExportLogsUnlocked] = useState(false);
+  const aboutNavClickCountRef = useRef(0);
   const [taskCompletionNotificationMode, setTaskCompletionNotificationMode] =
     useState<TaskCompletionNotificationMode>(TaskCompletionNotificationMode.Unfocused);
   const [permissionNotificationsEnabled, setPermissionNotificationsEnabled] = useState(true);
@@ -1535,7 +1539,6 @@ const Settings: React.FC<SettingsProps> = ({
   const [appVersion, setAppVersion] = useState('');
   const [emailCopied, setEmailCopied] = useState(false);
   const [isExportingLogs, setIsExportingLogs] = useState(false);
-  const [feedbackGroupPreviewOpen, setFeedbackGroupPreviewOpen] = useState(false);
   const [testMode, setTestMode] = useState(false);
   const [logoClickCount, setLogoClickCount] = useState(0);
   const [testModeUnlocked, setTestModeUnlocked] = useState(false);
@@ -3717,6 +3720,12 @@ const Settings: React.FC<SettingsProps> = ({
         setUsageAnalyticsUnlocked(true);
       }
     }
+    if (tab === 'about' && !exportLogsUnlocked) {
+      aboutNavClickCountRef.current += 1;
+      if (aboutNavClickCountRef.current >= AboutExportLogsUnlockClickCount) {
+        setExportLogsUnlocked(true);
+      }
+    }
     if (activeTab === 'plugins' && pluginsSettingsRef.current?.guardLeave(() => doTabChange(tab))) {
       return;
     }
@@ -3724,6 +3733,7 @@ const Settings: React.FC<SettingsProps> = ({
   }, [
     activeTab,
     doTabChange,
+    exportLogsUnlocked,
     isBackingUpOpenClawData,
     isRestoringOpenClawData,
     usageAnalyticsUnlocked,
@@ -5843,14 +5853,14 @@ const Settings: React.FC<SettingsProps> = ({
               }}
             />
             <h3 className="text-lg font-semibold text-foreground">百应</h3>
-            <span className="text-xs text-secondary mt-1">v{appVersion}</span>
+            <span className="text-xs text-secondary mt-1">{formatAboutVersion(appVersion)}</span>
 
             {/* Info Card */}
             <div className="w-full mt-8 rounded-xl border border-border overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 border-b border-border">
                 <span className="shrink-0 text-sm text-foreground">{i18nService.t('aboutVersion')}</span>
                 <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
-                  <span className="text-sm text-secondary">{appVersion}</span>
+                  <span className="text-sm text-secondary">{formatAboutVersion(appVersion)}</span>
                   {!enterpriseConfig?.disableUpdate && (
                   <button
                     type="button"
@@ -5914,55 +5924,22 @@ const Settings: React.FC<SettingsProps> = ({
               )}
             </div>
 
-            {/* Feedback group QR — thumbnail; click opens preview */}
-            <div className="mt-8 flex w-full flex-col items-center">
-              <span className="text-sm font-medium text-foreground">
-                {i18nService.t('aboutFeedbackGroup')}
-              </span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFeedbackGroupPreviewOpen(true);
-                }}
-                title={i18nService.t('aboutFeedbackGroupClickToPreview')}
-                aria-label={i18nService.t('aboutFeedbackGroupClickToPreview')}
-                className="mt-3 rounded-lg border border-border bg-white p-1 shadow-subtle transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              >
-                <img
-                  src="feedback-group-qr.png"
-                  alt={i18nService.t('aboutFeedbackGroup')}
-                  className="block w-20 h-auto rounded-md"
-                  draggable={false}
-                />
-              </button>
-              <p className="mt-2 max-w-[16rem] text-center text-xs text-secondary">
-                {i18nService.t('aboutFeedbackGroupHint')}
-              </p>
-            </div>
-            <ImagePreviewModal
-              image={feedbackGroupPreviewOpen ? {
-                src: 'feedback-group-qr.png',
-                alt: i18nService.t('aboutFeedbackGroup'),
-                title: i18nService.t('aboutFeedbackGroup'),
-              } : null}
-              onClose={() => setFeedbackGroupPreviewOpen(false)}
-            />
-
             {/* Footer */}
-            <div className="mt-auto w-full pt-14 pb-2 flex flex-col items-center">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void handleExportLogs();
-                }}
-                disabled={isExportingLogs}
-                className="bg-transparent border-none appearance-none px-1.5 py-0.5 rounded-md cursor-pointer text-sm text-secondary hover:text-primary dark:hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isExportingLogs ? i18nService.t('aboutExportingLogs') : i18nService.t('aboutExportLogs')}
-              </button>
-            </div>
+            {exportLogsUnlocked && (
+              <div className="mt-auto w-full pt-14 pb-2 flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void handleExportLogs();
+                  }}
+                  disabled={isExportingLogs}
+                  className="bg-transparent border-none appearance-none px-1.5 py-0.5 rounded-md cursor-pointer text-sm text-secondary hover:text-primary dark:hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isExportingLogs ? i18nService.t('aboutExportingLogs') : i18nService.t('aboutExportLogs')}
+                </button>
+              </div>
+            )}
           </div>
         );
 

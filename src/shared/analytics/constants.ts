@@ -6,6 +6,9 @@ export const LogReporterEndpoint = {
 /** Sidebar "General" clicks required before the usage-analytics toggle is shown. */
 export const UsageAnalyticsUnlockClickCount = 7 as const;
 
+/** Sidebar "About" clicks required before the export-logs action is shown. */
+export const AboutExportLogsUnlockClickCount = 7 as const;
+
 export const LogReporterProduct = {
   BaiYing: 'wisdom',
 } as const;
