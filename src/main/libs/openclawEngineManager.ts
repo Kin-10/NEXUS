@@ -400,6 +400,7 @@ export class OpenClawEngineManager extends EventEmitter {
   private gatewayRestartAttempt = 0;
   private gatewayLifecycleGeneration = 0;
   private gatewayMaintenanceActive = false;
+  private gatewayStartupBlock: OpenClawEngineStatus | null = null;
   private shutdownRequested = false;
   private gatewayPort: number | null = null;
   private startGatewayPromise: Promise<OpenClawEngineStatus> | null = null;
@@ -665,6 +666,7 @@ export class OpenClawEngineManager extends EventEmitter {
   }
 
   async ensureReady(_options: { forceReinstall?: boolean } = {}): Promise<OpenClawEngineStatus> {
+    if (this.isGatewayStartupBlocked() && !this.gatewayMaintenanceActive) return this.getStatus();
     const runtime = this.resolveRuntimeMetadata();
     this.desiredVersion = runtime.version || DEFAULT_OPENCLAW_VERSION;
 
@@ -724,11 +726,18 @@ export class OpenClawEngineManager extends EventEmitter {
       return await repair();
     } finally {
       this.gatewayMaintenanceActive = false;
+      if (this.gatewayStartupBlock) this.setStatus(this.gatewayStartupBlock);
     }
   }
 
-  async startGateway(reason = 'unknown'): Promise<OpenClawEngineStatus> {
+  isGatewayStartupBlocked(): boolean {
+    return !!this.gatewayStartupBlock;
+  }
+
+  async startGateway(reason = 'unknown', options: { retryBlocked?: boolean } = {}): Promise<OpenClawEngineStatus> {
     if (this.gatewayMaintenanceActive) return this.getStatus();
+    if (options.retryBlocked) this.gatewayStartupBlock = null;
+    if (this.isGatewayStartupBlocked()) return this.getStatus();
     const generation = this.gatewayLifecycleGeneration;
     if (this.stopGatewayPromise) {
       await this.stopGatewayPromise;
@@ -1262,8 +1271,10 @@ export class OpenClawEngineManager extends EventEmitter {
     });
   }
 
-  async restartGateway(reason = 'unknown'): Promise<OpenClawEngineStatus> {
+  async restartGateway(reason = 'unknown', options: { retryBlocked?: boolean } = {}): Promise<OpenClawEngineStatus> {
     if (this.gatewayMaintenanceActive) return this.getStatus();
+    if (options.retryBlocked) this.gatewayStartupBlock = null;
+    if (this.isGatewayStartupBlocked()) return this.getStatus();
     if (this.restartGatewayPromise) return this.restartGatewayPromise;
     this.restartGatewayPromise = this.doRestartGateway(reason).finally(() => {
       this.restartGatewayPromise = null;
@@ -2231,12 +2242,14 @@ export class OpenClawEngineManager extends EventEmitter {
         console.error(`${gwDiagTs()} gateway plugin verification failed; auto-restart suppressed`);
         this.gatewayRestartAttempt = 0;
         this.clearScheduledGatewayRestart();
-        this.setStatus({
+        this.gatewayStartupBlock = {
           phase: OpenClawEnginePhase.Error,
           version: this.status.version,
+          errorCode: OpenClawEngineErrorCode.PluginVerificationFailed,
           message: t('openClawPluginVerificationFailed', { error: pluginVerificationFailure }),
           canRetry: true,
-        });
+        };
+        this.setStatus(this.gatewayStartupBlock);
         return;
       }
 
@@ -2325,6 +2338,7 @@ export class OpenClawEngineManager extends EventEmitter {
   }
 
   private setStatus(next: OpenClawEngineStatus): void {
+    if (this.gatewayStartupBlock && !this.gatewayMaintenanceActive && next.phase !== OpenClawEnginePhase.Error) next = this.gatewayStartupBlock;
     this.status = {
       ...next,
       message: next.message ? next.message.slice(0, 500) : undefined,

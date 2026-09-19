@@ -4,6 +4,7 @@ import { i18nService } from '@/services/i18n';
 import { getPrivateIntranetAddressDisplay, isPrivateIntranetUrl } from '@/services/intranetUrlPrivacy';
 import { type Artifact, ArtifactTypeValue } from '@/types/artifact';
 
+import { isWorkspaceDiffArtifact } from '../../../shared/artifactPreview/workspaceChanges';
 import type { ArtifactSelectedTextContext } from './artifactSelectedText';
 import CodeRenderer from './renderers/CodeRenderer';
 import DocumentRenderer from './renderers/DocumentRenderer';
@@ -14,6 +15,7 @@ import MermaidRenderer from './renderers/MermaidRenderer';
 import SvgRenderer from './renderers/SvgRenderer';
 import TextRenderer from './renderers/TextRenderer';
 import VideoRenderer from './renderers/VideoRenderer';
+import WorkspaceDiffRenderer from './renderers/WorkspaceDiffRenderer';
 
 interface ArtifactRendererProps {
   artifact: Artifact;
@@ -23,6 +25,9 @@ interface ArtifactRendererProps {
 }
 
 const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ artifact, selectedTextContext, sourceView = false }) => {
+  if (isWorkspaceDiffArtifact(artifact) && !sourceView) {
+    return <WorkspaceDiffRenderer artifact={artifact} selectedTextContext={selectedTextContext} />;
+  }
   if (sourceView && !(artifact.type === ArtifactTypeValue.Markdown && artifact.filePath && window.electron?.artifact?.markdown)) {
     return <CodeRenderer artifact={artifact} />;
   }

@@ -66,6 +66,8 @@ import { i18nService } from '../../services/i18n';
 import { redactPrivateIntranetUrlsInText } from '../../services/intranetUrlPrivacy';
 import { getInstalledKitSkillIds } from '../../services/kitCapability';
 import { readLocalServiceProjectDirectoryCandidate } from '../../services/localServiceProjectDirectoryCache';
+import { getSubagentWaitPhase, SubagentWaitPhase } from '../../services/subagentWaitState';
+import { getTaskPanelMainAgentStatus } from '../../services/taskPanelState';
 import { RootState } from '../../store';
 import {
   selectCurrentMessagesLength,
@@ -73,6 +75,7 @@ import {
   selectCurrentSession,
   selectIsStreaming,
   selectLastMessageContent,
+  selectPendingPermissions,
   selectRemoteManaged,
 } from '../../store/selectors/coworkSelectors';
 import {
@@ -81,6 +84,7 @@ import {
   activateArtifactFileListTab,
   activateArtifactPreviewTab,
   activateArtifactSubagentTab,
+  activateArtifactTasksTab,
   activateArtifactUserAttachmentTab,
   addArtifact,
   type ArtifactPreviewTab,
@@ -114,6 +118,7 @@ import { setActiveSkillIds } from '../../store/slices/skillSlice';
 import type { Artifact } from '../../types/artifact';
 import { ArtifactTypeValue, PREVIEWABLE_ARTIFACT_TYPES } from '../../types/artifact';
 import type {
+  CoworkBackgroundJob,
   CoworkImageAttachment,
   CoworkMessage,
   CoworkMessageMetadata,
@@ -133,6 +138,7 @@ import {
   AgentBrowserInAppPanel,
   ArtifactPanel,
   SubagentPanelContent,
+  TaskPanelContent,
   UserAttachmentPanelContent,
   type UserAttachmentPreviewPayload,
 } from '../artifacts';
@@ -148,6 +154,7 @@ import FileTypeIcon from '../icons/fileTypes/FileTypeIcon';
 import SidebarSearchIcon from '../icons/SidebarSearchIcon';
 import SidebarToggleIcon from '../icons/SidebarToggleIcon';
 import SubagentIcon from '../icons/SubagentIcon';
+import TaskPanelIcon from '../icons/TaskPanelIcon';
 import MarkdownContent from '../MarkdownContent';
 import { type ToastEventDetail } from '../Toast';
 import { resolveAgentModelSelection, useAgentSelectedModel } from './agentModelSelection';
@@ -185,6 +192,7 @@ import CoworkAliveWave from './CoworkAliveWave';
 import CoworkBtwFloatingPanel from './CoworkBtwFloatingPanel';
 import CoworkConversationSearch from './CoworkConversationSearch';
 import CoworkPromptInput, { type CoworkPromptInputRef } from './CoworkPromptInput';
+import QuestionDock from './interactions/QuestionDock';
 import LazyRenderTurn, { clearHeightCache } from './LazyRenderTurn';
 import {
   buildConversationTurns,
@@ -210,6 +218,7 @@ import {
   mergeCoworkTextExportMessages,
 } from './sessionExport';
 import SubagentSpawnCard from './SubagentSpawnCard';
+import { useBackgroundJobs } from './useBackgroundJobs';
 import { useCoworkConversationSearch } from './useCoworkConversationSearch';
 import UserMessageContent from './UserMessageContent';
 import UserMessageItem from './UserMessageItem';
@@ -1510,6 +1519,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   const isMac = window.electron.platform === 'darwin';
   const isWindows = window.electron.platform === 'win32';
   const currentSession = useSelector(selectCurrentSession);
+  const pendingPermissions = useSelector(selectPendingPermissions);
   const enterpriseAccountContext = useSelector(selectEnterpriseAccountContext);
   const isStreaming = useSelector(selectIsStreaming);
   const remoteManaged = useSelector(selectRemoteManaged);
@@ -2245,6 +2255,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   );
   const [hasUnreadAgentBrowserActivity, setHasUnreadAgentBrowserActivity] = useState(false);
   const [isSubagentPreviewTabOpen, setIsSubagentPreviewTabOpen] = useState(false);
+  const [isTasksPreviewTabOpen, setIsTasksPreviewTabOpen] = useState(false);
   const [isUserAttachmentPreviewTabOpen, setIsUserAttachmentPreviewTabOpen] = useState(false);
   const [userAttachmentPreview, setUserAttachmentPreview] = useState<UserAttachmentPreviewPayload | null>(null);
   const [activeSpecialPreviewTab, setActiveSpecialPreviewTab] = useState<ArtifactSpecialTab>(ArtifactSpecialTab.FileList);
@@ -2262,6 +2273,17 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   const [artifactPanelMinWidth, setArtifactPanelMinWidth] = useState(MIN_PANEL_WIDTH);
   const [artifactPanelMaxWidth, setArtifactPanelMaxWidth] = useState(MAX_PANEL_WIDTH);
   const [subagents, setSubagents] = useState<SubagentSessionSummary[]>([]);
+  const subagentWaitPhase = useMemo(
+    () => getSubagentWaitPhase(currentSession?.messages ?? [], subagents),
+    [currentSession?.messages, subagents],
+  );
+  const activityStatusOverride = isContextMaintenance
+    ? i18nService.t('coworkContextMaintenanceRunning')
+    : subagentWaitPhase === SubagentWaitPhase.Children
+      ? i18nService.t('coworkActivityLiveWaitSubagents')
+      : subagentWaitPhase === SubagentWaitPhase.Summary
+        ? i18nService.t('coworkActivityWaitSubagentSummary')
+        : null;
   const [subagentsLoading, setSubagentsLoading] = useState(false);
   const [selectedSubagent, setSelectedSubagent] = useState<SubagentSessionSummary | null>(null);
   const [contentRowWidth, setContentRowWidth] = useState(0);
@@ -2277,6 +2299,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
   const agentBrowserPreviewTabOpenBySessionRef = useRef<Record<string, boolean>>({});
   const unreadAgentBrowserActivityBySessionRef = useRef<Record<string, boolean>>({});
   const subagentPreviewTabOpenBySessionRef = useRef<Record<string, boolean>>({});
+  const tasksPreviewTabOpenBySessionRef = useRef<Record<string, boolean>>({});
   const userAttachmentPreviewTabOpenBySessionRef = useRef<Record<string, boolean>>({});
   const userAttachmentPreviewBySessionRef = useRef<Record<string, UserAttachmentPreviewPayload>>({});
   const userAttachmentFocusRequestKeyRef = useRef(0);
@@ -2363,6 +2386,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     if (!sessionId) return undefined;
     const hasRunningSubagents = subagents.some(subagent => subagent.status === 'running');
     const shouldPoll = isSubagentPreviewTabOpen ||
+      isTasksPreviewTabOpen ||
       hasRunningSubagents ||
       currentSession?.status === CoworkSessionStatusValue.Running;
     if (!shouldPoll) return undefined;
@@ -2374,6 +2398,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     currentSession?.status,
     fetchSubagents,
     isSubagentPreviewTabOpen,
+    isTasksPreviewTabOpen,
     sessionId,
     subagents,
   ]);
@@ -2386,6 +2411,17 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       ? subagents.find(subagent => subagent.id === selectedSubagent.id) ?? selectedSubagent
       : null
   ), [selectedSubagent, subagents]);
+
+  const {
+    jobs: backgroundJobs,
+    loading: backgroundJobsLoading,
+    liveCount: liveBackgroundJobCount,
+    kill: killBackgroundJob,
+    clearSettled: clearSettledBackgroundJobs,
+  } = useBackgroundJobs(sessionId, {
+    sessionRunning: currentSession?.status === CoworkSessionStatusValue.Running,
+    panelActive: isPanelOpen && isTasksPreviewTabOpen && activeSpecialPreviewTab === ArtifactSpecialTab.Tasks,
+  });
 
   const getToolGroupSubagents = useCallback((group: ToolGroupItem): SubagentSessionSummary[] => {
     const seen = new Set<string>();
@@ -2603,6 +2639,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       ? unreadAgentBrowserActivityBySessionRef.current[sessionId] ?? false
       : false);
     setIsSubagentPreviewTabOpen(sessionId ? subagentPreviewTabOpenBySessionRef.current[sessionId] ?? false : false);
+    setIsTasksPreviewTabOpen(sessionId ? tasksPreviewTabOpenBySessionRef.current[sessionId] ?? false : false);
     setIsUserAttachmentPreviewTabOpen(sessionId ? userAttachmentPreviewTabOpenBySessionRef.current[sessionId] ?? false : false);
     setUserAttachmentPreview(sessionId ? userAttachmentPreviewBySessionRef.current[sessionId] ?? null : null);
     setActiveSpecialPreviewTab(sessionId
@@ -2676,6 +2713,13 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     setIsSubagentPreviewTabOpen(open);
     if (sessionId) {
       subagentPreviewTabOpenBySessionRef.current[sessionId] = open;
+    }
+  }, [sessionId]);
+
+  const setSessionTasksPreviewTabOpen = useCallback((open: boolean) => {
+    setIsTasksPreviewTabOpen(open);
+    if (sessionId) {
+      tasksPreviewTabOpenBySessionRef.current[sessionId] = open;
     }
   }, [sessionId]);
 
@@ -3164,6 +3208,12 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       return;
     }
 
+    if (isTasksPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Tasks);
+      dispatch(activateArtifactTasksTab({ sessionId }));
+      return;
+    }
+
     if (isUserAttachmentPreviewTabOpen) {
       setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.UserAttachment);
       dispatch(activateArtifactUserAttachmentTab({ sessionId }));
@@ -3179,6 +3229,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     isAgentBrowserPreviewTabOpen,
     isBrowserPreviewTabOpen,
     isSubagentPreviewTabOpen,
+    isTasksPreviewTabOpen,
     isUserAttachmentPreviewTabOpen,
     sessionId,
     setSessionActiveSpecialPreviewTab,
@@ -3291,6 +3342,12 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       return;
     }
 
+    if (isTasksPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Tasks);
+      dispatch(activateArtifactTasksTab({ sessionId }));
+      return;
+    }
+
     if (isUserAttachmentPreviewTabOpen) {
       setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.UserAttachment);
       dispatch(activateArtifactUserAttachmentTab({ sessionId }));
@@ -3307,6 +3364,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     isAgentBrowserPreviewTabOpen,
     isFileListPreviewTabOpen,
     isSubagentPreviewTabOpen,
+    isTasksPreviewTabOpen,
     isUserAttachmentPreviewTabOpen,
     sessionId,
     setSessionActiveSpecialPreviewTab,
@@ -3353,6 +3411,11 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       dispatch(activateArtifactSubagentTab({ sessionId }));
       return;
     }
+    if (isTasksPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Tasks);
+      dispatch(activateArtifactTasksTab({ sessionId }));
+      return;
+    }
     if (isUserAttachmentPreviewTabOpen) {
       setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.UserAttachment);
       dispatch(activateArtifactUserAttachmentTab({ sessionId }));
@@ -3367,6 +3430,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     isBrowserPreviewTabOpen,
     isFileListPreviewTabOpen,
     isSubagentPreviewTabOpen,
+    isTasksPreviewTabOpen,
     isUserAttachmentPreviewTabOpen,
     sessionId,
     setSessionActiveSpecialPreviewTab,
@@ -3418,6 +3482,12 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       return;
     }
 
+    if (isTasksPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Tasks);
+      dispatch(activateArtifactTasksTab({ sessionId }));
+      return;
+    }
+
     if (isUserAttachmentPreviewTabOpen) {
       setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.UserAttachment);
       dispatch(activateArtifactUserAttachmentTab({ sessionId }));
@@ -3433,11 +3503,162 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     isAgentBrowserPreviewTabOpen,
     isBrowserPreviewTabOpen,
     isFileListPreviewTabOpen,
+    isTasksPreviewTabOpen,
     isUserAttachmentPreviewTabOpen,
     sessionId,
     setSessionActiveSpecialPreviewTab,
     setSessionSubagentPreviewTabOpen,
   ]);
+
+  const handleOpenArtifactTasksTab = useCallback(() => {
+    reportArtifactPreviewAction({
+      actionType: 'panel_tab_open',
+      source: 'artifact_panel',
+      params: {
+        tabType: 'tasks',
+        tabCount: artifactTabsWithArtifacts.length,
+      },
+    });
+    setShowArtifactAddMenu(false);
+    if (!sessionId) return;
+    setSessionTasksPreviewTabOpen(true);
+    setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Tasks);
+    dispatch(activateArtifactTasksTab({ sessionId }));
+    void fetchSubagents(sessionId, { showLoading: subagents.length === 0 });
+  }, [
+    artifactTabsWithArtifacts.length,
+    dispatch,
+    fetchSubagents,
+    sessionId,
+    setSessionActiveSpecialPreviewTab,
+    setSessionTasksPreviewTabOpen,
+    subagents.length,
+  ]);
+
+  const handleActivateArtifactTasksTab = useCallback(() => {
+    if (!sessionId) return;
+    reportArtifactPreviewAction({
+      actionType: 'panel_tab_switch',
+      source: 'artifact_panel',
+      params: {
+        tabType: 'tasks',
+        tabCount: artifactTabsWithArtifacts.length,
+      },
+    });
+    setSessionTasksPreviewTabOpen(true);
+    setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Tasks);
+    dispatch(activateArtifactTasksTab({ sessionId }));
+    void fetchSubagents(sessionId, { showLoading: subagents.length === 0 });
+  }, [
+    artifactTabsWithArtifacts.length,
+    dispatch,
+    fetchSubagents,
+    sessionId,
+    setSessionActiveSpecialPreviewTab,
+    setSessionTasksPreviewTabOpen,
+    subagents.length,
+  ]);
+
+  const handleCloseArtifactTasksTab = useCallback(() => {
+    const wasActive = !activeArtifactPreviewTab && activeSpecialPreviewTab === ArtifactSpecialTab.Tasks;
+    reportArtifactPreviewAction({
+      actionType: 'panel_tab_close',
+      source: 'artifact_panel',
+      params: {
+        tabType: 'tasks',
+        wasActive,
+        tabCount: artifactTabsWithArtifacts.length,
+      },
+    });
+    setSessionTasksPreviewTabOpen(false);
+    if (!sessionId) {
+      dispatch(closePanel(undefined));
+      return;
+    }
+
+    if (!wasActive) return;
+
+    const nextTabId = artifactTabsWithArtifacts[0]?.tab.id;
+    if (nextTabId) {
+      dispatch(activateArtifactPreviewTab({ sessionId, tabId: nextTabId }));
+      return;
+    }
+
+    if (isBrowserPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Browser);
+      dispatch(activateArtifactBrowserTab({ sessionId }));
+      return;
+    }
+
+    if (isFileListPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.FileList);
+      dispatch(activateArtifactFileListTab({ sessionId }));
+      return;
+    }
+
+    if (isAgentBrowserPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.AgentBrowser);
+      dispatch(activateArtifactAgentBrowserTab({ sessionId }));
+      return;
+    }
+
+    if (isSubagentPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Subagents);
+      dispatch(activateArtifactSubagentTab({ sessionId }));
+      return;
+    }
+
+    if (isUserAttachmentPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.UserAttachment);
+      dispatch(activateArtifactUserAttachmentTab({ sessionId }));
+      return;
+    }
+
+    dispatch(closePanel({ sessionId }));
+  }, [
+    activeArtifactPreviewTab,
+    activeSpecialPreviewTab,
+    artifactTabsWithArtifacts,
+    dispatch,
+    isAgentBrowserPreviewTabOpen,
+    isBrowserPreviewTabOpen,
+    isFileListPreviewTabOpen,
+    isSubagentPreviewTabOpen,
+    isUserAttachmentPreviewTabOpen,
+    sessionId,
+    setSessionActiveSpecialPreviewTab,
+    setSessionTasksPreviewTabOpen,
+  ]);
+
+  const isTasksPreviewTabActive =
+    isPanelOpen && !activeArtifactPreviewTab && activeSpecialPreviewTab === ArtifactSpecialTab.Tasks;
+
+  // Header button: open the tab and bring it to the front, or close it when it
+  // is already in the foreground (falling back to the previous tab).
+  const handleToggleTasksPanel = useCallback(() => {
+    if (isTasksPreviewTabActive) {
+      handleCloseArtifactTasksTab();
+      return;
+    }
+    handleOpenArtifactTasksTab();
+  }, [handleCloseArtifactTasksTab, handleOpenArtifactTasksTab, isTasksPreviewTabActive]);
+
+  const handleKillBackgroundJob = useCallback(async (job: CoworkBackgroundJob) => {
+    const result = await killBackgroundJob(job.engineJobId ?? job.id);
+    const key = !result.success
+      ? 'taskPanelKillFailed'
+      : result.outcome === 'requested' ? 'taskPanelKillRequested'
+        : result.outcome === 'already-finished' ? 'taskPanelKillAlreadyFinished'
+          : result.outcome === 'not-found' ? 'taskPanelKillNotFound' : 'taskPanelKillUnsupported';
+    showToast(result.error && key === 'taskPanelKillFailed' ? `${i18nService.t(key)}: ${result.error}` : i18nService.t(key));
+  }, [killBackgroundJob]);
+
+  const handleCopyBackgroundJob = useCallback((job: CoworkBackgroundJob) => {
+    void navigator.clipboard?.writeText(job.label).then(
+      () => showToast(i18nService.t('taskPanelCopied')),
+      () => undefined,
+    );
+  }, []);
 
   const handleActivateArtifactUserAttachmentTab = useCallback(() => {
     if (!sessionId) return;
@@ -3503,6 +3724,12 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       return;
     }
 
+    if (isTasksPreviewTabOpen) {
+      setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.Tasks);
+      dispatch(activateArtifactTasksTab({ sessionId }));
+      return;
+    }
+
     dispatch(closePanel({ sessionId }));
   }, [
     activeArtifactPreviewTab,
@@ -3513,6 +3740,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     isBrowserPreviewTabOpen,
     isFileListPreviewTabOpen,
     isSubagentPreviewTabOpen,
+    isTasksPreviewTabOpen,
     sessionId,
     setSessionActiveSpecialPreviewTab,
     setSessionUserAttachmentPreviewTabOpen,
@@ -3582,6 +3810,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       && !isBrowserPreviewTabOpen
       && !isAgentBrowserPreviewTabOpen
       && !isSubagentPreviewTabOpen
+      && !isTasksPreviewTabOpen
     ) {
       dispatch(closePanel({ sessionId }));
     }
@@ -3592,6 +3821,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     isBrowserPreviewTabOpen,
     isFileListPreviewTabOpen,
     isSubagentPreviewTabOpen,
+    isTasksPreviewTabOpen,
     sessionId,
   ]);
 
@@ -3629,6 +3859,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
       && !isBrowserPreviewTabOpen
       && !isAgentBrowserPreviewTabOpen
       && !isSubagentPreviewTabOpen
+      && !isTasksPreviewTabOpen
     ) {
       setSessionFileListPreviewTabOpen(true);
       setSessionActiveSpecialPreviewTab(ArtifactSpecialTab.FileList);
@@ -3647,6 +3878,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
     isBrowserPreviewTabOpen,
     isFileListPreviewTabOpen,
     isSubagentPreviewTabOpen,
+    isTasksPreviewTabOpen,
     isPanelOpen,
     markAutoPreviewTurnHandled,
     sessionId,
@@ -6007,7 +6239,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
             localServiceDirectory={currentSession?.cwd}
             showActivityIndicator
             activityStatusOverride={
-              isContextMaintenance ? i18nService.t('coworkContextMaintenanceRunning') : null
+              activityStatusOverride
             }
             showCopyButtons={!isStreaming}
             completedGoal={
@@ -6104,7 +6336,7 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                 }}
                 showActivityIndicator={showActivityIndicator}
                 activityStatusOverride={
-                  isContextMaintenance ? i18nService.t('coworkContextMaintenanceRunning') : null
+                  activityStatusOverride
                 }
                 showCopyButtons={!isStreaming || !isLastTurn}
                 hiddenSystemMessageId={enterpriseQuotaPromptMessageId}
@@ -6364,6 +6596,46 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                       </button>
                     </div>
                   )}
+                  {isTasksPreviewTabOpen && (
+                    <div
+                      data-artifact-preview-active={
+                        !activeArtifactPreviewTab && activeSpecialPreviewTab === ArtifactSpecialTab.Tasks
+                          ? 'true'
+                          : undefined
+                      }
+                      className={`non-draggable group flex h-7 max-w-[190px] items-center rounded-lg text-xs transition-colors ${
+                        activeArtifactPreviewTab || activeSpecialPreviewTab !== ArtifactSpecialTab.Tasks
+                          ? 'text-secondary hover:bg-surface hover:text-foreground'
+                          : 'bg-surface-raised text-foreground shadow-sm'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={handleActivateArtifactTasksTab}
+                        className="flex min-w-0 items-center gap-1.5 px-2 text-left"
+                        title={i18nService.t('taskPanelTitle')}
+                      >
+                        <TaskPanelIcon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{i18nService.t('taskPanelTitle')}</span>
+                        {liveBackgroundJobCount > 0 && (
+                          <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500/15 px-1 text-[10px] font-medium leading-none text-emerald-600 dark:text-emerald-400">
+                            {liveBackgroundJobCount}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleCloseArtifactTasksTab();
+                        }}
+                        className={artifactTabCloseButtonClassName}
+                        title={i18nService.t('artifactCloseTab')}
+                      >
+                        <ArtifactTabCloseIcon className="h-2.5 w-2.5" />
+                      </button>
+                    </div>
+                  )}
                   {isUserAttachmentPreviewTabOpen && (
                     <div
                       data-artifact-preview-active={
@@ -6529,6 +6801,29 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
           </button>
           <button
             type="button"
+            onClick={handleToggleTasksPanel}
+            className="non-draggable relative h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
+            aria-label={i18nService.t('taskPanelToggle')}
+            aria-pressed={isTasksPreviewTabActive}
+            title={
+              liveBackgroundJobCount > 0
+                ? i18nService.t('taskPanelHeaderRunning').replace('{count}', String(liveBackgroundJobCount))
+                : i18nService.t('taskPanelToggle')
+            }
+            data-task-panel-trigger
+          >
+            <TaskPanelIcon className="h-4 w-4" />
+            {liveBackgroundJobCount > 0 && (
+              <span
+                className="absolute -right-0.5 -top-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-emerald-500 px-0.5 text-[9px] font-semibold leading-none text-white"
+                data-task-panel-live-count
+              >
+                {liveBackgroundJobCount > 9 ? '9+' : liveBackgroundJobCount}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
             onClick={handleToggleArtifactPanel}
             className="non-draggable relative h-8 w-8 inline-flex items-center justify-center rounded-lg text-secondary hover:bg-surface-raised transition-colors"
             aria-label={i18nService.t('artifactPanelToggle')}
@@ -6574,6 +6869,14 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
           >
             <SubagentIcon className="h-4 w-4 shrink-0" />
             <span className="truncate">{i18nService.t('subagentPanelTitle')}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleOpenArtifactTasksTab}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface"
+          >
+            <TaskPanelIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{i18nService.t('taskPanelTitle')}</span>
           </button>
         </div>,
         document.body
@@ -6869,17 +7172,19 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
           </div>,
           document.body
         )}
-        {shouldShowScrollToBottom && !exportImageProgress && (
-          <button
-            type="button"
-            onClick={handleScrollToBottom}
-            onWheel={handleScrollToBottomWheel}
-            className="absolute bottom-4 left-1/2 z-20 inline-flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-border bg-background text-foreground/85 shadow-[0_2px_10px_rgba(15,23,42,0.12)] transition-colors hover:bg-surface-raised hover:text-foreground dark:shadow-[0_2px_14px_rgba(0,0,0,0.36)]"
-            aria-label={i18nService.t('coworkScrollToBottom')}
-            title={i18nService.t('coworkScrollToBottom')}
-          >
-            <ArrowDown className="h-4 w-4" weight="regular" />
-          </button>
+        {!exportImageProgress && shouldShowScrollToBottom && (
+          <div className="pointer-events-none absolute bottom-4 left-0 right-0 z-20 flex items-center justify-center gap-2 px-3">
+            <button
+              type="button"
+              onClick={handleScrollToBottom}
+              onWheel={handleScrollToBottomWheel}
+              className="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-background text-foreground/85 shadow-[0_2px_10px_rgba(15,23,42,0.12)] transition-colors hover:bg-surface-raised hover:text-foreground dark:shadow-[0_2px_14px_rgba(0,0,0,0.36)]"
+              aria-label={i18nService.t('coworkScrollToBottom')}
+              title={i18nService.t('coworkScrollToBottom')}
+            >
+              <ArrowDown className="h-4 w-4" weight="regular" />
+            </button>
+          </div>
         )}
       </div>
 
@@ -6909,6 +7214,9 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
             <PromptInputCollapseIcon className="h-3.5 w-3.5" />
           </button>
         )}
+        <div className={COWORK_DETAIL_CONTENT_CLASS}>
+          <QuestionDock sessionId={currentSession.id} permissions={pendingPermissions} />
+        </div>
         {minimizedPermission && (
           <div className={`${COWORK_DETAIL_CONTENT_CLASS} mb-2`}>
             <div
@@ -7245,6 +7553,24 @@ const CoworkSessionDetail: React.FC<CoworkSessionDetailProps> = ({
                   selectedSubagent={selectedSubagentForPanel}
                   onBackToList={() => setSelectedSubagent(null)}
                   onSelectSubagent={handleSelectSubagent}
+                />
+              )}
+              taskPanel={(
+                <TaskPanelContent
+                  mainAgentId={currentSession.agentId}
+                  mainAgentStatus={getTaskPanelMainAgentStatus({ isSessionBusy, isContextMaintenance, subagentWaitPhase })}
+                  subagents={subagents}
+                  subagentsLoading={subagentsLoading}
+                  onSelectSubagent={handleSelectSubagent}
+                  onOpenSubagents={() => {
+                    setSelectedSubagent(null);
+                    handleActivateArtifactSubagentTab();
+                  }}
+                  jobs={backgroundJobs}
+                  jobsLoading={backgroundJobsLoading}
+                  onKillJob={handleKillBackgroundJob}
+                  onCopyJob={handleCopyBackgroundJob}
+                  onClearSettledJobs={clearSettledBackgroundJobs}
                 />
               )}
               userAttachmentPanel={(
