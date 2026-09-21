@@ -189,6 +189,13 @@ const McpManager: React.FC = () => {
     return `${command} ${args[args.length - 1]}`;
   };
 
+  const getRegistryTransportSummary = (entry: McpRegistryEntry): string => {
+    if (entry.transportType === 'sse' || entry.transportType === 'http') {
+      return entry.url?.trim() || '';
+    }
+    return getStdioCommandSummary(entry.command, entry.defaultArgs);
+  };
+
   const getRegistryEntryForServer = useCallback((server: McpServerConfig): McpRegistryEntry | undefined => {
     if (server.registryId) {
       return dynamicRegistry.find(entry => entry.id === server.registryId);
@@ -287,14 +294,14 @@ const McpManager: React.FC = () => {
   };
 
   const getRegistryGroupSummary = (item: RegistryGroupItem): string => {
-    const registryCommand = item.registryEntry?.command?.trim();
-    if (registryCommand) {
-      return item.registryEntry?.transportType === 'stdio'
-        ? getStdioCommandSummary(registryCommand, item.registryEntry.defaultArgs)
-        : registryCommand;
+    if (item.registryEntry) {
+      const summary = getRegistryTransportSummary(item.registryEntry);
+      if (summary) return summary;
     }
     const summaries = new Set(item.servers.map(getTransportSummary).filter(Boolean));
-    return summaries.size === 1 ? summaries.values().next().value ?? '' : '';
+    if (summaries.size === 1) return summaries.values().next().value ?? '';
+    const firstServer = item.servers[0];
+    return firstServer ? getTransportSummary(firstServer) : '';
   };
 
   const filteredInstalled = useMemo(() => {
@@ -1087,14 +1094,21 @@ const McpManager: React.FC = () => {
         : []),
     ];
     const info: McpDetailInfoRow[] = [];
-    const command = getStdioCommandSummary(entry.command, entry.defaultArgs);
-    if (command) {
+    if (entry.transportType === 'stdio') {
+      const command = getStdioCommandSummary(entry.command, entry.defaultArgs);
+      if (command) {
+        info.push({
+          label: i18nService.t('mcpDetailCommand'),
+          value: [entry.command, ...(entry.defaultArgs ?? [])].filter(Boolean).join(' '),
+          mono: true,
+        });
+      }
+    } else if (entry.url?.trim()) {
       info.push({
-        label: i18nService.t(entry.transportType === 'stdio' ? 'mcpDetailCommand' : 'mcpDetailUrl'),
-        value: entry.transportType === 'stdio'
-          ? [entry.command, ...(entry.defaultArgs ?? [])].join(' ')
-          : command,
+        label: i18nService.t('mcpDetailUrl'),
+        value: entry.url.trim(),
         mono: true,
+        onSelect: () => window.electron.shell.openExternal(entry.url as string),
       });
     }
     if (entry.requiredEnvKeys && entry.requiredEnvKeys.length > 0) {
@@ -1476,7 +1490,7 @@ const McpManager: React.FC = () => {
                           {entry.transportType}
                         </span>
                         <span className="shrink-0 text-secondary/50">·</span>
-                        <span className="min-w-0 truncate">{getStdioCommandSummary(entry.command, entry.defaultArgs)}</span>
+                        <span className="min-w-0 truncate">{getRegistryTransportSummary(entry)}</span>
                         {requiredEnvKeyCount > 0 && (
                           <>
                             <span className="shrink-0 text-secondary/50">·</span>

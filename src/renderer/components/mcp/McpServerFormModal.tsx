@@ -129,8 +129,12 @@ const McpServerFormModal: React.FC<McpServerFormModalProps> = ({
         }
       }
       setEnvRows(envEntries);
-      setUrl('');
-      setHeaderRows([]);
+      setUrl(registryEntry.url || '');
+      setHeaderRows(
+        registryEntry.headers
+          ? Object.entries(registryEntry.headers).map(([key, value]) => ({ key, value }))
+          : []
+      );
     } else {
       // Create mode
       setName('');

@@ -515,14 +515,19 @@ interface McpServerConfigIPC {
 interface McpMarketplaceServer {
   id: string;
   name: string;
-  description_zh: string;
-  description_en: string;
+  name_zh?: string;
+  icon?: string;
+  description_zh?: string;
+  description_en?: string;
   category: string;
   transportType: 'stdio' | 'sse' | 'http';
-  command: string;
-  defaultArgs: string[];
+  command?: string;
+  defaultArgs?: string[];
+  url?: string;
+  headers?: Record<string, string>;
   requiredEnvKeys?: string[];
   optionalEnvKeys?: string[];
+  kind?: 'server' | 'bundle';
 }
 
 interface McpMarketplaceCategory {

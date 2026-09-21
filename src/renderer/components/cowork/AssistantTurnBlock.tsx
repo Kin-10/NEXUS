@@ -65,7 +65,6 @@ import {
   formatTurnDuration,
   getActivityIndicatorStatusText,
   getContextCompactionMessageLabel,
-  getCoworkWorkingStageText,
   getMediaCompletionDisplayText,
   getRetainedMediaPollCount,
   getThinkingPhaseLabels,
