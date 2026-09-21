@@ -765,7 +765,6 @@ interface ArtifactPanelProps {
   selectedTextEnabled?: boolean;
   agentBrowserPanel?: React.ReactNode;
   subagentPanel?: React.ReactNode;
-  taskPanel?: React.ReactNode;
   userAttachmentPanel?: React.ReactNode;
   onAnnotationSend?: () => void;
 }
@@ -856,7 +855,6 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
   selectedTextEnabled = false,
   agentBrowserPanel,
   subagentPanel,
-  taskPanel,
   userAttachmentPanel,
   onAnnotationSend,
 }) => {
@@ -5344,8 +5342,6 @@ const ArtifactPanel: React.FC<ArtifactPanelProps> = ({
           agentBrowserPanel
         ) : activeSpecialTab === ArtifactSpecialTab.Subagents && subagentPanel ? (
           subagentPanel
-        ) : activeSpecialTab === ArtifactSpecialTab.Tasks && taskPanel ? (
-          taskPanel
         ) : activeSpecialTab === ArtifactSpecialTab.UserAttachment && userAttachmentPanel ? (
           userAttachmentPanel
         ) : (

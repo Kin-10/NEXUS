@@ -6,6 +6,7 @@ const path = require('path');
 const config = require('../electron-builder.json');
 const { BuildEnv } = require('./build-env.cjs');
 const { readBuildKeyfrom } = require('./build-keyfrom.cjs');
+const { configureMacWebAuthnEntitlements } = require('./mac-webauthn-entitlements.cjs');
 
 // Opt-in web installer (small NSIS stub that downloads the app package from a
 // CDN at install time). Default builds are full offline installers; nothing
@@ -102,6 +103,8 @@ const silentOnDoubleClick = isChannelBuild && isTruthyBuildEnv(BuildEnv.SilentOn
 for (const platformName of ['mac', 'win', 'linux']) {
   mergeExtraResources(platformName);
 }
+
+configureMacWebAuthnEntitlements(config, process.env.APPLE_TEAM_ID);
 
 // Sign every Windows binary electron-builder produces (BaiYing.exe, the
 // uninstaller, the installer) through the internal hzb signing service,
