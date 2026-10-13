@@ -2898,7 +2898,7 @@ FunctionEnd
   Goto NewInstallPrevalidateFailed
 
   NewInstallPrevalidateBundleAssets:
-    StrCpy $lobsterNewInstallValidationReason "runtime-bundle-assets-missing"
+    StrCpy $baiyingNewInstallValidationReason "runtime-bundle-assets-missing"
     IfFileExists "$INSTDIR\resources\cfmind\web-tree-sitter.wasm" NewInstallPrevalidateSkills
     Goto NewInstallPrevalidateFailed
 

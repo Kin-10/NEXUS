@@ -1153,6 +1153,11 @@ describe('Windows installer hardening contracts', () => {
       'StrCmp $baiyingOldInstallRenameStatus "prevalidated" 0 baiyingRollbackDone',
     );
     expect(installerInclude).toContain('registration=not-written');
+    // Undeclared $lobster* vars make makensis reject StrCpy with Usage: StrCpy.
+    expect(installerInclude).not.toMatch(/\$lobster/);
+    expect(installerInclude).toContain(
+      'StrCpy $baiyingNewInstallValidationReason "runtime-bundle-assets-missing"',
+    );
   });
 
   test('aborts failed extraction and never treats recovery artifacts as success', () => {
